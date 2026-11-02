@@ -1,0 +1,489 @@
+/* Map (redesigned 2026-10-10): what the kit (kit/src/ui.css) does not already give. */
+.gm-page {
+  height: 100vh;
+}
+.gm-body {
+  overflow: auto;
+}
+.gm-hint {
+  font-size: 12px;
+}
+.gm-field {
+  max-width: 220px;
+}
+.gm-zoom {
+  display: inline-flex;
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--mm-radius);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-xs);
+  overflow: hidden;
+}
+.gm-zoom .mm-btn {
+  height: 30px;
+  border-radius: 0;
+}
+.gm-zoom .mm-btn + .mm-btn {
+  border-left: 1px solid var(--ds-line);
+}
+
+/* ---- the stage: the map and what floats over it */
+.gm-stage {
+  position: relative;
+  flex: 1 0 300px;
+  border: 1px solid var(--ds-line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--ds-canvas);
+  box-shadow: var(--ds-shadow-xs);
+}
+.gm-map {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.gm-map:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--ds-focus);
+}
+.gm-dragging {
+  cursor: grabbing;
+}
+.gm-plain {
+  background:
+    radial-gradient(
+      ellipse at 50% 40%,
+      color-mix(in srgb, var(--ds-accent) 5%, transparent),
+      transparent 70%
+    ),
+    var(--ds-canvas);
+}
+.gm-tiled {
+  background: var(--ds-subtle);
+}
+.gm-tiles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.gm-tile {
+  position: absolute;
+  max-width: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.gm-tile.gm-loaded {
+  opacity: 1;
+}
+.gm-tile.gm-failed {
+  visibility: hidden;
+}
+:root.dark .gm-tile {
+  filter: brightness(0.82) contrast(1.05) saturate(0.85);
+}
+.gm-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+}
+
+/* ---- the graticule, without tiles */
+.gm-grid-line {
+  stroke: color-mix(in srgb, var(--ds-line) 70%, transparent);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+.gm-grid-major {
+  stroke: var(--ds-line-strong);
+}
+.gm-grid-zero {
+  stroke: color-mix(in srgb, var(--ds-accent) 35%, transparent);
+}
+.gm-grid-label {
+  fill: var(--ds-fg-subtle);
+  font-family: var(--mm-font);
+  font-size: 10.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  paint-order: stroke;
+  stroke: var(--ds-canvas);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+/* ---- shapes */
+.gm-area {
+  fill: color-mix(in srgb, var(--ds-accent) 16%, transparent);
+  fill-rule: evenodd;
+  stroke: var(--ds-accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  cursor: pointer;
+  transition: fill 0.15s;
+}
+.gm-area:hover {
+  fill: color-mix(in srgb, var(--ds-accent) 26%, transparent);
+}
+.gm-line {
+  cursor: pointer;
+}
+.gm-line-stroke {
+  fill: none;
+  stroke: var(--ds-accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.gm-line-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 12;
+}
+.gm-area.gm-selected,
+.gm-line.gm-selected .gm-line-stroke {
+  stroke-width: 3.5;
+}
+
+/* ---- places: a dot with a ring, or a circle with its count */
+.gm-marker,
+.gm-cluster {
+  cursor: pointer;
+}
+.gm-hit {
+  fill: transparent;
+  transition: fill 0.15s;
+}
+.gm-dot {
+  fill: var(--ds-accent);
+  stroke: var(--ds-surface);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.3));
+  transition: transform 0.15s;
+}
+.gm-marker:hover .gm-dot {
+  transform: scale(1.25);
+}
+.gm-marker:hover .gm-hit,
+.gm-marker.gm-selected .gm-hit {
+  fill: color-mix(in srgb, var(--ds-accent) 22%, transparent);
+}
+.gm-marker.gm-selected .gm-dot {
+  transform: scale(1.25);
+}
+.gm-halo {
+  fill: color-mix(in srgb, var(--ds-accent) 20%, transparent);
+  transition: fill 0.15s;
+}
+.gm-ring {
+  fill: var(--ds-accent);
+  stroke: var(--ds-surface);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.25));
+}
+.gm-cluster:hover .gm-halo,
+.gm-cluster.gm-selected .gm-halo {
+  fill: color-mix(in srgb, var(--ds-accent) 34%, transparent);
+}
+.gm-count {
+  fill: var(--ds-on-accent);
+  font-family: var(--mm-font);
+  font-size: 11.5px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+/* ---- credits, loading, nothing found, the no-tiles note */
+.gm-credit {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  max-width: 60%;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--ds-surface) 85%, transparent);
+  color: var(--ds-fg-muted);
+  font-size: 10.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gm-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  pointer-events: none;
+}
+.gm-overlay > * {
+  pointer-events: auto;
+}
+.gm-overlay .mm-empty {
+  max-width: 440px;
+  border-style: solid;
+  border-color: var(--ds-line);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-float);
+}
+.gm-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-float);
+  color: var(--ds-fg-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.gm-float {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  max-width: min(400px, calc(100% - 24px));
+}
+.gm-note {
+  position: relative;
+  padding-right: 38px;
+  background: linear-gradient(var(--ds-info-soft), var(--ds-info-soft)), var(--ds-surface);
+  box-shadow: var(--ds-shadow-float);
+  font-size: 12.5px;
+}
+.gm-note .mm-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+/* ---- the card of a place */
+.gm-pop-slot {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.gm-pop {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 290px;
+  max-width: calc(100% - 16px);
+  padding: 10px 12px;
+  box-shadow: var(--ds-shadow-float);
+  pointer-events: auto;
+  animation: gm-pop-in 0.12s ease-out;
+}
+.gm-pop-away {
+  visibility: hidden;
+}
+@keyframes gm-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.gm-pop-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.gm-pop-head > .gm-pop-title {
+  flex: 1;
+  padding-top: 3px;
+}
+.gm-pop-titles {
+  flex: 1;
+  min-width: 0;
+}
+.gm-pop-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gm-pop-id .mm-value {
+  font-size: 11.5px;
+}
+.gm-pop-fields {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 12px;
+  margin: 0;
+}
+.gm-pop-row {
+  display: contents;
+}
+.gm-pop-fields dd {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gm-pop-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ds-line);
+}
+.gm-pop-foot .mm-subtle {
+  min-width: 0;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gm-pop-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 240px;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+.gm-pop-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--ds-line);
+}
+.gm-pop-list li:last-child {
+  border-bottom: 0;
+}
+.gm-pop-error {
+  color: var(--ds-danger);
+  font-size: 12px;
+}
+.gm-link {
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ds-fg);
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gm-link:hover {
+  color: var(--ds-accent-fg);
+  text-decoration: underline;
+}
+
+/* ---- the shapes as a table */
+.gm-shapes {
+  flex: none;
+}
+.gm-shapes > summary .mm-badge {
+  margin-left: 2px;
+}
+.gm-table {
+  max-height: 300px;
+}
+.gm-first {
+  margin-top: 8px;
+  font-size: 12px;
+}
+@media (max-width: 640px) {
+  .gm-hint {
+    display: none;
+  }
+}
+
+/* Map 1.2 (research 2026-10-28): an area drawn to filter by. */
+.gm-draw [aria-pressed='true'] {
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent-fg);
+}
+.gm-drawing {
+  cursor: crosshair;
+}
+.gm-sketch {
+  pointer-events: none;
+}
+.gm-sketch-area {
+  fill: color-mix(in srgb, var(--ds-accent) 16%, transparent);
+  stroke: var(--ds-accent);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+.gm-sketch-corner,
+.gm-sketch-first {
+  fill: var(--ds-surface);
+  stroke: var(--ds-accent);
+  stroke-width: 2;
+}
+.gm-sketch-first {
+  fill: var(--ds-accent);
+}
+.gm-sketch-label {
+  fill: var(--ds-fg);
+  font-size: 12px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--ds-surface);
+  stroke-width: 3;
+}
+.gm-drawbar {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  max-width: calc(100% - 20px);
+  padding: 8px 12px;
+  font-size: 12.5px;
+  z-index: 3;
+}
+.gm-drawbar[hidden] {
+  display: none;
+}
+.gm-drawing-text {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+}
+/* The map's centre while drawing: where Space puts the next corner. */
+.gm-sketch-aim {
+  fill: none;
+  stroke: var(--ds-accent);
+  stroke-width: 1.5;
+  opacity: 0.7;
+}
+/* What a filter came to, over the map (its size stays). */
+.gm-draw-note {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 20px);
+  z-index: 3;
+}
+.gm-draw-note .mm-callout {
+  box-shadow: var(--ds-shadow-float);
+}
+.gm-draw-why {
+  margin: 0;
+}

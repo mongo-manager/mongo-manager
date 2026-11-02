@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>배포 · Mongo Manager 문서</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager 문서</a>
+      <details class="lang-menu">
+        <summary>한국어</summary>
+        <span class="langs" role="group" aria-label="언어">
+          <a lang="en" hreflang="en" href="../deployment.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/deployment.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/deployment.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/deployment.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/deployment.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/deployment.html">Português (Brasil)</a>
+          <strong lang="ko">한국어</strong>
+          <a lang="de" hreflang="de" href="../de/deployment.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/deployment.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/deployment.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">개요</a>
+      <a href="getting-started.html">시작하기</a>
+      <a href="security.html">보안</a>
+      <strong>배포</strong>
+      <a href="import-export.html">가져오기 및 내보내기</a>
+      <a href="backup.html">백업 및 복원</a>
+      <a href="watch.html">변경 사항 감시</a>
+      <a href="sync.html">실시간 동기화</a>
+      <a href="server-admin.html">서버 관리</a>
+      <a href="ai.html">AI 도우미</a>
+      <a href="plugins.html">플러그인</a>
+      <a href="shortcuts.html">키보드 단축키</a>
+    </nav>
+    <main>
+      <h1>배포</h1>
+      <h2 id="as-a-system-service">시스템 서비스로 실행</h2>
+      <pre><code>sudo mongo-manager service install          # Linux, macOS
+mongo-manager service install               # Windows, elevated prompt
+mongo-manager service status
+mongo-manager service logs
+sudo mongo-manager service open             # local mode: a one-time link that opens it
+sudo mongo-manager service uninstall        # keeps data, config and key</code></pre>
+      <p>
+        서비스는 권한이 없는 전용 계정으로, 관리자만 변경할 수 있는 프로그램 폴더에서, 팀 모드로
+        <code>127.0.0.1:4321</code>에서 실행됩니다. 첫 시작 시 일회용 설정 토큰이 데이터 폴더의
+        <code>setup-token</code>에 보관되며, 서비스 계정과 관리자만 읽을 수 있습니다.
+        <code>service install</code>이 읽는 방법을 출력합니다. 토큰은 로그에 기록되지 않으며, 첫 번째 관리자가
+        만들어지면 파일이 삭제됩니다.
+      </p>
+      <p>
+        로컬 모드(<code>--no-auth</code>)로 설치한 서비스는 일회용 실행 링크로만 열립니다.
+        <code>service install</code>이 링크를 하나 출력하고, 필요할 때마다 <code>service open</code>이 새 링크를
+        출력합니다(관리자로 실행해야 하며, 데이터 폴더의 <code>launch.key</code>로 만들어집니다). 관리자 권한이
+        아닌 본인의 브라우저에서 여세요. 그러면 해당 브라우저는 이 사이트의 데이터를 유지하는 동안, 마지막 사용 후
+        최대 6개월까지 로그인된 상태로 남습니다.
+      </p>
+      <h2 id="docker">Docker</h2>
+      <p>
+        이미지는 읽기 전용 루트 파일 시스템에서 권한 없는 사용자로, 팀 모드로 실행됩니다. 데이터는
+        <code>/data</code> 볼륨에 저장됩니다. 오프라인 머신에서는 <code>docker load -i</code>로 이미지 아카이브를
+        불러올 수 있습니다. 첫 시작의 설정 토큰:
+        <code>docker exec &lt;container&gt; cat /data/setup-token</code>. compose 파일은 포트를 호스트의 루프백에만
+        게시합니다(<code>127.0.0.1:4321</code>). 다른 머신에 서비스하려면 일반 HTTP를 게시하지 말고 앞에 HTTPS
+        리버스 프록시를 두세요. 호스트의 프록시는 compose 네트워크의 게이트웨이에서 컨테이너에 접근하므로,
+        <code>127.0.0.1</code>이 아니라 <code>MM_TRUSTED_PROXIES=172.31.240.1</code>을 신뢰하세요.
+      </p>
+      <p>
+        컨테이너 안에서 서버는 모든 주소에서 수신하므로, <code>MM_ALLOWED_HOSTS</code>가 없으면 IP 주소와
+        <code>localhost</code>에만 응답합니다(시작할 때마다 이를 알려 줍니다). 이름으로 접속하는 모든 대상, 즉 공개
+        이름을 전달하는 프록시, 서비스 이름으로 접근하는 다른 컨테이너(<code>mongo-manager:4321</code>을 수집하는
+        Prometheus), Kubernetes 서비스는 해당 이름이 목록에 추가될 때까지 403을 받습니다:
+        <code>MM_ALLOWED_HOSTS=mongo-manager,mm.example.com</code>.
+      </p>
+      <p>
+        로컬 모드(<code>MM_AUTH=0</code>)에서 컨테이너 로그는 링크를 출력하는 명령의 이름만 알려 주고 링크 자체는
+        표시하지 않습니다:
+        <code>docker exec &lt;container&gt; node /app/dist/cli.cjs open --no-open</code>. 링크에는 컨테이너 안에서
+        서버가 수신하는 포트가 들어 있습니다. 호스트의 다른 포트로 게시한 경우(<code
+          >-p 127.0.0.1:8080:4321</code
+        >) 링크를 열기 전에 링크의 포트를 호스트 포트로 바꾸세요.
+      </p>
+      <p>
+        서버에서는 <code>mongo.example.com</code>으로 서비스하는 HTTPS 리버스 프록시를 앞에 두고 다음과 같이 시작하세요. 마지막 줄은 설정 토큰을 읽습니다. 설정은 바로 끝내세요. 첫 관리자가 생기기 전까지는 토큰을 가진 누구나 관리자가 될 수 있습니다.
+      </p>
+      <pre><code>docker run -d --name mongo-manager --restart unless-stopped \
+  -p 127.0.0.1:4321:4321 \
+  -e MM_ALLOWED_HOSTS=mongo.example.com \
+  -e MM_TRUSTED_PROXIES=172.17.0.1 \
+  -v mm-data:/data \
+  --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true \
+  ghcr.io/mongo-manager/mongo-manager:&lt;version&gt;
+docker exec mongo-manager cat /data/setup-token</code></pre>
+      <p>
+        <code>MM_TRUSTED_PROXIES</code>는 호스트의 프록시가 컨테이너에 접근할 때의 주소, 즉 Docker 네트워크의 게이트웨이입니다. 기본 bridge 네트워크에서는 보통 <code>172.17.0.1</code>입니다(<code>docker network inspect bridge -f '{{(index .IPAM.Config 0).Gateway}}'</code>로 확인). 이 값이 없으면 모든 요청이 게이트웨이에서 온 것처럼 보여, 감사 로그와 로그인 차단이 사용자를 구분하지 못합니다. <code>MM_ALLOWED_HOSTS</code>를 설정하면 목록에 있는 이름만 받습니다. 호스트에서 계속 <code>http://127.0.0.1:4321</code>을 열려면 <code>127.0.0.1</code>도 추가하세요. <code>--read-only</code>, <code>--tmpfs /tmp</code>, <code>--cap-drop ALL</code>, <code>no-new-privileges</code>는 compose 파일이 적용하는 것과 같은 보안 강화 설정입니다.
+      </p>
+      <h2 id="docker-mongodb">컨테이너에서 MongoDB에 연결하기</h2>
+      <p>
+        컨테이너 안에서 <code>localhost</code>는 컨테이너 자신입니다. 그래서 MongoDB가 같은 머신에서 실행 중이어도 <code>mongodb://localhost:27017</code>은 <code>ECONNREFUSED</code>로 실패합니다.
+      </p>
+      <ul>
+        <li><strong>다른 컨테이너의 MongoDB:</strong> 두 컨테이너를 같은 Docker 네트워크에 넣고(<code>docker network create mm</code> 후 <code>docker network connect mm mongo-manager</code>와 <code>docker network connect mm my-mongodb</code>, 또는 시작할 때 <code>--network mm</code>) <code>mongodb://my-mongodb:27017</code>에 연결하세요.</li>
+        <li><strong>호스트의 MongoDB, Docker Desktop(Windows, macOS):</strong> <code>mongodb://host.docker.internal:27017</code>.</li>
+        <li><strong>호스트의 MongoDB, Linux:</strong> Mongo Manager를 <code>--network host</code>로 실행하거나(이때 <code>localhost</code>는 호스트입니다. <code>-e MM_HOST=127.0.0.1</code>로 외부에 열지 말고, 앞에 프록시를 두고 <code>127.0.0.1</code>로 신뢰하세요) <code>--add-host=host.docker.internal:host-gateway</code>를 추가하세요. 후자는 bridge 게이트웨이 주소에서 수신하는 MongoDB에만 닿습니다. 호스트의 <code>127.0.0.1</code>에만 바인딩된 MongoDB나 그곳에만 게시된 컨테이너(<code>-p 127.0.0.1:27018:27017</code>)에는 닿지 않으니, 이런 경우에는 공유 네트워크나 호스트 네트워크를 쓰세요.</li>
+        <li>멤버 이름이 <code>localhost:27017</code>인 레플리카 세트는 드라이버를 다시 <code>localhost</code>로 보냅니다. <code>?directConnection=true</code>를 추가하세요.</li>
+      </ul>
+      <h2 id="behind-a-reverse-proxy">리버스 프록시 뒤에서 실행</h2>
+      <ul>
+        <li>
+          프록시만 신뢰하세요: <code>--trusted-proxies 127.0.0.1</code>. 이 설정이 없으면 서버가 요청이 HTTPS로
+          왔는지 알 수 없어 세션 쿠키에 Secure가 표시되지 않습니다. 팀 모드로 시작하면 이를 알려 주며, 로그인이 일반
+          HTTP로 네트워크를 지나게 될 때도 알려 줍니다.
+        </li>
+        <li>공개 호스트를 지정하세요: <code>--allowed-hosts mm.example.com</code>.</li>
+        <li>하위 경로에서 서비스하려면 <code>--base-path /mm/</code>를 사용하세요.</li>
+        <li>
+          클라이언트 주소 하나당 분당 API 요청을 600개까지 보낼 수 있습니다. 여러 사람이 한 주소를 공유하면
+          <code>MM_API_RATE_LIMIT</code>(60–100000)로 늘리세요.
+        </li>
+        <li>
+          동시에 열 수 있는 연결은 최대 1000개(<code>MM_MAX_CONNECTIONS</code>, 16–100000)이고, 한 주소에서는 최대
+          256개(<code>MM_MAX_CONNECTIONS_PER_IP</code>, 2–100000)입니다. 이를 넘는 연결은 닫히며, 로그에는 주소당
+          분당 한 번 기록됩니다. 브라우저는 연결을 약 6개 열어 두므로, NAT, VPN, Docker Desktop 뒤에서처럼 많은
+          사람이 한 주소에서 Mongo Manager에 접속하는 경우 <code>MM_MAX_CONNECTIONS_PER_IP</code>를 늘리세요. 신뢰하는
+          프록시 뒤에서는 전체 제한만 적용됩니다. 모든 연결이 프록시에서 오므로, 프록시가 자체 클라이언트를 제한해야
+          합니다.
+        </li>
+        <li>
+          가져오기 및 내보내기 파일은 <code>&lt;data directory&gt;/transfer</code> 아래에 저장됩니다.
+          <code>MM_TRANSFER_MAX_UPLOAD</code>는 최대 업로드 크기(MiB, 기본값 1024, 1–65536),
+          <code>MM_TRANSFER_QUOTA</code>는 사용자당 보관할 수 있는 저장 용량(MiB, 기본값 5120, 16–1048576),
+          <code>MM_TRANSFER_TOTAL_QUOTA</code>는 모든 사용자가 합쳐서 보관할 수 있는 용량(MiB, 기본값 51200, 또는
+          <code>MM_TRANSFER_QUOTA</code>가 더 크면 그 값, 16–16777216),
+          <code>MM_TRANSFER_TTL_HOURS</code>는 파일 보관 시간(기본값 24, 1–720),
+          <code>MM_TRANSFER_MAX_JOB_HOURS</code>는 가져오기 또는 내보내기 하나가 실행될 수 있는 시간(기본값 6,
+          1–72)입니다. 디스크에는 전체 용량만큼, 또는 파일을 전송하는 사람 수에 사용자당 할당량을 곱한 값이 더 작으면
+          그만큼의 여유 공간을 확보하세요.
+        </li>
+      </ul>
+      <h2 id="settings">설정과 환경 변수</h2>
+      <p>
+        서버 설정은 각각 명령줄 옵션, 환경 변수, 또는 <code>--config</code>나 <code>MM_CONFIG</code>로 지정한 JSON
+        구성 파일로 지정할 수 있습니다. 명령줄이 환경 변수보다, 환경 변수가 파일보다 우선합니다. 스위치에는
+        <code>1</code>/<code>0</code>, <code>true</code>/<code>false</code>, <code>yes</code>/<code>no</code>,
+        <code>on</code>/<code>off</code>를 사용할 수 있습니다. 각 기능의 설정은 아래 해당 섹션에 있습니다.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>변수</th>
+              <th>옵션</th>
+              <th>설명</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>MM_WEB_PORT</code></td>
+              <td><code>-p</code>, <code>--web-port</code></td>
+              <td>웹 인터페이스의 포트(기본값 4321).</td>
+            </tr>
+            <tr>
+              <td><code>MM_HOST</code></td>
+              <td><code>--host</code></td>
+              <td>
+                수신할 주소(기본값 <code>127.0.0.1</code>). 네트워크 주소를 쓰려면 팀 모드 또는
+                <code>MM_UNSAFE_NO_AUTH</code>가 필요합니다.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_AUTH</code></td>
+              <td><code>--auth</code></td>
+              <td>팀 모드: 사용자, 역할, 로그인(기본값 꺼짐).</td>
+            </tr>
+            <tr>
+              <td><code>MM_DATA_DIR</code></td>
+              <td><code>--data-dir</code></td>
+              <td>데이터 디렉터리(기본값 <code>~/.mongo-manager</code>).</td>
+            </tr>
+            <tr>
+              <td><code>MM_CONFIG</code></td>
+              <td><code>--config</code></td>
+              <td>
+                JSON 구성 파일. Linux와 macOS에서는 시크릿이 들어 있는 파일을 다른 사용자가 읽을 수 없어야 하며,
+                그렇지 않으면 서버가 해당 파일을 거부합니다.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_SECRET_KEY</code></td>
+              <td></td>
+              <td>데이터 디렉터리의 <code>secret.key</code> 대신 사용하는 암호화 키.</td>
+            </tr>
+            <tr>
+              <td><code>MM_OPEN</code></td>
+              <td><code>--open</code></td>
+              <td>
+                시작할 때 브라우저를 엽니다(기본값 켜짐). 로컬 모드에서, 루프백 주소에서, 터미널에서 시작했을 때만
+                열립니다.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_URI</code></td>
+              <td><code>--uri</code></td>
+              <td>
+                맨 처음 시작할 때만 만들어지는 연결. 비밀번호가 포함된 연결 문자열에는 변수를 사용하세요. 다른 사용자가
+                명령줄을 볼 수 있습니다.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_READ_ONLY</code></td>
+              <td><code>--read-only</code></td>
+              <td>연결 자체의 설정과 관계없이 어떤 연결도 데이터를 변경할 수 없습니다.</td>
+            </tr>
+            <tr>
+              <td><code>MM_TRUSTED_PROXIES</code></td>
+              <td><code>--trusted-proxies</code></td>
+              <td>
+                <code>X-Forwarded-*</code> 헤더를 신뢰할 프록시의 주소 또는 CIDR 범위.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOWED_HOSTS</code></td>
+              <td><code>--allowed-hosts</code></td>
+              <td>
+                서버가 응답하는 유일한 호스트 이름. 설정하지 않으면 루프백에서 수신할 때는 루프백 이름에, 그 외에는
+                루프백 이름과 IP 주소에만 응답하며 다른 이름에는 응답하지 않습니다(DNS 리바인딩 방어이며, 시작할 때
+                이를 알려 줍니다). 사람들이 접속에 사용하는 모든 호스트 이름을 여기에 지정하세요.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_BASE_PATH</code></td>
+              <td><code>--base-path</code></td>
+              <td>앱을 <code>/mm/</code> 같은 하위 경로에서 서비스합니다.</td>
+            </tr>
+            <tr>
+              <td><code>MM_UNSAFE_NO_AUTH</code></td>
+              <td><code>--unsafe-no-auth</code></td>
+              <td>팀 모드 없이 네트워크 주소를 허용합니다. 접속할 수 있는 사람은 누구나 모든 권한을 갖습니다.</td>
+            </tr>
+            <tr>
+              <td><code>MM_LOG_LEVEL</code></td>
+              <td><code>--log-level</code></td>
+              <td>
+                <code>fatal</code>, <code>error</code>, <code>warn</code>, <code>info</code>(기본값),
+                <code>debug</code>, <code>trace</code>, <code>silent</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_LOG_FILE</code></td>
+              <td><code>--log-file</code></td>
+              <td>
+                JSON 로그를 표준 출력 대신 이 파일에 이어 씁니다. 파일은 비공개로 만들어지고(모드 0600, Windows에서는
+                모든 사용자의 액세스를 제거하며 이 계정, SYSTEM, Administrators만 유지), 10 MiB에서 순환되어 이전
+                부분은 <code>&lt;file&gt;.1</code>로 보관됩니다. 링크이거나, 여러 이름을 가진 파일(하드 링크)이거나,
+                일반 파일이 아닌 경로는 거부되며 시작이 실패하고 그 이유를 알려 줍니다. 해당 경로를 제거하거나 이름을
+                바꾸거나 다른 로그 파일을 지정하세요. 쓸 수 없는 줄(디스크가 가득 찬 경우)은 버려지고 표준 오류에 한 번
+                알려 줍니다. 요청은 경로로 기록되며, 모든 쿼리 값과 GridFS 파일의 ID는 <code>***</code>로 기록됩니다.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_REQUIRE_ADMIN_2FA</code></td>
+              <td></td>
+              <td>
+                모든 관리자는 다른 작업보다 먼저 2단계 로그인을 설정해야 하며, 앱에서 이를 끌 수 없습니다. 이
+                변수가 없으면 관리자가 앱에서 같은 요구 사항을 설정할 수 있습니다.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_REQUIRE_2FA</code></td>
+              <td></td>
+              <td>
+                역할과 관계없이 모든 사용자는 다른 작업보다 먼저 2단계 로그인을 설정해야 하며, 앱에서 이를 끌 수
+                없습니다. 이 변수가 없으면 관리자가 앱에서 같은 요구 사항을 설정할 수 있습니다.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_METRICS_TOKEN</code></td>
+              <td></td>
+              <td>
+                <code>&lt;base path&gt;metrics</code>에서 Prometheus 지표를 켭니다. 이 토큰을 베어러 토큰으로
+                사용해 읽습니다(32자 이상). 지표에는 사용자, 연결, 데이터베이스, 컬렉션 이름이 들어 있지 않습니다.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_GRIDFS_MAX_MB</code></td>
+              <td></td>
+              <td>GridFS에 업로드할 수 있는 최대 파일 크기(MB, 기본값 512, 1–10240).</td>
+            </tr>
+            <tr>
+              <td><code>MM_MODEL_MAX_DOCS</code></td>
+              <td></td>
+              <td>
+                데이터 모델 하나(데이터베이스의 모델 섹션)가 전체적으로 샘플링할 수 있는 도큐먼트 수(기본값 20000,
+                100–1000000). 컬렉션이 많으면 각 컬렉션의 샘플이 더 작아지며, 섹션에 이를 표시합니다.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOW_KERBEROS</code></td>
+              <td></td>
+              <td>
+                팀 모드: Kerberos(GSSAPI) 연결을 허용합니다(기본값 꺼짐). 이 연결은 서버를 실행하는 계정의 Kerberos
+                티켓으로 로그인하므로, 이러한 연결의 모든 사용자가 그 계정으로 로그인합니다.
+                <a href="security.html#server-identity">보안</a>을 참조하세요.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOW_WORKLOAD_IDENTITY</code></td>
+              <td></td>
+              <td>
+                팀 모드: 연결에서 선택한 경우 OIDC 연결이 머신의 워크로드 ID(Azure, GCP, Kubernetes)를 사용할 수 있게
+                허용합니다(기본값 꺼짐).
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_OIDC_DEVICE_FLOW</code></td>
+              <td></td>
+              <td>
+                코드를 이용한 OIDC 로그인(디바이스 플로). 브라우저를 이 서버로 되돌려 보낼 수 없는 ID 제공업체용입니다.
+                코드를 승인한 사람이 로그인하므로, 팀 모드에서는 여기서 켜지 않으면 꺼져 있고 로컬 모드에서는 켜져
+                있습니다.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_OIDC_PRIVATE_NETWORKS</code></td>
+              <td></td>
+              <td>
+                OIDC ID 제공업체가 위치할 수 있는 프라이빗 네트워크(쉼표로 구분한 CIDR). 이 네트워크 안에서만 일반
+                http가 허용됩니다. 이 설정이 없으면 공개 https 주소여야 합니다.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_CRYPT_SHARED_LIB_PATH</code></td>
+              <td></td>
+              <td>
+                클라이언트 측 암호화를 위한 crypt_shared 라이브러리(mongo_crypt_v1)의 절대 경로. 팀 모드에서는 이
+                라이브러리만 로드됩니다.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_KMS_PRIVATE_NETWORKS</code></td>
+              <td></td>
+              <td>
+                키 관리 서비스(온프레미스 KMIP 서버)가 위치할 수 있는 프라이빗 네트워크(쉼표로 구분한 CIDR). 이 설정이
+                없으면 공개 주소여야 합니다.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_KMS_ALLOWED_HOSTS</code></td>
+              <td></td>
+              <td>
+                연결이 제공업체 자체 서비스(AWS KMS, Microsoft 로그인을 사용하는 Azure Key Vault와 Managed HSM, Google
+                Cloud KMS)와 설정에 이름이 지정된 엔드포인트(VPC 엔드포인트, KMIP 서버) 외에 접근할 수 있는 키 관리
+                서비스 호스트(쉼표로 구분, <code>host</code> 또는 <code>host:port</code>, 기본 포트 443). 그 밖의
+                호스트나 다른 포트는 거부됩니다. 데이터 키의 마스터 키가 KMS 토큰을 다른 곳으로 보낼 수 없습니다.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h2 id="optional-packages">Kerberos와 클라이언트 측 암호화(npm 패키지)</h2>
+      <p>
+        Kerberos(GSSAPI)와 클라이언트 측 필드 수준 암호화 / Queryable Encryption에는 네이티브 패키지가 필요하며,
+        Mongo Manager는 이를 스스로 설치하지 않습니다. 설치 과정에서 어떤 패키지의 설치 스크립트도 실행하지 않습니다.
+        사용하려면 npm 패키지와 같은 위치에 해당 패키지를 설치한 다음 다시 시작하세요.
+      </p>
+      <pre><code>npm i -g @mongo-manager/app kerberos mongodb-client-encryption</code></pre>
+      <p>
+        Mongo Manager는 <code>mongo-manager</code> 자체가 있는 전역 <code>node_modules</code> 폴더에서만(실제
+        경로로 확인하며, 그 위의 폴더는 확인하지 않습니다), 그리고 연결이 처음 필요로 할 때만 이 패키지들을
+        로드합니다. 연결 양식에 어느 패키지가 없는지와 설치 방법이 표시됩니다. 독립 실행형 바이너리, Docker
+        이미지(<code>MM_DISTRIBUTION=docker</code>로 설정됨), Windows 서비스가 실행되는 복사본에는 네이티브 모듈이
+        포함되지 않습니다. 이런 환경에서는 두 기능이 이 패키지에서 사용할 수 없다고 안내하므로, 대신 npm 패키지를
+        포그라운드로 실행하세요. Queryable Encryption의 자동 암호화에는 crypt_shared 라이브러리
+        (<code>MM_CRYPT_SHARED_LIB_PATH</code>) 또는 mongocryptd, 그리고 MongoDB Enterprise 또는 Atlas가 필요합니다.
+        MongoDB Community는 복호화만 합니다. MONGODB-OIDC에는 패키지가 필요 없습니다. ID 제공업체에 이 서버의
+        <code>&lt;address&gt;&lt;base path&gt;oidc/callback</code>이 리디렉션 주소(또는 연결에 지정된 다른 주소)로
+        등록되어 있어야 하며, 그렇게 할 수 없는 곳에서는 코드로 로그인할 수 있습니다.
+      </p>
+      <h2 id="install-as-an-app">앱으로 설치</h2>
+      <p>
+        Chrome 또는 Edge에서 주소 표시줄의 <em>Mongo Manager 설치</em>를 선택하면 바탕 화면이나 시작 메뉴에서 별도
+        창으로 열 수 있습니다.
+      </p>
+      <h2 id="backup-destinations">백업 대상</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_FOLDER_ROOTS</code>: 서버 폴더 대상이 사용할 수 있는 폴더이며, 시스템의 경로 구분자(Linux와
+          macOS에서는 <code>:</code>, Windows에서는 <code>;</code>)로 구분한 절대 경로로 최대 16개입니다. 기본값은
+          없음이며, 따라서 폴더 대상을 만들 수 없습니다. 상대 경로를 지정하면 서버가 시작할 때 멈춥니다. 서비스
+          계정에 각 루트의 쓰기 권한을 부여하고, 루트는 데이터 디렉터리 바깥에 두세요. 데이터 디렉터리 안의 폴더
+          대상은 거부됩니다. 서버가 쓸 수 없는 루트는 시작할 때마다 로그에 기록됩니다. Linux 서비스의 경우:
+          <ul>
+            <li>
+              샌드박스는 설치 시 구성과 env 파일에 이름이 지정된 데이터 디렉터리와 루트에만 쓰기를 허용합니다. 이를
+              변경한 후에는 <code>sudo mongo-manager service install</code>을 다시 실행하고(데이터, 구성, 키는
+              유지됩니다), 없던 루트를 만든 후에는 서비스를 다시 시작하세요. 드롭인의
+              <code>Environment=</code>처럼 다른 곳에 설정한 루트는 설치가 인식하지 못하며, 해당 폴더는 서비스에
+              읽기 전용으로 남습니다.
+            </li>
+            <li>
+              설치는 서비스가 접근할 수 없는 <code>/home</code>, <code>/root</code>, <code>/run/user</code>,
+              <code>/tmp</code>, <code>/var/tmp</code>, <code>/dev</code> 아래의 루트와, 샌드박스를 무력화할 루트를
+              제외합니다. 시스템 디렉터리(<code>/</code>, <code>/var</code>, <code>/var/lib</code> 등)를 포함하는
+              루트, 또는 <code>/etc</code>, <code>/usr</code>, <code>/run</code>이나 다른 시스템 디렉터리 안에 있는
+              루트가 여기에 해당합니다(<code>/var</code> 아래에서는 <code>/var/backups</code> 안의 폴더만 열려
+              있습니다). <code>/srv</code>, <code>/opt</code> 안의 폴더나 <code>/mnt</code> 또는
+              <code>/media</code> 아래의 마운트는 적합하지만 그 폴더 자체는 적합하지 않습니다. 이동식 파일 시스템이나
+              네트워크 파일 시스템에서는 디스크나 공유를 제어하는 쪽이 그 위의 폴더를 제어하므로, 마운트 지점 자체를
+              루트로 지정하세요(사용자의 FUSE 마운트는 소유자와 링크에 대해 원하는 대로 응답할 수 있습니다). 다른
+              루트 안에 있는 루트는 그 루트 덕분에 샌드박스에 포함됩니다. ostree 시스템(Fedora Silverblue,
+              CoreOS)처럼 <code>/srv</code>, <code>/opt</code>, <code>/mnt</code> 자체가 <code>/var</code>로의
+              링크인 경우, 설치가 루트가 어디로 이어지는지 알려 주며 해당 루트는 거부됩니다.
+              <code>/var/backups</code> 안의 폴더를 선택하세요.
+            </li>
+            <li>
+              링크는 그것이 가리키는 위치로 판단하며 유닛에는 그 위치의 이름이 지정됩니다. 아무 곳도 가리키지 않는
+              링크는 제외됩니다. 아직 만들지 않은 폴더를 가리키는 링크라면 그 폴더를 만든 다음 service install을 다시
+              실행하세요. 순환하거나 파일을 거치는 링크라면 다른 폴더를 선택하거나 링크를 제거하세요. 루트 위의 각
+              폴더와 그 경로의 링크가 들어 있는 폴더(링크 안의 링크 대상 포함)는 root 소유로 두고 그룹과 기타 사용자의
+              접근을 막아, 누구도 그곳의 폴더 자리에 링크를 둘 수 없게 하세요. 다른 사용자가 쓸 수 있는 폴더(스티키
+              여부와 관계없이)에서는 그 안의 폴더를 root 소유로 하고, 그 안쪽에 루트를 만드세요.
+            </li>
+            <li>
+              서비스 사용자가 변경할 수 있는 폴더 아래의 루트는 <code>/</code>까지의 어느 위치든, 경로상의 링크를
+              따라가며 확인해 제외됩니다. 해당 사용자가 소유하거나, 그룹, ACL, 또는 모든 사용자에게 열린 쓰기 권한으로
+              쓸 수 있는 폴더가 여기에 해당하며, 그 사용자로 실행되는 프로세스가 폴더 자리에 <code>/etc</code>로의
+              링크를 둘 수 있기 때문입니다. 서비스가 쓰는 다른 루트 안의 링크도 포함됩니다. 설치와
+              <code>sudo</code>로 실행한 doctor는 시스템에도 확인합니다. <code>setpriv</code>가 있으면 해당
+              사용자로 <code>test -w</code>를 실행하므로 커널이 그 사용자의 그룹(유닛이 <code>Group=</code>이나
+              <code>SupplementaryGroups=</code>로 서비스에 부여한 그룹, 드롭인의 그룹 포함)과 ACL을 적용합니다.
+              <code>setpriv</code>가 없거나 root가 아니면 폴더의 모드와 사용자의 그룹만 읽으며, 두 경우 모두 그 사실을
+              알려 줍니다. 모드가 허용하는 것은 ACL이 이를 막더라도 허용으로 계산되므로, 이런 폴더도 그 루트를
+              제외합니다.
+            </li>
+            <li>
+              설치는 모든 드롭인을 읽은 상태로 systemd에 서비스를 실행하는 주체를 묻습니다. 드롭인이 서비스를
+              <code>--user</code>가 아닌 사용자(또는 root)로 실행하거나, 그 이름의 계정이 없는
+              <code>DynamicUser=yes</code>를 지정하거나, 사용자 자신의 그룹이 아닌 <code>Group=</code>을 지정하거나,
+              시스템이 모르는 그룹(systemd가 시작을 거부함)을 지정하면, 데이터 디렉터리와 구성이 변경되기 전에 설치가
+              중단됩니다. 이유를 알려 주고 서비스는 중지 및 비활성화된 상태로 둡니다. 조회에 실패한 그룹이 있거나
+              systemd에 물어볼 수 없으면 모든 루트가 제외됩니다.
+            </li>
+            <li>
+              <code>sudo mongo-manager doctor --config /etc/mongo-manager/config.json</code>은 설치된 서비스를
+              점검합니다(그냥 <code>mongo-manager doctor</code>는 사용자 자신의 데이터 디렉터리를 점검하며, 서비스를
+              점검한 것이 아니라고 알려 줍니다). 각 루트에 대해 존재하는지, 서버가 쓸 수 있는 디렉터리인지, 샌드박스
+              안에 있는지, 데이터 디렉터리 안에 있지 않은지 확인합니다. 또한 샌드박스가 서비스에 쓰기를 허용하지만
+              더 이상 어떤 루트도 지정하지 않는 폴더, 그리고 root가 아닌 누군가 변경할 수 있는 링크를 통해 루트나 데이터
+              디렉터리로 이어지는 폴더를 알려 주며, root로 실행되는 서비스, 아무도 속하지 않았거나 조회에 실패하는
+              그룹, 그리고 같은 이름의 계정이 없는 <code>DynamicUser=yes</code>를 경고합니다. 서비스의 구성과 env
+              파일에 이름이 지정된 루트를 점검하므로 <code>sudo</code>가 필요합니다. root만 env 파일을 읽을 수 있고,
+              서비스의 비밀 키도 그곳에 있습니다. 쓰기 권한은 서비스를 실행하는 사용자로 확인합니다. root로 실행하면
+              대신 데이터 디렉터리를 소유한 사용자에 대해 루트의 소유자와 모드를 읽고, 그 사용자가 쓸 수 있는 곳에서는
+              시스템의 판단을 따릅니다. 루트 위의 폴더는 유닛이 서비스를 실행하는 사용자(<code>User=</code>)를
+              기준으로 판단합니다.
+            </li>
+          </ul>
+        </li>
+        <li>
+          <code>MM_BACKUP_PRIVATE_NETWORKS</code>: 대상이 접근할 수 있는 프라이빗 범위이며, 쉼표로 구분한 최대 64개의
+          CIDR입니다(예: <code>10.0.5.0/24</code>). 이 범위 안에서는 일반 HTTP가 허용됩니다. 기본값은 없음입니다.
+          루프백, 10/8, 172.16/12, 192.168/16, CGNAT(100.64.0.0/10), 유니크 로컬(fc00::/7) 범위를 사용할 수 있습니다.
+          공개 범위를 지정하면 서버가 시작할 때 멈추며, 링크 로컬 또는 클라우드 메타데이터 범위(169.254.0.0/16,
+          fe80::/10, 169.254.169.254, fd00:ec2::254, 100.100.100.200) 안의 범위도 IPv4 매핑 및 NAT64를 포함한 어떤
+          형태로든 마찬가지입니다. 메시지에 해당 범위가 표시됩니다. 이 주소들은 목록에 있는 범위 안에 있더라도
+          접근할 수 없습니다.
+        </li>
+        <li>
+          <code>MM_BACKUP_PROXY</code>: 대상에 접근할 때 거치는 HTTP(S) 프록시이며,
+          <code>http://proxy.corp:3128</code>이나 <code>https://user:password@proxy.corp</code> 같은 형태입니다.
+          경로와 쿼리는 사용하지 않습니다. 기본값은 없음입니다(환경의 프록시 변수는 읽지 않습니다). Mongo Manager는
+          여전히 각 대상의 주소를 직접 확인하고 검사한 다음 프록시에 그 주소로 연결하도록 요청하므로, 위의 주소
+          규칙은 프록시를 거쳐도 적용됩니다. TLS는 대상까지 종단 간으로 실행되며 인증서는 프록시가 없을 때와 같이
+          검사됩니다. <code>MM_BACKUP_PRIVATE_NETWORKS</code> 안의 대상에는 직접 접근합니다. 링크 로컬 또는 메타데이터
+          주소의 프록시는 서버가 시작할 때 멈추게 합니다. 프록시 비밀번호는 주소의 일부이므로 공유되는 셸 기록에
+          남지 않게 하세요. 백업 대상만 이 프록시를 사용하며, 알림 채널(이메일과 웹훅), AI 제공업체, 플러그인은
+          절대 거치지 않습니다. 프록시를 고르기 전에 알아 둘 점: <code>http://</code> 프록시는 사용자 이름과
+          비밀번호를 평문(Basic)으로 받으므로 <code>https://</code> 또는 신뢰할 수 있는 네트워크 안의 프록시를
+          권장합니다. 지정한 호스트 이름에만 CONNECT를 허용하는 프록시는 IP 주소로 요청받기 때문에 이 연결을
+          거부합니다. <code>https://</code> 프록시의 인증서는 Node.js가 신뢰하는 기관(내장 목록 또는
+          <code>NODE_EXTRA_CA_CERTS</code>로 추가한 기관)이 서명해야 하며, 자체 CA는 지정할 수 없습니다.
+        </li>
+        <li><code>MM_BACKUP_DEST_PART_MB</code>: 업로드 파트 크기, 16–512 MiB(기본값 64).</li>
+        <li>
+          <code>MM_BACKUP_DRILL_MAX_MB</code>: 복원 드릴이 쓸 수 있는 최대량(MiB). 기본값은 없음이며, 드릴은 MongoDB가
+          보고하는 여유 디스크 공간의 절반 미만으로 유지됩니다(mongos를 거치면 가장 가득 찬 샤드 기준). MongoDB가
+          이를 보고하지 않는 곳(Atlas 공유 티어)에서는 이 값을 설정해야만 드릴이 실행됩니다.
+        </li>
+        <li>
+          <code>MM_BACKUP_DEST_TRANSFERS</code>: 각 대상에서 동시에 실행되는 전송 및 다운로드 수, 1–8(기본값 2).
+          나머지는 대기하며, 작업 목록에 해당 대상이 "대기 대상"으로 표시됩니다.
+        </li>
+      </ul>
+      <h2 id="scheduled-backups">예약 백업</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_SCHEDULES</code>: 스케줄러이며 기본적으로 켜져 있습니다. <code>0</code>이면 꺼집니다.
+          스케줄의 설정은 유지되지만 아무것도 실행되지 않으며, 예약 백업 탭에 스케줄링이 꺼져 있다고 표시됩니다.
+          서버가 중지되면서 끝내지 못한 실행은 시작할 때 종료 처리됩니다.
+        </li>
+        <li>
+          <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code>: 동시에 작업하는 예약 실행 수, 1–8(기본값 2). 이후에 시작
+          시각이 된 실행은 최대 6시간 대기합니다.
+        </li>
+      </ul>
+      <h2 id="watch">변경 사항 감시</h2>
+      <ul>
+        <li>
+          <code>MM_WATCH</code>: 변경 스트림 피드이며 기본적으로 켜져 있습니다. <code>0</code>이면 꺼집니다. 감시
+          섹션에 감시가 꺼져 있다고 표시되고 MongoDB에는 아무것도 열리지 않습니다.
+        </li>
+        <li>
+          <code>MM_WATCH_MAX_FEEDS</code>: 이 서버에서 동시에 열 수 있는 실시간 피드, 1–500(기본값 50). 사용자당
+          5개, 브라우저 창당 3개까지 가능합니다. 피드마다 MongoDB에 변경 스트림 커서 하나를 유지합니다.
+        </li>
+        <li>
+          감시에는 레플리카 세트, 샤드 클러스터 또는 로드 밸런싱된 배포가 필요하며, 연결의 데이터베이스 사용자에게
+          감시 대상에 대한 <code>changeStream</code> 및 <code>find</code> 권한이 필요합니다.
+          <a href="watch.html">변경 사항 감시</a>를 참조하세요.
+        </li>
+      </ul>
+      <h2 id="live-sync">실시간 동기화</h2>
+      <ul>
+        <li>
+          <code>MM_LIVE_SYNC</code>: 연결 간 실시간 동기화이며 기본적으로 켜져 있습니다. <code>0</code>이면
+          꺼집니다. 실행 중인 동기화는 이유와 함께 대기하며 아무것도 읽거나 쓰지 않고, 새 동기화는 거부됩니다. 다시
+          켜면 멈췄던 지점부터 이어서 진행합니다.
+        </li>
+        <li>
+          <code>MM_LIVE_SYNC_MAX</code>: 이 서버에서 아직 끝나지 않은 실시간 동기화 수, 1–100(기본값 10). 사용자당
+          3개까지 가능합니다. 실행 중인 동기화는 소스에 변경 스트림 하나를 유지하고 두 연결을 모두 열어 둡니다.
+        </li>
+        <li>
+          소스는 레플리카 세트, 샤드 클러스터 또는 로드 밸런싱된 배포여야 하며(MongoDB 6.0 이상), 소스의 oplog보다
+          오래 지속될 수 있는 복사는 확인을 요청합니다. <a href="sync.html">실시간 동기화</a>를 참조하세요.
+        </li>
+      </ul>
+      <h2 id="alerts">알림</h2>
+      <ul>
+        <li>
+          <code>MM_ALERTS</code>(구성 파일: <code>alerts.enabled</code>): 알림이며 기본적으로 켜져 있습니다.
+          <code>0</code>이면 꺼지고, 아무것도 평가하거나 전송하지 않으며 알림 페이지에 알림이 꺼져 있다고 표시됩니다.
+        </li>
+        <li>
+          <code>MM_ALERTS_PRIVATE_NETWORKS</code>(구성 파일: <code>alerts.privateNetworks</code>, 목록): 알림의 메일
+          서버와 웹훅이 공개 주소 외에 접근할 수 있는 네트워크이며, 쉼표로 구분한 최대 64개의 CIDR입니다(예:
+          <code>10.0.5.0/24</code>). 기본값은 없음입니다. 웹훅에 대한 일반 http는 이 범위 안에서만 허용됩니다.
+          허용되는 범위와 거부되는 범위는 <code>MM_BACKUP_PRIVATE_NETWORKS</code>와 같습니다. 링크 로컬 및 클라우드
+          메타데이터 주소는 접근할 수 없습니다.
+        </li>
+        <li>
+          구성 파일에서:
+          <code>"alerts": { "enabled": true, "privateNetworks": ["10.0.5.0/24"] }</code>.
+          <a href="server-admin.html#alerts">서버 관리</a>를 참조하세요.
+        </li>
+      </ul>
+      <h2 id="the-advanced-shell">고급 셸</h2>
+      <ul>
+        <li>
+          <code>--no-shell</code>(또는 <code>MM_SHELL_ENABLED=0</code>)로 완전히 끌 수 있습니다.
+        </li>
+        <li>
+          제한: <code>MM_SHELL_MAX_PER_USER</code>, <code>MM_SHELL_MAX_TOTAL</code>,
+          <code>MM_SHELL_COMMAND_TIMEOUT_MS</code>, <code>MM_SHELL_IDLE_MS</code>,
+          <code>MM_SHELL_LIFETIME_MS</code>. 페이지가 붙들고 있는 셸은 Compass처럼 사용하지 않아도 계속 열려
+          있으며, 어떤 페이지도 붙들고 있지 않은 셸은 페이지가 사라진 지 2분 후에 닫힙니다. 유휴 제한은 설정하지
+          않으면 꺼져 있고(0), 설정할 수 있는 범위는 10000–86400000 ms입니다. 다른 수명을 설정하지 않으면 셸은 최대 12시간
+          유지됩니다(60000–86400000 ms, 제한 없음은 0). 열려 있는 셸은 페이지가 닫힐 때까지
+          <code>MM_SHELL_MAX_TOTAL</code>에 포함됩니다. 많은 사람이 공유하는 서버에서는 열어 둔 채 사용하지 않는 셸이
+          해제되도록 <code>MM_SHELL_IDLE_MS</code>를 설정하세요. 로그인이 켜져 있으면 사용자의 로그인 세션이 끝날
+          때, 사용자의 역할이 바뀔 때, 계정이 비활성화될 때도 셸이 종료됩니다.
+        </li>
+        <li>
+          <code>MM_SHELL_RSS_MB</code>: 셸 프로세스가 사용할 수 있는 메모리, 128–16384 MB(기본값 384). 서버가 운영
+          체제에서 직접 측정하며(Windows에서는 <code>tasklist</code>, macOS에서는 <code>ps</code>), 이를 넘은 셸을
+          다시 시작합니다. 셸의 변수는 사라집니다. 명령이 실행 중이 아닌데 15초 동안 응답하지 않는 셸도 다시
+          시작됩니다. <code>MM_SHELL_OUTPUT_MB</code>: 명령 하나의 출력, 1–64 MB(기본값 5). 나머지는 잘립니다.
+          <code>MM_SHELL_COMMANDS_PER_SECOND</code>: 셸당 초당 명령 수, 1–1000(기본값 20).
+        </li>
+        <li>
+          root로 실행되는 POSIX 서버에서 셸 워커는 <code>MM_SHELL_UID</code>/<code>MM_SHELL_GID</code>(기본값
+          65534)로 권한을 낮춥니다. 서비스를 root로 실행하지 마세요.
+        </li>
+      </ul>
+      <h2 id="ai">AI 도우미</h2>
+      <ul>
+        <li>
+          <code>MM_AI</code>: AI 도우미이며 기본적으로 켜져 있습니다. 관리자가 제공업체를 추가한 후에야 표시됩니다
+          (설정 → AI 어시스턴트). <code>0</code>이면 모든 곳에서 숨겨지고 요청이 거부됩니다.
+        </li>
+        <li>
+          <code>MM_AI_PRIVATE_NETWORKS</code>: 제공업체가 공개 주소 외에 위치할 수 있는 네트워크(쉼표로 구분한
+          CIDR)이며, 예를 들어 <code>10.0.0.5</code>의 Ollama가 있습니다. 일반 http는 그 안에서만 허용됩니다. 클라우드
+          메타데이터와 링크 로컬 주소는 접근할 수 없습니다. 로컬 모드에서는 이 머신이 항상 허용됩니다.
+        </li>
+        <li>
+          <code>MM_AI_PER_MINUTE</code>(기본값 10, 1–120)와 <code>MM_AI_PER_DAY</code>(기본값 200, 1–10,000): 사람당
+          요청 수. <code>MM_AI_MAX_CONCURRENT</code>(기본값 8, 1–64): 서버에서 동시에 처리하는 요청 수이며, 사람당
+          2개까지 가능합니다. <code>MM_AI_AGENT_PER_MINUTE</code>(기본값 30, 1–120): 메시지 하나 안에서 에이전트가
+          제공업체에 보내는 추가 요청의 사람당 분당 수입니다(일일 한도에도 포함됩니다).
+        </li>
+        <li>
+          <code>MM_AI_CHAT_DAYS</code>(기본값 30, 0–365): 마지막 메시지 이후 채팅을 보관하는 기간.
+          <code>0</code>이면 채팅을 메모리에만 보관하고(12시간), 서버가 시작할 때 이전 설정으로 저장된 채팅을
+          삭제합니다.
+        </li>
+      </ul>
+      <h2 id="plugins">플러그인</h2>
+      <ul>
+        <li>
+          <code>MM_PLUGINS</code>: 플러그인이며 기본적으로 켜져 있습니다. 각 플러그인은 보안 검사 후에도 관리자의
+          승인이 필요합니다. <code>0</code>이면 플러그인을 찾거나 설치하거나 실행하지 않습니다(<a
+            href="plugins.html"
+            >플러그인</a
+          >을 참조하세요).
+        </li>
+        <li>
+          <code>MM_PLUGINS_GITHUB</code>: 공개 GitHub 리포지토리의 릴리스에서 플러그인 설치. 기본적으로 꺼져 있으며
+          (플러그인은 업로드 또는 폴더로 설치), <code>1</code>이면 허용됩니다. 이 경우 서버는 자체 정보를 보내지 않고
+          https로 <code>api.github.com</code>, <code>github.com</code>, GitHub의 릴리스 자산 호스트에 접속합니다.
+          꺼 두면 서버는 GitHub에 접속하지 않습니다. 서버는 GitHub에 직접 연결하며 HTTP 프록시 설정은 사용하지
+          않으므로, 프록시를 통해서만 외부에 접속할 수 있는 서버에서는 업로드로 플러그인을 설치합니다. 시스템
+          서비스는 <code>config.json</code>에서 <code>"pluginsGithub": true</code>로 읽습니다(Linux
+          <code>/etc/mongo-manager/config.json</code>, Windows <code>%ProgramData%\Mongo Manager\config.json</code>,
+          macOS <code>/Library/Application Support/Mongo Manager/config.json</code>). 변경 후 서비스를 다시
+          시작하세요.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">이 페이지의 내용</p>
+      <ol>
+        <li><a href="#as-a-system-service">시스템 서비스로 실행</a></li>
+        <li><a href="#docker">Docker</a></li>
+        <li><a href="#docker-mongodb">컨테이너에서 MongoDB에 연결하기</a></li>
+        <li><a href="#behind-a-reverse-proxy">리버스 프록시 뒤에서 실행</a></li>
+        <li><a href="#settings">설정과 환경 변수</a></li>
+        <li><a href="#optional-packages">Kerberos와 클라이언트 측 암호화(npm 패키지)</a></li>
+        <li><a href="#install-as-an-app">앱으로 설치</a></li>
+        <li><a href="#backup-destinations">백업 대상</a></li>
+        <li><a href="#scheduled-backups">예약 백업</a></li>
+        <li><a href="#watch">변경 사항 감시</a></li>
+        <li><a href="#live-sync">실시간 동기화</a></li>
+        <li><a href="#alerts">알림</a></li>
+        <li><a href="#the-advanced-shell">고급 셸</a></li>
+        <li><a href="#ai">AI 도우미</a></li>
+        <li><a href="#plugins">플러그인</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

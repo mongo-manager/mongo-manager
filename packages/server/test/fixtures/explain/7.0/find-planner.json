@@ -1,0 +1,134 @@
+{
+  "version": "7.0.43",
+  "raw": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "shop.items",
+      "indexFilterSet": false,
+      "parsedQuery": {
+        "g": {
+          "$eq": {
+            "$numberInt": "3"
+          }
+        }
+      },
+      "queryHash": "A3C2412A",
+      "planCacheKey": "030F7D0C",
+      "optimizationTimeMillis": {
+        "$numberInt": "0"
+      },
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "winningPlan": {
+        "stage": "FETCH",
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "g": {
+              "$numberInt": "1"
+            }
+          },
+          "indexName": "g_1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "g": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": {
+            "$numberInt": "2"
+          },
+          "direction": "forward",
+          "indexBounds": {
+            "g": ["[3, 3]"]
+          }
+        }
+      },
+      "rejectedPlans": [
+        {
+          "stage": "FETCH",
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "g": {
+                "$numberInt": "1"
+              },
+              "n": {
+                "$numberInt": "-1"
+              }
+            },
+            "indexName": "g_1_n_-1",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "g": [],
+              "n": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": {
+              "$numberInt": "2"
+            },
+            "direction": "forward",
+            "indexBounds": {
+              "g": ["[3, 3]"],
+              "n": ["[MaxKey, MinKey]"]
+            }
+          }
+        }
+      ]
+    },
+    "command": {
+      "find": "items",
+      "filter": {
+        "g": {
+          "$numberInt": "3"
+        }
+      },
+      "maxTimeMS": {
+        "$numberInt": "30000"
+      },
+      "$db": "shop"
+    },
+    "serverInfo": {
+      "host": "capture-host",
+      "port": {
+        "$numberInt": "57578"
+      },
+      "version": "7.0.43",
+      "gitVersion": "ef5a7d3480b59feae13d564376129fc4ceee6177"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFacetMaxOutputDocSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceGroupMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryMaxBlockingSortMemoryUsageBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryProhibitBlockingMergeOnMongoS": {
+        "$numberInt": "0"
+      },
+      "internalQueryMaxAddToSetBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFrameworkControl": "forceClassicEngine"
+    },
+    "ok": {
+      "$numberInt": "1"
+    }
+  }
+}

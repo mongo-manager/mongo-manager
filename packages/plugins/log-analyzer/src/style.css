@@ -1,0 +1,167 @@
+/* Log analyzer (plugins wave 3): what the kit (kit/src/ui.css) does not already give. */
+.la-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.la-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 40px 16px;
+  border: 2px dashed var(--ds-line-strong);
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--ds-fg-muted);
+}
+.la-drop:hover,
+.la-drop:focus-within,
+.la-over {
+  border-color: var(--ds-accent);
+  background: var(--ds-accent-soft);
+}
+.la-drop-title {
+  color: var(--ds-fg);
+  font-weight: 600;
+}
+.la-link {
+  color: var(--ds-accent-fg);
+  text-decoration: underline;
+}
+.la-formats {
+  font-size: 12px;
+}
+.la-reading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.la-progress {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ds-subtle);
+  overflow: hidden;
+}
+.la-progress-bar {
+  height: 100%;
+  width: 0;
+  background: var(--ds-accent);
+  transition: width 0.2s ease-out;
+}
+.la-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.la-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.la-stat strong {
+  overflow-wrap: anywhere;
+}
+.la-danger strong {
+  color: var(--ds-danger);
+}
+.la-warning strong {
+  color: var(--ds-warning);
+}
+.la-figure {
+  margin: 0;
+}
+.la-chart {
+  width: 100%;
+  height: 120px;
+  display: block;
+}
+.la-bar {
+  fill: var(--ds-accent);
+  opacity: 0.35;
+}
+.la-bar-slow {
+  fill: var(--ds-warning);
+}
+.la-axis {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  margin-top: 4px;
+}
+.la-axis-centred {
+  justify-content: center;
+  gap: 12px;
+}
+.la-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.la-shape {
+  display: inline-block;
+  /* 2026-10-26: room to read a shape; a narrow page scrolls the table instead of a letter a line. */
+  min-width: 16rem;
+  max-width: 28rem;
+  overflow-wrap: anywhere;
+}
+.la-slow td.mm-num {
+  white-space: nowrap;
+}
+/* The column the slow operations are sorted by (2026-10-26 user report). */
+.la-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.la-sort:hover {
+  color: var(--ds-fg);
+}
+.la-sort:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.la-slow th.la-sorted {
+  color: var(--ds-fg);
+}
+.la-slow th.la-sorted .mm-icon {
+  color: var(--ds-accent);
+}
+.la-slow td.la-sorted {
+  font-weight: 600;
+  background: color-mix(in srgb, var(--ds-accent) 6%, transparent);
+}
+.la-plans {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.la-row-actions {
+  display: flex;
+  gap: 2px;
+  white-space: nowrap;
+}
+.la-example pre {
+  margin: 0;
+  padding: 8px;
+  max-height: 14rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  background: var(--ds-subtle);
+  border-radius: 6px;
+}

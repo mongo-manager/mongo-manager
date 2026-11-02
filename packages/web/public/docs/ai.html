@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>AI assistant · Mongo Manager documentation</title>
+    <link rel="stylesheet" href="docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager documentation</a>
+      <details class="lang-menu">
+        <summary>English</summary>
+        <span class="langs" role="group" aria-label="Language">
+          <strong lang="en">English</strong>
+          <a lang="tr" hreflang="tr" href="tr/ai.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="zh/ai.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="ja/ai.html">日本語</a>
+          <a lang="es" hreflang="es" href="es/ai.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="pt/ai.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="ko/ai.html">한국어</a>
+          <a lang="de" hreflang="de" href="de/ai.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="fr/ai.html">Français</a>
+          <a lang="ru" hreflang="ru" href="ru/ai.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Overview</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="security.html">Security</a>
+      <a href="deployment.html">Deployment</a>
+      <a href="import-export.html">Import and export</a>
+      <a href="backup.html">Backup and restore</a>
+      <a href="watch.html">Watching changes</a>
+      <a href="sync.html">Live sync</a>
+      <a href="server-admin.html">Server administration</a>
+      <strong>AI assistant</strong>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Keyboard shortcuts</a>
+    </nav>
+    <main>
+      <h1>AI assistant</h1>
+      <p>
+        The AI assistant turns your words into a query, a pipeline or a validator, explains a query, suggests
+        how to make it faster, and describes a collection. It writes; you review and run. It never runs
+        anything on its own.
+      </p>
+      <p>
+        Open a collection and choose <strong>Ask AI</strong> beside its sections, or press <kbd>Ctrl</kbd> +
+        <kbd>I</kbd> (<kbd>⌘</kbd> + <kbd>I</kbd> on a Mac). The palette offers "Ask AI about this
+        collection…" too.
+      </p>
+
+      <h2 id="actions">What it does</h2>
+      <ul>
+        <li>
+          <strong>Write a query</strong> (Documents): a filter, and a projection and sort when you ask for
+          them.
+        </li>
+        <li><strong>Write a pipeline</strong> (Aggregations): the stages, set as cards.</li>
+        <li><strong>Explain it</strong>: what the current query or pipeline does, step by step.</li>
+        <li>
+          <strong>Make it faster</strong> (Explain): why it may be slow, from its query plan and the indexes,
+          with index suggestions that open the index dialog filled in — nothing is created until you confirm.
+        </li>
+        <li>
+          <strong>Write a validator</strong> (Validation): a <code>$jsonSchema</code> set as the draft;
+          nothing is saved until you save.
+        </li>
+        <li><strong>Describe the collection</strong> (Schema): what it holds, notable fields, oddities.</li>
+      </ul>
+      <p>
+        The answer appears as it is written. A query, a pipeline or a validator is shown beside what the
+        editor holds; <strong>Insert</strong> puts it in the editor (asking first when the editor holds work).
+        A pipeline that writes (<code>$out</code>, <code>$merge</code>) or runs JavaScript is flagged; running
+        it asks for the same confirmations as always. When the server does not allow server-side JavaScript,
+        such an answer cannot be inserted.
+      </p>
+
+      <h2 id="providers">Providers</h2>
+      <p>
+        An administrator adds providers in <strong>Settings → AI assistant</strong> (the account menu):
+        Anthropic (Claude; <code>claude-sonnet-5</code> by default), Google Gemini (a key from Google AI
+        Studio and a model name such as <code>gemini-2.5-pro</code>), any OpenAI-compatible server, or Ollama.
+        One is the default; people may choose among the others. The key is stored encrypted on the server,
+        never shown again and never sent to a browser; changing a provider's address asks for its key again,
+        because the key belonged to the old address. <strong>Test</strong> sends a one-line request and says
+        what happened.
+      </p>
+      <p>
+        Requests go from the server to the provider, never from the browser. Each card says whether the
+        provider answered from a local or private network ("Local") or from outside ("Cloud").
+      </p>
+
+      <h2 id="offline">Offline, with a local model</h2>
+      <p>
+        With Ollama (or any OpenAI-compatible server) on your own network, the assistant works without
+        internet access. Local and private addresses must be listed in
+        <code>MM_AI_PRIVATE_NETWORKS</code> (for example <code>10.0.0.0/8</code>); in local mode the machine
+        Mongo Manager runs on is always allowed, so <code>http://localhost:11434</code> works as it is. Plain
+        <code>http</code> is allowed only to listed networks.
+      </p>
+
+      <h2 id="chat">Chat</h2>
+      <p>
+        The <strong>Assistant</strong> (the button floating at the bottom right, or <kbd>Ctrl / ⌘</kbd> +
+        <kbd>.</kbd>) is a conversation in a window over your work: the page keeps its width. Resize it from
+        its left and top edges, expand it, or close it — it keeps what you were typing; on a phone it takes
+        the whole screen. On a collection tab each message carries that
+        collection's context, read by the server as for the one-shot actions: the schema summary, and — as you
+        choose with the chips above the message box — the current query or pipeline, the indexes, the
+        validator and, with your consent for that message, sample documents. Elsewhere a message carries no
+        data and the assistant gives general MongoDB help. When you move to another collection the
+        conversation shows where it changed.
+      </p>
+      <ul>
+        <li>
+          Only the latest message carries data. Earlier messages travel as the conversation so far — at most
+          the last 20 exchanges or 24 KB — and only answers that finished. An earlier message is left out, and
+          the panel says so, when its connection is gone, you can no longer read it, its assistant is now off,
+          its personal-data rules changed since, or it came from a connection that allows local providers only
+          and the provider answers from outside. An answer written from such a message is left out with it.
+        </li>
+        <li>
+          Each block of code in an answer has one action (an index suggestion one per index), used in the
+          collection the block names — a block naming none takes the one the answer names — or the message was
+          about, asking first when the editor holds work. A block naming a collection the assistant was not
+          given goes nowhere. <strong>Run</strong> puts a query in the query bar, or a pipeline in the
+          Aggregations section, and runs it; a pipeline that writes (<code>$out</code>, <code>$merge</code>)
+          is only put there, for you to run. A validator goes into the validation draft; an index suggestion
+          opens the Create index dialog. A lone stage (a <code>$match</code> to add to a pipeline) is shown as
+          code only. Ask for the result as a file (“download it as Excel”) and the block offers
+          <strong>Download as Excel</strong>, CSV or JSON, where the connection allows exports: the export
+          opens with the query or pipeline and the format set, and you start it. Code that runs server
+          JavaScript is asked about first. Nothing runs without your click.
+        </li>
+        <li>
+          Chats are yours: no route lets anyone else — an administrator included — read them, unless you share
+          a turn of one from your AI history. They are kept encrypted on the server for
+          <code>MM_AI_CHAT_DAYS</code> days after their last message (30 by default); with <code>0</code> they
+          live in the server's memory only, for 12 hours, and nothing is written to disk. You keep at most 50
+          chats of 200 messages; beyond that the oldest go first. History in the panel deletes one chat or all
+          of them; deleting a user deletes their chats.
+        </li>
+      </ul>
+
+      <h2 id="agent">Agent mode</h2>
+      <p>
+        Turn on <strong>Agent mode</strong> in the Assistant panel and the assistant works with your
+        connections for you: "add a new collection named users to the Sales Mongo connection and add a demo
+        user" finds Sales Mongo, uses its default database (and says so — with none, it asks which database),
+        proposes the collection, then the demo user, and tells you what it did. The switch is yours alone and
+        is kept with your account — in the Assistant panel and under Account → Preferences; off, the
+        assistant is the one described above. An administrator sets what the agent may do for everyone in
+        <strong>Settings → AI assistant → Agent mode on this server</strong>: <em>off</em> (no one can turn it on),
+        <em>read only</em> (it reads, counts, explains and opens what you asked for, but proposes no change,
+        backup or schedule) or <em>full</em> (the default). A change of it applies at once, to a turn already
+        running and to a change already waiting on its card.
+      </p>
+      <ul>
+        <li>
+          <strong>It knows your connections by name</strong>: each connection you may use the assistant on,
+          with your access there, whether it is read-only and whether the agent may propose changes on it —
+          never its address, user name or password. A connection whose AI policy is <em>Off</em> is left out
+          entirely; one with <em>Local providers only</em> is named only to a provider found to answer from
+          your listed networks, and then the whole request may only reach those networks. It is also told the
+          tab you are looking at, by name — a collection, a connection's section such as Performance or Users
+          &amp; roles, or a page such as Scheduled backups or Background jobs, so "this one" and "here" mean
+          it. A later message in the same chat carries what the earlier steps did, by names and counts only
+          ("dropped it", "found 2"), so "the same on Prod" or "drop it" work without repeating yourself.
+        </li>
+        <li>
+          <strong>Reading runs at once</strong>: listing connections, databases, collections and backup
+          destinations; a collection's statistics, schema (names, types and shares) and indexes; counting;
+          explaining a query (nothing runs); finding documents and running a read-only aggregation (at most 10
+          results; <code>$out</code>, <code>$merge</code> and server JavaScript are refused). It can also open
+          a connection, a database or a collection's section for you, and check that a connection answers —
+          opening it as you would, so the app shows it connected, or saying the kind of failure (the network,
+          a name not found, its credentials, a sign-in you must make, offered from the step; never an
+          address). A refused sign-in is tried once and remembered, so it is not tried again for a while
+          (no account locked out by the agent), and a new SSH host key no one has looked at is never accepted.
+          For a field's distinct values ("which statuses are there?") it is told how many there are (an
+          array's elements each one, as MongoDB counts them); the values themselves, most frequent first,
+          reach the provider only with your consent for that message (<strong>Documents</strong>), and
+          never for a personal field, nor through a filter on one.
+          Asked for a file ("export the shipping orders as CSV"), it proposes an export on a card, as it
+          proposes a change (confirmed by you; not where the agent may not propose changes, nor under a
+          read-only policy) — CSV, JSON, NDJSON, Excel or SQL (PostgreSQL, MySQL or SQLite), compressed or
+          not; all of a collection, a find or a read-only pipeline. The card shows the find or the pipeline
+          that goes and, for a find, how many documents; on your click it is your own export (your rights,
+          your hidden fields hidden), downloaded from its step (<strong>Download</strong>) once its job is
+          done, or from Background jobs, and no value reaches the provider.
+          A find or an aggregation step offers <strong>Show documents</strong>: the same read, made again
+          as you through the app (your rights, your hidden fields hidden), shown in the step only — never
+          sent to the provider, never one of your recent queries, and not offered on a page of the AI
+          history. Asked to show documents ("the
+          orders on Demo that are shipping"), open the collection with that query run there, or a pipeline
+          in its builder: the app runs it as you would, and no values reach the provider. It asks before
+          replacing a query you were writing; a pipeline that writes is only put in the builder, and only
+          where the agent may propose changes. A query in its answer runs in the collection it names (one
+          it used), else where the block before it named, else the first one after it, else the one it used
+          last; with none, it does not
+          run — never in whatever tab is open.
+        </li>
+        <li>
+          <strong>Every change waits for you.</strong> Creating a database or a collection, inserting,
+          updating or deleting documents, creating or dropping an index, dropping a collection or a database,
+          setting a collection's validation rules (the card shows the rules replaced and says how many
+          documents there break the new ones now; it keeps their level and action unless asked, saves only
+          over the rules it was made from, never on a time series nor where client-side encryption is on —
+          there the rules are the encryption's own), creating a search index (where the server has search,
+          never where personal-data rules apply: it would copy their values), renaming a collection (its name
+          typed; never onto a name taken, nor where personal-data rules name it — they would stay with the old
+          name; never a view, a time series, nor where client-side encryption is on; the views that read it
+          said), copying a collection as the collection's Copy does (from your own plan, its refusals said
+          first in their own words; a filter or a pipeline shown and counted, never picking by a personal
+          field; every mode that changes the target's documents takes its name typed; followed in
+          Background jobs), a backup and a backup schedule appear as a card in the conversation: where it acts, exactly what
+          will be sent, and what the app's own preview found (how many documents match an update or a delete,
+          how many a drop loses, the next runs of a schedule). <strong>Confirm</strong> follows the app's
+          confirmation rules — it can be pressed only after a short moment, and a double click never goes
+          through — and a drop, or a change of every document, asks for the name typed as the app's dialogs
+          do. A change that loses data — a drop, an update or a delete, a restore or a copy over what is
+          there — offers <strong>Back up first</strong>: an encrypted backup of what it would lose, its
+          password asked twice on the card, made through the backup route before the change may be
+          confirmed (Confirm waits for it; the step then says it was backed up and opens its job).
+          The agent reads your alerts — thresholds firing, recent events, a report's run with its counts —
+          and, for an administrator, the alert rules and scheduled reports; it makes, changes, snoozes and
+          deletes a connection's rule, and makes, changes, runs and deletes a report, each on a card through
+          the Alerts routes (channels by their names — never a webhook's address — e-mail only where a mail
+          server is set up; a report's counts never by a personal field nor of a view). A read over a
+          large collection (100,000 documents or more) is explained first: one no index serves
+          — it reads the whole collection, or may — is said on its step while it runs and after, and the agent is
+          told so it can offer an index (a look at the first documents never is). Several
+          changes asked for together (up to eight) come first as a <strong>plan</strong>: their list, in
+          order, each then on its own card, confirmed one by one — the plan shows how each went; a change
+          declined or refused stops the rest, and a turn that ends before the last one says so. An encrypted backup asks for its password twice on the card, with the backup dialog's
+          strength meter and generator; it goes to the backup only. The card also offers it without a
+          password, as a compressed archive (opened with <code>mongorestore --archive --gzip</code>) — your
+          choice, never the agent's, and offered only where that backup may be made (not to a destination
+          that takes encrypted backups only, nor with personal data that may not leave the server
+          unencrypted); one that would hold personal data in clear says so. Once the backup is made, its
+          step offers <strong>Download</strong>. A backup's card says when the copy kept
+          on the server is removed and where it is sent; once it starts, its step opens that job in
+          Background jobs, and the agent follows it there ("is the backup done?") — a backup sent on to
+          destinations through its sending job too — and lists your own jobs and kept backups, of the
+          connections it is told of: states, names and each copy's state, a size hidden where personal-data
+          rules apply, never an error's own words. A schedule ("set up a weekly backup") is checked before
+          its card as it would be when saved — fewer schedules than you may have, a destination you may
+          use (an unencrypted backup only where it may go), your backup key for an encrypted one, runs at
+          least an hour apart — and the agent proposes none where the server turns scheduled backups off.
+          Its card says when it runs, in your browser's time zone unless you name another (the zone named),
+          and what it keeps; with no destination at all, an administrator is offered Backup destinations.
+          A backup is restored from the chat too ("restore last night's backup into orders_copy"):
+          through the restore plan, on a card naming the target — its name typed — that says how many
+          collections it writes, how many are there already and how many documents it overwrites, when
+          the backup was made and which targets are capped (writing into one may remove its oldest
+          documents); an
+          encrypted backup's password is asked on the card, once, as the backup was made, and the plan is
+          made again with it on the click: if the targets changed since the card, nothing starts. It never
+          restores into MongoDB's own databases, and a backup of a whole server, or what the plan asks to
+          confirm (TTL indexes, personal data, a masked backup), is restored from Backups.
+          Your own schedules can be listed ("what are my schedules?"), run now, paused, resumed, changed and
+          deleted from the chat, each by its name and on its card: a change's card says the backups its new
+          keeping, zone or destinations remove now, and that count is what you confirm; deleting one takes
+          its name typed, and its backups stay. An administrator's pause is an administrator's to lift.
+          The server's health is read from the chat too, as the Performance tab reads it (with its
+          monitoring right): its status, the replica set (members by number, never their hosts), the
+          busiest collections, slow queries, index advice for a database and the operations running — by
+          numbers, names and kinds, never a command or a value. A running operation is stopped on a card
+          that takes its opid typed, for those who may stop operations — never one on MongoDB's own
+          databases, nor one of Mongo Manager's own (a job, a request through the app).
+          MongoDB's users and custom roles are listed from the chat too, by names and roles (with the
+          right to manage them); a user is created with roles on a card where you type its password —
+          the assistant never gives, sees or keeps one, and never grants a role over the whole
+          deployment — and dropped on a card that takes its name typed; never the account the
+          connection signs in as. Roles over the whole deployment are never given from the chat: the
+          admin database's other (admin-only) built-ins, any role of <code>local</code> or <code>config</code>,
+          and custom roles holding such rights; nor are users made in <code>local</code> or <code>config</code>. Only a person who
+          administers the connection's databases and sees its personal data lists or changes users.
+          Nothing is
+          written until you click; <strong>Decline</strong> tells the assistant, and nothing changes. One
+          change is proposed at a time; a change not answered in 10 minutes, or a message you stop, changes
+          nothing. When you confirm, what allowed the change is checked again: if agent mode, the connection's
+          assistant or the agent's changes there were turned off meanwhile, nothing is written; an update or a
+          delete is previewed again, and a count that changed since the card is said, not carried out. A TTL
+          index (one that removes documents after an age) is a destructive change too: the card says how many
+          documents it would delete within a minute, and asks for the collection's name.
+        </li>
+        <li>
+          <strong>As you, through the app.</strong> Each step calls the app's own routes with your session:
+          your rights, read-only connections, personal-data masks and server-side JavaScript rules apply
+          exactly as on screen, and each write is in the audit log as yours — marked as the assistant's, with
+          the turn and the step it was made for: <strong>Show this turn</strong> in an entry's details lists
+          that turn's tool calls, your answers and what the app did for them together. An administrator can turn the
+          agent's changes off per connection (<strong>Let the agent propose changes here</strong> in the
+          connection's form); reading stays available. The switch is on for every connection, also those made
+          before this version: each change still waits for your click. A connection turned off for the
+          assistant, or made local-only, mid-message stops the next step.
+        </li>
+        <li>
+          <strong>What each step sent.</strong> The steps are listed as they run, each with where it acted,
+          what it found, a link to open what it touched and what it sent to the provider: names, counts, a
+          schema without values, index keys, a plan without values, or the outcome of a change. Documents'
+          values go only when you allow <strong>Documents</strong> for that message and the provider may
+          receive samples; personal fields are hidden in them for everyone, and a query whose output the rules
+          cannot follow sends no values at all. A filter, a sort, a pipeline or an index that names a personal
+          field is refused before it runs — even a count would answer about its values. MongoDB's own
+          collections are never read for the assistant: neither directly, nor through a pipeline's
+          <code>$lookup</code>, <code>$graphLookup</code>, <code>$unionWith</code> or <code>$facet</code>, nor
+          through a view. Diagnostic stages that show other clients' queries, the catalog or the server's
+          address (<code>$planCacheStats</code>, <code>$queryStats</code>, <code>$listCatalog</code>,
+          <code>$currentOp</code>, <code>$indexStats</code>, <code>$collStats</code> and the like) are never
+          run for the agent, at any depth.
+        </li>
+        <li>
+          <strong>Limits.</strong> At most 10 requests to the provider and 20 actions per message, and 30
+          actions a minute per person. A message's first request to the provider counts against the
+          assistant's limits below; its further requests against a minute of their own (30 by default,
+          <code>MM_AI_AGENT_PER_MINUTE</code>) and the same day, and each takes one of the places at once
+          while it answers. Once a change was made, the closing request waits for its minute rather than end
+          the message without saying what was done.
+        </li>
+        <li>
+          Anthropic, Gemini, OpenAI-compatible servers and Ollama can all use tools. A model that cannot (some
+          local models) answers as the read-only assistant, and the panel says so.
+        </li>
+      </ul>
+
+      <h2 id="what-is-sent">What is sent</h2>
+      <ul>
+        <li>
+          A <strong>schema summary</strong> from up to 200 sampled documents: field names, their types and how
+          often they occur. Never values, ranges, histograms or the most common values.
+        </li>
+        <li>Your words, and the current query or pipeline (read and formatted by the server).</li>
+        <li>
+          For "Make it faster": the query plan (stages and indexes, without the query's values) and the
+          indexes.
+        </li>
+        <li>For "Write a validator": the current validator.</li>
+        <li>
+          <strong>Sample documents</strong>, only when you turn them on for that request and the provider may
+          receive them: 1 to 5 documents, each cut to 4 KB.
+        </li>
+      </ul>
+      <p>
+        "What was sent" in the sheet shows exactly what left the server. Everything is capped at 48 KB; what
+        was left out is named there. MongoDB's own collections (<code>system.*</code>) are never sent, nor
+        anything of another collection.
+      </p>
+
+      <h2 id="personal-data">Personal data</h2>
+      <p>
+        The connection's personal-data rules apply to everything sent to a provider, for everyone — also for
+        people who may see the values on screen — because the data leaves the server. Personal fields appear
+        in the schema summary by name only; in samples and in queries their values are replaced by
+        <code>***</code>. You can hide more fields for one request ("Hide these fields"). Keys that look like
+        passwords or tokens are always hidden.
+      </p>
+
+      <h2 id="policy">A connection's AI policy</h2>
+      <p>
+        In a connection's form, <strong>AI assistant</strong> is <em>Any provider</em> (the default),
+        <em>Local providers only</em> or <em>Off</em>. "Local providers only" lets a request leave only for an
+        address inside the listed networks — checked where the connection is made, not from the name typed.
+        "Off" hides the assistant on that connection's screens, and the agent never hears of it.
+        <strong>Let the agent propose changes here</strong> (on by default) can be turned off to keep the
+        agent to reading on that connection. Under <strong>The agent's tools</strong> an administrator turns
+        single tools off there — reading and showing apart from changes, as the MongoDB MCP server's
+        disabled tools: one turned off is refused before it reads or proposes anything on that connection
+        (a copy into it, a restore from it, a schedule of it found by its name, a job or a backup of it
+        listed — included), a change already waiting on its card for it is refused when confirmed, a
+        backup is not offered first where backing up is off, and the agent is told which are off. Only
+        tools that act on a connection are listed; one a later version adds starts on. They travel with
+        the connection's export and import (names a build does not know are dropped).
+      </p>
+
+      <h2 id="limits">Limits</h2>
+      <ul>
+        <li>
+          10 requests a minute and 200 a day per person (<code>MM_AI_PER_MINUTE</code>,
+          <code>MM_AI_PER_DAY</code>).
+        </li>
+        <li>2 at once per person, 8 at once on the server (<code>MM_AI_MAX_CONCURRENT</code>).</li>
+        <li>
+          An answer stops after 3 minutes or 512 KB; each provider has its own longest answer in tokens.
+        </li>
+        <li>
+          Who may ask: administrators and editors (the <code>ai:use</code> right), on collections they may
+          read.
+        </li>
+      </ul>
+
+      <h2 id="safety">Safety</h2>
+      <ul>
+        <li>
+          Without agent mode the assistant has no tools: it cannot read anything else or run anything. In a
+          chat it sees the conversation so far, nothing more. In <a href="#agent">agent mode</a> its tools act
+          only through the app's routes, as you, and every change waits for your click.
+        </li>
+        <li>
+          Data in your collections could try to instruct the model. Whatever it writes only becomes text in an
+          editor, parsed by the same safe parser as the query bar; nothing runs until you run it. In agent
+          mode, tool results are handed to the model marked as data, never instructions; even when data talks
+          a model into proposing a change, the change is only a card until you confirm it.
+        </li>
+        <li>
+          Answers are shown as plain text with simple formatting: no images and no live links, so an answer
+          cannot make your browser load anything.
+        </li>
+        <li>
+          Every request is kept in your AI history (AI history in the sidebar), sealed with the server's key,
+          for 90 days by default; an administrator sets the days, and whether the words asked and answered are
+          kept at all. A chat is one entry, its turns in order — plain ones, ones about a collection and
+          the agent's — all shown on its page, with a button that opens the chat again. A turn is shared
+          on its own, never the whole chat: a teammate reads the turn shared, and only where they may read
+          what it drew on. An agent turn also shows
+          what the agent did, step by step — each tool, where
+          it worked and how it ended, the changes it proposed among them — as its chat does, never a value.
+          Only you read your requests, unless you share one with the team: then teammates who may
+          read every connection it drew on (for an agent turn, every connection its steps name) read it,
+          read-only. Chats are kept as described under
+          <a href="#chat">Chat</a>. The audit log records who asked, which action or chat, provider and
+          collection, how many samples, the token counts and the outcome — never the words, what was sent or
+          the answer. In agent mode every step is recorded too (the tool, the connection and namespace, how it
+          ended, and your answer to a change), never its arguments or what it read.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">On this page</p>
+      <ol>
+        <li><a href="#actions">What it does</a></li>
+        <li><a href="#providers">Providers</a></li>
+        <li><a href="#offline">Offline, with a local model</a></li>
+        <li><a href="#chat">Chat</a></li>
+        <li><a href="#agent">Agent mode</a></li>
+        <li><a href="#what-is-sent">What is sent</a></li>
+        <li><a href="#personal-data">Personal data</a></li>
+        <li><a href="#policy">A connection's AI policy</a></li>
+        <li><a href="#limits">Limits</a></li>
+        <li><a href="#safety">Safety</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

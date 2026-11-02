@@ -1,0 +1,575 @@
+/*
+ * The offline docs in the app's look (UI redesign R5): the app's colour tokens — the same names and
+ * values as src/assets/main.css, which a test keeps in step — its typeface and its mark. A static page
+ * has no stored theme, so dark follows the reader's system setting.
+ *
+ * Docs redesign (user request 2026-10-30): a docs site's layout instead of one narrow card. A bar on
+ * top (the product and a language menu), the guides beside the text, the page's own sections on the
+ * other side on a wide screen; tables and code use the text's whole width and scroll inside it.
+ */
+:root {
+  color-scheme: light dark;
+  --ds-canvas: #f7f8fa;
+  --ds-surface: #ffffff;
+  --ds-subtle: #f3f4f6;
+  --ds-line: rgb(17 24 39 / 0.08);
+  --ds-fg: #111827;
+  --ds-fg-muted: #4b5563;
+  --ds-accent-fg: #047a4d;
+  --ds-focus: #047a4d;
+  --docs-line-strong: rgb(17 24 39 / 0.14);
+  --docs-shadow: 0 12px 32px -12px rgb(17 24 39 / 0.18), 0 2px 6px rgb(17 24 39 / 0.06);
+  --docs-top: 3.5rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ds-canvas: #0b0c0f;
+    --ds-surface: #111317;
+    --ds-subtle: #1a1d23;
+    --ds-line: rgb(255 255 255 / 0.07);
+    --ds-fg: #edeef0;
+    --ds-fg-muted: #a1a7b3;
+    --ds-accent-fg: #4fd69a;
+    --ds-focus: #2fbf7f;
+    --docs-line-strong: rgb(255 255 255 / 0.14);
+    --docs-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.6), 0 2px 6px rgb(0 0 0 / 0.4);
+  }
+}
+:root {
+  --docs-accent-soft: color-mix(in srgb, var(--ds-accent-fg) 11%, transparent);
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  scroll-padding-top: calc(var(--docs-top) + 1rem);
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  /* Inter when the reader has it (the app bundles it; a static page has only this stylesheet). */
+  font-family:
+    'Inter Variable',
+    'Inter',
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ds-fg);
+  background: var(--ds-surface);
+  -webkit-font-smoothing: antialiased;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'top' 'side' 'main';
+  min-height: 100vh;
+}
+
+/* The bar on top: the product, and the language menu. */
+header {
+  grid-area: top;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: var(--docs-top);
+  padding: 0 1rem 0 1.25rem;
+  border-bottom: 1px solid var(--ds-line);
+  background: color-mix(in srgb, var(--ds-surface) 88%, transparent);
+  backdrop-filter: saturate(1.4) blur(10px);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+  color: var(--ds-fg);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.brand::before {
+  content: '';
+  flex: none;
+  width: 24px;
+  height: 24px;
+  background: url('../favicon.svg') center / contain no-repeat;
+}
+.lang-menu {
+  position: relative;
+  flex: none;
+}
+.lang-menu summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.25rem;
+  padding: 0 0.625rem 0 0.75rem;
+  border: 1px solid var(--docs-line-strong);
+  border-radius: 8px;
+  color: var(--ds-fg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+.lang-menu summary::-webkit-details-marker {
+  display: none;
+}
+/* A globe before the language, a chevron after it (drawn, the docs load nothing else). */
+.lang-menu summary::before,
+.lang-menu summary::after {
+  content: '';
+  flex: none;
+  background: currentColor;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+}
+.lang-menu summary::before {
+  width: 16px;
+  height: 16px;
+  color: var(--ds-fg-muted);
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E");
+}
+.lang-menu summary::after {
+  width: 14px;
+  height: 14px;
+  color: var(--ds-fg-muted);
+  transition: transform 120ms ease;
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+.lang-menu summary:hover,
+.lang-menu[open] summary {
+  background: var(--ds-subtle);
+}
+.lang-menu[open] summary::after {
+  transform: rotate(180deg);
+}
+.lang-menu .langs {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 13rem;
+  padding: 0.375rem;
+  border: 1px solid var(--docs-line-strong);
+  border-radius: 10px;
+  background: var(--ds-surface);
+  box-shadow: var(--docs-shadow);
+}
+.langs a,
+.langs strong {
+  padding: 0.4375rem 0.75rem;
+  border-radius: 6px;
+  color: var(--ds-fg);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  text-decoration: none;
+}
+.langs a:hover {
+  background: var(--ds-subtle);
+}
+.langs strong {
+  background: var(--docs-accent-soft);
+  color: var(--ds-accent-fg);
+  font-weight: 600;
+}
+
+/* The guides: a row that scrolls on a narrow screen, a column beside the text on a wide one. */
+nav {
+  grid-area: side;
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--ds-line);
+  background: var(--ds-canvas);
+  scrollbar-width: thin;
+}
+nav a,
+nav strong {
+  flex: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  color: var(--ds-fg-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: nowrap;
+}
+nav a:hover {
+  background: var(--ds-subtle);
+  color: var(--ds-fg);
+}
+nav strong {
+  background: var(--docs-accent-soft);
+  color: var(--ds-accent-fg);
+  font-weight: 600;
+}
+
+/* The text. Prose keeps a readable measure; tables, code and cards use the column's width. */
+main {
+  grid-area: main;
+  min-width: 0;
+  width: 100%;
+  max-width: 58rem;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+main > :is(p, ul, ol, h1, h2, h3, h4, blockquote) {
+  max-width: 46rem;
+}
+main > :first-child {
+  margin-top: 0;
+}
+h1,
+h2,
+h3,
+h4 {
+  color: var(--ds-fg);
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  overflow-wrap: break-word;
+}
+h1 {
+  margin: 0 0 1rem;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+h1 + p {
+  color: var(--ds-fg-muted);
+  font-size: 1.0625rem;
+}
+h2 {
+  margin: 3rem 0 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--ds-line);
+  font-size: 1.375rem;
+  font-weight: 650;
+}
+h1 + h2 {
+  margin-top: 2rem;
+  padding-top: 0;
+  border-top: 0;
+}
+h3 {
+  margin: 2rem 0 0.5rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+p,
+li {
+  color: var(--ds-fg);
+  overflow-wrap: break-word;
+}
+p {
+  margin: 0 0 1rem;
+}
+ul,
+ol {
+  margin: 0 0 1rem;
+  padding-left: 1.375rem;
+}
+li + li {
+  margin-top: 0.375rem;
+}
+li::marker {
+  color: var(--ds-fg-muted);
+}
+a {
+  color: var(--ds-accent-fg);
+  text-decoration-color: color-mix(in srgb, var(--ds-accent-fg) 40%, transparent);
+  text-underline-offset: 3px;
+}
+a:hover {
+  text-decoration-color: currentColor;
+}
+a:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+strong {
+  font-weight: 600;
+}
+code,
+kbd,
+pre {
+  font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Menlo, Consolas, monospace;
+}
+code {
+  padding: 0.125em 0.375em;
+  border: 1px solid var(--ds-line);
+  border-radius: 5px;
+  background: var(--ds-subtle);
+  font-size: 0.84em;
+  overflow-wrap: break-word;
+}
+kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0.0625em 0.4375em;
+  border: 1px solid var(--docs-line-strong);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--ds-surface);
+  font-size: 0.8em;
+  line-height: 1.5;
+  text-align: center;
+}
+pre {
+  margin: 1.25rem 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--ds-line);
+  border-radius: 10px;
+  background: var(--ds-subtle);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  tab-size: 2;
+}
+pre code {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: inherit;
+  overflow-wrap: normal;
+}
+
+/* Tables scroll inside the text when they are wider than it; words never break letter by letter. */
+.table {
+  margin: 1.25rem 0 1.5rem;
+  border: 1px solid var(--ds-line);
+  border-radius: 10px;
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+th {
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid var(--ds-line);
+  background: var(--ds-subtle);
+  color: var(--ds-fg-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+td {
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid var(--ds-line);
+  vertical-align: top;
+}
+tr:last-child td {
+  border-bottom: 0;
+}
+/* A shortcut list: what it does, then its keys. */
+table:not(.ref) td:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
+/* Reference tables (the plugin guide, the settings): the name column never wraps inside a name. */
+.ref td:first-child {
+  min-width: 10rem;
+}
+.ref td:first-child code {
+  white-space: nowrap;
+}
+.ref td {
+  min-width: 6rem;
+}
+.ref td:last-child {
+  min-width: 16rem;
+}
+
+/* The page's own contents, where the side list is not shown. */
+.toc-inline {
+  max-width: none;
+  margin: 1.5rem 0 2rem;
+  padding: 1rem 1.25rem 1rem 2.5rem;
+  border: 1px solid var(--ds-line);
+  border-radius: 10px;
+  background: var(--ds-canvas);
+  columns: 2 14rem;
+  column-gap: 2.5rem;
+}
+.toc-inline li {
+  margin: 0 0 0.25rem;
+  break-inside: avoid;
+}
+
+/* The overview: one card a guide, the whole card a link. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.75rem;
+  max-width: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.cards li {
+  position: relative;
+  margin: 0;
+  padding: 1rem 1.125rem 1.125rem;
+  border: 1px solid var(--ds-line);
+  border-radius: 12px;
+  background: var(--ds-surface);
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+.cards li:hover {
+  border-color: color-mix(in srgb, var(--ds-accent-fg) 45%, transparent);
+  box-shadow: var(--docs-shadow);
+}
+.cards li:focus-within {
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 2px;
+}
+.cards a {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--ds-fg);
+  font-weight: 600;
+  text-decoration: none;
+}
+.cards a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.cards a:focus-visible {
+  outline: none;
+}
+.cards span {
+  display: block;
+  color: var(--ds-fg-muted);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+.cards span::first-letter {
+  text-transform: uppercase;
+}
+
+/* On this page: beside the text on a wide screen. */
+.toc {
+  grid-area: toc;
+  display: none;
+}
+
+@media (min-width: 40rem) {
+  main {
+    padding: 2.5rem 2rem 5rem;
+  }
+}
+@media (min-width: 64rem) {
+  body {
+    grid-template-columns: 16.5rem minmax(0, 1fr);
+    grid-template-rows: var(--docs-top) 1fr;
+    grid-template-areas: 'top top' 'side main';
+  }
+  nav {
+    position: sticky;
+    top: var(--docs-top);
+    flex-direction: column;
+    gap: 0.125rem;
+    height: calc(100vh - var(--docs-top));
+    overflow: hidden auto;
+    padding: 1.5rem 0.75rem 2rem;
+    border-right: 1px solid var(--ds-line);
+    border-bottom: 0;
+  }
+  nav a,
+  nav strong {
+    white-space: normal;
+  }
+  main {
+    padding: 3rem 3rem 6rem;
+  }
+}
+@media (min-width: 80rem) {
+  body {
+    grid-template-columns: 16.5rem minmax(0, 1fr) 16rem;
+    grid-template-areas: 'top top top' 'side main toc';
+  }
+  .toc {
+    position: sticky;
+    top: var(--docs-top);
+    display: block;
+    align-self: start;
+    max-height: calc(100vh - var(--docs-top));
+    overflow-y: auto;
+    padding: 3rem 1.5rem 2rem 0;
+    font-size: 0.8125rem;
+  }
+  .toc p {
+    margin: 0 0 0.75rem;
+    color: var(--ds-fg);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .toc ol {
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--ds-line);
+    list-style: none;
+  }
+  .toc li + li {
+    margin-top: 0;
+  }
+  .toc a {
+    display: block;
+    margin-left: -1px;
+    padding: 0.3125rem 0 0.3125rem 0.875rem;
+    border-left: 1px solid transparent;
+    color: var(--ds-fg-muted);
+    line-height: 1.4;
+    text-decoration: none;
+  }
+  .toc a:hover {
+    border-left-color: var(--ds-fg-muted);
+    color: var(--ds-fg);
+  }
+  .toc-inline {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+@media print {
+  body {
+    display: block;
+  }
+  header,
+  nav,
+  .toc {
+    display: none;
+  }
+}

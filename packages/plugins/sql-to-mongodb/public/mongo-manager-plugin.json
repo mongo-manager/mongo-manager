@@ -1,0 +1,201 @@
+{
+  "id": "sql-to-mongodb",
+  "name": {
+    "en": "SQL to MongoDB",
+    "tr": "SQL → MongoDB",
+    "zh": "SQL 转 MongoDB",
+    "ja": "SQL から MongoDB へ",
+    "es": "SQL a MongoDB",
+    "pt": "SQL para MongoDB",
+    "ko": "SQL을 MongoDB로",
+    "de": "SQL in MongoDB",
+    "fr": "SQL vers MongoDB",
+    "ru": "SQL в MongoDB"
+  },
+  "version": "1.6.0",
+  "description": {
+    "en": "Turns SELECT statements into MongoDB queries and driver code, runs them read-only in the open collection (a JOIN also reads the collection it names, of the same database), and puts them in its Documents or Aggregations.",
+    "tr": "SELECT sorgularını MongoDB sorgularına ve sürücü koduna çevirir, açık koleksiyonda salt okunur çalıştırır (JOIN, aynı veritabanında adlandırdığı koleksiyonu da okur), Belgeler ya da Aggregations'a koyar.",
+    "zh": "将 SELECT 语句转换为 MongoDB 查询和驱动代码，在打开的集合中以只读方式运行（JOIN 还会读取其指定的、同一数据库中的集合），并可放入其文档或聚合中。",
+    "ja": "SELECT 文を MongoDB クエリとドライバーコードに変換し、開いているコレクションで読み取り専用で実行します（JOIN は、指定された同じデータベースのコレクションも読み取ります）。結果はドキュメントまたは集計に取り込めます。",
+    "es": "Convierte sentencias SELECT en consultas de MongoDB y código de controlador, las ejecuta en solo lectura en la colección abierta (un JOIN también lee la colección que nombra, de la misma base de datos) y las lleva a Documentos o Agregaciones.",
+    "pt": "Converte instruções SELECT em consultas do MongoDB e código de driver, executa-as somente leitura na coleção aberta (um JOIN também lê a coleção que nomeia, do mesmo banco de dados) e as leva para Documentos ou Agregações.",
+    "ko": "SELECT 문을 MongoDB 쿼리와 드라이버 코드로 변환하고, 열린 컬렉션에서 읽기 전용으로 실행하며(JOIN은 같은 데이터베이스에서 지정한 컬렉션도 읽습니다), 도큐먼트 또는 집계로 보냅니다.",
+    "de": "Wandelt SELECT-Anweisungen in MongoDB-Abfragen und Treibercode um, führt sie schreibgeschützt in der geöffneten Collection aus (ein JOIN liest auch die genannte Collection derselben Datenbank) und übergibt sie an Dokumente oder Aggregationen.",
+    "fr": "Convertit les instructions SELECT en requêtes MongoDB et en code de pilote, les exécute en lecture seule dans la collection ouverte (un JOIN lit aussi la collection qu’il nomme, de la même base de données) et les transmet à Documents ou Agrégations.",
+    "ru": "Преобразует операторы SELECT в запросы MongoDB и код драйвера, выполняет их только для чтения в открытой коллекции (JOIN читает и указанную коллекцию той же базы данных) и передаёт в «Документы» или «Агрегации»."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read", "database:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "sql",
+        "title": {
+          "en": "SQL",
+          "tr": "SQL",
+          "zh": "SQL",
+          "ja": "SQL",
+          "es": "SQL",
+          "pt": "SQL",
+          "ko": "SQL",
+          "de": "SQL",
+          "fr": "SQL",
+          "ru": "SQL"
+        },
+        "icon": "table"
+      }
+    ]
+  },
+  "author": {
+    "name": "Gokhan OZGEZER"
+  },
+  "license": "CC-BY-NC-SA-4.0",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.6.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Some wording and counts also read better in several languages.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Bazı ifadeler ve sayılar da birçok dilde daha doğru okunuyor.",
+        "zh": "现在与应用一样支持韩语、德语、法语和俄语。部分措辞和计数在多种语言中也更加准确。",
+        "ja": "アプリと同様に、韓国語、ドイツ語、フランス語、ロシア語に対応しました。いくつかの言語で、一部の文言と件数の表記もより正確になりました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Además, algunos textos y recuentos se leen mejor en varios idiomas.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o app. Além disso, alguns textos e contagens ficaram mais corretos em vários idiomas.",
+        "ko": "앱과 마찬가지로 이제 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 또한 여러 언어에서 일부 문구와 개수 표기가 더 정확해졌습니다.",
+        "de": "Jetzt wie die App auch auf Koreanisch, Deutsch, Französisch und Russisch. Außerdem lesen sich einige Formulierungen und Zählungen in mehreren Sprachen besser.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Certaines formulations et certains décomptes se lisent aussi mieux dans plusieurs langues.",
+        "ru": "Теперь, как и приложение, на корейском, немецком, французском и русском языках. Кроме того, некоторые формулировки и счетчики теперь точнее на нескольких языках."
+      }
+    },
+    {
+      "version": "1.5.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同様に、中国語、日本語、スペイン語、ブラジルポルトガル語に対応しました。その他の変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o app. Nada mais muda.",
+        "ko": "앱과 마찬가지로 이제 중국어, 일본어, 스페인어, 브라질 포르투갈어도 지원합니다. 그 밖에 바뀌는 것은 없습니다.",
+        "de": "Jetzt wie die App auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь, как и приложение, на китайском, японском, испанском и бразильском португальском языках. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.4.1",
+      "date": "2026-10-16",
+      "notes": {
+        "en": "Security update of the shared kit: an address that hides a script behind a tab or a line break is refused like any other script address. Nothing else changes.",
+        "tr": "Ortak kitin güvenlik güncellemesi: bir betiği sekme ya da satır sonu arkasına gizleyen adres, diğer betik adresleri gibi reddedilir. Başka bir şey değişmez.",
+        "zh": "共享套件的安全更新：把脚本隐藏在制表符或换行符之后的地址，会像其他脚本地址一样被拒绝。其他内容不变。",
+        "ja": "共有キットのセキュリティ更新：タブや改行の陰にスクリプトを隠したアドレスは、他のスクリプトアドレスと同様に拒否されます。その他の変更はありません。",
+        "es": "Actualización de seguridad del kit compartido: una dirección que oculta un script tras un tabulador o un salto de línea se rechaza como cualquier otra dirección de script. Nada más cambia.",
+        "pt": "Atualização de segurança do kit compartilhado: um endereço que esconde um script atrás de uma tabulação ou quebra de linha é recusado como qualquer outro endereço de script. Nada mais muda.",
+        "ko": "공유 키트 보안 업데이트: 탭이나 줄 바꿈 뒤에 스크립트를 숨긴 주소도 다른 스크립트 주소와 마찬가지로 거부됩니다. 그 밖에 바뀌는 것은 없습니다.",
+        "de": "Sicherheitsupdate des gemeinsamen Kits: Eine Adresse, die ein Skript hinter einem Tabulator oder Zeilenumbruch versteckt, wird wie jede andere Skriptadresse abgelehnt. Sonst ändert sich nichts.",
+        "fr": "Mise à jour de sécurité du kit partagé : une adresse qui cache un script derrière une tabulation ou un saut de ligne est refusée comme toute autre adresse de script. Rien d’autre ne change.",
+        "ru": "Обновление безопасности общего набора: адрес, который прячет скрипт за табуляцией или переводом строки, отклоняется, как и любой другой адрес скрипта. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.4.0",
+      "date": "2026-10-11",
+      "notes": {
+        "en": "The SQL tab on a collection translates and runs SELECTs only. Importing a SQL dump and exporting collections as SQL moved to the app's own SQL ↔ MongoDB page in the sidebar, which says which connection and database it works in; the plugin's sidebar page is gone.",
+        "tr": "Koleksiyondaki SQL sekmesi artık yalnızca SELECT'leri çevirir ve çalıştırır. SQL dökümü içe aktarma ve koleksiyonları SQL olarak dışa aktarma, kenar çubuğundaki uygulamanın kendi SQL ↔ MongoDB sayfasına taşındı; o sayfa hangi bağlantı ve veritabanında çalıştığını gösterir. Eklentinin kenar çubuğu sayfası kaldırıldı.",
+        "zh": "集合上的 SQL 标签页现在只翻译并运行 SELECT。导入 SQL 转储和将集合导出为 SQL 的功能已移至应用自带的侧边栏“SQL ↔ MongoDB”页面，该页面会说明所用的连接和数据库；插件的侧边栏页面已移除。",
+        "ja": "コレクションの SQL タブは、SELECT の変換と実行のみを行うようになりました。SQL ダンプのインポートとコレクションの SQL エクスポートは、サイドバーにあるアプリ標準の「SQL ↔ MongoDB」ページに移りました。このページには、使用する接続とデータベースが表示されます。プラグインのサイドバーページは廃止されました。",
+        "es": "La pestaña SQL de una colección ahora solo traduce y ejecuta SELECT. Importar un volcado SQL y exportar colecciones como SQL pasó a la página SQL ↔ MongoDB de la propia aplicación, en la barra lateral, que indica en qué conexión y base de datos trabaja; la página del complemento en la barra lateral ya no existe.",
+        "pt": "A aba SQL de uma coleção agora só traduz e executa SELECTs. Importar um dump SQL e exportar coleções como SQL passou para a página SQL ↔ MongoDB do próprio app, na barra lateral, que informa em qual conexão e banco de dados ela trabalha; a página do plugin na barra lateral foi removida.",
+        "ko": "컬렉션의 SQL 탭은 이제 SELECT만 변환하고 실행합니다. SQL 덤프 가져오기와 컬렉션을 SQL로 내보내기는 사이드바에 있는 앱 자체의 SQL ↔ MongoDB 페이지로 옮겨졌으며, 이 페이지는 작업 중인 연결과 데이터베이스를 알려 줍니다. 플러그인의 사이드바 페이지는 없어졌습니다.",
+        "de": "Der SQL-Tab einer Collection übersetzt und führt nur noch SELECTs aus. Der Import eines SQL-Dumps und der Export von Collections als SQL sind auf die eigene Seite SQL ↔ MongoDB der App in der Seitenleiste umgezogen, die angibt, in welcher Verbindung und Datenbank sie arbeitet; die Seitenleistenseite des Plugins entfällt.",
+        "fr": "L’onglet SQL d’une collection ne traduit et n’exécute plus que des SELECT. L’importation d’un dump SQL et l’exportation de collections en SQL sont passées à la page SQL ↔ MongoDB propre à l’application, dans la barre latérale, qui indique la connexion et la base de données utilisées ; la page latérale du plugin a disparu.",
+        "ru": "Вкладка SQL коллекции теперь только переводит и выполняет SELECT. Импорт дампа SQL и экспорт коллекций в SQL перенесены на собственную страницу приложения SQL ↔ MongoDB в боковой панели, которая показывает, в каком подключении и какой базе данных она работает; страница плагина в боковой панели удалена."
+      }
+    },
+    {
+      "version": "1.3.1",
+      "date": "2026-10-11",
+      "notes": {
+        "en": "Built without a WebAssembly helper of its BSON library that never ran in the plugin's frame, so its security scan finds nothing to review. Nothing else changed.",
+        "tr": "BSON kütüphanesinin, eklentinin çerçevesinde hiç çalışmayan bir WebAssembly yardımcısı olmadan derlendi; bu yüzden güvenlik taraması incelenecek bir şey bulmuyor. Başka bir şey değişmedi.",
+        "zh": "编译时去掉了其 BSON 库中一个从未在插件框架内运行过的 WebAssembly 辅助模块，因此安全扫描没有需要审查的内容。其他内容不变。",
+        "ja": "BSON ライブラリのうち、プラグインのフレーム内で一度も実行されなかった WebAssembly ヘルパーを除いてビルドしました。そのため、セキュリティスキャンで確認すべき項目はありません。その他の変更はありません。",
+        "es": "Se compila sin un asistente WebAssembly de su biblioteca BSON que nunca se ejecutaba en el marco del complemento, así que su análisis de seguridad no encuentra nada que revisar. Nada más cambia.",
+        "pt": "Compilado sem um auxiliar WebAssembly de sua biblioteca BSON que nunca era executado no frame do plugin, então sua verificação de segurança não encontra nada para revisar. Nada mais mudou.",
+        "ko": "플러그인 프레임에서 한 번도 실행되지 않던 BSON 라이브러리의 WebAssembly 도우미를 제외하고 빌드하여, 보안 검사에서 검토할 항목이 없습니다. 그 밖에 바뀐 것은 없습니다.",
+        "de": "Ohne einen WebAssembly-Helfer seiner BSON-Bibliothek gebaut, der im Frame des Plugins nie lief; deshalb findet sein Sicherheitsscan nichts zu prüfen. Sonst hat sich nichts geändert.",
+        "fr": "Compilé sans un assistant WebAssembly de sa bibliothèque BSON qui ne s’exécutait jamais dans le cadre du plugin ; son analyse de sécurité n’a donc rien à examiner. Rien d’autre n’a changé.",
+        "ru": "Собрано без вспомогательного модуля WebAssembly его библиотеки BSON, который никогда не запускался во фрейме плагина, поэтому проверке безопасности нечего разбирать. Больше ничего не изменилось."
+      }
+    },
+    {
+      "version": "1.3.0",
+      "date": "2026-10-11",
+      "notes": {
+        "en": "A JOIN's column headings read as the SELECT writes them (o.orderNo, c.name, an AS name), each naming the collection field it comes from. The SQL and the generated code are shown in colour. The tab's header can import a SQL dump (MySQL, PostgreSQL or SQLite) into collections, or export the collection as a SQL file. The tab works on views, and its sidebar entry opens as a page of its own.",
+        "tr": "Bir JOIN'in sütun başlıkları SELECT'te yazıldığı gibidir (o.orderNo, c.name, bir AS adı) ve her biri geldiği koleksiyon alanını belirtir. SQL ve üretilen kod renkli gösterilir. Sekmenin üst kısmından bir SQL dökümü (MySQL, PostgreSQL ya da SQLite) koleksiyonlara aktarılabilir ya da koleksiyon SQL dosyası olarak dışa aktarılabilir. Sekme görünümlerde (view) de çalışır; kenar çubuğundaki girişi kendi sayfası olarak açılır.",
+        "zh": "JOIN 的列标题与 SELECT 中的写法一致（o.orderNo、c.name 或 AS 别名），并各自注明其来源的集合字段。SQL 和生成的代码以彩色显示。标签页顶部可将 SQL 转储（MySQL、PostgreSQL 或 SQLite）导入集合，或将集合导出为 SQL 文件。该标签页也可用于视图，其侧边栏入口会作为独立页面打开。",
+        "ja": "JOIN の列見出しが SELECT での記述どおりに表示され（o.orderNo、c.name、AS 名）、それぞれ元のコレクションのフィールドが示されます。SQL と生成されたコードは色付きで表示されます。タブのヘッダーから、SQL ダンプ（MySQL、PostgreSQL、SQLite）をコレクションにインポートしたり、コレクションを SQL ファイルとしてエクスポートしたりできます。このタブはビューでも使え、サイドバーの項目は独立したページとして開きます。",
+        "es": "Los encabezados de columna de un JOIN se leen como los escribe el SELECT (o.orderNo, c.name, un nombre AS) y cada uno indica el campo de la colección del que procede. El SQL y el código generado se muestran en color. El encabezado de la pestaña puede importar un volcado SQL (MySQL, PostgreSQL o SQLite) en colecciones, o exportar la colección como archivo SQL. La pestaña funciona en vistas y su entrada de la barra lateral se abre como una página propia.",
+        "pt": "Os cabeçalhos de coluna de um JOIN aparecem como o SELECT os escreve (o.orderNo, c.name, um nome AS), cada um indicando o campo da coleção de onde vem. O SQL e o código gerado são exibidos em cores. O cabeçalho da aba pode importar um dump SQL (MySQL, PostgreSQL ou SQLite) para coleções, ou exportar a coleção como arquivo SQL. A aba funciona em visualizações (views) e sua entrada na barra lateral abre como uma página própria.",
+        "ko": "JOIN의 열 머리글이 SELECT에 쓴 그대로(o.orderNo, c.name, AS 이름) 표시되며, 각각 어느 컬렉션 필드에서 왔는지 알려 줍니다. SQL과 생성된 코드는 색으로 표시됩니다. 탭 머리글에서 SQL 덤프(MySQL, PostgreSQL, SQLite)를 컬렉션으로 가져오거나 컬렉션을 SQL 파일로 내보낼 수 있습니다. 이 탭은 뷰에서도 작동하며, 사이드바 항목은 별도의 페이지로 열립니다.",
+        "de": "Die Spaltenüberschriften eines JOINs lauten so, wie das SELECT sie schreibt (o.orderNo, c.name, ein AS-Name), und nennen jeweils das Collection-Feld, aus dem sie stammen. Das SQL und der erzeugte Code werden farbig dargestellt. Über die Kopfzeile des Tabs lässt sich ein SQL-Dump (MySQL, PostgreSQL oder SQLite) in Collections importieren oder die Collection als SQL-Datei exportieren. Der Tab funktioniert auch bei Views, und sein Seitenleisteneintrag öffnet sich als eigene Seite.",
+        "fr": "Les en-têtes de colonne d’un JOIN se lisent comme le SELECT les écrit (o.orderNo, c.name, un nom AS) et nomment chacun le champ de collection dont il provient. Le SQL et le code généré s’affichent en couleur. L’en-tête de l’onglet permet d’importer un dump SQL (MySQL, PostgreSQL ou SQLite) dans des collections, ou d’exporter la collection en fichier SQL. L’onglet fonctionne sur les vues, et son entrée de la barre latérale s’ouvre comme une page à part.",
+        "ru": "Заголовки столбцов JOIN выглядят так, как записаны в SELECT (o.orderNo, c.name, имя AS), и каждый указывает поле коллекции, из которого он взят. SQL и сгенерированный код показываются цветом. В заголовке вкладки можно импортировать дамп SQL (MySQL, PostgreSQL или SQLite) в коллекции или экспортировать коллекцию в файл SQL. Вкладка работает с представлениями, а её пункт в боковой панели открывается отдельной страницей."
+      }
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "A JOIN runs in the SQL tab, the joined fields shown as columns in the SELECT's order; this needs the database:read permission, so the plugin has to be approved again. Format (Shift+Alt+F) lays the SQL out, one clause per line, without changing what it translates to.",
+        "tr": "Bir JOIN artık SQL sekmesinde çalışır; birleştirilen alanlar SELECT'teki sırayla sütun olarak gösterilir. Bunun için database:read izni gerektiğinden eklentinin yeniden onaylanması gerekir. Biçimlendir (Shift+Alt+F) SQL'i her yan tümce ayrı satırda olacak şekilde düzenler; çevrildiği sorguyu değiştirmez.",
+        "zh": "JOIN 现在可在 SQL 标签页中运行，被连接的字段按 SELECT 的顺序显示为列；这需要 database:read 权限，因此插件需要重新批准。格式化（Shift+Alt+F）会整理 SQL，每个子句占一行，且不改变其翻译结果。",
+        "ja": "JOIN を SQL タブで実行できるようになり、結合されたフィールドは SELECT の順序で列として表示されます。これには database:read 権限が必要なため、プラグインの再承認が必要です。整形（Shift+Alt+F）は SQL を 1 行に 1 句の形で整えますが、変換結果は変わりません。",
+        "es": "Un JOIN se ejecuta en la pestaña SQL y los campos unidos se muestran como columnas en el orden del SELECT; esto necesita el permiso database:read, así que hay que volver a aprobar el complemento. Dar formato (Shift+Alt+F) ordena el SQL, una cláusula por línea, sin cambiar lo que se traduce.",
+        "pt": "Um JOIN é executado na aba SQL, com os campos unidos exibidos como colunas na ordem do SELECT; isso precisa da permissão database:read, então o plugin precisa ser aprovado novamente. Formatar (Shift+Alt+F) organiza o SQL, uma cláusula por linha, sem mudar o que ele traduz.",
+        "ko": "JOIN이 SQL 탭에서 실행되며, 조인된 필드는 SELECT의 순서대로 열로 표시됩니다. 이를 위해 database:read 권한이 필요하므로 플러그인을 다시 승인해야 합니다. 서식(Shift+Alt+F)은 변환 결과를 바꾸지 않고 SQL을 절마다 한 줄씩 정리합니다.",
+        "de": "Ein JOIN läuft im SQL-Tab, die verknüpften Felder erscheinen als Spalten in der Reihenfolge des SELECT; dafür ist die Berechtigung database:read nötig, daher muss das Plugin erneut genehmigt werden. Formatieren (Shift+Alt+F) ordnet das SQL mit einer Klausel pro Zeile, ohne zu ändern, wohin es übersetzt wird.",
+        "fr": "Un JOIN s’exécute dans l’onglet SQL, les champs joints s’affichant en colonnes dans l’ordre du SELECT ; cela nécessite l’autorisation database:read, le plugin doit donc être approuvé à nouveau. Mettre en forme (Shift+Alt+F) présente le SQL avec une clause par ligne, sans changer ce qu’il traduit.",
+        "ru": "JOIN выполняется на вкладке SQL, а объединённые поля показываются столбцами в порядке SELECT; для этого нужно разрешение database:read, поэтому плагин придётся одобрить заново. «Форматировать» (Shift+Alt+F) раскладывает SQL по одной части на строку, не меняя результат перевода."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "Redesigned in the app's look. Run (Ctrl+Enter) runs the query read-only in the open collection and shows up to 50 rows; this needs the documents:read permission, so the plugin has to be approved again. Suggestions appear at the caret (keywords, the collection's fields and values), an error points to its line and column, and Clear empties the results.",
+        "tr": "Uygulamanın görünümüyle yeniden tasarlandı. Çalıştır (Ctrl+Enter) sorguyu açık koleksiyonda salt okunur çalıştırır ve en fazla 50 satır gösterir; bunun için documents:read izni gerektiğinden eklentinin yeniden onaylanması gerekir. İmlecin olduğu yerde öneriler çıkar (anahtar sözcükler, koleksiyonun alanları ve değerleri), bir hata satırını ve sütununu gösterir, Temizle sonuçları boşaltır.",
+        "zh": "按应用的风格重新设计。运行（Ctrl+Enter）会在打开的集合中以只读方式运行查询，最多显示 50 行；这需要 documents:read 权限，因此插件需要重新批准。光标处会出现建议（关键字、集合的字段和值），错误会指出所在的行和列，清除会清空结果。",
+        "ja": "アプリの見た目に合わせて再設計しました。実行（Ctrl+Enter）は開いているコレクションでクエリを読み取り専用で実行し、最大 50 行を表示します。これには documents:read 権限が必要なため、プラグインの再承認が必要です。カーソル位置に候補（キーワード、コレクションのフィールドと値）が表示され、エラーは行と列で示され、クリアで結果を空にできます。",
+        "es": "Rediseñado con el aspecto de la aplicación. Ejecutar (Ctrl+Enter) ejecuta la consulta en solo lectura en la colección abierta y muestra hasta 50 filas; esto necesita el permiso documents:read, así que hay que volver a aprobar el complemento. Las sugerencias aparecen junto al cursor (palabras clave, campos y valores de la colección), un error indica su línea y columna, y Borrar vacía los resultados.",
+        "pt": "Redesenhado com a aparência do app. Executar (Ctrl+Enter) executa a consulta somente leitura na coleção aberta e mostra até 50 linhas; isso precisa da permissão documents:read, então o plugin precisa ser aprovado novamente. As sugestões aparecem no cursor (palavras-chave, campos e valores da coleção), um erro aponta sua linha e coluna, e Limpar esvazia os resultados.",
+        "ko": "앱의 디자인에 맞게 새로 만들었습니다. 실행(Ctrl+Enter)은 열린 컬렉션에서 쿼리를 읽기 전용으로 실행하고 최대 50개 행을 표시합니다. 이를 위해 documents:read 권한이 필요하므로 플러그인을 다시 승인해야 합니다. 커서 위치에 제안(키워드, 컬렉션의 필드와 값)이 나타나고, 오류는 해당 행과 열을 알려 주며, 지우기는 결과를 비웁니다.",
+        "de": "Im Aussehen der App neu gestaltet. Ausführen (Strg+Enter) führt die Abfrage schreibgeschützt in der geöffneten Collection aus und zeigt bis zu 50 Zeilen; dafür ist die Berechtigung documents:read nötig, daher muss das Plugin erneut genehmigt werden. Vorschläge erscheinen am Cursor (Schlüsselwörter, Felder und Werte der Collection), ein Fehler nennt Zeile und Spalte, und Leeren entfernt die Ergebnisse.",
+        "fr": "Redessiné dans le style de l’application. Exécuter (Ctrl+Entrée) exécute la requête en lecture seule dans la collection ouverte et affiche jusqu’à 50 lignes ; cela nécessite l’autorisation documents:read, le plugin doit donc être approuvé à nouveau. Des suggestions apparaissent au niveau du curseur (mots-clés, champs et valeurs de la collection), une erreur indique sa ligne et sa colonne, et Effacer vide les résultats.",
+        "ru": "Переработано в стиле приложения. «Выполнить» (Ctrl+Enter) выполняет запрос только для чтения в открытой коллекции и показывает до 50 строк; для этого нужно разрешение documents:read, поэтому плагин придётся одобрить заново. Подсказки появляются у курсора (ключевые слова, поля и значения коллекции), ошибка указывает строку и столбец, а «Очистить» убирает результаты."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "First release. Translates a SELECT into a MongoDB find or aggregation pipeline, with code for mongosh and the official drivers: WHERE, ORDER BY, LIMIT and OFFSET, GROUP BY with COUNT, SUM, AVG, MIN, MAX and HAVING, DISTINCT, aliases and one INNER or LEFT JOIN. Anything else is refused by name and place. The result can be put in the collection's Documents or Aggregations; the plugin reads no data.",
+        "tr": "İlk sürüm. Bir SELECT'i MongoDB find sorgusuna ya da aggregation pipeline'ına, mongosh ve resmî sürücüler için koduyla birlikte çevirir: WHERE, ORDER BY, LIMIT ve OFFSET, COUNT, SUM, AVG, MIN, MAX ve HAVING ile GROUP BY, DISTINCT, takma adlar ve tek bir INNER ya da LEFT JOIN. Bunların dışındaki her şey adı ve yeriyle reddedilir. Sonuç koleksiyonun Belgeler ya da Aggregation sekmesine konabilir; eklenti hiçbir veri okumaz.",
+        "zh": "首个版本。将 SELECT 翻译为 MongoDB 的 find 或聚合管道，并提供 mongosh 和官方驱动的代码：WHERE、ORDER BY、LIMIT 和 OFFSET、带 COUNT、SUM、AVG、MIN、MAX 和 HAVING 的 GROUP BY、DISTINCT、别名以及一个 INNER 或 LEFT JOIN。其他内容会按名称和位置被拒绝。结果可放入集合的文档或聚合中；插件不读取任何数据。",
+        "ja": "最初のリリースです。SELECT を MongoDB の find または集計パイプラインに変換し、mongosh と公式ドライバー向けのコードも生成します。対応するのは、WHERE、ORDER BY、LIMIT と OFFSET、COUNT・SUM・AVG・MIN・MAX と HAVING を使った GROUP BY、DISTINCT、エイリアス、INNER または LEFT JOIN 1 つです。それ以外は名前と位置を示して拒否されます。結果はコレクションのドキュメントまたは集計に取り込めます。プラグインはデータを読み取りません。",
+        "es": "Primera versión. Traduce un SELECT a un find de MongoDB o a un pipeline de agregación, con código para mongosh y los controladores oficiales: WHERE, ORDER BY, LIMIT y OFFSET, GROUP BY con COUNT, SUM, AVG, MIN, MAX y HAVING, DISTINCT, alias y un INNER o LEFT JOIN. Todo lo demás se rechaza indicando el nombre y el lugar. El resultado puede llevarse a Documentos o Agregaciones de la colección; el complemento no lee ningún dato.",
+        "pt": "Primeira versão. Traduz um SELECT para um find ou pipeline de agregação do MongoDB, com código para o mongosh e os drivers oficiais: WHERE, ORDER BY, LIMIT e OFFSET, GROUP BY com COUNT, SUM, AVG, MIN, MAX e HAVING, DISTINCT, aliases e um INNER ou LEFT JOIN. Todo o resto é recusado com o nome e o lugar. O resultado pode ser levado para Documentos ou Agregações da coleção; o plugin não lê nenhum dado.",
+        "ko": "첫 번째 릴리스입니다. SELECT를 MongoDB의 find 또는 집계 파이프라인으로 변환하고 mongosh와 공식 드라이버용 코드를 제공합니다. 지원 범위는 WHERE, ORDER BY, LIMIT과 OFFSET, COUNT·SUM·AVG·MIN·MAX 및 HAVING을 사용하는 GROUP BY, DISTINCT, 별칭, INNER 또는 LEFT JOIN 하나입니다. 그 밖의 것은 이름과 위치를 밝혀 거부합니다. 결과는 컬렉션의 도큐먼트 또는 집계로 보낼 수 있으며, 플러그인은 데이터를 읽지 않습니다.",
+        "de": "Erste Version. Übersetzt ein SELECT in ein MongoDB-find oder eine Aggregations-Pipeline, mit Code für mongosh und die offiziellen Treiber: WHERE, ORDER BY, LIMIT und OFFSET, GROUP BY mit COUNT, SUM, AVG, MIN, MAX und HAVING, DISTINCT, Aliase und ein INNER oder LEFT JOIN. Alles andere wird mit Namen und Stelle abgelehnt. Das Ergebnis lässt sich in Dokumente oder Aggregationen der Collection übernehmen; das Plugin liest keine Daten.",
+        "fr": "Première version. Traduit un SELECT en find MongoDB ou en pipeline d’agrégation, avec du code pour mongosh et les pilotes officiels : WHERE, ORDER BY, LIMIT et OFFSET, GROUP BY avec COUNT, SUM, AVG, MIN, MAX et HAVING, DISTINCT, alias et un INNER ou LEFT JOIN. Tout le reste est refusé en indiquant le nom et l’endroit. Le résultat peut être transmis à Documents ou Agrégations de la collection ; le plugin ne lit aucune donnée.",
+        "ru": "Первый выпуск. Переводит SELECT в find или конвейер агрегации MongoDB с кодом для mongosh и официальных драйверов: WHERE, ORDER BY, LIMIT и OFFSET, GROUP BY с COUNT, SUM, AVG, MIN, MAX и HAVING, DISTINCT, псевдонимы и один INNER или LEFT JOIN. Всё остальное отклоняется с указанием имени и места. Результат можно передать в «Документы» или «Агрегации» коллекции; плагин не читает данные."
+      }
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+/* The duplicate finder (redesigned 2026-10-10): what the kit (kit/src/ui.css) does not already give. */
+
+/* The fields picked, as chips in one box with the input after them. */
+.df-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 260px;
+  min-height: 36px;
+  padding: 4px 6px 4px 10px;
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--mm-radius);
+  background: var(--ds-surface);
+  cursor: text;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.df-fields:focus-within {
+  border-color: var(--ds-accent);
+  box-shadow: 0 0 0 3px var(--ds-accent-soft);
+}
+.df-fields > .mm-icon {
+  color: var(--ds-fg-subtle);
+}
+.df-picked {
+  display: contents;
+}
+.df-input {
+  flex: 1;
+  min-width: 160px;
+  height: 26px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ds-fg);
+  font-size: 13px;
+}
+.df-input::placeholder {
+  color: var(--ds-fg-subtle);
+}
+.df-input:disabled {
+  cursor: not-allowed;
+}
+.df-field {
+  gap: 2px;
+  padding-right: 2px;
+  background: var(--ds-accent-soft);
+  border-color: color-mix(in srgb, var(--ds-accent) 35%, transparent);
+  color: var(--ds-accent-fg);
+  cursor: default;
+}
+.df-remove {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.df-remove:hover {
+  background: color-mix(in srgb, var(--ds-accent) 18%, transparent);
+}
+.df-error {
+  width: 100%;
+  color: var(--ds-danger);
+  font-size: 12.5px;
+}
+.df-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+.df-suggest-label {
+  color: var(--ds-fg-subtle);
+  font-size: 12px;
+}
+.df-suggest-list {
+  display: contents;
+}
+.df-scope {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.df-filter {
+  max-width: 420px;
+}
+
+/* The groups: each row opens to its documents. */
+.df-table td.df-toggle {
+  width: 1%;
+  padding-right: 0;
+}
+.df-table tr.df-group {
+  cursor: pointer;
+}
+.df-table tr.df-open td {
+  background: color-mix(in srgb, var(--ds-accent-soft) 60%, transparent);
+}
+.df-chevron .mm-icon {
+  transition: transform 0.15s;
+}
+.df-chevron[aria-expanded='true'] .mm-icon {
+  transform: rotate(90deg);
+}
+.df-table td .mm-value {
+  overflow-wrap: anywhere;
+}
+.df-missing {
+  color: var(--ds-fg-subtle);
+  font-style: italic;
+}
+.df-table tbody tr.df-ids-row:hover td {
+  background: transparent;
+}
+.df-ids-row > td {
+  padding: 4px 12px 10px 48px;
+}
+.df-ids {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.df-id-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-left: 2px solid var(--ds-line-strong);
+}
+.df-id-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  min-width: 0;
+  padding: 2px 0 2px 12px;
+}
+.df-id .mm-value {
+  overflow-wrap: anywhere;
+}
+.df-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--ds-fg-muted);
+  font-size: 12px;
+}
+.df-ids .mm-skeleton-row {
+  height: 22px;
+}
+
+/* A success empty state (the kit tones only danger and warning). */

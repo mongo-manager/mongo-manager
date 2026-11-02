@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Security · Mongo Manager documentation</title>
+    <link rel="stylesheet" href="docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager documentation</a>
+      <details class="lang-menu">
+        <summary>English</summary>
+        <span class="langs" role="group" aria-label="Language">
+          <strong lang="en">English</strong>
+          <a lang="tr" hreflang="tr" href="tr/security.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="zh/security.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="ja/security.html">日本語</a>
+          <a lang="es" hreflang="es" href="es/security.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="pt/security.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="ko/security.html">한국어</a>
+          <a lang="de" hreflang="de" href="de/security.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="fr/security.html">Français</a>
+          <a lang="ru" hreflang="ru" href="ru/security.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Overview</a>
+      <a href="getting-started.html">Getting started</a>
+      <strong>Security</strong>
+      <a href="deployment.html">Deployment</a>
+      <a href="import-export.html">Import and export</a>
+      <a href="backup.html">Backup and restore</a>
+      <a href="watch.html">Watching changes</a>
+      <a href="sync.html">Live sync</a>
+      <a href="server-admin.html">Server administration</a>
+      <a href="ai.html">AI assistant</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Keyboard shortcuts</a>
+    </nav>
+    <main>
+      <h1>Security</h1>
+      <h2 id="modes">Modes</h2>
+      <p>
+        Mongo Manager listens on <code>127.0.0.1</code> by default and refuses a network address unless team
+        mode (<code>--auth</code>) is on. Use team mode whenever anyone else can reach the port.
+      </p>
+      <h2 id="saved-secrets-and-the-key">Saved secrets and the key</h2>
+      <p>
+        Connection passwords, keys, and the queries of the history, favourites and saved pipelines are
+        encrypted with a key kept in
+        <code>secret.key</code> in the data directory, or given as <code>MM_SECRET_KEY</code>.
+      </p>
+      <ul>
+        <li>Back up the key together with the data directory, but store the two apart.</li>
+        <li>
+          Names and tags of favourites and saved pipelines are stored in the clear, so they can be searched:
+          keep secrets out of them.
+        </li>
+        <li>
+          On Windows, a data directory Mongo Manager makes is kept to SYSTEM, Administrators and the account
+          it runs as, whatever its parent folder allows. One already there (or its key, or the log file) that
+          grants Everyone, Users, Authenticated Users or Interactive access loses those grants at start — only
+          those; the log names it with the permissions it had. That is done only to a directory this account
+          owns that holds Mongo Manager's files (or nothing), never to a drive, a network share or a shared
+          folder; <code>mongo-manager doctor</code> says when every user can read the data directory or
+          someone else owns it. On Linux and macOS the same start takes group and other access away (0700 for
+          the directory, 0600 for the key and the log file), and doctor says when the key, the database or
+          <code>launch.key</code> belongs to another user than the data directory (a key restored with
+          <code>sudo cp</code> is root's), and fails when it cannot read the data directory as the user it
+          runs as. The Windows service runs as LocalService, an account Windows shares with some of its own
+          services: any of them, if compromised, could read the data directory, <code>secret.key</code> and
+          <code>launch.key</code> included. Where that matters, run Mongo Manager in Docker or on a computer
+          of its own.
+        </li>
+        <li>
+          <code>mongo-manager rotate-key</code> replaces the key and re-encrypts everything (stop the server
+          first). It leaves the previous key and a backup sealed with it in the data directory; together they
+          open the secrets as they were, so move or delete them once the new key works. They are a recovery
+          window of seven days: the first start after it that opens the data with the new key removes them,
+          and until then each start's log names them. <code>mongo-manager doctor</code> lists any that are
+          still there.
+        </li>
+      </ul>
+      <h2 id="signing-in">Signing in</h2>
+      <p>
+        Local mode has no accounts. It answers only on this computer's loopback address, only to pages it
+        served itself (other sites and other host names are refused), and only to a browser that opened it
+        from a one-time launch link. Mongo Manager says where its link is when it starts: printed in a
+        terminal, otherwise (a service, a container, a log) the path of a file only its account can read that
+        opens it; <code>mongo-manager open</code> opens a running one with a new link (for the installed
+        service, <code>mongo-manager service open</code>, as an administrator). The browser is opened through
+        such a file too, so no link is ever on a command line. A link works once, even across a restart,
+        within an hour (the one opened at once, two minutes), and leaves nothing in the address bar.
+      </p>
+      <p>
+        What this protects: each browser that opens a link gets a cookie of its own and, at once, a key of its
+        own that its page keeps in its own storage and sends with every request. Cookies on this computer's
+        address go to every port of it, so a program of another account listening on another port can receive
+        the cookie; without the key, which no other port's page can read, the cookie opens nothing. Links are
+        made from <code>launch.key</code>, a secret made like <code>secret.key</code> in the data directory
+        and readable only by the account Mongo Manager runs as and administrators. What it does not protect
+        against: anything that runs as your own account or as an administrator (it can read
+        <code>launch.key</code>, your browser's storage and the data directory), and a browser extension you
+        allowed on this address. A browser stays in while it keeps this site's data, at most six months after
+        its last use. Account settings signs every browser out, as does
+        <code>mongo-manager forget-browsers</code> (through the running server: their open connections and the
+        local shells end at once, a command running in them too). Team mode is for a computer or a network you
+        share.
+      </p>
+      <p>
+        In team mode, each user can add an authenticator app, passkeys and recovery codes. Administrators give
+        each user a role (admin, editor, viewer) and can narrow it per connection.
+      </p>
+      <p>
+        The app permission <code>databases:admin</code> manages MongoDB's own users and roles and a cluster's
+        sharding (see <a href="server-admin.html">Server administration</a>). Administrators hold it on every
+        connection, and a user granted admin on a connection holds it there; MongoDB's own rights still apply.
+        It is not a data write, yet a read-only connection shows its users, roles and sharding without ever
+        changing them. A user an administrator hides personal data from never sees Users &amp; roles or sharding management, even with this permission. One who hides it from themselves, and local mode’s one person, still manage users and roles (they hold names only); sharding management stays hidden from them.
+      </p>
+      <p>
+        Wrong passwords hold back the account at the address they came from after five, and an address that
+        guesses at many accounts after twenty. Guesses from many addresses hold the account back only after
+        fifty, and never at an address it signed in from in the last 30 days (remembered until the server
+        restarts); a correct answer never counts against it, a sign-in lifts it, and guesses are forgotten
+        after a day. Adding or removing a second factor, or making new recovery codes, also asks for one of
+        your second factors when you have not used one in this session in the last ten minutes; codes asked
+        for there are limited the same way. An administrator resets other users' second factors, never their
+        own: those go through Account settings.
+      </p>
+      <p>
+        Adding a user, enabling one again, changing a role, and resetting another user's password or second
+        factors ask for the administrator's own password, and for one of their second factors when they have
+        any and have not used one in this session in the last ten minutes: a session someone else got hold of
+        cannot leave a lasting way in. Recovery codes are kept only as a keyed hash, which a copy of the
+        database alone cannot test guesses against.
+      </p>
+      <p>
+        An account's password needs at least 12 characters, must not contain the username, and must not be a
+        common or easily guessed one (a sequence, a keyboard row, a repeat, a common word with a year). A
+        meter shows how strong it is as it is typed, wherever one is chosen; the server checks the same rules.
+      </p>
+      <p>
+        A new password, set by its user or by an administrator, ends every other session of that user and any
+        sign-in still waiting for its second step. Signing out, a new password, a reset of second factors and
+        deleting a user also end that user's open connections to the app and their shells, with any command
+        still running in them.
+      </p>
+      <p>
+        Administrators can be made to use two-factor sign-in, in the app or with
+        <code>MM_REQUIRE_ADMIN_2FA</code> (which the app cannot turn off); so can everyone, with
+        <code>MM_REQUIRE_2FA</code> or in the app, and one user, chosen when they are added or later. A user
+        who must have it and has none reaches only their own account until they set it up, and cannot remove
+        their last second factor. Only an administrator who has two-factor sign-in can require it of everyone.
+        Turning a rule off in the app asks for the administrator's password and, when they have one, a second
+        factor used lately.
+      </p>
+      <p>
+        A session ends after 30 minutes without a request, and always 12 hours after signing in. An
+        administrator can choose another idle time on the Users page (15 minutes, 30 minutes, 1, 4 or 8
+        hours); it applies to every session at once. A longer time asks for the administrator's password and,
+        when they have one, a second factor used lately; the 12 hours stay whatever is chosen.
+      </p>
+      <h2 id="sign-in-bans">Blocked addresses</h2>
+      <p>
+        On top of those limits, an address with 30 failed or refused sign-in attempts within 15 minutes is blocked from signing in: for 15 minutes, then an hour, 6 hours and a day each time it comes back within a week. A blocked address is refused at once, before any password is checked. People already signed in from it stay signed in, and an account that signed in from it in the last 30 days can still sign in there (its own limits still hold it back). Blocks are kept in the data directory, so a restart does not lift them. IPv6 addresses are blocked by their /64, and this computer's own address (127.0.0.1, ::1) never is. An administrator's block holds for everyone, those accounts too. An IPv6 /48 is blocked as a whole after 300 failures, so moving between its /64s gets nowhere. While no reverse proxy is trusted, private addresses (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, fc00::/7 and the like) are never blocked either, since one may be the proxy everyone comes through; the limits above still hold them back.
+      </p>
+      <p>
+        All sign-in steps from one address share 30 requests a minute. Password checks run a few at a time: when many arrive at once from many addresses, the rest wait briefly or are refused as busy, so a flood never holds the server's workers. A sign-in refused before anything was checked writes no audit row of its own; a block is one row. Accounts that signed in from an address lately keep places of their own in that queue, and refusals as busy are written to the audit log once a minute.
+      </p>
+      <p>
+        Administrators see the blocked addresses on the Users page, block an address for an hour, a day, 7 or 30 days, and lift a block; lifting asks for their password and, when they have one, a second factor used lately. An administrator whose own address is blocked and who has no session left runs <code>mongo-manager bans lift &lt;address&gt;</code> on the server (<code>mongo-manager bans list</code> lists them). Behind a reverse proxy, name it with <code>--trusted-proxies</code>: otherwise every sign-in seems to come from the proxy, and everyone shares its limits.
+      </p>
+      <h2 id="panel-access">Panel access</h2>
+      <p>
+        In team mode, an administrator can make the panel answer only some addresses, on the Users page, without a reverse proxy: IPv4 or IPv6 addresses and ranges (<code>203.0.113.0/24</code>), each with a note. An empty list lets every address in. From any other address the API, the sign-in, the real-time connection, plugin frames and the OIDC callback are refused; the web page itself still opens and says the address is not allowed, and a session that comes from such an address is ended. The health checks and the metrics (which carry their own token) are not the panel and answer every address.
+      </p>
+      <p>
+        The page shows who is signed in now, from which address and browser, and, as a list is made, whose session it would end. Saving asks for the administrator's password and, when they have one, a second factor used lately, and ends every session from an address outside the list at once. When the list leaves out the address the administrator is on, the page says so before saving: they would be signed out and could no longer sign in from it, and saving asks them to confirm that too. Locked out anyway? <code>mongo-manager access clear</code> on the server lets every address in again within a few seconds. Behind a reverse proxy, name it with <code>--trusted-proxies</code> first: otherwise every request looks like the proxy's, and the page warns about it. Name only the proxy's own address there: a wide range would let any host in it claim to be another address. On IPv6, “Add my address” adds your /64, since a device's IPv6 address changes often within it.
+      </p>
+      <h2 id="audit-log">Audit log</h2>
+      <p>
+        Every change, sign-in and permission change is recorded in an append-only audit log that
+        administrators can read.
+      </p>
+      <ul>
+        <li>
+          Each action is said in words in the app's language; its code (such as
+          <code>auth.totp.disable</code>) is in its tooltip and its details. The filter picks an action by its
+          words or its code, or takes a code typed in full. Exports keep the codes.
+        </li>
+        <li>
+          It can be exported as CSV or NDJSON, with the filters shown. A CSV cell a spreadsheet would run as a
+          formula is written as text.
+        </li>
+        <li>
+          It is kept for ever unless an administrator sets a period (30 to 3650 days); older entries are then
+          removed, and each removal is itself recorded. A shorter period asks for the administrator's password
+          (and a second factor used lately, when they have one) and starts a day later, time to take it back
+          or export first.
+        </li>
+        <li>
+          Each entry is chained to the one before it with a keyed hash, so an entry changed, removed or added
+          with the database file in hand breaks the chain. The audit page then says at which entry, and an
+          export says so in its <code>X-Audit-Chain</code> header (<code>ok</code> or
+          <code>broken at</code> an entry's number). The log is checked a little at a time, never holding up
+          the server: what is new at each look, all of it once an hour. Entries written before the chain
+          existed are kept as they are, and the audit page says how many there are (none on a new
+          installation); an entry without its link after the chain began is a break. A chain kept in the same
+          file cannot show the newest entries removed, nor everything reset together with its key.
+        </li>
+        <li>
+          A real-time connection refused for a wrong security token is recorded too, at most five a minute
+          from one address.
+        </li>
+        <li>
+          In team mode, administrators see each user's sign-ins, failed sign-ins, actions, refused actions and
+          last activity over the last 7, 30 or 90 days, taken from the audit log.
+        </li>
+      </ul>
+      <h2 id="what-the-server-enforces">What the server enforces</h2>
+      <p>
+        Read-only connections, roles and per-connection access are checked by the server on every request,
+        never only in the browser. Links to connections you cannot open show nothing. The local database (its
+        oplog holds every write) and the collections that hold credentials are for a connection's admins only,
+        wherever they appear: data, jobs, running operations, slow queries, the library and shared AI history;
+        neither is ever sent to an AI provider, and password hashes and salts are hidden from everyone in the
+        commands shown.
+      </p>
+      <p>
+        An SSH tunnel listens on a random port on this computer's loopback address while its connection is
+        open. Every program on the computer can reach that port, so it forwards only a client that gives the
+        user name and password made for that tunnel (SOCKS5, kept in memory only); anything else reaches
+        nothing.
+      </p>
+      <p>
+        A saved password or key is only ever sent where it was typed for: changing a connection's hosts,
+        sign-in method, TLS settings (turning TLS off, another CA, skipped certificate checks) or SSH host
+        asks for its secrets again, for a test as for a save.
+      </p>
+      <p>
+        Someone not signed in is refused before the server reads any of their request's body, except on the
+        sign-in and setup routes, which read at most 1 MiB of JSON and must have it within 30 seconds. A
+        plugin upload is refused before a single byte of its archive arrives unless the sender is an
+        administrator; other requests are parsed (at most 1 MiB of JSON) before their permission is checked. A
+        body that stops arriving for a minute closes its connection. A connection that waits silently for 10
+        minutes for a request, or for its answer to be read, is closed too, but never while the server is
+        still working on the answer (a long <code>$out</code> or bulk update). Uploads streamed to disk
+        (imports, backups, GridFS files) may take as long as they need while their bytes keep coming.
+      </p>
+      <h2 id="server-identity">The server's own identity</h2>
+      <p>
+        A connection signs in with its own credentials, never with an identity of the machine Mongo Manager
+        runs on, which every user of the server would otherwise borrow. MONGODB-AWS asks for the access key ID
+        and secret access key of an IAM user or role (add <code>AWS_SESSION_TOKEN</code> for temporary keys);
+        the server's environment, AWS profile and instance role are never read, by the connection or by
+        mongodump and mongorestore. A pasted connection string fills the form, and saving says what is
+        missing.
+      </p>
+      <p>
+        Two methods can sign in as the machine, and are refused in team mode unless an administrator allows
+        them on the server. Kerberos (GSSAPI) signs in with the Kerberos ticket of the account Mongo Manager
+        runs as: in local mode that is your own; in team mode every user of a Kerberos connection would sign
+        in as that account, so it is refused unless <code>MM_ALLOW_KERBEROS=1</code>, and the form says so in
+        red. An OIDC workload identity (<code>ENVIRONMENT</code> Azure, GCP or Kubernetes) is the cloud
+        identity of the machine: it is used only when chosen on the connection, and in team mode only with
+        <code>MM_ALLOW_WORKLOAD_IDENTITY=1</code>. The policy is checked when a connection is saved, imported
+        or tested, and again each time it connects, so a setting changed since still holds. Backups and
+        restores (mongodump, mongorestore) are not run for Kerberos or OIDC connections: the tools would use
+        the server's own ticket or identity, and a person's OIDC sign-in is never handed to another program.
+      </p>
+      <h2 id="oidc">OIDC sign-in</h2>
+      <p>
+        A MONGODB-OIDC connection signs each person in with the identity provider the MongoDB server names. In
+        team mode every user signs in themselves and gets a MongoDB client of their own: one person's tokens
+        are never used for anyone else, and work that runs on its own with no person behind it (metrics
+        sampling, health checks, alerts, schedules, live syncs) cannot use such a connection. A job (an
+        import, an export, a copy) uses the sign-in of the person who started it.
+      </p>
+      <ul>
+        <li>
+          The sign-in happens in your browser: the authorization code flow with PKCE (S256), a random
+          <code>state</code> and <code>nonce</code>, at most ten minutes. The identity provider sends the
+          browser back to <code>&lt;base path&gt;oidc/callback</code>; the code is exchanged by the server and
+          the browser only ever sees the address it is sent back to. A short-lived, HttpOnly cookie made when
+          the sign-in started must come back with it: a sign-in started by someone else and finished in your
+          browser is refused (login CSRF). Where the identity provider cannot send the browser back to this
+          server, a code is entered at the provider instead (the device flow); the server waits for it.
+        </li>
+        <li>
+          Tokens are sealed with the server's key (re-sealed by <code>rotate-key</code>), kept per person and
+          connection with the issuer and client they came from, refreshed with the refresh token, and given to
+          the MongoDB driver only for a server that names the same identity provider. They never reach a
+          browser and are never logged. Signing out revokes them at the provider (RFC 7009) and closes your
+          client; an administrator can sign everyone out of a connection. Changing a connection's settings, or
+          deleting a user, drops their sign-ins.
+        </li>
+        <li>
+          The issuer comes from the MongoDB server, so it is an address someone else chose: its discovery and
+          every call to it go through the same outbound guard as backup destinations — https, public
+          addresses, private ones only inside <code>MM_OIDC_PRIVATE_NETWORKS</code>, metadata and link-local
+          addresses never, no redirects. Its metadata must name the issuer itself (the mix-up defence) and
+          offer S256.
+        </li>
+        <li>
+          Your tokens go only to allowed hosts: MongoDB Atlas and this computer unless the connection lists
+          others. The hosts the connection names are checked too, so an SSH tunnel (where the driver only sees
+          <code>127.0.0.1</code>) does not hide where they go. The same holds for a workload identity (this
+          server's own cloud identity), and OIDC needs TLS with certificate checks unless the MongoDB server
+          is on this computer or reached through an SSH tunnel. A workload identity's token resource (which a
+          pasted connection string fills in) is used only once that very value is confirmed in the form, and a
+          workload identity only once its environment is; an imported file brings no confirmation.
+        </li>
+        <li>
+          Before the redirect, the sign-in dialog shows the identity provider the MongoDB server named and the
+          hosts your token will go to. An administrator can set the connection's
+          <em>expected identity provider</em>: any other one is refused before anyone is sent there. In team
+          mode the identity provider sends the browser back to this server only. Each sign-in has its own
+          binding cookie (a <code>__Host-</code> cookie on https at the root), so several can wait at once.
+        </li>
+        <li>
+          Each sign-in is kept with who it is at the identity provider (the ID token's subject and name,
+          sealed with the tokens): administrators see it in the sessions list, and the audit log records it at
+          each sign-in. With a code (the device flow) whoever approves the code signs in, so in team mode it
+          is off unless an administrator turns it on (<code>MM_OIDC_DEVICE_FLOW</code>), and one person can
+          have at most three codes waiting. Sign-ins are revoked at the provider too when their connection is
+          deleted or changed, or their user deleted. On a per-person OIDC connection in team mode, what the
+          server does on its own (health, metric history, the profiler's revert) cannot run: health says so,
+          and profiler level 2 is refused.
+        </li>
+      </ul>
+      <h2 id="encryption">Client-side encryption</h2>
+      <p>
+        CSFLE and Queryable Encryption need the optional <code>mongodb-client-encryption</code> package (npm
+        package only). The key providers' credentials (a local master key, AWS, Azure, Google Cloud, a KMIP
+        client certificate) are sealed with the connection, shown masked and kept on an edit only for the same
+        key vault, account and endpoint. A provider without credentials is refused: the host's own cloud
+        identity is never fetched. Every socket to a key management service goes only to the providers' own
+        hosts on port 443, the endpoints the connection's settings name or the operator's list
+        (<code>MM_KMS_ALLOWED_HOSTS</code>) — a master key naming any other host is refused when a key is made
+        or rewrapped, and its socket never opens — and then through the outbound guard (private addresses only
+        inside <code>MM_KMS_PRIVATE_NETWORKS</code>).
+      </p>
+      <p>
+        The key vault and Queryable Encryption's metadata collections (<code>enxcol_.*</code>) are a
+        connection administrator's only, for every read and write: documents, pipelines (<code>$lookup</code>,
+        <code>$merge</code>, <code>$out</code>), the shell, imports, Watch, the data model, sharding — and so
+        is dropping the database that holds a key vault. A copy, a comparison, a live sync, a backup and a
+        restore never read or write them, whoever runs them (back the key vault up with your own tools).
+        Someone from whom personal data is hidden never sees a data key's material, alternate names or master
+        key, an administrator included.
+      </p>
+      <ul>
+        <li>
+          The crypt_shared library is code the server loads. In team mode only the operator's own is loaded
+          (<code>MM_CRYPT_SHARED_LIB_PATH</code>, an absolute path); a connection names its own in local mode
+          only, and only a file named <code>mongo_crypt_v1</code> (<code>.so</code>, <code>.dylib</code> or
+          <code>.dll</code>) that exists on this computer — never one on a network share. Importing a
+          connections file drops the path it names: type it again in the connection. The system's own library
+          search is never used. mongocryptd sees every query in the clear: it runs on this computer only,
+          started from the server's <code>PATH</code>, and its address is a loopback host and a port, with no
+          options.
+        </li>
+        <li>
+          Decrypted values are for those who may see the data. Someone from whom personal data is hidden gets
+          a client that does not decrypt: they see the encrypted value as stored, never the plain one, and may
+          not write documents on that connection (a client that does not encrypt would store them in the
+          clear). A connection set to decrypt only takes no document writes at all. The advanced shell is
+          read-only there (its worker cannot encrypt). Personal-field masking still applies to what is shown.
+        </li>
+        <li>
+          Copies, exports and backups move encrypted values as stored, never decrypted. A Queryable Encryption
+          collection is refused by a copy (its values are tied to the source's encryption metadata); a CSFLE
+          collection is copied as ciphertext, readable only with the source's keys.
+        </li>
+        <li>
+          The AI assistant and its agent never receive a decrypted value: what they read for a provider is
+          read as stored, the key vault and Queryable Encryption's metadata collections are never read for
+          them, and the agent proposes no document writes on such a connection.
+        </li>
+        <li>
+          Data keys are listed without their key material. Creating, rotating (rewrapping) data keys and
+          making encrypted collections is for the connection's administrators, never for someone from whom
+          personal data is hidden (key alternate names often name people), and each change is audited.
+        </li>
+      </ul>
+      <h2 id="copy-compare-and-sync">Copy, compare and sync</h2>
+      <p>
+        The target of a copy comes from the request, so the server checks it like the connection in the
+        address: you must be able to open it, your role there decides what the copy may write, read-only
+        connections refuse writes, and nothing is ever written into admin, local, config or system
+        collections. Two connections that reach the same server are recognised, so a collection is never
+        copied onto itself. A copy reads personal data only as you may see it; comparisons mask both sides
+        with the rules of both, so counts and samples never tell a hidden value apart. Indexes, options and
+        views come from an allowlist, and a view or validator that runs JavaScript is not created unless
+        server-side JavaScript is enabled. A copy that masks personal values (because they are hidden from
+        you, or because it is anonymous) leaves out every validator, index filter and view whose definition
+        names a value that would be masked, as a masked backup does, and its plan lists each one; a live sync
+        does the same for the collections and indexes it follows later, and new options of the source whose
+        validator names such a value can only be ignored, never applied. Jobs, reports and saved settings are
+        their owner's only.
+      </p>
+      <h2 id="backups">Backups</h2>
+      <p>
+        A backup file is treated as hostile until proven otherwise. Its size, nesting, number of namespaces
+        and compression ratio are bounded, so a crafted archive or "zip bomb" fails cleanly; zips whose paths
+        leave their folder are refused, and every namespace's checksum is verified, with a replace restoring
+        into a staging collection so a bad file never damages the target. Nothing is restored into admin,
+        local, config or system collections, and views or validators that run JavaScript are left out unless
+        server-side JavaScript is enabled. Encrypted backups use AES-256-GCM with a key derived from your
+        password by scrypt; the password is never stored, logged or kept with the job, and wrong guesses are
+        slowed down. mongodump and mongorestore are for unrestricted administrators only and get credentials
+        from a private temporary file, never the command line. A user who may not see personal values backs up
+        and restores through the same masking as everywhere else, and backups, uploads and their reports are
+        visible to their owner only. At a destination, a user granted <em>Browse everything</em> also lists
+        other users' backups there, but sees what each one holds (its database and collection names) only when
+        they may read its connection.
+      </p>
+      <h2 id="backup-destinations">Backup destinations</h2>
+      <p>
+        Every connection the server opens to a backup destination, and to Google for a Drive sign-in, goes
+        through one guarded client. Only HTTPS is used, with certificate checks and TLS 1.2 or later. Each
+        address a name resolves to is checked as the connection is made, so a name that later points somewhere
+        else is checked again; loopback, private (10/8, 172.16/12, 192.168/16, fc00::/7), CGNAT (100.64/10),
+        multicast and reserved addresses are refused, including their IPv4-mapped, translated and NAT64 forms.
+        Redirects are not followed, and replies are bounded in size and time. No proxy is used unless
+        <code>MM_BACKUP_PROXY</code> names one; even then the address is checked here, and the proxy is told
+        to connect to that very address. An SFTP destination is reached the same way (its SSH session brings
+        its own encryption), and only once the server shows the host key an administrator trusted. Azure SAS
+        tokens may hold only SAS fields, and every destination keeps only the credentials its way of signing
+        in uses.
+      </p>
+      <p>
+        <code>MM_BACKUP_PRIVATE_NETWORKS</code>, set on the server and never in the UI, may open private
+        ranges (loopback, 10/8, 172.16/12, 192.168/16, 100.64/10, fc00::/7) to destinations, with plain HTTP
+        inside them. A public range is refused when the server starts. Link-local and cloud metadata addresses
+        (169.254.0.0/16, fe80::/10, 169.254.169.254, fd00:ec2::254, 100.100.100.200) can never be allowed: a
+        range inside one of them, written in any form (IPv4-mapped and NAT64 included), is refused at start
+        with that range named in the message, and those addresses stay refused inside a listed range that
+        contains them.
+      </p>
+      <p>
+        A destination's keys are sealed with the server's key and are write-only: the page shows only whether
+        each one is stored (and, for S3, the last four characters of the access key id). Changing what a
+        destination points at — a folder's path; an S3 endpoint, bucket or CA certificate; a WebDAV address,
+        user name or CA certificate; a Drive's sign-in kind, OAuth client or Shared Drive — is refused unless
+        every key is entered again, so stored credentials can never be sent to another host. A Drive reconnect
+        uses the stored client secret on the server; it never goes back to the browser. Users other than
+        administrators see a destination's name only, never its address, not even in an error. Tests are
+        limited to 10 a minute and two at a time per administrator, and listings of a destination's backups to
+        30 a minute and two at a time per user, since each is a request to the provider. Creating, changing,
+        testing and deleting destinations, their access, Google sign-ins, sends, downloads and deletions at a
+        destination are written to the audit log.
+      </p>
+      <p>
+        Folder destinations stay inside the folders listed in <code>MM_BACKUP_FOLDER_ROOTS</code> and outside
+        the data directory; network and device paths are refused, and so are symbolic links and junctions on
+        the way. The Linux service may write only into its data directory and the roots it was installed with,
+        where they really lead. Install leaves out a root behind a link that leads nowhere, and one below a
+        folder the service's user could change, through its groups and ACLs too, where a process running as
+        that user could put a link to <code>/etc</code>, which systemd would follow when the service next
+        starts; install and <code>mongo-manager doctor</code> warn of a folder above a root that another user
+        may change (see <a href="deployment.html#backup-destinations">Deployment</a>).
+      </p>
+      <h2 id="backup-keys">Backup keys</h2>
+      <p>
+        Scheduled backups run with nobody at the keyboard, so they cannot ask for a password. They are
+        encrypted with a backup key instead: 32 random bytes per user, named by a fingerprint (<code>K-</code>
+        and 8 hex characters). Manage yours under <em>Account settings → Backup keys</em>.
+      </p>
+      <ul>
+        <li>
+          The server keeps each key sealed with <code>secret.key</code>, bound to its owner and to that key's
+          own record, and opens it only for its owner: administrators included cannot use another user's key,
+          and a key moved to another account in the database opens nothing.
+        </li>
+        <li>
+          When a key is made, its recovery kit is shown once: a line that starts with <code>MMKEY1-</code> and
+          ends with a checksum group. Download or print it and keep it offline. It is never stored by the
+          server. The key starts working once you confirm the kit by typing its last group; a key whose kit is
+          never confirmed goes within an hour.
+        </li>
+        <li>
+          <em>New key</em> makes a new active key and retires the current one: new backups use the new key,
+          and backups made with a retired key still open here. A key can be deleted only when no schedule and
+          no backup on this server needs it, and not while one of your scheduled backups is running. A key
+          whose kit was not confirmed when the dialog closed can be confirmed from its row within the hour.
+          <em>Import a kit</em> brings a key back from its recovery kit.
+        </li>
+        <li>
+          Whoever holds both the database and <code>secret.key</code> can open every user's backup keys, and
+          with them every scheduled backup. Protect <code>secret.key</code>: restrictive file permissions, a
+          secret manager through <code>MM_SECRET_KEY</code>, and backups of it kept apart from the data
+          directory's. Keep recovery kits offline. The database alone opens nothing.
+        </li>
+        <li><code>mongo-manager rotate-key</code> re-seals the backup keys along with everything else.</li>
+        <li>No key, kit or part of one is written to the audit log, a job, a report or the server log.</li>
+      </ul>
+      <h2 id="watch">Watching changes</h2>
+      <ul>
+        <li>
+          A feed needs the right to read documents on the connection, checked again before every batch and at
+          least every second; losing it, the account or the session ends the feed before anything more is
+          sent.
+        </li>
+        <li>
+          The change stream's pipeline is built by the server. Your filter is a <code>$match</code> only, at
+          most 12 KB and 20 levels deep, and never runs JavaScript on MongoDB, whatever
+          <code>MM_ALLOW_SERVER_JS</code>
+          says. Credential collections are left out of every non-administrator's feed, twice: in the pipeline
+          and for each change.
+        </li>
+        <li>
+          Users who may not see personal data get every change masked by the collection's rules; filters on
+          hidden fields are refused and recorded in the audit log (without their values). So are filters on a
+          schema change's description (validators, partial index filters), which such users see masked whole.
+          MongoDB's own error text is never shown.
+        </li>
+        <li>
+          Resume tokens (which carry document keys), session ids and collection UUIDs never leave the server.
+          A feed belongs to its user: another user's feed id resumes nothing.
+        </li>
+        <li>
+          Feeds are bounded (3 per window, 5 per user, <code>MM_WATCH_MAX_FEEDS</code> per server, 60 starts a
+          minute per user), and a slow browser never makes the server hold more than 200 changes or 8 MB per
+          feed; a part of a change larger than 256 KB is left out and named beside it. Starts and stops are
+          audited with the browser's address and a keyed hash of the filter (HMAC-SHA-256 with a key derived
+          from <code>secret.key</code>), never its values, so the audit cannot be used to guess them.
+        </li>
+      </ul>
+      <h2 id="live-sync">Live sync</h2>
+      <ul>
+        <li>
+          A live sync runs as its owner: the right to export from the source and to write documents, create
+          collections and indexes and run jobs on the target are read again before every batch, from the
+          account as it is then (not from a session). Losing one, or the account, stops it before anything
+          more is read or written.
+        </li>
+        <li>
+          Where a sync resumes (a resume token, which carries document keys) is sealed in the server's
+          database with
+          <code>secret.key</code> and never sent to a browser; a copy of the database without the key reveals
+          none.
+        </li>
+        <li>
+          Masked and anonymous syncs mask every document they write; unmasked syncs to a target without the
+          same rules need a confirmation recorded in the audit log; a change of the rules on either side, or
+          an edit of either connection, stops the sync until its owner reviews a new summary. MongoDB's own
+          error text is replaced by its code for an owner who may not see personal data.
+        </li>
+        <li>
+          A target is never dropped; "replace the target" needs its name typed; deletes reach only documents
+          the source deleted. A sync onto its own source, or one that would close a loop, is refused.
+        </li>
+        <li>
+          A two-way sync is the one exception to that loop rule, between its own two directions: it needs the
+          owner's confirmation that the later of two conflicting changes wins, read and export rights on both
+          sides, the same personal-field rules on both, and refuses masking. Its writes are marked by session,
+          not by a field in the documents. A filtered sync's filter is evaluated by the source on its raw
+          values: a masked sync refuses a filter that reads a hidden field. Rejected-records files and
+          verification samples hold documents and are given to the sync's owner only, while they may read
+          them.
+        </li>
+        <li>
+          Syncs are bounded (3 per user, <code>MM_LIVE_SYNC_MAX</code> per server, batches of 1,000 changes or
+          8 MB, 2 verifications at once). Every start, control action and automatic stop is in the audit log,
+          with both connections and namespaces; batches are not.
+        </li>
+      </ul>
+      <h2 id="server-admin">Alerts and database users</h2>
+      <p>
+        Alert channel secrets — the SMTP password and each webhook's signing secret — are sealed with
+        <code>secret.key</code>, re-sealed by <code>mongo-manager rotate-key</code>, and never sent back to a
+        browser: a webhook's secret is shown once, when the server makes it. Mail servers and webhooks are
+        reached through the same egress guard as backup destinations, with private networks opened only by
+        <code>MM_ALERTS_PRIVATE_NETWORKS</code> (see
+        <a href="server-admin.html#alerts">Server administration</a>). Database user passwords typed in Users
+        &amp; roles go to MongoDB once and are never stored, logged or written to the audit log.
+      </p>
+      <h2 id="the-advanced-shell">The advanced shell</h2>
+      <p>
+        Each shell session runs the real mongosh in a separate child process under Node's permission model,
+        with code generation from strings disabled and no file, process, network or add-on access. It holds no
+        credential: an authenticating proxy inside the server opens the MongoDB connection (SCRAM, X.509 or
+        LDAP/PLAIN) and relays traffic, so the child never sees a password, TLS key or SSH key. The child can
+        reach only that proxy, which allows only the connection's own servers.
+      </p>
+      <p>
+        The proxy enforces the command policy outside the sandbox: a read-only session may run only read
+        commands, and a non-admin may not touch credential collections or run cluster and user-administration
+        commands. Every command is audited (its code masked of secrets) with a summary of the MongoDB commands
+        it issued. On a POSIX server run as root, each worker drops to an unprivileged user; do not run the
+        service as root or as a Windows administrator.
+      </p>
+      <p>
+        Server-side JavaScript (<code>$where</code>, <code>$function</code>, <code>$accumulator</code>,
+        MongoDB's internal <code>$_internal…</code> operators, <code>mapReduce</code>) is refused in the shell
+        as everywhere else, for admins too, unless <code>MM_ALLOW_SERVER_JS=1</code> is set (or
+        <code>allowServerJs</code> in the config file). MongoDB's internal command arguments, such as
+        <code>$client</code>, are refused. A non-admin may not read the profiler (<code>system.profile</code>
+        holds every client's queries with their values), the MongoDB user's privileges, or the users and roles
+        of every database. The child cannot listen for connections or send UDP.
+      </p>
+      <p>
+        Between commands nothing reaches MongoDB but the driver's connection upkeep: code a command left
+        running is refused, and what it tried is audited. On Ctrl+C, when a command passes its time limit,
+        when it ends with a request still unanswered, and when a shell is restarted or closed during a
+        command, the server lists the operations of the shell's own connections on each server it reached (as
+        the connection's MongoDB user, which needs no cluster privilege) and kills them, within five seconds;
+        a shell that does not stop within two seconds of Ctrl+C or the time limit is restarted. Operations
+        already passed on to shards are matched by the shell's name, which it cannot change. The server
+        watches each shell's memory from the operating system for as long as it lives and restarts one past
+        its limit, or one that stops answering for 15 seconds while no command runs; memory is measured a few
+        times a second on Linux and about once a second elsewhere, so a shell can briefly exceed its limit
+        before it is restarted. What the child sends the server is checked for size, depth and rate before it
+        is read.
+      </p>
+      <p>
+        Completion never runs your code: the browser completes from a catalogue built from mongosh, and the
+        sandboxed worker only analyses types, under the same rights checks and proxy policy as a command (its
+        field sampling included). One completion runs at a time, never alongside a command, and a worker whose
+        completion overruns is reset. Collection and field names from the database are inserted as quoted
+        strings when they are not plain identifiers, so a hostile name cannot become code, and they are always
+        shown as text.
+      </p>
+      <p>
+        A shared snippet shares text, not rights: it runs in the session of whoever runs it, under their
+        grants, read-only state and the proxy's policy. Opening a snippet never runs it; its author is shown,
+        and each parameter value is inserted as a value of its type (a quoted string, a number, true/false or
+        an EJSON value), so it cannot close itself and run. A parameter must sit where a value goes: one
+        inside a string, a template, a regular expression or a comment is refused. Snippets are encrypted at
+        rest; their code never enters the audit log. CSV exports guard cells a spreadsheet would run as
+        formulas (a leading <code>'</code> before text starting, after any spaces, with <code>= + - @</code>,
+        a tab or a line break; the export dialog can turn it off for a file another program will read), and
+        shell results are kept in memory only.
+      </p>
+      <p>
+        Personal data can be hidden per user. A connection admin lists the fields that hold personal data; a
+        user granted "cannot see personal data" gets their values as *** — the server removes them before
+        anything leaves it: in documents, aggregation results, explain plans, schema analysis, validators,
+        index and view definitions, shared favourites and pipelines, error messages, the profiler, slow
+        queries and operations. The app shows those values with a lock — in the table, the cards, the tree and
+        the JSON view alike, with a label a screen reader reads — and says that some values are hidden on
+        every screen that shows data: Documents, Aggregations, Explain, Schema, Validation, Indexes and Watch.
+        Hiding has a cost the rule editor states: for such a user, a sort, group or join on a field that may
+        hold personal data runs on a hidden copy and may not use an index, so precise rules are cheaper than
+        <code>*</code> and <code>**</code>. When the server cannot tell which field a value belongs to, it
+        hides the value. Such a user cannot use the shell. Whatever the rules, passwords, tokens and keys in
+        commands, and connection strings, are always hidden. Profiler changes are for connection admins and
+        are audited; level 2 turns itself off after 30 minutes, even across a restart. Operation and
+        slow-query filters are checked on the server, which builds the MongoDB query itself. Atlas Search and
+        Vector Search index definitions name fields, not values. Where personal-data rules apply, such a user
+        sees their analysers and synonym mappings masked (they can hold words someone chose, such as stop
+        words) and cannot create or change a search index; elsewhere they see and edit them whole. A bulk
+        update or delete is refused on a view, and its preview samples are masked as any read is.
+      </p>
+      <p>
+        A user who cannot see personal data cannot use it in a query either: a filter, sort, group, join,
+        count or computed field that names a personal field is refused, so a value cannot be guessed piece by
+        piece. Where a field may hold personal data below it, MongoDB only ever compares plain values there.
+        Views are checked the same way as the collections they read. GridFS file contents are theirs neither
+        as a download nor through a bucket's <code>.chunks</code> collection: a find, a pipeline (reading or
+        writing it), an export, a change feed, a copy, a live sync, a backup or a restore — the last four
+        leave the bucket out, saying so, and a masked live sync that follows new collections never follows a
+        bucket created after it started. Where any personal-data rule exists on a connection, a copy of a
+        <code>.chunks</code> collection by anyone asks to confirm it may hold personal data. JavaScript on the
+        server is not available to them. Window functions (<code>$setWindowFields</code>),
+        <code>$fill</code> and <code>$densify</code> work on fields that hold no personal data: a window over
+        a personal field, a fill or a densify of one, or a partition by the raw value of a field that may hold
+        some is refused, and a sort that may meet personal data is made on a hidden copy. Where rules apply,
+        <code>$redact</code> may read only <code>$$ROOT</code> fields: a plain field there is read again at
+        every level of the document, a personal one included, so it is refused. Every refusal is written to
+        the audit log with the field's name, never its value.
+      </p>
+      <p>
+        Such a user may still edit, insert and delete documents, but nothing they write changes, removes,
+        moves or copies a personal value: a full replace keeps the stored values where the document shows ***,
+        a new document holds no personal field, and a bulk update leaves alone the documents where it would
+        overwrite hidden data. A view over personal data, a unique index on it, and duplicating or renaming a
+        collection that holds it are refused. So are a TTL index on it, a validator that computes ($expr)
+        where rules apply, and changing a key field of a unique index that covers personal data, whose
+        duplicate-key error would tell whether two documents share a hidden value.
+      </p>
+      <p>
+        Reads are bounded so that no one user can exhaust the server's memory: a page of documents or of
+        GridFS files stops at 16 MiB (a larger page asks for fewer documents or fields), a user reads six
+        pages at once and the server 32, each held until its response is sent — counts, single documents,
+        schema analyses and bulk previews share those six; aggregation runs and counts, explains and
+        validation tests are two at once per user and 16 on the server; reading a backup to inspect it or plan
+        its restore is one at a time per user and three on the server, the others asked to wait a moment.
+      </p>
+      <p>
+        Imported files are read as they stream in, within limits on size, depth, fields and decompression;
+        nothing in them is extracted to disk, evaluated or run, workbooks with a DTD or macros are refused,
+        and a record that cannot be read safely is reported, never guessed. Exports of users who may not see
+        personal data hold <code>***</code> in place of the values. Transfer files belong to the person who
+        made them, are kept for a limited time, and are refused for download after that person loses export
+        rights or the personal-field rules change. Uploads, imports, exports and downloads are written to the
+        audit log.
+      </p>
+      <p>
+        The server connects on its own only to connections whose metric history a connection admin switched
+        on, once a minute, with the same read as the live charts (and to backup destinations for the sends and
+        downloads someone started, and to clear uploads left unfinished for 7 days); the history holds numbers
+        only and is deleted with the connection. Index suggestions and the sharding overview only read; their
+        answers hold field and index names, and jumbo-chunk bounds are masked like any personal value.
+      </p>
+      <h2 id="ai">AI assistant</h2>
+      <ul>
+        <li>
+          Only administrators add providers; requests go through the same guarded client as backup
+          destinations: https only, no redirects or proxies, the address checked where the connection is made,
+          metadata and link-local addresses never, private and loopback addresses only when listed in
+          <code>MM_AI_PRIVATE_NETWORKS</code>. A person can never name an address.
+        </li>
+        <li>
+          Provider keys are sealed with <code>secret.key</code>, never shown again, never sent to a browser,
+          kept out of logs and the audit, and re-sealed by <code>rotate-key</code>. Changing a provider's
+          address forgets its key.
+        </li>
+        <li>
+          The server builds what is sent, under the asker's rights; personal-data rules mask it for everyone;
+          samples need consent per request and a provider allowed to receive them; MongoDB's own collections
+          are never sent; a connection can allow local providers only, or none.
+        </li>
+        <li>
+          Without agent mode the assistant has no tools and its answers only become editor text, parsed by the
+          safe parser; answers are drawn without images, links or HTML. One-shot requests are not stored;
+          every request and chat message, allowed or refused, every chat deletion and every provider change is
+          audited, without the words.
+        </li>
+        <li>
+          Agent mode (each person's own switch) gives the model tools that call the app's own routes in
+          process, as the person: a single-use token that never leaves the server stands for their session,
+          which is read again on every call, so rights, read-only mode, the masking gate, rate limits and the
+          audit apply as to their own requests. Connections are named to the model by name only; one whose AI
+          policy is off is never named, a local-only one only to a provider found local. Every change is a
+          card the person confirms (a moment before Confirm can be pressed, one answer taken, a name typed for
+          a drop); only the person whose turn proposed it can answer. Tool results reach the model marked as
+          data; documents' values only with consent per message, personal fields masked for everyone; server
+          JavaScript, <code>$out</code> and <code>$merge</code> are never run for the agent. Steps, actions
+          per message and per minute are bounded; every step is audited without its arguments. Administrators
+          can turn the agent's changes off per connection.
+        </li>
+        <li>
+          Chats are sealed with <code>secret.key</code> per message and title, readable by their owner only
+          (no administrative route reads them), re-sealed by <code>rotate-key</code>, kept for
+          <code>MM_AI_CHAT_DAYS</code> days (or in memory only), and deleted with their user. Earlier messages
+          are checked again on every message — rights, the connection's policy, its personal-data rules —
+          before they are sent; one from a connection that allows local providers only keeps the whole request
+          on the listed networks.
+        </li>
+        <li>
+          Beside each sealed message, its record is stored in the clear: the collection and connection it was
+          about, the provider, the times, the token counts and what the history left out (counts only). Anyone
+          holding the database file sees these records, never the words; with <code>secret.key</code> as well,
+          the words can be read.
+        </li>
+      </ul>
+      <h2 id="plugins">Plugins</h2>
+      <ul>
+        <li>
+          A plugin is static files shown in a sandboxed frame (<code>sandbox="allow-scripts"</code>) with an
+          opaque origin. Its Content-Security-Policy allows only its own files and no request to any address
+          (<code>connect-src 'none'</code>): no request, cookie or storage, and no access to the app's page,
+          session or storage. Its files are served to its frame only: a page of the app cannot load them as
+          its own scripts, and the address they are served at is good only while the session it was issued in
+          lasts (the page within 10 minutes, its other files at most 12 hours; a session renewed in place by
+          the same user is followed, a sign-out is not, and the browser caches none of it). Nothing of a
+          plugin runs on the server.
+        </li>
+        <li>
+          What the policy does not stop everywhere: WebRTC is blocked only by browsers that enforce CSP's
+          <code>webrtc 'block'</code> — Chromium-based browsers (Chrome, Edge) ignore it as of version 149,
+          and Firefox should not be counted on either — so there a plugin can still send what it reads out
+          over WebRTC, whatever its scan said; and a prefetch hint (<code>dns-prefetch</code>,
+          <code>preconnect</code>) can have a name looked up, which can carry data. The frame asks the browser
+          not to prefetch (<code>X-DNS-Prefetch-Control: off</code>), and the scan flags both as high risks.
+          The scan is a heuristic over the files' text: code written to hide from it is not found. Approve a
+          plugin only if you trust it with the data it may read. An address setting (map tiles) is where a
+          plugin may send what it reads, in an image's address: https only (plain http for this computer
+          only), and the approval says so.
+        </li>
+        <li>
+          What a plugin does in the app — a copy to the clipboard, a query or stages put in place, a document
+          opened or a change asked — is taken only right after a click or key press in its own page (the frame
+          must have the focus; a click elsewhere in the app never counts), and every attempt but a change's
+          counts toward its few a minute. A frame can take the focus by itself, so a copy asked within 5
+          seconds of a click or key press elsewhere in the app (watched from the app's start) is not made on
+          the plugin's word: the app shows what would be copied and copies on a click of its own button. The
+          gaps left: another plugin's frame, clicked just before, could lend its activation; and a plugin that
+          took the focus can still put a query or stages in the user's own editors or open a document in that
+          time — nothing runs or changes without the user. The app's confirmations take Confirm only after a
+          moment with no press, and a pointer's click only from a press that began after it, the pointer moved
+          onto Confirm since — so a double-click, a run of clicks, or a click after a pause with the pointer
+          resting where Confirm appears never answers them; a screen reader's or a key's press is taken. What
+          remains: a page that talks the user into moving onto Confirm and clicking it. A change names every
+          field it touches first, each quoted. A plugin's messages show its id beside its name, and a name
+          that reads as the app's own (<em>Mongo Manager</em>, <em>System</em>, <em>Security</em>…), mixes
+          scripts in a word or fakes an id in brackets is refused.
+        </li>
+        <li>
+          It reaches data only through the bridge, which acts as the signed-in user: with their rights,
+          read-only connections and personal-data masking. A plugin's permission never exceeds the user's own
+          right, and every change it asks for is shown to the user, who decides.
+        </li>
+        <li>
+          An administrator approves the exact files (their digest: the SHA-256 of every path with its file's
+          SHA-256) and the permissions asked for. Every file served is checked against it, and any change to
+          the files disables the plugin until it is approved again.
+        </li>
+        <li>
+          Before approval, every plugin's script, markup and style files are scanned for code that runs text,
+          builds markup from text, loads code from elsewhere, tries to leave its frame, reaches out or hides
+          what it does. A plugin with a high finding, or whose scan could not be completed, is approved only
+          with its id typed: the server enforces it, and the audit log records the scan's counts and whether a
+          risk was accepted.
+        </li>
+        <li>
+          Plugins shipped with Mongo Manager run in the same sandbox and are scanned the same way, but
+          approving one never asks for its id: they are the app's own code. An update of one keeps its
+          approval only while it is enabled and asks for no new permission.
+        </li>
+        <li>
+          An install from GitHub reaches only <code>github.com</code>, <code>api.github.com</code>,
+          <code>objects.githubusercontent.com</code> and <code>release-assets.githubusercontent.com</code>,
+          over https, at public addresses only, through no proxy, following at most 4 redirects among those
+          hosts, within bounded sizes and 4 minutes. It sends nothing of the server's: no cookie, token or
+          credentials. The plugin arrives disabled, scanned and waiting for approval.
+        </li>
+        <li>
+          <code>MM_PLUGINS=0</code> turns plugins off; installs from GitHub are off unless
+          <code>MM_PLUGINS_GITHUB=1</code> is set (see <a href="deployment.html#plugins">Deployment</a>).
+          Installs, scans, approvals, settings, disabling and removal are written to the audit log. Building
+          plugins, the bridge and the scan's rules in detail: <a href="plugins.html">Plugins</a>.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">On this page</p>
+      <ol>
+        <li><a href="#modes">Modes</a></li>
+        <li><a href="#saved-secrets-and-the-key">Saved secrets and the key</a></li>
+        <li><a href="#signing-in">Signing in</a></li>
+        <li><a href="#sign-in-bans">Blocked addresses</a></li>
+        <li><a href="#panel-access">Panel access</a></li>
+        <li><a href="#audit-log">Audit log</a></li>
+        <li><a href="#what-the-server-enforces">What the server enforces</a></li>
+        <li><a href="#server-identity">The server's own identity</a></li>
+        <li><a href="#oidc">OIDC sign-in</a></li>
+        <li><a href="#encryption">Client-side encryption</a></li>
+        <li><a href="#copy-compare-and-sync">Copy, compare and sync</a></li>
+        <li><a href="#backups">Backups</a></li>
+        <li><a href="#backup-destinations">Backup destinations</a></li>
+        <li><a href="#backup-keys">Backup keys</a></li>
+        <li><a href="#watch">Watching changes</a></li>
+        <li><a href="#live-sync">Live sync</a></li>
+        <li><a href="#server-admin">Alerts and database users</a></li>
+        <li><a href="#the-advanced-shell">The advanced shell</a></li>
+        <li><a href="#ai">AI assistant</a></li>
+        <li><a href="#plugins">Plugins</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

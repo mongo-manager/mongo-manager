@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Déploiement · Documentation de Mongo Manager</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Documentation de Mongo Manager</a>
+      <details class="lang-menu">
+        <summary>Français</summary>
+        <span class="langs" role="group" aria-label="Langue">
+          <a lang="en" hreflang="en" href="../deployment.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/deployment.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/deployment.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/deployment.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/deployment.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/deployment.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/deployment.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/deployment.html">Deutsch</a>
+          <strong lang="fr">Français</strong>
+          <a lang="ru" hreflang="ru" href="../ru/deployment.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Vue d’ensemble</a>
+      <a href="getting-started.html">Prise en main</a>
+      <a href="security.html">Sécurité</a>
+      <strong>Déploiement</strong>
+      <a href="import-export.html">Import et export</a>
+      <a href="backup.html">Sauvegarde et restauration</a>
+      <a href="watch.html">Suivi des modifications</a>
+      <a href="sync.html">Synchronisation en continu</a>
+      <a href="server-admin.html">Administration du serveur</a>
+      <a href="ai.html">Assistant IA</a>
+      <a href="plugins.html">Plug-ins</a>
+      <a href="shortcuts.html">Raccourcis clavier</a>
+    </nav>
+    <main>
+      <h1>Déploiement</h1>
+      <h2 id="as-a-system-service">Comme service système</h2>
+      <pre><code>sudo mongo-manager service install          # Linux, macOS
+mongo-manager service install               # Windows, elevated prompt
+mongo-manager service status
+mongo-manager service logs
+sudo mongo-manager service open             # local mode: a one-time link that opens it
+sudo mongo-manager service uninstall        # keeps data, config and key</code></pre>
+      <p>
+        Le service s’exécute sous son propre compte sans privilèges, depuis un dossier de programme que seuls
+        les administrateurs peuvent modifier, en mode équipe sur <code>127.0.0.1:4321</code>. Au premier
+        démarrage, le jeton de configuration à usage unique est conservé dans <code>setup-token</code>, dans
+        le dossier de données, que seuls le compte du service et les administrateurs peuvent lire ;
+        <code>service install</code> indique comment le lire. Le jeton n’est jamais écrit dans le journal, et
+        le fichier est supprimé dès que le premier administrateur existe.
+      </p>
+      <p>
+        Installé en mode local (<code>--no-auth</code>), le service ne s’ouvre que depuis un lien de lancement
+        à usage unique : <code>service install</code> en affiche un, et <code>service open</code> en affiche
+        un nouveau chaque fois que vous en avez besoin (en tant qu’administrateur : il est produit à partir de
+        <code>launch.key</code>, dans le dossier de données). Ouvrez-le dans votre propre navigateur, et non
+        dans un navigateur élevé ; ce navigateur reste ensuite connecté tant qu’il conserve les données de ce
+        site, six mois au plus après sa dernière utilisation.
+      </p>
+      <h2 id="docker">Docker</h2>
+      <p>
+        L’image s’exécute sous un utilisateur sans privilèges, sur un système de fichiers racine en lecture
+        seule, en mode équipe. Les données se trouvent dans le volume <code>/data</code>. Les machines hors
+        ligne peuvent charger une archive d’image avec <code>docker load -i</code>. Le jeton de configuration
+        du premier démarrage : <code>docker exec &lt;container&gt; cat /data/setup-token</code>. Le fichier
+        compose publie le port sur la boucle locale de l’hôte uniquement (<code>127.0.0.1:4321</code>) ; pour
+        servir d’autres machines, placez devant un proxy inverse HTTPS plutôt que de publier du HTTP en clair.
+        Un proxy situé sur l’hôte atteint le conteneur depuis la passerelle du réseau compose : faites
+        confiance à <code>MM_TRUSTED_PROXIES=172.31.240.1</code>, et non à <code>127.0.0.1</code>.
+      </p>
+      <p>
+        À l’intérieur du conteneur, le serveur écoute sur toutes les adresses ; sans
+        <code>MM_ALLOWED_HOSTS</code>, il ne répond donc qu’aux adresses IP et à <code>localhost</code>
+        (chaque démarrage le signale). Tout ce qui l’atteint par un nom — un proxy qui transmet le nom
+        public, un autre conteneur par le nom du service (un Prometheus qui interroge
+        <code>mongo-manager:4321</code>), un service Kubernetes — reçoit une erreur 403 tant que ce nom n’est
+        pas listé : <code>MM_ALLOWED_HOSTS=mongo-manager,mm.example.com</code>.
+      </p>
+      <p>
+        En mode local (<code>MM_AUTH=0</code>), le journal du conteneur nomme la commande qui affiche un
+        lien, jamais un lien :
+        <code>docker exec &lt;container&gt; node /app/dist/cli.cjs open --no-open</code>. Elle indique le
+        port sur lequel le serveur écoute à l’intérieur du conteneur : s’il est publié sur un autre port de
+        l’hôte (<code
+          >-p 127.0.0.1:8080:4321</code
+        >), remplacez le port du lien par celui de l’hôte avant de l’ouvrir.
+      </p>
+      <p>
+        Sur un serveur, placez devant un proxy inverse HTTPS qui le sert sous le nom <code>mongo.example.com</code>, et démarrez-le ainsi ; la dernière ligne lit le jeton de configuration. Terminez la configuration sans attendre : tant que le premier administrateur n’existe pas, quiconque détient le jeton peut le devenir.
+      </p>
+      <pre><code>docker run -d --name mongo-manager --restart unless-stopped \
+  -p 127.0.0.1:4321:4321 \
+  -e MM_ALLOWED_HOSTS=mongo.example.com \
+  -e MM_TRUSTED_PROXIES=172.17.0.1 \
+  -v mm-data:/data \
+  --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true \
+  ghcr.io/mongo-manager/mongo-manager:&lt;version&gt;
+docker exec mongo-manager cat /data/setup-token</code></pre>
+      <p>
+        <code>MM_TRUSTED_PROXIES</code> est l’adresse depuis laquelle un proxy situé sur l’hôte atteint le conteneur : la passerelle du réseau Docker, en général <code>172.17.0.1</code> sur le réseau bridge par défaut (<code>docker network inspect bridge -f '{{(index .IPAM.Config 0).Gateway}}'</code> l’affiche). Sans elle, chaque requête semble venir de la passerelle, si bien que le journal d’audit et les bannissements de connexion ne distinguent plus les utilisateurs. Une fois <code>MM_ALLOWED_HOSTS</code> défini, seuls les noms qu’il liste sont acceptés : ajoutez-y <code>127.0.0.1</code> pour continuer à ouvrir <code>http://127.0.0.1:4321</code> sur l’hôte. <code>--read-only</code>, <code>--tmpfs /tmp</code>, <code>--cap-drop ALL</code> et <code>no-new-privileges</code> sont le durcissement qu’applique le fichier compose.
+      </p>
+      <h2 id="docker-mongodb">Joindre MongoDB depuis le conteneur</h2>
+      <p>
+        Dans un conteneur, <code>localhost</code> désigne le conteneur lui-même : <code>mongodb://localhost:27017</code> échoue donc avec <code>ECONNREFUSED</code>, même si MongoDB tourne sur la même machine.
+      </p>
+      <ul>
+        <li><strong>MongoDB dans un autre conteneur :</strong> placez les deux sur un même réseau Docker (<code>docker network create mm</code>, puis <code>docker network connect mm mongo-manager</code> et <code>docker network connect mm my-mongodb</code>, ou <code>--network mm</code> au démarrage) et connectez-vous à <code>mongodb://my-mongodb:27017</code>.</li>
+        <li><strong>MongoDB sur l’hôte, Docker Desktop (Windows, macOS) :</strong> <code>mongodb://host.docker.internal:27017</code>.</li>
+        <li><strong>MongoDB sur l’hôte, Linux :</strong> lancez Mongo Manager avec <code>--network host</code> (<code>localhost</code> est alors l’hôte ; gardez-le privé avec <code>-e MM_HOST=127.0.0.1</code>, derrière le proxy, approuvé en tant que <code>127.0.0.1</code>), ou ajoutez <code>--add-host=host.docker.internal:host-gateway</code>. Cette seconde option n’atteint qu’un MongoDB qui écoute sur l’adresse de la passerelle du bridge : ni un MongoDB lié au <code>127.0.0.1</code> de l’hôte, ni un conteneur publié là seulement (<code>-p 127.0.0.1:27018:27017</code>) ; pour ceux-là, utilisez un réseau partagé ou le réseau de l’hôte.</li>
+        <li>Un jeu de réplicas dont les membres s’appellent <code>localhost:27017</code> renvoie le pilote vers <code>localhost</code> : ajoutez <code>?directConnection=true</code>.</li>
+      </ul>
+      <h2 id="behind-a-reverse-proxy">Derrière un proxy inverse</h2>
+      <ul>
+        <li>
+          Ne faites confiance qu’au proxy : <code>--trusted-proxies 127.0.0.1</code>. Sans cela, le serveur ne
+          peut pas savoir qu’une requête est arrivée en HTTPS, et les cookies de session ne sont donc pas
+          marqués Secure ; un démarrage en mode équipe le signale, et signale aussi lorsque des connexions
+          traverseraient le réseau en HTTP non chiffré.
+        </li>
+        <li>Nommez l’hôte public : <code>--allowed-hosts mm.example.com</code>.</li>
+        <li>Servez l’application sous un sous-chemin avec <code>--base-path /mm/</code>.</li>
+        <li>
+          Chaque adresse cliente peut effectuer 600 requêtes d’API par minute ; relevez cette limite avec
+          <code>MM_API_RATE_LIMIT</code> (60–100000) lorsque beaucoup de personnes partagent une même adresse.
+        </li>
+        <li>
+          Au plus 1000 connexions peuvent être ouvertes à la fois (<code>MM_MAX_CONNECTIONS</code>,
+          16–100000), dont 256 au plus depuis une même adresse (<code>MM_MAX_CONNECTIONS_PER_IP</code>,
+          2–100000) ; une connexion au-delà est fermée, et le journal le signale une fois par minute et par
+          adresse. Un navigateur garde environ six connexions ouvertes : lorsque beaucoup de personnes
+          atteignent Mongo Manager depuis une même adresse — derrière un NAT, un VPN ou Docker Desktop —,
+          relevez <code>MM_MAX_CONNECTIONS_PER_IP</code>. Derrière des proxys de confiance, seul le total
+          s’applique : toutes les connexions viennent du proxy, qui doit limiter lui-même ses propres clients.
+        </li>
+        <li>
+          Les fichiers importés et exportés se trouvent sous <code>&lt;data directory&gt;/transfer</code> :
+          <code>MM_TRANSFER_MAX_UPLOAD</code> est le plus gros envoi en Mio (1024 par défaut, 1–65536),
+          <code>MM_TRANSFER_QUOTA</code> l’espace que chaque utilisateur peut occuper en Mio (5120 par défaut,
+          16–1048576), <code>MM_TRANSFER_TOTAL_QUOTA</code> ce que tous les utilisateurs ensemble peuvent
+          occuper en Mio (51200 par défaut, ou <code>MM_TRANSFER_QUOTA</code> lorsqu’il est plus grand ;
+          16–16777216), <code>MM_TRANSFER_TTL_HOURS</code> la durée de conservation d’un fichier (24 par
+          défaut, 1–720), et <code>MM_TRANSFER_MAX_JOB_HOURS</code> la durée maximale d’un import ou d’un
+          export (6 par défaut, 1–72). Prévoyez sur ce disque la place du total, ou du quota multiplié par le
+          nombre de personnes qui transfèrent des fichiers si ce produit est plus petit.
+        </li>
+      </ul>
+      <h2 id="settings">Paramètres et variables d’environnement</h2>
+      <p>
+        Chaque paramètre du serveur peut être donné comme option de ligne de commande, comme variable
+        d’environnement ou dans un fichier de configuration JSON indiqué par <code>--config</code> ou
+        <code>MM_CONFIG</code>. La ligne de commande l’emporte sur l’environnement, et l’environnement sur le
+        fichier. Un interrupteur accepte <code>1</code>/<code>0</code>, <code>true</code>/<code>false</code>,
+        <code>yes</code>/<code>no</code> ou <code>on</code>/<code>off</code>. Les paramètres de chaque
+        fonctionnalité figurent dans sa propre section ci-dessous.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Variable</th>
+              <th>Option</th>
+              <th>Rôle</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>MM_WEB_PORT</code></td>
+              <td><code>-p</code>, <code>--web-port</code></td>
+              <td>Port de l’interface web (4321 par défaut).</td>
+            </tr>
+            <tr>
+              <td><code>MM_HOST</code></td>
+              <td><code>--host</code></td>
+              <td>
+                Adresse d’écoute (<code>127.0.0.1</code> par défaut). Une adresse réseau exige le mode équipe,
+                ou <code>MM_UNSAFE_NO_AUTH</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_AUTH</code></td>
+              <td><code>--auth</code></td>
+              <td>Mode équipe : utilisateurs, rôles et connexion (désactivé par défaut).</td>
+            </tr>
+            <tr>
+              <td><code>MM_DATA_DIR</code></td>
+              <td><code>--data-dir</code></td>
+              <td>Le répertoire de données (<code>~/.mongo-manager</code> par défaut).</td>
+            </tr>
+            <tr>
+              <td><code>MM_CONFIG</code></td>
+              <td><code>--config</code></td>
+              <td>
+                Un fichier de configuration JSON. Sous Linux et macOS, un fichier qui contient un secret ne doit
+                pas être lisible par les autres utilisateurs, sinon le serveur le refuse.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_SECRET_KEY</code></td>
+              <td></td>
+              <td>
+                La clé de chiffrement, à la place du fichier <code>secret.key</code> du répertoire de données.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_OPEN</code></td>
+              <td><code>--open</code></td>
+              <td>
+                Ouvre le navigateur au démarrage (activé par défaut) : en mode local, sur une adresse de
+                bouclage, lorsque le démarrage se fait depuis un terminal.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_URI</code></td>
+              <td><code>--uri</code></td>
+              <td>
+                Une connexion créée uniquement au tout premier démarrage. Utilisez la variable pour une chaîne
+                de connexion contenant un mot de passe : les autres utilisateurs peuvent voir les lignes de
+                commande.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_READ_ONLY</code></td>
+              <td><code>--read-only</code></td>
+              <td>Aucune connexion ne peut modifier les données, quel que soit son propre paramètre.</td>
+            </tr>
+            <tr>
+              <td><code>MM_TRUSTED_PROXIES</code></td>
+              <td><code>--trusted-proxies</code></td>
+              <td>
+                Adresses ou plages CIDR de proxys dont les en-têtes <code>X-Forwarded-*</code> sont crus.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOWED_HOSTS</code></td>
+              <td><code>--allowed-hosts</code></td>
+              <td>
+                Les seuls noms d’hôte auxquels le serveur répond. Sans ce paramètre, il répond aux noms de
+                bouclage lorsqu’il écoute sur la boucle locale, et sinon aux seuls noms de bouclage et adresses
+                IP, jamais à un autre nom (protection contre le DNS rebinding ; le démarrage l’indique).
+                Indiquez ici chaque nom d’hôte par lequel les utilisateurs l’ouvrent.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_BASE_PATH</code></td>
+              <td><code>--base-path</code></td>
+              <td>Sert l’application sous un sous-chemin, tel que <code>/mm/</code>.</td>
+            </tr>
+            <tr>
+              <td><code>MM_UNSAFE_NO_AUTH</code></td>
+              <td><code>--unsafe-no-auth</code></td>
+              <td>
+                Autorise une adresse réseau sans mode équipe. Quiconque l’atteint dispose d’un accès complet.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_LOG_LEVEL</code></td>
+              <td><code>--log-level</code></td>
+              <td>
+                <code>fatal</code>, <code>error</code>, <code>warn</code>, <code>info</code> (par défaut),
+                <code>debug</code>, <code>trace</code> ou <code>silent</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_LOG_FILE</code></td>
+              <td><code>--log-file</code></td>
+              <td>
+                Ajoute le journal JSON à ce fichier au lieu de la sortie standard. Le fichier est rendu privé
+                (mode 0600 ; sous Windows, l’accès de tous les utilisateurs est retiré : ce compte, SYSTEM et
+                Administrators le conservent) et renouvelé à 10 Mio, la partie précédente étant conservée sous
+                <code>&lt;file&gt;.1</code>. Un chemin qui est un lien, un fichier portant d’autres noms (liens
+                physiques) ou qui n’est pas un fichier ordinaire est refusé, et le démarrage échoue en le
+                disant : supprimez-le ou renommez-le, ou indiquez un autre fichier de journal. Une ligne qui ne
+                peut pas être écrite (disque plein) est abandonnée et signalée une fois sur la sortie d’erreur
+                standard. Les requêtes sont journalisées par leur chemin, chaque valeur de requête et l’id d’un
+                fichier GridFS étant écrits <code>***</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_REQUIRE_ADMIN_2FA</code></td>
+              <td></td>
+              <td>
+                Chaque administrateur doit configurer la connexion à deux facteurs avant toute autre chose ; elle
+                ne peut ensuite plus être désactivée dans l’application. Sans ce paramètre, un administrateur
+                peut exiger la même chose dans l’application.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_REQUIRE_2FA</code></td>
+              <td></td>
+              <td>
+                Chaque utilisateur, quel que soit son rôle, doit configurer la connexion à deux facteurs avant
+                toute autre chose ; elle ne peut ensuite plus être désactivée dans l’application. Sans ce
+                paramètre, un administrateur peut exiger la même chose dans l’application.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_METRICS_TOKEN</code></td>
+              <td></td>
+              <td>
+                Active les métriques Prometheus à l’adresse <code>&lt;base path&gt;metrics</code>, lues avec ce
+                jeton comme jeton bearer (32 caractères au moins). Les chiffres ne nomment aucun utilisateur,
+                aucune connexion, aucune base de données ni aucune collection.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_GRIDFS_MAX_MB</code></td>
+              <td></td>
+              <td>Le plus gros fichier envoyé vers GridFS, en Mo (512 par défaut, 1–10240).</td>
+            </tr>
+            <tr>
+              <td><code>MM_MODEL_MAX_DOCS</code></td>
+              <td></td>
+              <td>
+                Le nombre total de documents qu’un modèle de données (la section Modèle d’une base de données)
+                peut échantillonner (20000 par défaut, 100–1000000) : avec beaucoup de collections,
+                l’échantillon de chacune est réduit, et la section l’indique.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOW_KERBEROS</code></td>
+              <td></td>
+              <td>
+                Mode équipe : autorise les connexions Kerberos (GSSAPI) (désactivé par défaut). Elles se
+                connectent avec le ticket Kerberos du compte sous lequel le serveur s’exécute — chaque
+                utilisateur d’une telle connexion se connecte sous ce compte. Voir
+                <a href="security.html#server-identity">Sécurité</a>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOW_WORKLOAD_IDENTITY</code></td>
+              <td></td>
+              <td>
+                Mode équipe : autorise les connexions OIDC à utiliser l’identité de charge de travail de la
+                machine (Azure, GCP, Kubernetes) lorsqu’elle est choisie sur la connexion (désactivé par
+                défaut).
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_OIDC_DEVICE_FLOW</code></td>
+              <td></td>
+              <td>
+                Connexion OIDC avec un code (le device flow), pour les fournisseurs d’identité qui ne peuvent
+                pas renvoyer le navigateur vers ce serveur. Celui qui approuve le code se connecte : ce mode est
+                donc désactivé en mode équipe tant qu’il n’est pas activé ici ; il est activé en mode local.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_OIDC_PRIVATE_NETWORKS</code></td>
+              <td></td>
+              <td>
+                Réseaux privés (CIDR séparés par des virgules) sur lesquels les fournisseurs d’identité OIDC
+                peuvent se trouver ; le http en clair n’y est autorisé que là. Sans ce paramètre, ils doivent
+                être des adresses https publiques.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_CRYPT_SHARED_LIB_PATH</code></td>
+              <td></td>
+              <td>
+                Le chemin absolu de la bibliothèque crypt_shared (mongo_crypt_v1) pour le chiffrement côté
+                client. En mode équipe, c’est la seule qui soit chargée.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_KMS_PRIVATE_NETWORKS</code></td>
+              <td></td>
+              <td>
+                Réseaux privés (CIDR séparés par des virgules) sur lesquels les services de gestion de clés (un
+                serveur KMIP sur site) peuvent se trouver. Sans ce paramètre, ils doivent être des adresses
+                publiques.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_KMS_ALLOWED_HOSTS</code></td>
+              <td></td>
+              <td>
+                Hôtes de services de gestion de clés (séparés par des virgules, <code>host</code> ou
+                <code>host:port</code>, port 443 par défaut) qu’une connexion peut atteindre en plus de ceux des
+                fournisseurs eux-mêmes (AWS KMS, Azure Key Vault et Managed HSM avec la connexion Microsoft,
+                Google Cloud KMS) et des points de terminaison que nomment ses paramètres : un point de
+                terminaison VPC, un serveur KMIP. Tout autre hôte, ou un autre port, est refusé — la clé maître
+                d’une clé de données ne peut pas envoyer le jeton KMS ailleurs.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h2 id="optional-packages">Kerberos et chiffrement côté client (paquet npm)</h2>
+      <p>
+        Kerberos (GSSAPI) et le chiffrement côté client au niveau des champs / Queryable Encryption
+        nécessitent des paquets natifs que Mongo Manager n’installe pas lui-même : son installation n’exécute
+        le script d’installation d’aucun paquet. Pour les utiliser, installez les paquets à côté du paquet
+        npm, puis redémarrez :
+      </p>
+      <pre><code>npm i -g @mongo-manager/app kerberos mongodb-client-encryption</code></pre>
+      <p>
+        Mongo Manager ne les charge que depuis le dossier global <code>node_modules</code> qui contient
+        <code>mongo-manager</code> lui-même (vérifié par son chemin réel, jamais un dossier situé au-dessus),
+        et seulement lorsqu’une connexion en a besoin pour la première fois ; le formulaire de connexion
+        indique lequel manque et comment l’installer. Les binaires autonomes, l’image Docker (qui définit
+        <code>MM_DISTRIBUTION=docker</code>) et la copie à partir de laquelle s’exécute un service Windows ne
+        contiennent aucun module natif : ces deux fonctionnalités y indiquent qu’elles ne sont pas disponibles
+        dans ce paquet — utilisez à la place le paquet npm, exécuté au premier plan. Le chiffrement
+        automatique de Queryable Encryption exige aussi la bibliothèque crypt_shared
+        (<code>MM_CRYPT_SHARED_LIB_PATH</code>) ou mongocryptd, ainsi que MongoDB Enterprise ou Atlas ;
+        MongoDB Community ne fait que déchiffrer. MONGODB-OIDC n’exige aucun paquet : le fournisseur
+        d’identité doit avoir
+        <code>&lt;address&gt;&lt;base path&gt;oidc/callback</code> de ce serveur comme adresse de redirection
+        (ou une autre que nomme la connexion), et les utilisateurs peuvent se connecter avec un code là où
+        cela n’est pas possible.
+      </p>
+      <h2 id="install-as-an-app">Installer comme application</h2>
+      <p>
+        Dans Chrome ou Edge, choisissez <em>Installer Mongo Manager</em> dans la barre d’adresse pour
+        l’ouvrir dans sa propre fenêtre depuis votre bureau ou votre menu Démarrer.
+      </p>
+      <h2 id="backup-destinations">Destinations de sauvegarde</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_FOLDER_ROOTS</code> : les dossiers que les destinations de type dossier du serveur
+          peuvent utiliser, sous forme de chemins absolus séparés par le séparateur de chemins du système
+          (<code>:</code> sous Linux et macOS, <code>;</code> sous Windows), 16 au plus. Par défaut : aucun,
+          si bien qu’aucune destination de type dossier ne peut être créée. Un chemin relatif arrête le
+          serveur au démarrage. Donnez au compte du service l’accès en écriture à chaque racine, et gardez les
+          racines en dehors du répertoire de données : une destination de type dossier située à l’intérieur
+          est refusée. Chaque démarrage journalise une racine dans laquelle le serveur ne peut pas écrire.
+          Pour le service Linux :
+          <ul>
+            <li>
+              Son bac à sable ne lui permet d’écrire que dans son répertoire de données et dans les racines
+              que nomment sa configuration et son fichier d’environnement au moment de l’installation : après
+              les avoir modifiés, exécutez de nouveau <code>sudo mongo-manager service install</code> (il
+              conserve les données, la configuration et la clé), et redémarrez le service après avoir créé une
+              racine qui manquait. Les racines définies ailleurs, par exemple un <code>Environment=</code>
+              dans un drop-in, l’installation ne les voit pas : leurs dossiers restent en lecture seule pour
+              le service.
+            </li>
+            <li>
+              L’installation écarte une racine située sous <code>/home</code>, <code>/root</code>,
+              <code>/run/user</code>, <code>/tmp</code>, <code>/var/tmp</code> ou <code>/dev</code>, que le
+              service ne peut pas atteindre, et toute racine qui annulerait le bac à sable : celle qui
+              contient un répertoire système (<code>/</code>, <code>/var</code>, <code>/var/lib</code> et
+              analogues) ou qui se trouve dans <code>/etc</code>, <code>/usr</code>, <code>/run</code> ou un
+              autre répertoire système (sous <code>/var</code>, seuls les dossiers situés dans
+              <code>/var/backups</code> sont ouverts). Un dossier situé dans <code>/srv</code>,
+              <code>/opt</code> ou un point de montage sous <code>/mnt</code> ou <code>/media</code>
+              convient, pas ces dossiers eux-mêmes ; sur un système de fichiers amovible ou réseau, celui qui
+              contrôle le disque ou le partage contrôle les dossiers qu’il contient, faites donc du point de
+              montage lui-même la racine (un montage FUSE d’utilisateur dit ce qu’il veut de ses propriétaires
+              et de ses liens). Une racine située dans une autre racine est dans le bac à sable par celle-ci.
+              Lorsque <code>/srv</code>, <code>/opt</code> ou <code>/mnt</code> est lui-même un lien vers
+              <code>/var</code>, comme sur les systèmes ostree (Fedora Silverblue, CoreOS), l’installation
+              indique où mène une racine, et elle y est refusée : choisissez un dossier situé dans
+              <code>/var/backups</code>.
+            </li>
+            <li>
+              Un lien est jugé d’après l’endroit où il mène, et l’unité nomme cet endroit ; un lien qui ne mène
+              nulle part est écarté : pour un lien vers un dossier qui n’existe pas encore, créez ce dossier,
+              puis exécutez de nouveau service install ; pour un lien qui tourne en boucle ou passe par un
+              fichier, choisissez un autre dossier ou supprimez le lien. Gardez chaque dossier situé au-dessus
+              d’une racine, ainsi que les dossiers où se trouvent les liens de son chemin (un lien dans la
+              cible d’un lien compris), détenus par root et fermés à son groupe et aux autres, afin que
+              personne ne puisse y placer un lien à la place d’un dossier ; dans un dossier où d’autres
+              peuvent écrire, avec sticky bit ou non, faites détenir par root le dossier qu’il contient, et
+              placez la racine à l’intérieur de celui-ci.
+            </li>
+            <li>
+              Une racine située sous un dossier que l’utilisateur du service pourrait modifier, n’importe où
+              jusqu’à <code>/</code> et le long des liens de son chemin, est écartée : un dossier que cet
+              utilisateur possède, ou dans lequel il peut écrire par l’un de ses groupes, une ACL ou en tant
+              que n’importe qui, là où un processus s’exécutant sous cet utilisateur pourrait placer un lien
+              vers <code>/etc</code> à la place d’un dossier. Cela comprend un lien situé dans une autre
+              racine, dans laquelle le service écrit. L’installation, et doctor exécuté avec
+              <code>sudo</code>, interrogent aussi le système : avec <code>setpriv</code>, ils exécutent
+              <code>test -w</code> sous cet utilisateur, si bien que le noyau applique ses groupes (ceux que
+              l’unité donne au service avec <code>Group=</code> ou <code>SupplementaryGroups=</code>, ceux
+              d’un drop-in compris) et ses ACL. Sans <code>setpriv</code>, ou sans root, seuls les modes des
+              dossiers et les groupes de l’utilisateur sont lus, et les deux commandes le disent. Ce que
+              permettent les modes compte même là où une ACL le retire, si bien qu’un tel dossier écarte
+              aussi ses racines.
+            </li>
+            <li>
+              L’installation demande à systemd sous quel compte s’exécute le service, tous les drop-ins étant
+              lus. Un drop-in qui l’exécute sous un utilisateur autre que <code>--user</code> (ou sous root),
+              avec <code>DynamicUser=yes</code> et aucun compte de ce nom, avec un <code>Group=</code> autre
+              que celui de l’utilisateur, ou avec un groupe que le système ne connaît pas (systemd refuse alors
+              de le démarrer) arrête l’installation avant toute modification du répertoire de données et de la
+              configuration ; elle en donne la raison et laisse le service arrêté et désactivé. Un groupe dont
+              la recherche échoue, ou un systemd qui ne peut pas être interrogé, écarte toutes les racines.
+            </li>
+            <li>
+              <code>sudo mongo-manager doctor --config /etc/mongo-manager/config.json</code> vérifie le
+              service installé (<code>mongo-manager doctor</code> seul vérifie votre propre répertoire de
+              données, et indique que le service n’est pas ce qu’il a vérifié). Il vérifie chaque racine :
+              qu’elle existe, qu’elle est un dossier dans lequel le serveur peut écrire, qu’elle se trouve dans
+              le bac à sable, et qu’elle ne se trouve pas dans le répertoire de données ; il nomme aussi un
+              dossier dans lequel le bac à sable permet au service d’écrire et qu’aucune racine ne nomme plus,
+              ou qui mène à une racine ou au répertoire de données par un lien que quelqu’un d’autre que root
+              peut modifier, et il avertit d’un service qui s’exécute sous root, d’un groupe que personne n’a
+              ou dont la recherche échoue, et de <code>DynamicUser=yes</code> sans compte de ce nom. Il vérifie
+              les racines que nomment la configuration et le fichier d’environnement du service, ce qui
+              explique qu’il exige <code>sudo</code> : seul root peut lire le fichier d’environnement, où se
+              trouve aussi la clé secrète du service. Il vérifie l’accès en écriture sous l’utilisateur du
+              service ; exécuté sous root, il lit à la place le propriétaire et le mode de la racine pour
+              l’utilisateur qui possède le répertoire de données, et s’en remet au système lorsque cet
+              utilisateur peut y écrire. Les dossiers situés au-dessus des racines sont jugés pour
+              l’utilisateur sous lequel l’unité exécute le service (son <code>User=</code>).
+            </li>
+          </ul>
+        </li>
+        <li>
+          <code>MM_BACKUP_PRIVATE_NETWORKS</code> : les plages privées que les destinations peuvent atteindre,
+          sous forme d’une liste de 64 CIDR au plus séparés par des virgules (par exemple
+          <code>10.0.5.0/24</code>) ; le HTTP en clair y est autorisé. Par défaut : aucune. Les plages de
+          bouclage, 10/8, 172.16/12, 192.168/16, CGNAT (100.64.0.0/10) et unique-local (fc00::/7) sont
+          acceptées. Une plage publique arrête le serveur au démarrage, tout comme une plage située dans une
+          plage de lien local ou de métadonnées cloud (169.254.0.0/16, fe80::/10, 169.254.169.254,
+          fd00:ec2::254, 100.100.100.200), sous quelque forme que ce soit, IPv4 mappée et NAT64 compris ; le
+          message nomme la plage. Ces adresses ne peuvent jamais être atteintes, même à l’intérieur d’une
+          plage listée.
+        </li>
+        <li>
+          <code>MM_BACKUP_PROXY</code> : un proxy HTTP(S) par lequel les destinations sont atteintes, tel que
+          <code>http://proxy.corp:3128</code> ou <code>https://user:password@proxy.corp</code> ; ni chemin ni
+          requête. Par défaut : aucun (aucune variable de proxy d’environnement n’est jamais lue). Mongo
+          Manager résout et vérifie toujours lui-même l’adresse de chaque destination et demande au proxy de
+          se connecter à cette adresse, si bien que les règles d’adresses ci-dessus s’appliquent à travers le
+          proxy ; TLS s’exécute de bout en bout jusqu’à la destination, dont le certificat est vérifié comme
+          sans proxy. Les destinations situées dans <code>MM_BACKUP_PRIVATE_NETWORKS</code> sont atteintes
+          directement. Un proxy situé à une adresse de lien local ou de métadonnées arrête le serveur au
+          démarrage. Gardez le mot de passe du proxy hors des historiques de shell partagés : il fait partie
+          de l’adresse. Seules les destinations de sauvegarde l’utilisent : les canaux d’alerte (e-mail et
+          webhooks), les fournisseurs d’IA et les plug-ins ne passent jamais par lui. À savoir avant de
+          choisir un proxy : un proxy <code>http://</code> reçoit en clair son nom d’utilisateur et son mot de
+          passe (Basic), préférez donc <code>https://</code> ou un proxy situé dans un réseau de confiance ;
+          un proxy qui n’autorise CONNECT que vers des noms d’hôte listés refuse ces connexions, puisqu’on lui
+          demande une adresse IP ; le certificat d’un proxy <code>https://</code> doit être signé par une
+          autorité que Node.js reconnaît (sa liste intégrée, ou une autorité ajoutée avec
+          <code>NODE_EXTRA_CA_CERTS</code>) : aucune autorité propre ne peut être indiquée.
+        </li>
+        <li>
+          <code>MM_BACKUP_DEST_PART_MB</code> : la taille des parties d’envoi, de 16 à 512 Mio (64 par
+          défaut).
+        </li>
+        <li>
+          <code>MM_BACKUP_DRILL_MAX_MB</code> : le maximum qu’un test de restauration écrit, en Mio. Par
+          défaut : aucun — un test reste sous la moitié de l’espace disque libre que MongoDB indique (celui du
+          shard le plus plein, à travers un mongos). Là où MongoDB ne l’indique pas (niveaux partagés d’Atlas),
+          les tests ne s’exécutent que si ce paramètre est défini.
+        </li>
+        <li>
+          <code>MM_BACKUP_DEST_TRANSFERS</code> : les envois et téléchargements simultanés sur chaque
+          destination, de 1 à 8 (2 par défaut). Les suivants attendent, ce qu’affiche « En attente de » cette
+          destination dans la liste des tâches.
+        </li>
+      </ul>
+      <h2 id="scheduled-backups">Sauvegardes planifiées</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_SCHEDULES</code> : le planificateur, activé par défaut. <code>0</code> le
+          désactive : les planifications conservent leurs paramètres, rien ne s’exécute, et l’onglet
+          Sauvegardes planifiées indique que la planification est désactivée. Les exécutions qu’un serveur
+          arrêté a laissées inachevées sont clôturées au démarrage.
+        </li>
+        <li>
+          <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code> : les exécutions planifiées simultanées, de 1 à 8 (2 par
+          défaut). Les exécutions suivantes attendent jusqu’à six heures.
+        </li>
+      </ul>
+      <h2 id="watch">Suivi des modifications</h2>
+      <ul>
+        <li>
+          <code>MM_WATCH</code> : les flux de modifications (change streams), activés par défaut. <code>0</code> les
+          désactive : les sections Suivi indiquent que le suivi est désactivé, et rien n’est ouvert sur
+          MongoDB.
+        </li>
+        <li>
+          <code>MM_WATCH_MAX_FEEDS</code> : les flux en direct simultanés sur ce serveur, de 1 à 500 (50 par
+          défaut). Chaque utilisateur peut en avoir 5 et chaque fenêtre de navigateur 3. Chaque flux détient
+          un curseur de flux de modifications sur MongoDB.
+        </li>
+        <li>
+          Le suivi exige un jeu de réplicas, un cluster partitionné ou un déploiement à charge équilibrée, et
+          l’utilisateur de base de données de la connexion a besoin de <code>changeStream</code> et de
+          <code>find</code> sur ce qui est suivi. Voir
+          <a href="watch.html">Suivi des modifications</a>.
+        </li>
+      </ul>
+      <h2 id="live-sync">Synchronisation en continu</h2>
+      <ul>
+        <li>
+          <code>MM_LIVE_SYNC</code> : les synchronisations en continu entre connexions, activées par défaut.
+          <code>0</code> les désactive : les synchronisations en cours attendent en indiquant la raison, et
+          rien n’est lu ni écrit ; les nouvelles sont refusées. Une fois réactivées, elles reprennent là où
+          elles en étaient.
+        </li>
+        <li>
+          <code>MM_LIVE_SYNC_MAX</code> : les synchronisations en continu non terminées sur ce serveur, de 1 à
+          100 (10 par défaut). Chaque utilisateur peut en avoir 3. Chaque synchronisation en cours détient un
+          flux de modifications sur sa source et garde les deux connexions ouvertes.
+        </li>
+        <li>
+          La source doit être un jeu de réplicas, un cluster partitionné ou un déploiement à charge équilibrée
+          (MongoDB 6.0 ou ultérieur) ; une copie susceptible de durer plus longtemps que l’oplog de la source
+          demande une confirmation. Voir <a href="sync.html">Synchronisation en continu</a>.
+        </li>
+      </ul>
+      <h2 id="alerts">Alertes</h2>
+      <ul>
+        <li>
+          <code>MM_ALERTS</code> (fichier de configuration : <code>alerts.enabled</code>) : les alertes,
+          activées par défaut. <code>0</code> les désactive : rien n’est évalué ni envoyé, et la page Alertes
+          indique que les alertes sont désactivées.
+        </li>
+        <li>
+          <code>MM_ALERTS_PRIVATE_NETWORKS</code> (fichier de configuration :
+          <code>alerts.privateNetworks</code>, une liste) : les réseaux que les serveurs de messagerie et les
+          webhooks des alertes peuvent atteindre en plus des adresses publiques, sous forme d’une liste de 64
+          CIDR au plus séparés par des virgules (par exemple <code>10.0.5.0/24</code>). Par défaut : aucun. Le
+          http en clair vers un webhook n’est autorisé qu’à l’intérieur de ces réseaux. Les mêmes plages sont
+          acceptées et refusées que pour <code>MM_BACKUP_PRIVATE_NETWORKS</code> : les adresses de lien local
+          et de métadonnées cloud ne peuvent jamais être atteintes.
+        </li>
+        <li>
+          Dans un fichier de configuration :
+          <code>"alerts": { "enabled": true, "privateNetworks": ["10.0.5.0/24"] }</code>. Voir
+          <a href="server-admin.html#alerts">Administration du serveur</a>.
+        </li>
+      </ul>
+      <h2 id="the-advanced-shell">Le shell avancé</h2>
+      <ul>
+        <li>Désactivez-le entièrement avec <code>--no-shell</code> (ou <code>MM_SHELL_ENABLED=0</code>).</li>
+        <li>
+          Limites : <code>MM_SHELL_MAX_PER_USER</code>, <code>MM_SHELL_MAX_TOTAL</code>,
+          <code>MM_SHELL_COMMAND_TIMEOUT_MS</code>, <code>MM_SHELL_IDLE_MS</code>,
+          <code>MM_SHELL_LIFETIME_MS</code>. Un shell que sa page retient reste ouvert aussi longtemps qu’il
+          n’est pas utilisé, comme dans Compass ; un shell qu’aucune page ne retient se ferme deux minutes
+          après le départ de sa page. La limite d’inactivité est désactivée (0) tant que vous ne la définissez
+          pas (10000 à 86400000 ms) ; un shell vit 12 heures au plus, sauf si vous définissez une autre durée
+          de vie (60000 à 86400000 ms, ou 0 pour aucune). Les shells maintenus ouverts comptent dans
+          <code>MM_SHELL_MAX_TOTAL</code> jusqu’à la fermeture de leurs pages ; sur un serveur que beaucoup de
+          personnes partagent, définissez <code>MM_SHELL_IDLE_MS</code> afin que les shells laissés ouverts et
+          inutilisés soient libérés. Lorsque la connexion est activée, un shell prend aussi fin avec la
+          session de son utilisateur, ainsi que lorsque le rôle de l’utilisateur change ou que son compte est
+          désactivé.
+        </li>
+        <li>
+          <code>MM_SHELL_RSS_MB</code> : la mémoire que peut détenir le processus d’un shell, de 128 à
+          16384 Mo (384 par défaut). Le serveur la mesure lui-même auprès du système d’exploitation (sous
+          Windows avec <code>tasklist</code>, sous macOS avec <code>ps</code>) et redémarre un shell qui la
+          dépasse ; les variables du shell sont perdues. Un shell qui ne répond plus pendant 15 secondes alors
+          qu’aucune commande ne s’exécute est lui aussi redémarré. <code>MM_SHELL_OUTPUT_MB</code> : la sortie
+          d’une commande, de 1 à 64 Mo (5 par défaut) ; le reste est coupé.
+          <code>MM_SHELL_COMMANDS_PER_SECOND</code> : les commandes par shell et par seconde, de 1 à 1000 (20
+          par défaut).
+        </li>
+        <li>
+          Sur un serveur POSIX exécuté sous root, le processus du shell passe à
+          <code>MM_SHELL_UID</code>/<code>MM_SHELL_GID</code> (65534 par défaut) ; n’exécutez pas le service
+          sous root.
+        </li>
+      </ul>
+      <h2 id="ai">Assistant IA</h2>
+      <ul>
+        <li>
+          <code>MM_AI</code> : l’assistant IA, activé par défaut ; il n’apparaît qu’une fois qu’un
+          administrateur a ajouté un fournisseur (Paramètres → Assistant IA). <code>0</code> le masque
+          partout et refuse les requêtes.
+        </li>
+        <li>
+          <code>MM_AI_PRIVATE_NETWORKS</code> : les réseaux (CIDR, séparés par des virgules) sur lesquels un
+          fournisseur peut se trouver en plus des adresses publiques, par exemple un Ollama à
+          <code>10.0.0.5</code> ; le http en clair uniquement là. Les adresses de métadonnées cloud et de lien
+          local ne sont jamais atteignables. En mode local, cette machine est toujours autorisée.
+        </li>
+        <li>
+          <code>MM_AI_PER_MINUTE</code> (10 par défaut, 1–120) et <code>MM_AI_PER_DAY</code> (200 par défaut,
+          1–10 000) : les requêtes par personne. <code>MM_AI_MAX_CONCURRENT</code> (8 par défaut, 1–64) : les
+          requêtes simultanées sur le serveur ; chaque personne peut en avoir 2.
+          <code>MM_AI_AGENT_PER_MINUTE</code> (30 par défaut, 1–120) : les requêtes supplémentaires d’un agent
+          vers le fournisseur au sein d’un même message, par personne et par minute (elles comptent aussi pour
+          la journée).
+        </li>
+        <li>
+          <code>MM_AI_CHAT_DAYS</code> (30 par défaut, 0–365) : la durée de conservation d’une conversation
+          après son dernier message. <code>0</code> ne garde les conversations qu’en mémoire (12 heures) et
+          supprime, au démarrage du serveur, les conversations enregistrées sous un paramètre antérieur.
+        </li>
+      </ul>
+      <h2 id="plugins">Plug-ins</h2>
+      <ul>
+        <li>
+          <code>MM_PLUGINS</code> : les plug-ins, activés par défaut. Chacun a encore besoin de l’approbation
+          d’un administrateur, après son analyse de sécurité. <code>0</code> n’en trouve, n’en installe et
+          n’en exécute aucun (voir <a href="plugins.html">Plug-ins</a>).
+        </li>
+        <li>
+          <code>MM_PLUGINS_GITHUB</code> : l’installation d’un plug-in depuis la version publiée d’un dépôt
+          GitHub public, désactivée par défaut (les plug-ins s’installent par envoi ou depuis un dossier) ;
+          <code>1</code> l’autorise. Le serveur contacte alors <code>api.github.com</code>,
+          <code>github.com</code> et les hôtes de ressources de versions de GitHub, en https, sans rien
+          envoyer qui lui soit propre. Désactivé, un serveur ne contacte jamais GitHub. Le serveur se connecte
+          directement à GitHub : les paramètres de proxy HTTP ne sont pas utilisés, si bien qu’un serveur qui
+          ne peut sortir que par un proxy installe les plug-ins par envoi. Un service système le lit dans son
+          fichier <code>config.json</code> sous la forme <code>"pluginsGithub": true</code> (Linux
+          <code>/etc/mongo-manager/config.json</code>, Windows
+          <code>%ProgramData%\Mongo Manager\config.json</code>, macOS
+          <code>/Library/Application Support/Mongo Manager/config.json</code>) ; redémarrez ensuite le
+          service.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Sur cette page</p>
+      <ol>
+        <li><a href="#as-a-system-service">Comme service système</a></li>
+        <li><a href="#docker">Docker</a></li>
+        <li><a href="#docker-mongodb">Joindre MongoDB depuis le conteneur</a></li>
+        <li><a href="#behind-a-reverse-proxy">Derrière un proxy inverse</a></li>
+        <li><a href="#settings">Paramètres et variables d’environnement</a></li>
+        <li><a href="#optional-packages">Kerberos et chiffrement côté client (paquet npm)</a></li>
+        <li><a href="#install-as-an-app">Installer comme application</a></li>
+        <li><a href="#backup-destinations">Destinations de sauvegarde</a></li>
+        <li><a href="#scheduled-backups">Sauvegardes planifiées</a></li>
+        <li><a href="#watch">Suivi des modifications</a></li>
+        <li><a href="#live-sync">Synchronisation en continu</a></li>
+        <li><a href="#alerts">Alertes</a></li>
+        <li><a href="#the-advanced-shell">Le shell avancé</a></li>
+        <li><a href="#ai">Assistant IA</a></li>
+        <li><a href="#plugins">Plug-ins</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

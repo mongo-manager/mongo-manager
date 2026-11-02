@@ -1,0 +1,942 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Segurança · Documentação do Mongo Manager</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Documentação do Mongo Manager</a>
+      <details class="lang-menu">
+        <summary>Português (Brasil)</summary>
+        <span class="langs" role="group" aria-label="Idioma">
+          <a lang="en" hreflang="en" href="../security.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/security.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/security.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/security.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/security.html">Español</a>
+          <strong lang="pt-BR">Português (Brasil)</strong>
+          <a lang="ko" hreflang="ko" href="../ko/security.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/security.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/security.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/security.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Visão geral</a>
+      <a href="getting-started.html">Primeiros passos</a>
+      <strong>Segurança</strong>
+      <a href="deployment.html">Implantação</a>
+      <a href="import-export.html">Importação e exportação</a>
+      <a href="backup.html">Backup e restauração</a>
+      <a href="watch.html">Monitoramento de alterações</a>
+      <a href="sync.html">Sincronização em tempo real</a>
+      <a href="server-admin.html">Administração do servidor</a>
+      <a href="ai.html">Assistente de IA</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Atalhos de teclado</a>
+    </nav>
+    <main>
+      <h1>Segurança</h1>
+      <h2 id="modes">Modos</h2>
+      <p>
+        O Mongo Manager escuta em <code>127.0.0.1</code> por padrão e recusa um endereço de rede, a menos que o
+        modo equipe (<code>--auth</code>) esteja ativado. Use o modo equipe sempre que outra pessoa puder
+        alcançar a porta.
+      </p>
+      <h2 id="saved-secrets-and-the-key">Segredos salvos e a chave</h2>
+      <p>
+        As senhas e chaves das conexões, e as consultas do histórico, dos favoritos e dos pipelines salvos, são
+        criptografadas com uma chave mantida em
+        <code>secret.key</code> no diretório de dados, ou fornecida como <code>MM_SECRET_KEY</code>.
+      </p>
+      <ul>
+        <li>Faça backup da chave junto com o diretório de dados, mas guarde os dois separadamente.</li>
+        <li>
+          Os nomes e as tags dos favoritos e dos pipelines salvos são armazenados em texto claro, para que
+          possam ser pesquisados: não coloque segredos neles.
+        </li>
+        <li>
+          No Windows, um diretório de dados criado pelo Mongo Manager fica restrito a SYSTEM, Administradores e
+          à conta com a qual ele é executado, seja qual for a permissão da pasta pai. Um diretório já existente
+          (ou sua chave, ou o arquivo de log) que conceda acesso a Everyone, Users, Authenticated Users ou
+          Interactive perde essas concessões na inicialização — somente essas; o log o nomeia com as permissões
+          que ele tinha. Isso é feito apenas em um diretório que pertence a esta conta e que contém arquivos do
+          Mongo Manager (ou nada), nunca em uma unidade, um compartilhamento de rede ou uma pasta compartilhada;
+          <code>mongo-manager doctor</code> avisa quando todos os usuários podem ler o diretório de dados ou
+          quando outra pessoa é a proprietária dele. No Linux e no macOS, a mesma inicialização remove o acesso
+          de grupo e de outros (0700 para o diretório, 0600 para a chave e o arquivo de log), e o doctor avisa
+          quando a chave, o banco de dados ou o <code>launch.key</code> pertencem a um usuário diferente do
+          dono do diretório de dados (uma chave restaurada com <code>sudo cp</code> pertence ao root), e falha
+          quando não consegue ler o diretório de dados como o usuário com o qual é executado. O serviço do
+          Windows é executado como LocalService, uma conta que o Windows compartilha com alguns de seus próprios
+          serviços: qualquer um deles, se comprometido, poderia ler o diretório de dados, incluindo
+          <code>secret.key</code> e <code>launch.key</code>. Onde isso importar, execute o Mongo Manager no
+          Docker ou em um computador exclusivo.
+        </li>
+        <li>
+          <code>mongo-manager rotate-key</code> substitui a chave e recriptografa tudo (pare o servidor
+          primeiro). Ele deixa no diretório de dados a chave anterior e um backup selado com ela; juntos, eles
+          abrem os segredos como estavam, então mova-os ou exclua-os assim que a nova chave funcionar. Eles
+          são uma janela de recuperação de sete dias: a primeira inicialização depois disso que abre os dados
+          com a nova chave os remove, e até lá o log de cada inicialização os nomeia.
+          <code>mongo-manager doctor</code> lista os que ainda estiverem lá.
+        </li>
+      </ul>
+      <h2 id="signing-in">Entrando</h2>
+      <p>
+        O modo local não tem contas. Ele responde somente no endereço de loopback deste computador, somente a
+        páginas que ele mesmo serviu (outros sites e outros nomes de host são recusados) e somente a um
+        navegador que o abriu a partir de um link de acesso de uso único. O Mongo Manager informa onde está o
+        link ao iniciar: impresso em um terminal ou, caso contrário (um serviço, um contêiner, um log), o
+        caminho de um arquivo que somente a conta dele pode ler e que o abre; <code>mongo-manager open</code>
+        abre uma instância em execução com um novo link (para o serviço instalado,
+        <code>mongo-manager service open</code>, como administrador). O navegador também é aberto por meio de
+        um arquivo assim, de modo que nenhum link fica em uma linha de comando. Um link funciona uma vez, mesmo
+        após uma reinicialização, dentro de uma hora (o aberto de imediato, dois minutos), e não deixa nada na
+        barra de endereços.
+      </p>
+      <p>
+        O que isso protege: cada navegador que abre um link recebe um cookie próprio e, na mesma hora, uma
+        chave própria que a página dele guarda no próprio armazenamento e envia com cada solicitação. Os
+        cookies no endereço deste computador vão para todas as portas dele, então um programa de outra conta
+        que escute em outra porta pode receber o cookie; sem a chave, que a página de nenhuma outra porta
+        consegue ler, o cookie não abre nada. Os links são feitos a partir de <code>launch.key</code>, um
+        segredo criado como o <code>secret.key</code> no diretório de dados e legível somente pela conta com a
+        qual o Mongo Manager é executado e por administradores. O que ele não protege: qualquer coisa que
+        seja executada como a sua própria conta ou como administrador (ela pode ler o
+        <code>launch.key</code>, o armazenamento do seu navegador e o diretório de dados) e uma extensão de
+        navegador que você permitiu neste endereço. Um navegador permanece conectado enquanto mantém os dados
+        deste site, no máximo seis meses após o último uso. As configurações da conta desconectam todos os
+        navegadores, assim como <code>mongo-manager forget-browsers</code> (por meio do servidor em execução:
+        as conexões abertas deles e os shells locais terminam na hora, e um comando em execução neles
+        também). O modo equipe é para um computador ou uma rede que você compartilha.
+      </p>
+      <p>
+        No modo equipe, cada usuário pode adicionar um app autenticador, passkeys e códigos de recuperação. Os
+        administradores dão a cada usuário uma função (administrador, editor, leitor) e podem restringi-la por
+        conexão.
+      </p>
+      <p>
+        A permissão do app <code>databases:admin</code> gerencia os próprios usuários e funções do MongoDB e o
+        sharding de um cluster (veja <a href="server-admin.html">Administração do servidor</a>). Os
+        administradores a têm em todas as conexões, e um usuário com a função de administrador em uma conexão
+        a tem ali; os direitos do próprio MongoDB continuam valendo. Ela não é uma gravação de dados, e ainda
+        assim uma conexão somente leitura mostra seus usuários, funções e sharding sem nunca alterá-los. Um usuário de quem um administrador oculta os dados pessoais nunca vê o gerenciamento de Usuários e funções nem o de sharding, mesmo com essa permissão. Quem os oculta de si mesmo, e a única pessoa do modo local, continuam gerenciando usuários e funções (eles contêm só nomes); o gerenciamento de sharding continua oculto para eles.
+      </p>
+      <p>
+        Senhas incorretas bloqueiam a conta no endereço de onde vieram após cinco, e um endereço que tenta
+        adivinhar muitas contas, após vinte. Tentativas de muitos endereços bloqueiam a conta somente após
+        cinquenta, e nunca em um endereço de onde ela entrou nos últimos 30 dias (lembrado até o servidor
+        reiniciar); uma resposta correta nunca conta contra ela, uma entrada bem-sucedida remove o bloqueio e
+        as tentativas são esquecidas após um dia. Adicionar ou remover um segundo fator, ou gerar novos códigos
+        de recuperação, também pede um dos seus segundos fatores quando você não usou nenhum nesta sessão nos
+        últimos dez minutos; os códigos pedidos ali são limitados da mesma forma. Um administrador redefine os
+        segundos fatores de outros usuários, nunca os próprios: esses passam pelas configurações da conta.
+      </p>
+      <p>
+        Adicionar um usuário, ativá-lo novamente, alterar uma função e redefinir a senha ou os segundos fatores
+        de outro usuário pedem a senha do próprio administrador e, quando ele tem algum, um dos segundos fatores
+        dele, caso não tenha usado nenhum nesta sessão nos últimos dez minutos: uma sessão que outra pessoa
+        obteve não pode deixar uma forma duradoura de acesso. Os códigos de recuperação são guardados somente
+        como um hash com chave, contra o qual uma cópia do banco de dados sozinha não consegue testar palpites.
+      </p>
+      <p>
+        A senha de uma conta precisa ter pelo menos 12 caracteres, não pode conter o nome de usuário e não pode
+        ser uma senha comum ou fácil de adivinhar (uma sequência, uma fileira do teclado, uma repetição, uma
+        palavra comum com um ano). Um medidor mostra a força dela conforme é digitada, onde quer que uma seja
+        escolhida; o servidor verifica as mesmas regras.
+      </p>
+      <p>
+        Uma nova senha, definida pelo próprio usuário ou por um administrador, encerra todas as outras sessões
+        desse usuário e qualquer entrada ainda aguardando o segundo passo. Sair, uma nova senha, uma redefinição
+        de segundos fatores e a exclusão de um usuário também encerram as conexões abertas desse usuário com o
+        app e os shells dele, com qualquer comando ainda em execução neles.
+      </p>
+      <p>
+        Os administradores podem ser obrigados a usar a entrada em dois fatores, no app ou com
+        <code>MM_REQUIRE_ADMIN_2FA</code> (que o app não consegue desativar); todos também podem, com
+        <code>MM_REQUIRE_2FA</code> ou no app, e um usuário específico, escolhido quando é adicionado ou depois.
+        Um usuário que deve tê-la e não tem nenhuma alcança somente a própria conta até configurá-la, e não
+        pode remover o último segundo fator. Somente um administrador que tem entrada em dois fatores pode
+        exigi-la de todos. Desativar uma regra no app pede a senha do administrador e, quando ele tem um, um
+        segundo fator usado recentemente.
+      </p>
+      <p>
+        Uma sessão termina após 30 minutos sem uma solicitação, e sempre 12 horas após a entrada. Um
+        administrador pode escolher outro tempo de inatividade na página Usuários (15 minutos, 30 minutos, 1, 4
+        ou 8 horas); ele se aplica a todas as sessões de uma vez. Um tempo maior pede a senha do administrador
+        e, quando ele tem um, um segundo fator usado recentemente; as 12 horas permanecem, seja qual for a
+        escolha.
+      </p>
+      <h2 id="sign-in-bans">Endereços bloqueados</h2>
+      <p>
+        Além desses limites, um endereço com 30 tentativas de login com falha ou recusadas em 15 minutos é bloqueado: por 15 minutos, depois uma hora, 6 horas e um dia a cada vez que volta dentro de uma semana. Um endereço bloqueado é recusado imediatamente, antes de qualquer senha ser verificada. Quem já entrou a partir dele continua conectado, e uma conta que entrou a partir dele nos últimos 30 dias ainda pode entrar ali (seus próprios limites continuam a contê-la). Os bloqueios ficam no diretório de dados, então reiniciar não os remove. Endereços IPv6 são bloqueados pelo seu /64, e o endereço desta própria máquina (127.0.0.1, ::1) nunca é. O bloqueio de um administrador vale para todos, inclusive essas contas. Um /48 IPv6 é bloqueado por inteiro após 300 falhas, então alternar entre os seus /64 não adianta. Enquanto nenhum proxy reverso for confiável, endereços privados (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, fc00::/7 e afins) também nunca são bloqueados, pois um deles pode ser o proxy pelo qual todos chegam; os limites acima continuam a contê-los.
+      </p>
+      <p>
+        Todas as etapas de login de um endereço compartilham 30 solicitações por minuto. As senhas são verificadas poucas de cada vez: quando muitas chegam ao mesmo tempo de muitos endereços, as demais esperam um pouco ou são recusadas como ocupado, de modo que uma enxurrada nunca prende os trabalhadores do servidor. Um login recusado antes de qualquer verificação não grava uma linha de auditoria própria; um bloqueio é uma linha. Contas que entraram recentemente a partir de um endereço têm lugares próprios nessa fila, e as recusas por ocupado são gravadas no log de auditoria uma vez por minuto.
+      </p>
+      <p>
+        Os administradores veem os endereços bloqueados na página Usuários, bloqueiam um endereço por uma hora, um dia, 7 ou 30 dias e removem um bloqueio; remover pede a senha deles e, quando têm um, um segundo fator usado recentemente. Um administrador cujo próprio endereço está bloqueado e que não tem mais nenhuma sessão executa <code>mongo-manager bans lift &lt;endereço&gt;</code> no servidor (<code>mongo-manager bans list</code> lista os bloqueios). Atrás de um proxy reverso, indique-o com <code>--trusted-proxies</code>: caso contrário, todo login parece vir do proxy, e todos compartilham os limites dele.
+      </p>
+      <h2 id="panel-access">Acesso ao painel</h2>
+      <p>
+        No modo de equipe, um administrador pode fazer o painel responder só a alguns endereços, na página Usuários e sem proxy reverso: endereços e faixas IPv4 ou IPv6 (<code>203.0.113.0/24</code>), cada um com uma nota. Uma lista vazia deixa todos os endereços entrar. De qualquer outro endereço são recusados a API, o login, a conexão em tempo real, os frames de plugins e o retorno do OIDC; a página web ainda abre e diz que o endereço não é permitido, e a sessão que vem de um endereço assim é encerrada. As verificações de saúde e as métricas (que têm o próprio token) não são o painel e respondem a todos os endereços.
+      </p>
+      <p>
+        A página mostra quem está conectado agora, de qual endereço e navegador, e, enquanto uma lista é montada, quais sessões ela encerraria. Salvar pede a senha do administrador e, quando ele tem um, um segundo fator usado recentemente, e encerra na hora todas as sessões de endereços fora da lista. Se a lista deixa de fora o endereço que o administrador está usando, a página avisa antes de salvar: ele seria desconectado e não conseguiria mais entrar a partir dele, e salvar também pede essa confirmação. Ficou de fora mesmo assim? <code>mongo-manager access clear</code> no servidor volta a deixar todos os endereços entrar em poucos segundos. Atrás de um proxy reverso, indique-o antes com <code>--trusted-proxies</code>: caso contrário, toda solicitação parece vir do proxy, e a página avisa. Indique ali só o endereço do próprio proxy: uma faixa ampla deixaria qualquer máquina nela se passar por outro endereço. Em IPv6, “Adicionar meu endereço” adiciona o seu /64, porque o endereço IPv6 de um dispositivo muda com frequência dentro dele.
+      </p>
+      <h2 id="audit-log">Log de auditoria</h2>
+      <p>
+        Toda alteração, entrada e mudança de permissão é registrada em um log de auditoria somente de
+        acréscimo (append-only) que os administradores podem ler.
+      </p>
+      <ul>
+        <li>
+          Cada ação é descrita em palavras no idioma do app; seu código (como
+          <code>auth.totp.disable</code>) está na dica de ferramenta e nos detalhes. O filtro escolhe uma ação
+          pelas palavras ou pelo código, ou aceita um código digitado por inteiro. As exportações mantêm os
+          códigos.
+        </li>
+        <li>
+          Ele pode ser exportado como CSV ou NDJSON, com os filtros exibidos. Uma célula de CSV que uma
+          planilha executaria como fórmula é gravada como texto.
+        </li>
+        <li>
+          Ele é mantido para sempre, a menos que um administrador defina um período (30 a 3650 dias); as
+          entradas mais antigas são então removidas, e cada remoção é, por sua vez, registrada. Um período mais
+          curto pede a senha do administrador (e um segundo fator usado recentemente, quando ele tem um) e
+          começa um dia depois, dando tempo para voltar atrás ou exportar antes.
+        </li>
+        <li>
+          Cada entrada é encadeada à anterior com um hash com chave, de modo que uma entrada alterada, removida
+          ou adicionada com o arquivo do banco de dados em mãos quebra a cadeia. A página de auditoria informa
+          então em qual entrada, e uma exportação informa isso em seu cabeçalho <code>X-Audit-Chain</code>
+          (<code>ok</code> ou <code>broken at</code> seguido do número de uma entrada). O log é verificado aos
+          poucos, sem nunca atrasar o servidor: o que é novo a cada verificação, e tudo uma vez por hora. As
+          entradas gravadas antes de a cadeia existir são mantidas como estão, e a página de auditoria informa
+          quantas são (nenhuma em uma instalação nova); uma entrada sem o seu elo depois de a cadeia começar é
+          uma quebra. Uma cadeia mantida no mesmo arquivo não consegue mostrar que as entradas mais recentes
+          foram removidas, nem que tudo foi redefinido junto com a chave dela.
+        </li>
+        <li>
+          Uma conexão em tempo real recusada por um token de segurança incorreto também é registrada, no máximo
+          cinco por minuto de um mesmo endereço.
+        </li>
+        <li>
+          No modo equipe, os administradores veem as entradas, as entradas com falha, as ações, as ações
+          recusadas e a última atividade de cada usuário nos últimos 7, 30 ou 90 dias, obtidas do log de
+          auditoria.
+        </li>
+      </ul>
+      <h2 id="what-the-server-enforces">O que o servidor impõe</h2>
+      <p>
+        As conexões somente leitura, as funções e o acesso por conexão são verificados pelo servidor em cada
+        solicitação, nunca apenas no navegador. Links para conexões que você não pode abrir não mostram nada. O
+        banco de dados local (o oplog dele contém todas as gravações) e as coleções que contêm credenciais são
+        somente para os administradores de uma conexão, onde quer que apareçam: dados, tarefas, operações em
+        execução, consultas lentas, a biblioteca e o histórico de IA compartilhado; nenhum dos dois é enviado a
+        um provedor de IA, e hashes e salts de senhas são ocultados de todos nos comandos exibidos.
+      </p>
+      <p>
+        Um túnel SSH escuta em uma porta aleatória no endereço de loopback deste computador enquanto a conexão
+        dele está aberta. Todos os programas do computador podem alcançar essa porta, então ele encaminha
+        somente um cliente que informe o nome de usuário e a senha criados para esse túnel (SOCKS5, mantidos
+        somente na memória); qualquer outra coisa não alcança nada.
+      </p>
+      <p>
+        Uma senha ou chave salva só é enviada para onde foi digitada: alterar os hosts de uma conexão, o método
+        de autenticação, as configurações de TLS (desativar o TLS, outra CA, verificações de certificado
+        ignoradas) ou o host SSH pede os segredos dela novamente, tanto para um teste quanto para salvar.
+      </p>
+      <p>
+        Quem não entrou é recusado antes que o servidor leia qualquer parte do corpo da solicitação, exceto nas
+        rotas de entrada e de configuração, que leem no máximo 1 MiB de JSON e precisam recebê-lo em 30
+        segundos. O envio de um plugin é recusado antes de chegar um único byte do arquivo dele, a menos que o
+        remetente seja um administrador; as demais solicitações são analisadas (no máximo 1 MiB de JSON) antes
+        de a permissão ser verificada. Um corpo que para de chegar por um minuto fecha a conexão. Uma conexão
+        que espera em silêncio por 10 minutos por uma solicitação, ou pela leitura da resposta dela, também é
+        fechada, mas nunca enquanto o servidor ainda está trabalhando na resposta (um <code>$out</code> longo
+        ou uma atualização em massa). Envios transmitidos para o disco (importações, backups, arquivos do
+        GridFS) podem levar o tempo que for preciso enquanto seus bytes continuam chegando.
+      </p>
+      <h2 id="server-identity">A identidade do próprio servidor</h2>
+      <p>
+        Uma conexão se autentica com as próprias credenciais, nunca com uma identidade da máquina em que o
+        Mongo Manager é executado, que todo usuário do servidor tomaria emprestada. O MONGODB-AWS pede o ID da
+        chave de acesso e a chave de acesso secreta de um usuário ou função do IAM (adicione
+        <code>AWS_SESSION_TOKEN</code> para chaves temporárias); o ambiente do servidor, o perfil da AWS e a
+        função da instância nunca são lidos, nem pela conexão nem por mongodump e mongorestore. Uma string de
+        conexão colada preenche o formulário, e ao salvar é informado o que está faltando.
+      </p>
+      <p>
+        Dois métodos podem autenticar como a máquina e são recusados no modo equipe, a menos que um
+        administrador os permita no servidor. O Kerberos (GSSAPI) se autentica com o ticket Kerberos da conta
+        com a qual o Mongo Manager é executado: no modo local, essa é a sua própria; no modo equipe, todo
+        usuário de uma conexão Kerberos se autenticaria como essa conta, então ele é recusado, a menos que
+        <code>MM_ALLOW_KERBEROS=1</code>, e o formulário informa isso em vermelho. Uma identidade de carga de
+        trabalho (workload identity) OIDC (<code>ENVIRONMENT</code> Azure, GCP ou Kubernetes) é a identidade de
+        nuvem da máquina: ela é usada somente quando escolhida na conexão e, no modo equipe, somente com
+        <code>MM_ALLOW_WORKLOAD_IDENTITY=1</code>. A política é verificada quando uma conexão é salva,
+        importada ou testada, e novamente a cada vez que ela se conecta, de modo que uma configuração alterada
+        depois continua valendo. Backups e restaurações (mongodump, mongorestore) não são executados para
+        conexões Kerberos ou OIDC: as ferramentas usariam o ticket ou a identidade do próprio servidor, e a
+        autenticação OIDC de uma pessoa nunca é entregue a outro programa.
+      </p>
+      <h2 id="oidc">Autenticação OIDC</h2>
+      <p>
+        Uma conexão MONGODB-OIDC autentica cada pessoa com o provedor de identidade que o servidor MongoDB
+        nomeia. No modo equipe, cada usuário se autentica por conta própria e recebe um cliente MongoDB só
+        dele: os tokens de uma pessoa nunca são usados para outra, e o trabalho que é executado por conta
+        própria, sem uma pessoa por trás (amostragem de métricas, verificações de integridade, alertas,
+        agendamentos, sincronizações em tempo real), não pode usar uma conexão assim. Uma tarefa (uma
+        importação, uma exportação, uma cópia) usa a autenticação da pessoa que a iniciou.
+      </p>
+      <ul>
+        <li>
+          A autenticação acontece no seu navegador: o fluxo de código de autorização com PKCE (S256), um
+          <code>state</code> e um <code>nonce</code> aleatórios, por no máximo dez minutos. O provedor de
+          identidade devolve o navegador para <code>&lt;base path&gt;oidc/callback</code>; o código é trocado
+          pelo servidor, e o navegador só vê o endereço para o qual é devolvido. Um cookie HttpOnly de curta
+          duração criado quando a autenticação começou deve voltar com ela: uma autenticação iniciada por outra
+          pessoa e concluída no seu navegador é recusada (CSRF de login). Onde o provedor de identidade não
+          consegue devolver o navegador a este servidor, um código é inserido no provedor (o fluxo de
+          dispositivo); o servidor espera por ele.
+        </li>
+        <li>
+          Os tokens são selados com a chave do servidor (selados novamente por <code>rotate-key</code>),
+          mantidos por pessoa e conexão com o emissor e o cliente de onde vieram, renovados com o refresh token
+          e entregues ao driver do MongoDB somente para um servidor que nomeia o mesmo provedor de identidade.
+          Eles nunca chegam a um navegador e nunca são registrados em log. Sair os revoga no provedor (RFC
+          7009) e fecha o seu cliente; um administrador pode desconectar todos de uma conexão. Alterar as
+          configurações de uma conexão, ou excluir um usuário, descarta as autenticações dele.
+        </li>
+        <li>
+          O emissor vem do servidor MongoDB, portanto é um endereço que outra pessoa escolheu: a descoberta
+          dele e cada chamada a ele passam pela mesma proteção de saída dos destinos de backup — https,
+          endereços públicos, privados somente dentro de <code>MM_OIDC_PRIVATE_NETWORKS</code>, endereços de
+          metadados e de link local nunca, sem redirecionamentos. Os metadados dele devem nomear o próprio
+          emissor (a defesa contra mix-up) e oferecer S256.
+        </li>
+        <li>
+          Seus tokens vão somente para hosts permitidos: o MongoDB Atlas e este computador, a menos que a
+          conexão liste outros. Os hosts que a conexão nomeia também são verificados, de modo que um túnel SSH
+          (em que o driver só vê <code>127.0.0.1</code>) não esconde para onde eles vão. O mesmo vale para uma
+          identidade de carga de trabalho (a identidade de nuvem do próprio servidor), e o OIDC exige TLS com
+          verificação de certificado, a menos que o servidor MongoDB esteja neste computador ou seja alcançado
+          por um túnel SSH. O recurso de token de uma identidade de carga de trabalho (que uma string de
+          conexão colada preenche) só é usado depois que esse mesmo valor é confirmado no formulário, e uma
+          identidade de carga de trabalho só depois que o ambiente dela é; um arquivo importado não traz
+          confirmação.
+        </li>
+        <li>
+          Antes do redirecionamento, a caixa de diálogo de autenticação mostra o provedor de identidade que o
+          servidor MongoDB nomeou e os hosts para onde o seu token irá. Um administrador pode definir o
+          <em>provedor de identidade esperado</em> da conexão: qualquer outro é recusado antes que alguém seja
+          enviado para lá. No modo equipe, o provedor de identidade devolve o navegador somente a este
+          servidor. Cada autenticação tem o próprio cookie de vinculação (um cookie <code>__Host-</code> em
+          https na raiz), então várias podem esperar ao mesmo tempo.
+        </li>
+        <li>
+          Cada autenticação é mantida com quem a pessoa é no provedor de identidade (o subject e o nome do
+          token de ID, selados com os tokens): os administradores a veem na lista de sessões, e o log de
+          auditoria a registra a cada autenticação. Com um código (o fluxo de dispositivo), quem aprova o
+          código se autentica, então no modo equipe ele fica desativado, a menos que um administrador o ative
+          (<code>MM_OIDC_DEVICE_FLOW</code>), e uma pessoa pode ter no máximo três códigos aguardando. As
+          autenticações também são revogadas no provedor quando a conexão delas é excluída ou alterada, ou o
+          usuário delas é excluído. Em uma conexão OIDC por pessoa no modo equipe, o que o servidor faz por
+          conta própria (integridade, histórico de métricas, a reversão do profiler) não pode ser executado: a
+          verificação de integridade informa isso, e o nível 2 do profiler é recusado.
+        </li>
+      </ul>
+      <h2 id="encryption">Criptografia do lado do cliente</h2>
+      <p>
+        CSFLE e Queryable Encryption precisam do pacote opcional <code>mongodb-client-encryption</code>
+        (somente o pacote npm). As credenciais dos provedores de chaves (uma chave mestra local, AWS, Azure,
+        Google Cloud, um certificado de cliente KMIP) são seladas com a conexão, exibidas mascaradas e mantidas
+        em uma edição somente para o mesmo cofre de chaves, conta e endpoint. Um provedor sem credenciais é
+        recusado: a identidade de nuvem do próprio host nunca é obtida. Todo socket para um serviço de
+        gerenciamento de chaves vai somente aos hosts próprios dos provedores na porta 443, aos endpoints que
+        as configurações da conexão nomeiam ou à lista do operador (<code>MM_KMS_ALLOWED_HOSTS</code>) — uma
+        chave mestra que nomeia qualquer outro host é recusada quando uma chave é criada ou reembrulhada, e o
+        socket dela nunca é aberto — e depois pela proteção de saída (endereços privados somente dentro de
+        <code>MM_KMS_PRIVATE_NETWORKS</code>).
+      </p>
+      <p>
+        O cofre de chaves e as coleções de metadados do Queryable Encryption (<code>enxcol_.*</code>) são
+        somente de um administrador da conexão, para toda leitura e gravação: documentos, pipelines
+        (<code>$lookup</code>, <code>$merge</code>, <code>$out</code>), o shell, importações, Observar, o
+        modelo de dados, o sharding — e também descartar o banco de dados que contém um cofre de chaves. Uma
+        cópia, uma comparação, uma sincronização em tempo real, um backup e uma restauração nunca os leem nem
+        os gravam, quem quer que os execute (faça backup do cofre de chaves com suas próprias ferramentas).
+        Alguém de quem os dados pessoais são ocultados nunca vê o material de uma chave de dados, os nomes
+        alternativos ou a chave mestra, nem mesmo um administrador.
+      </p>
+      <ul>
+        <li>
+          A biblioteca crypt_shared é código que o servidor carrega. No modo equipe, somente a do próprio
+          operador é carregada (<code>MM_CRYPT_SHARED_LIB_PATH</code>, um caminho absoluto); uma conexão nomeia
+          a sua própria somente no modo local, e somente um arquivo chamado <code>mongo_crypt_v1</code>
+          (<code>.so</code>, <code>.dylib</code> ou <code>.dll</code>) que exista neste computador — nunca um
+          em um compartilhamento de rede. Importar um arquivo de conexões descarta o caminho que ele nomeia:
+          digite-o novamente na conexão. A busca de bibliotecas do próprio sistema nunca é usada. O
+          mongocryptd vê toda consulta em texto claro: ele é executado somente neste computador, iniciado a
+          partir do <code>PATH</code> do servidor, e o endereço dele é um host de loopback e uma porta, sem
+          opções.
+        </li>
+        <li>
+          Os valores descriptografados são para quem pode ver os dados. Alguém de quem os dados pessoais são
+          ocultados recebe um cliente que não descriptografa: vê o valor criptografado como armazenado, nunca o
+          valor em texto claro, e não pode gravar documentos nessa conexão (um cliente que não criptografa os
+          armazenaria em texto claro). Uma conexão configurada para apenas descriptografar não aceita nenhuma
+          gravação de documentos. O shell avançado é somente leitura ali (o worker dele não consegue
+          criptografar). A mascaração de campos pessoais continua valendo para o que é exibido.
+        </li>
+        <li>
+          Cópias, exportações e backups movem os valores criptografados como armazenados, nunca
+          descriptografados. Uma coleção com Queryable Encryption é recusada por uma cópia (seus valores estão
+          vinculados aos metadados de criptografia da origem); uma coleção CSFLE é copiada como texto cifrado,
+          legível somente com as chaves da origem.
+        </li>
+        <li>
+          O assistente de IA e o agente dele nunca recebem um valor descriptografado: o que eles leem para um
+          provedor é lido como armazenado, o cofre de chaves e as coleções de metadados do Queryable Encryption
+          nunca são lidos para eles, e o agente não propõe gravações de documentos em uma conexão assim.
+        </li>
+        <li>
+          As chaves de dados são listadas sem o material delas. Criar, rotacionar (reembrulhar) chaves de dados
+          e criar coleções criptografadas é para os administradores da conexão, nunca para alguém de quem os
+          dados pessoais são ocultados (os nomes alternativos de chaves muitas vezes nomeiam pessoas), e cada
+          alteração é auditada.
+        </li>
+      </ul>
+      <h2 id="copy-compare-and-sync">Copiar, comparar e sincronizar</h2>
+      <p>
+        O destino de uma cópia vem da solicitação, então o servidor o verifica como a conexão do endereço: você
+        deve poder abri-lo, a sua função ali decide o que a cópia pode gravar, as conexões somente leitura
+        recusam gravações, e nada é gravado em coleções admin, local, config ou system. Duas conexões que
+        alcançam o mesmo servidor são reconhecidas, de modo que uma coleção nunca é copiada sobre si mesma. Uma
+        cópia lê dados pessoais somente como você pode vê-los; as comparações mascaram os dois lados com as
+        regras de ambos, de modo que contagens e amostras nunca distinguem um valor oculto. Índices, opções e
+        visualizações vêm de uma lista de permissões, e uma visualização ou um validador que executa JavaScript
+        não é criado, a menos que o JavaScript do lado do servidor esteja ativado. Uma cópia que mascara
+        valores pessoais (porque estão ocultos de você, ou porque é anônima) deixa de fora todo validador,
+        filtro de índice e visualização cuja definição nomeia um valor que seria mascarado, como faz um backup
+        mascarado, e o plano dela lista cada um; uma sincronização em tempo real faz o mesmo com as coleções e
+        os índices que acompanha depois, e novas opções da origem cujo validador nomeia um valor assim só
+        podem ser ignoradas, nunca aplicadas. Tarefas, relatórios e configurações salvas são somente do dono
+        deles.
+      </p>
+      <h2 id="backups">Backups</h2>
+      <p>
+        Um arquivo de backup é tratado como hostil até que se prove o contrário. O tamanho, o aninhamento, o
+        número de namespaces e a taxa de compressão dele são limitados, de modo que um arquivo manipulado ou
+        uma "zip bomb" falha de forma limpa; zips cujos caminhos saem da pasta deles são recusados, e a soma de
+        verificação de cada namespace é verificada, com uma substituição restaurando em uma coleção
+        intermediária para que um arquivo ruim nunca danifique o destino. Nada é restaurado em coleções admin,
+        local, config ou system, e visualizações ou validadores que executam JavaScript são deixados de fora,
+        a menos que o JavaScript do lado do servidor esteja ativado. Os backups criptografados usam AES-256-GCM
+        com uma chave derivada da sua senha por scrypt; a senha nunca é armazenada, registrada em log nem
+        mantida com a tarefa, e palpites errados são retardados. mongodump e mongorestore são somente para
+        administradores irrestritos e recebem as credenciais de um arquivo temporário privado, nunca da linha
+        de comando. Um usuário que não pode ver valores pessoais faz backup e restaura pela mesma mascaração de
+        todos os outros lugares, e backups, envios e seus relatórios são visíveis somente ao dono. Em um
+        destino, um usuário com a concessão <em>Navegar por tudo</em> também lista os backups de outros
+        usuários ali, mas vê o que cada um contém (os nomes de banco de dados e de coleção) somente quando pode
+        ler a conexão dele.
+      </p>
+      <h2 id="backup-destinations">Destinos de backup</h2>
+      <p>
+        Toda conexão que o servidor abre com um destino de backup, e com o Google para uma autenticação do
+        Drive, passa por um único cliente protegido. Somente HTTPS é usado, com verificação de certificado e
+        TLS 1.2 ou posterior. Cada endereço para o qual um nome é resolvido é verificado no momento em que a
+        conexão é feita, de modo que um nome que depois aponte para outro lugar é verificado novamente;
+        endereços de loopback, privados (10/8, 172.16/12, 192.168/16, fc00::/7), CGNAT (100.64/10), multicast e
+        reservados são recusados, inclusive as formas mapeadas para IPv4, traduzidas e NAT64 deles. Os
+        redirecionamentos não são seguidos, e as respostas têm tamanho e tempo limitados. Nenhum proxy é usado,
+        a menos que <code>MM_BACKUP_PROXY</code> nomeie um; mesmo assim o endereço é verificado aqui, e o proxy
+        é instruído a se conectar a esse mesmo endereço. Um destino SFTP é alcançado da mesma forma (a sessão
+        SSH dele traz a própria criptografia), e somente depois que o servidor mostra a chave de host em que um
+        administrador confiou. Os tokens SAS do Azure só podem conter campos SAS, e cada destino mantém somente
+        as credenciais que o método de autenticação dele usa.
+      </p>
+      <p>
+        <code>MM_BACKUP_PRIVATE_NETWORKS</code>, definido no servidor e nunca na interface, pode abrir
+        intervalos privados (loopback, 10/8, 172.16/12, 192.168/16, 100.64/10, fc00::/7) para destinos, com
+        HTTP simples dentro deles. Um intervalo público é recusado quando o servidor inicia. Endereços de link
+        local e de metadados de nuvem (169.254.0.0/16, fe80::/10, 169.254.169.254, fd00:ec2::254,
+        100.100.100.200) nunca podem ser permitidos: um intervalo dentro de um deles, escrito em qualquer forma
+        (inclusive mapeado para IPv4 e NAT64), é recusado na inicialização com esse intervalo nomeado na
+        mensagem, e esses endereços continuam recusados dentro de um intervalo listado que os contenha.
+      </p>
+      <p>
+        As chaves de um destino são seladas com a chave do servidor e são somente de gravação: a página mostra
+        apenas se cada uma está armazenada (e, para o S3, os últimos quatro caracteres do ID da chave de
+        acesso). Alterar para onde um destino aponta — o caminho de uma pasta; um endpoint, bucket ou
+        certificado de CA do S3; um endereço, nome de usuário ou certificado de CA do WebDAV; o tipo de
+        autenticação, o cliente OAuth ou o Shared Drive de um Drive — é recusado, a menos que todas as chaves
+        sejam inseridas novamente, de modo que as credenciais armazenadas nunca possam ser enviadas a outro
+        host. Uma reconexão do Drive usa o segredo do cliente armazenado no servidor; ele nunca volta ao
+        navegador. Os usuários que não são administradores veem somente o nome de um destino, nunca o endereço
+        dele, nem mesmo em um erro. Os testes são limitados a 10 por minuto e dois por vez por administrador, e
+        as listagens dos backups de um destino a 30 por minuto e duas por vez por usuário, já que cada uma é
+        uma solicitação ao provedor. Criar, alterar, testar e excluir destinos, o acesso a eles, autenticações
+        do Google, envios, downloads e exclusões em um destino são gravados no log de auditoria.
+      </p>
+      <p>
+        Os destinos de pasta ficam dentro das pastas listadas em <code>MM_BACKUP_FOLDER_ROOTS</code> e fora do
+        diretório de dados; caminhos de rede e de dispositivo são recusados, assim como links simbólicos e
+        junctions no caminho. O serviço do Linux só pode gravar em seu diretório de dados e nas raízes com as
+        quais foi instalado, para onde elas realmente levam. A instalação deixa de fora uma raiz atrás de um
+        link que não leva a lugar nenhum, e uma abaixo de uma pasta que o usuário do serviço poderia alterar,
+        inclusive por meio de seus grupos e ACLs, onde um processo executado como esse usuário poderia colocar
+        um link para <code>/etc</code>, que o systemd seguiria na próxima vez que o serviço iniciasse; a
+        instalação e o <code>mongo-manager doctor</code> avisam sobre uma pasta acima de uma raiz que outro
+        usuário pode alterar (veja <a href="deployment.html#backup-destinations">Implantação</a>).
+      </p>
+      <h2 id="backup-keys">Chaves de backup</h2>
+      <p>
+        Os backups agendados são executados sem ninguém ao teclado, então não podem pedir uma senha. Eles são
+        criptografados com uma chave de backup: 32 bytes aleatórios por usuário, nomeada por uma impressão
+        digital (<code>K-</code> e 8 caracteres hexadecimais). Gerencie as suas em <em>Configurações da conta →
+        Chaves de backup</em>.
+      </p>
+      <ul>
+        <li>
+          O servidor mantém cada chave selada com <code>secret.key</code>, vinculada ao dono dela e ao registro
+          próprio dessa chave, e a abre somente para o dono: nem mesmo os administradores podem usar a chave de
+          outro usuário, e uma chave movida para outra conta no banco de dados não abre nada.
+        </li>
+        <li>
+          Quando uma chave é criada, o kit de recuperação dela é exibido uma vez: uma linha que começa com
+          <code>MMKEY1-</code> e termina com um grupo de soma de verificação. Baixe ou imprima e guarde-o
+          offline. Ele nunca é armazenado pelo servidor. A chave começa a funcionar quando você confirma o kit
+          digitando o último grupo dele; uma chave cujo kit nunca é confirmado desaparece em uma hora.
+        </li>
+        <li>
+          <em>Nova chave</em> cria uma nova chave ativa e aposenta a atual: os novos backups usam a nova chave,
+          e os backups feitos com uma chave aposentada ainda abrem aqui. Uma chave só pode ser excluída quando
+          nenhum agendamento e nenhum backup neste servidor precisa dela, e não enquanto um dos seus backups
+          agendados estiver em execução. Uma chave cujo kit não foi confirmado quando a caixa de diálogo foi
+          fechada pode ser confirmada a partir da linha dela dentro de uma hora. <em>Importar um kit</em> traz
+          uma chave de volta a partir do kit de recuperação dela.
+        </li>
+        <li>
+          Quem tiver o banco de dados e o <code>secret.key</code> pode abrir as chaves de backup de todos os
+          usuários e, com elas, todos os backups agendados. Proteja o <code>secret.key</code>: permissões de
+          arquivo restritivas, um gerenciador de segredos por meio de <code>MM_SECRET_KEY</code> e backups dele
+          mantidos separados dos do diretório de dados. Mantenha os kits de recuperação offline. O banco de
+          dados sozinho não abre nada.
+        </li>
+        <li><code>mongo-manager rotate-key</code> sela novamente as chaves de backup junto com todo o resto.</li>
+        <li>
+          Nenhuma chave, kit ou parte de um é gravado no log de auditoria, em uma tarefa, em um relatório ou no
+          log do servidor.
+        </li>
+      </ul>
+      <h2 id="watch">Monitoramento de alterações</h2>
+      <ul>
+        <li>
+          Um feed precisa do direito de ler documentos na conexão, verificado novamente antes de cada lote e
+          pelo menos a cada segundo; perdê-lo, ou perder a conta ou a sessão, encerra o feed antes que mais
+          alguma coisa seja enviada.
+        </li>
+        <li>
+          O pipeline do change stream é construído pelo servidor. O seu filtro é somente um
+          <code>$match</code>, de no máximo 12 KB e 20 níveis de profundidade, e nunca executa JavaScript no
+          MongoDB, seja o que for que <code>MM_ALLOW_SERVER_JS</code>
+          diga. As coleções de credenciais ficam fora do feed de todo não administrador, duas vezes: no
+          pipeline e em cada alteração.
+        </li>
+        <li>
+          Os usuários que não podem ver dados pessoais recebem toda alteração mascarada pelas regras da coleção;
+          filtros em campos ocultos são recusados e registrados no log de auditoria (sem os valores deles).
+          Assim também os filtros sobre a descrição de uma alteração de esquema (validadores, filtros de
+          índices parciais), que esses usuários veem mascarada por inteiro. O texto de erro do próprio MongoDB
+          nunca é exibido.
+        </li>
+        <li>
+          Os resume tokens (que carregam chaves de documentos), os IDs de sessão e os UUIDs de coleções nunca
+          saem do servidor. Um feed pertence ao seu usuário: o ID de feed de outro usuário não retoma nada.
+        </li>
+        <li>
+          Os feeds são limitados (3 por janela, 5 por usuário, <code>MM_WATCH_MAX_FEEDS</code> por servidor, 60
+          inícios por minuto por usuário), e um navegador lento nunca faz o servidor reter mais de 200
+          alterações ou 8 MB por feed; uma parte de uma alteração maior que 256 KB é deixada de fora e nomeada
+          ao lado. Inícios e interrupções são auditados com o endereço do navegador e um hash com chave do
+          filtro (HMAC-SHA-256 com uma chave derivada de <code>secret.key</code>), nunca os valores dele, de
+          modo que a auditoria não possa ser usada para adivinhá-los.
+        </li>
+      </ul>
+      <h2 id="live-sync">Sincronização em tempo real</h2>
+      <ul>
+        <li>
+          Uma sincronização em tempo real é executada como o seu dono: o direito de exportar da origem e de
+          gravar documentos, criar coleções e índices e executar tarefas no destino são lidos novamente antes
+          de cada lote, a partir da conta como ela está então (não de uma sessão). Perder um deles, ou a conta,
+          a interrompe antes que mais alguma coisa seja lida ou gravada.
+        </li>
+        <li>
+          O ponto em que uma sincronização é retomada (um resume token, que carrega chaves de documentos) é
+          selado no banco de dados do servidor com <code>secret.key</code> e nunca enviado a um navegador; uma
+          cópia do banco de dados sem a chave não revela nenhum.
+        </li>
+        <li>
+          As sincronizações mascaradas e anônimas mascaram todo documento que gravam; as sincronizações sem
+          máscara para um destino sem as mesmas regras exigem uma confirmação registrada no log de auditoria;
+          uma mudança nas regras de qualquer um dos lados, ou uma edição de qualquer uma das conexões, interrompe
+          a sincronização até que o dono revise um novo resumo. O texto de erro do próprio MongoDB é
+          substituído pelo código dele para um dono que não pode ver dados pessoais.
+        </li>
+        <li>
+          Um destino nunca é descartado; "substituir o destino" exige o nome dele digitado; as exclusões
+          atingem somente documentos que a origem excluiu. Uma sincronização sobre a própria origem, ou uma que
+          fecharia um ciclo, é recusada.
+        </li>
+        <li>
+          Uma sincronização bidirecional é a única exceção a essa regra de ciclo, entre as suas duas direções:
+          ela exige a confirmação do dono de que a mais recente de duas alterações conflitantes prevalece,
+          direitos de leitura e de exportação nos dois lados, as mesmas regras de campos pessoais nos dois
+          lados, e recusa a mascaração. As gravações dela são marcadas por sessão, não por um campo nos
+          documentos. O filtro de uma sincronização filtrada é avaliado pela origem sobre os valores brutos
+          dela: uma sincronização mascarada recusa um filtro que lê um campo oculto. Os arquivos de registros
+          rejeitados e as amostras de verificação contêm documentos e são entregues somente ao dono da
+          sincronização, enquanto ele puder lê-los.
+        </li>
+        <li>
+          As sincronizações são limitadas (3 por usuário, <code>MM_LIVE_SYNC_MAX</code> por servidor, lotes de
+          1.000 alterações ou 8 MB, 2 verificações ao mesmo tempo). Todo início, ação de controle e parada
+          automática está no log de auditoria, com as duas conexões e os namespaces; os lotes não estão.
+        </li>
+      </ul>
+      <h2 id="server-admin">Alertas e usuários do banco de dados</h2>
+      <p>
+        Os segredos dos canais de alerta — a senha SMTP e o segredo de assinatura de cada webhook — são selados
+        com <code>secret.key</code>, selados novamente por <code>mongo-manager rotate-key</code> e nunca
+        enviados de volta a um navegador: o segredo de um webhook é exibido uma vez, quando o servidor o cria.
+        Os servidores de e-mail e os webhooks são alcançados pela mesma proteção de saída dos destinos de
+        backup, com redes privadas abertas somente por <code>MM_ALERTS_PRIVATE_NETWORKS</code> (veja
+        <a href="server-admin.html#alerts">Administração do servidor</a>). As senhas de usuários do banco de
+        dados digitadas em Usuários e funções vão ao MongoDB uma vez e nunca são armazenadas, registradas em
+        log nem gravadas no log de auditoria.
+      </p>
+      <h2 id="the-advanced-shell">O shell avançado</h2>
+      <p>
+        Cada sessão de shell executa o mongosh real em um processo filho separado sob o modelo de permissões do
+        Node, com a geração de código a partir de strings desativada e sem acesso a arquivos, processos, rede
+        ou complementos. Ele não guarda nenhuma credencial: um proxy autenticador dentro do servidor abre a
+        conexão com o MongoDB (SCRAM, X.509 ou LDAP/PLAIN) e retransmite o tráfego, de modo que o processo
+        filho nunca vê uma senha, uma chave TLS ou uma chave SSH. O processo filho só alcança esse proxy, que
+        permite somente os servidores da própria conexão.
+      </p>
+      <p>
+        O proxy impõe a política de comandos fora do sandbox: uma sessão somente leitura só pode executar
+        comandos de leitura, e um não administrador não pode tocar em coleções de credenciais nem executar
+        comandos de cluster e de administração de usuários. Todo comando é auditado (o código dele com os
+        segredos mascarados) com um resumo dos comandos do MongoDB que ele emitiu. Em um servidor POSIX
+        executado como root, cada worker passa a um usuário sem privilégios; não execute o serviço como root
+        nem como administrador do Windows.
+      </p>
+      <p>
+        O JavaScript do lado do servidor (<code>$where</code>, <code>$function</code>,
+        <code>$accumulator</code>, os operadores internos <code>$_internal…</code> do MongoDB,
+        <code>mapReduce</code>) é recusado no shell como em todos os outros lugares, inclusive para
+        administradores, a menos que <code>MM_ALLOW_SERVER_JS=1</code> esteja definido (ou
+        <code>allowServerJs</code> no arquivo de configuração). Os argumentos de comando internos do MongoDB,
+        como <code>$client</code>, são recusados. Um não administrador não pode ler o profiler
+        (<code>system.profile</code> contém as consultas de todos os clientes com seus valores), os privilégios
+        do usuário do MongoDB, nem os usuários e funções de todos os bancos de dados. O processo filho não pode
+        escutar conexões nem enviar UDP.
+      </p>
+      <p>
+        Entre os comandos, nada chega ao MongoDB além da manutenção da conexão do driver: o código que um
+        comando deixou em execução é recusado, e o que ele tentou é auditado. Ao pressionar Ctrl+C, quando um
+        comando ultrapassa o limite de tempo, quando ele termina com uma solicitação ainda sem resposta, e
+        quando um shell é reiniciado ou fechado durante um comando, o servidor lista as operações das conexões
+        do próprio shell em cada servidor que ele alcançou (como o usuário MongoDB da conexão, o que não exige
+        privilégio de cluster) e as encerra, em até cinco segundos; um shell que não para em dois segundos
+        após Ctrl+C ou o limite de tempo é reiniciado. As operações já repassadas aos shards são identificadas
+        pelo nome do shell, que ele não pode alterar. O servidor observa a memória de cada shell a partir do
+        sistema operacional durante toda a vida dele e reinicia um que ultrapasse o limite, ou um que pare de
+        responder por 15 segundos sem comando em execução; a memória é medida algumas vezes por segundo no
+        Linux e cerca de uma vez por segundo em outros sistemas, então um shell pode brevemente exceder o
+        limite antes de ser reiniciado. O que o processo filho envia ao servidor é verificado quanto a
+        tamanho, profundidade e taxa antes de ser lido.
+      </p>
+      <p>
+        O preenchimento automático nunca executa o seu código: o navegador completa a partir de um catálogo
+        construído do mongosh, e o worker em sandbox apenas analisa tipos, sob as mesmas verificações de
+        direitos e a mesma política do proxy de um comando (inclusive a amostragem de campos dele). Um
+        preenchimento é executado por vez, nunca ao lado de um comando, e um worker cujo preenchimento
+        ultrapassa o tempo é redefinido. Os nomes de coleções e campos do banco de dados são inseridos como
+        strings entre aspas quando não são identificadores simples, de modo que um nome hostil não possa virar
+        código, e são sempre exibidos como texto.
+      </p>
+      <p>
+        Um snippet compartilhado compartilha texto, não direitos: ele é executado na sessão de quem o executa,
+        sob as concessões, o estado somente leitura e a política do proxy dessa pessoa. Abrir um snippet nunca
+        o executa; o autor dele é exibido, e cada valor de parâmetro é inserido como um valor do seu tipo (uma
+        string entre aspas, um número, true/false ou um valor EJSON), de modo que não possa se fechar e ser
+        executado. Um parâmetro deve estar onde um valor se encaixa: um dentro de uma string, de um template,
+        de uma expressão regular ou de um comentário é recusado. Os snippets são criptografados em repouso; o
+        código deles nunca entra no log de auditoria. As exportações em CSV protegem as células que uma
+        planilha executaria como fórmulas (um <code>'</code> inicial antes de texto que começa, após quaisquer
+        espaços, com <code>= + - @</code>, uma tabulação ou uma quebra de linha; a caixa de diálogo de
+        exportação pode desativar isso para um arquivo que outro programa vai ler), e os resultados do shell
+        ficam somente na memória.
+      </p>
+      <p>
+        Os dados pessoais podem ser ocultados por usuário. Um administrador da conexão lista os campos que
+        contêm dados pessoais; um usuário com a concessão "não pode ver dados pessoais" recebe os valores deles
+        como *** — o servidor os remove antes que qualquer coisa saia dele: em documentos, resultados de
+        agregação, planos de explain, análise de esquema, validadores, definições de índices e de
+        visualizações, favoritos e pipelines compartilhados, mensagens de erro, o profiler, consultas lentas e
+        operações. O app exibe esses valores com um cadeado — na tabela, nos cartões, na árvore e na
+        visualização JSON da mesma forma —, com um rótulo que um leitor de tela lê, e informa que alguns
+        valores estão ocultos em todas as telas que exibem dados: Documentos, Agregações, Explicar, Esquema,
+        Validação, Índices e Observar. Ocultar tem um custo que o editor de regras informa: para esse usuário,
+        uma ordenação, um agrupamento ou uma junção em um campo que pode conter dados pessoais é executado em
+        uma cópia oculta e pode não usar um índice, então regras precisas são mais baratas que <code>*</code>
+        e <code>**</code>. Quando o servidor não consegue dizer a qual campo um valor pertence, ele oculta o
+        valor. Esse usuário não pode usar o shell. Sejam quais forem as regras, senhas, tokens e chaves em
+        comandos, e strings de conexão, são sempre ocultados. As alterações do profiler são para os
+        administradores da conexão e são auditadas; o nível 2 se desativa sozinho após 30 minutos, mesmo após
+        uma reinicialização. Os filtros de operações e de consultas lentas são verificados no servidor, que
+        constrói a própria consulta do MongoDB. As definições de índices do Atlas Search e de busca vetorial
+        nomeiam campos, não valores. Onde regras de dados pessoais se aplicam, esse usuário vê os analisadores
+        e os mapeamentos de sinônimos mascarados (eles podem conter palavras que alguém escolheu, como
+        stop words) e não pode criar nem alterar um índice de busca; nos demais casos, ele os vê e edita por
+        inteiro. Uma atualização ou exclusão em massa é recusada em uma visualização, e as amostras de prévia
+        dela são mascaradas como qualquer leitura.
+      </p>
+      <p>
+        Um usuário que não pode ver dados pessoais também não pode usá-los em uma consulta: um filtro,
+        ordenação, agrupamento, junção, contagem ou campo calculado que nomeia um campo pessoal é recusado, de
+        modo que um valor não possa ser adivinhado pedaço por pedaço. Onde um campo pode conter dados pessoais
+        abaixo dele, o MongoDB só compara valores simples ali. As visualizações são verificadas da mesma forma
+        que as coleções que elas leem. O conteúdo dos arquivos do GridFS não é deles, nem como download nem
+        pela coleção <code>.chunks</code> de um bucket: um find, um pipeline (lendo-a ou gravando nela), uma
+        exportação, um change feed, uma cópia, uma sincronização em tempo real, um backup ou uma restauração —
+        os quatro últimos deixam o bucket de fora, informando isso, e uma sincronização em tempo real mascarada
+        que acompanha novas coleções nunca acompanha um bucket criado depois que ela iniciou. Onde existe
+        qualquer regra de dados pessoais em uma conexão, uma cópia de uma coleção <code>.chunks</code> por
+        qualquer pessoa pede confirmação de que ela pode conter dados pessoais. O JavaScript no servidor não
+        está disponível para eles. As funções de janela (<code>$setWindowFields</code>), <code>$fill</code> e
+        <code>$densify</code> funcionam em campos que não contêm dados pessoais: uma janela sobre um campo
+        pessoal, um fill ou um densify de um, ou uma partição pelo valor bruto de um campo que pode conter
+        algum é recusado, e uma ordenação que pode encontrar dados pessoais é feita em uma cópia oculta. Onde
+        há regras, <code>$redact</code> só pode ler campos de <code>$$ROOT</code>: um campo simples ali é lido
+        novamente em todos os níveis do documento, inclusive um pessoal, então é recusado. Toda recusa é
+        gravada no log de auditoria com o nome do campo, nunca o valor dele.
+      </p>
+      <p>
+        Esse usuário ainda pode editar, inserir e excluir documentos, mas nada do que ele grava altera,
+        remove, move ou copia um valor pessoal: uma substituição completa mantém os valores armazenados onde o
+        documento mostra ***, um novo documento não contém nenhum campo pessoal, e uma atualização em massa
+        deixa em paz os documentos em que sobrescreveria dados ocultos. Uma visualização sobre dados pessoais,
+        um índice único sobre eles e duplicar ou renomear uma coleção que os contém são recusados. Assim
+        também um índice TTL sobre eles, um validador que calcula ($expr) onde há regras, e alterar um campo
+        de chave de um índice único que cobre dados pessoais, cujo erro de chave duplicada revelaria se dois
+        documentos compartilham um valor oculto.
+      </p>
+      <p>
+        As leituras são limitadas para que nenhum usuário isolado possa esgotar a memória do servidor: uma
+        página de documentos ou de arquivos do GridFS para em 16 MiB (uma página maior pede menos documentos ou
+        campos), um usuário lê seis páginas por vez e o servidor 32, cada uma retida até a resposta ser enviada
+        — contagens, documentos individuais, análises de esquema e prévias em massa compartilham essas seis;
+        execuções e contagens de agregação, explains e testes de validação são duas por vez por usuário e 16
+        no servidor; ler um backup para inspecioná-lo ou planejar a restauração dele é uma por vez por usuário
+        e três no servidor, e as demais são solicitadas a esperar um momento.
+      </p>
+      <p>
+        Os arquivos importados são lidos conforme chegam, dentro de limites de tamanho, profundidade, campos e
+        descompressão; nada neles é extraído para o disco, avaliado ou executado, pastas de trabalho com um DTD
+        ou macros são recusadas, e um registro que não pode ser lido com segurança é informado, nunca
+        adivinhado. As exportações de usuários que não podem ver dados pessoais contêm <code>***</code> no
+        lugar dos valores. Os arquivos de transferência pertencem a quem os criou, são mantidos por um tempo
+        limitado e têm o download recusado depois que essa pessoa perde os direitos de exportação ou as regras
+        de campos pessoais mudam. Envios, importações, exportações e downloads são gravados no log de
+        auditoria.
+      </p>
+      <p>
+        O servidor se conecta por conta própria somente às conexões cujo histórico de métricas um administrador
+        da conexão ativou, uma vez por minuto, com a mesma leitura dos gráficos ao vivo (e a destinos de backup
+        para os envios e downloads que alguém iniciou, e para limpar envios deixados inacabados por 7 dias); o
+        histórico contém somente números e é excluído com a conexão. As sugestões de índices e a visão geral do
+        sharding apenas leem; as respostas deles contêm nomes de campos e de índices, e os limites de chunks
+        jumbo são mascarados como qualquer valor pessoal.
+      </p>
+      <h2 id="ai">Assistente de IA</h2>
+      <ul>
+        <li>
+          Somente administradores adicionam provedores; as solicitações passam pelo mesmo cliente protegido dos
+          destinos de backup: somente https, sem redirecionamentos nem proxies, o endereço verificado onde a
+          conexão é feita, endereços de metadados e de link local nunca, endereços privados e de loopback
+          somente quando listados em <code>MM_AI_PRIVATE_NETWORKS</code>. Uma pessoa nunca pode nomear um
+          endereço.
+        </li>
+        <li>
+          As chaves dos provedores são seladas com <code>secret.key</code>, nunca exibidas novamente, nunca
+          enviadas a um navegador, mantidas fora dos logs e da auditoria, e seladas novamente por
+          <code>rotate-key</code>. Alterar o endereço de um provedor esquece a chave dele.
+        </li>
+        <li>
+          O servidor constrói o que é enviado, sob os direitos de quem pergunta; as regras de dados pessoais o
+          mascaram para todos; as amostras exigem consentimento por solicitação e um provedor autorizado a
+          recebê-las; as coleções do próprio MongoDB nunca são enviadas; uma conexão pode permitir somente
+          provedores locais, ou nenhum.
+        </li>
+        <li>
+          Sem o modo agente, o assistente não tem ferramentas e as respostas dele só viram texto no editor,
+          analisado pelo analisador seguro; as respostas são desenhadas sem imagens, links ou HTML.
+          Solicitações pontuais não são armazenadas; toda solicitação e mensagem de chat, permitida ou
+          recusada, toda exclusão de chat e toda alteração de provedor é auditada, sem as palavras.
+        </li>
+        <li>
+          O modo agente (a chave de cada pessoa) dá ao modelo ferramentas que chamam as rotas do próprio app
+          internamente, como a pessoa: um token de uso único que nunca sai do servidor representa a sessão dela,
+          que é lida novamente a cada chamada, de modo que os direitos, o modo somente leitura, a barreira de
+          mascaração, os limites de taxa e a auditoria se aplicam como às solicitações dela mesma. As conexões
+          são nomeadas ao modelo somente pelo nome; uma cuja política de IA está desativada nunca é nomeada, e
+          uma somente local apenas a um provedor comprovadamente local. Toda alteração é um cartão que a pessoa
+          confirma (um instante antes de Confirmar poder ser pressionado, uma resposta aceita, um nome digitado
+          para uma remoção); somente a pessoa cuja interação a propôs pode respondê-la. Os resultados das
+          ferramentas chegam ao modelo marcados como dados; os valores dos documentos somente com consentimento
+          por mensagem, com os campos pessoais mascarados para todos; JavaScript do servidor, <code>$out</code>
+          e <code>$merge</code> nunca são executados para o agente. Os passos, as ações por mensagem e por
+          minuto são limitados; cada passo é auditado sem os argumentos. Os administradores podem desativar as
+          alterações do agente por conexão.
+        </li>
+        <li>
+          Os chats são selados com <code>secret.key</code> por mensagem e título, legíveis somente pelo dono
+          (nenhuma rota administrativa os lê), selados novamente por <code>rotate-key</code>, mantidos por
+          <code>MM_AI_CHAT_DAYS</code> dias (ou somente na memória) e excluídos com o usuário. As mensagens
+          anteriores são verificadas novamente a cada mensagem — direitos, a política da conexão, as regras de
+          dados pessoais dela — antes de serem enviadas; uma de uma conexão que permite somente provedores
+          locais mantém toda a solicitação nas redes listadas.
+        </li>
+        <li>
+          Ao lado de cada mensagem selada, o registro dela é armazenado em texto claro: a coleção e a conexão
+          sobre as quais ela tratava, o provedor, os horários, as contagens de tokens e o que o histórico
+          deixou de fora (somente contagens). Quem tem o arquivo do banco de dados vê esses registros, nunca as
+          palavras; com o <code>secret.key</code> também, as palavras podem ser lidas.
+        </li>
+      </ul>
+      <h2 id="plugins">Plugins</h2>
+      <ul>
+        <li>
+          Um plugin é composto de arquivos estáticos exibidos em um frame em sandbox
+          (<code>sandbox="allow-scripts"</code>) com uma origem opaca. A Content-Security-Policy dele permite
+          somente os próprios arquivos e nenhuma solicitação a qualquer endereço
+          (<code>connect-src 'none'</code>): nenhuma solicitação, cookie ou armazenamento, e nenhum acesso à
+          página, à sessão ou ao armazenamento do app. Os arquivos dele são servidos somente ao frame dele:
+          uma página do app não pode carregá-los como scripts próprios, e o endereço em que são servidos só vale
+          enquanto durar a sessão em que foi emitido (a página, 10 minutos; os outros arquivos, no máximo 12
+          horas; uma sessão renovada no lugar pelo mesmo usuário é acompanhada, uma saída não é, e o navegador
+          não guarda nada em cache). Nada de um plugin é executado no servidor.
+        </li>
+        <li>
+          O que a política não impede em todos os lugares: o WebRTC é bloqueado somente por navegadores que
+          aplicam o <code>webrtc 'block'</code> do CSP — os navegadores baseados em Chromium (Chrome, Edge) o
+          ignoram a partir da versão 149, e também não se deve contar com o Firefox —, então ali um plugin ainda
+          pode enviar para fora, por WebRTC, o que lê, seja qual for o resultado da verificação dele; e uma
+          dica de prefetch (<code>dns-prefetch</code>, <code>preconnect</code>) pode fazer um nome ser
+          consultado, o que pode carregar dados. O frame pede ao navegador que não faça prefetch
+          (<code>X-DNS-Prefetch-Control: off</code>), e a verificação sinaliza ambos como riscos altos. A
+          verificação é uma heurística sobre o texto dos arquivos: código escrito para se esconder dela não é
+          encontrado. Aprove um plugin somente se confiar nele com os dados que ele pode ler. Uma configuração
+          de endereço (blocos de mapa) é para onde um plugin pode enviar o que lê, no endereço de uma imagem:
+          somente https (http simples apenas para este computador), e a aprovação informa isso.
+        </li>
+        <li>
+          O que um plugin faz no app — uma cópia para a área de transferência, uma consulta ou estágios
+          colocados no lugar, um documento aberto ou uma alteração solicitada — só é aceito logo após um clique
+          ou pressionamento de tecla na própria página dele (o frame precisa ter o foco; um clique em outro
+          lugar do app nunca conta), e toda tentativa, exceto a de uma alteração, conta para as poucas por
+          minuto dele. Um frame pode tomar o foco por conta própria, então uma cópia solicitada em até 5
+          segundos após um clique ou pressionamento de tecla em outro lugar do app (observado desde o início
+          do app) não é feita pela palavra do plugin: o app mostra o que seria copiado e copia ao clique do
+          próprio botão dele. As lacunas que restam: o frame de outro plugin, clicado logo antes, poderia
+          emprestar a ativação; e um plugin que tomou o foco ainda pode colocar uma consulta ou estágios nos
+          editores do próprio usuário ou abrir um documento nesse intervalo — nada é executado nem alterado
+          sem o usuário. As confirmações do app só aceitam Confirmar após um instante sem pressionamento, e o
+          clique de um ponteiro só a partir de um pressionamento que começou depois que o ponteiro se moveu
+          para Confirmar — então um clique duplo, uma sequência de cliques ou um clique após uma pausa com o
+          ponteiro parado onde Confirmar aparece nunca as responde; o pressionamento de um leitor de tela ou de
+          uma tecla é aceito. O que resta: uma página que convença o usuário a mover o ponteiro para Confirmar
+          e clicar. Uma alteração nomeia primeiro cada campo que toca, cada um entre aspas. As mensagens de um
+          plugin mostram o id dele ao lado do nome, e um nome que se pareça com o do próprio app (<em>Mongo
+          Manager</em>, <em>System</em>, <em>Security</em>…), misture alfabetos em uma palavra ou falsifique um
+          id entre colchetes é recusado.
+        </li>
+        <li>
+          Ele alcança os dados somente pela ponte (bridge), que age como o usuário conectado: com os direitos
+          dele, as conexões somente leitura e a mascaração de dados pessoais. A permissão de um plugin nunca
+          excede o direito do próprio usuário, e toda alteração que ele solicita é mostrada ao usuário, que
+          decide.
+        </li>
+        <li>
+          Um administrador aprova os arquivos exatos (o digest deles: o SHA-256 de cada caminho com o SHA-256
+          do arquivo) e as permissões solicitadas. Todo arquivo servido é verificado contra ele, e qualquer
+          alteração nos arquivos desativa o plugin até ser aprovado novamente.
+        </li>
+        <li>
+          Antes da aprovação, os arquivos de script, marcação e estilo de todo plugin são verificados em busca
+          de código que executa texto, constrói marcação a partir de texto, carrega código de outro lugar,
+          tenta sair do frame, se comunica com o exterior ou esconde o que faz. Um plugin com um achado alto, ou
+          cuja verificação não pôde ser concluída, só é aprovado com o id dele digitado: o servidor impõe isso,
+          e o log de auditoria registra as contagens da verificação e se um risco foi aceito.
+        </li>
+        <li>
+          Os plugins que acompanham o Mongo Manager são executados no mesmo sandbox e verificados da mesma
+          forma, mas aprovar um nunca pede o id dele: é código do próprio app. Uma atualização de um deles
+          mantém a aprovação somente enquanto ele estiver ativado e não pedir nenhuma nova permissão.
+        </li>
+        <li>
+          Uma instalação a partir do GitHub alcança somente <code>github.com</code>,
+          <code>api.github.com</code>, <code>objects.githubusercontent.com</code> e
+          <code>release-assets.githubusercontent.com</code>, por https, somente em endereços públicos, sem
+          proxy, seguindo no máximo 4 redirecionamentos entre esses hosts, dentro de tamanhos limitados e 4
+          minutos. Ela não envia nada do servidor: nenhum cookie, token ou credencial. O plugin chega
+          desativado, verificado e aguardando aprovação.
+        </li>
+        <li>
+          <code>MM_PLUGINS=0</code> desativa os plugins; as instalações a partir do GitHub ficam desativadas, a
+          menos que <code>MM_PLUGINS_GITHUB=1</code> esteja definido (veja
+          <a href="deployment.html#plugins">Implantação</a>). Instalações, verificações, aprovações,
+          configurações, desativação e remoção são gravadas no log de auditoria. Como criar plugins, a ponte e
+          as regras da verificação em detalhe: <a href="plugins.html">Plugins</a>.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Nesta página</p>
+      <ol>
+        <li><a href="#modes">Modos</a></li>
+        <li><a href="#saved-secrets-and-the-key">Segredos salvos e a chave</a></li>
+        <li><a href="#signing-in">Entrando</a></li>
+        <li><a href="#sign-in-bans">Endereços bloqueados</a></li>
+        <li><a href="#panel-access">Acesso ao painel</a></li>
+        <li><a href="#audit-log">Log de auditoria</a></li>
+        <li><a href="#what-the-server-enforces">O que o servidor impõe</a></li>
+        <li><a href="#server-identity">A identidade do próprio servidor</a></li>
+        <li><a href="#oidc">Autenticação OIDC</a></li>
+        <li><a href="#encryption">Criptografia do lado do cliente</a></li>
+        <li><a href="#copy-compare-and-sync">Copiar, comparar e sincronizar</a></li>
+        <li><a href="#backups">Backups</a></li>
+        <li><a href="#backup-destinations">Destinos de backup</a></li>
+        <li><a href="#backup-keys">Chaves de backup</a></li>
+        <li><a href="#watch">Monitoramento de alterações</a></li>
+        <li><a href="#live-sync">Sincronização em tempo real</a></li>
+        <li><a href="#server-admin">Alertas e usuários do banco de dados</a></li>
+        <li><a href="#the-advanced-shell">O shell avançado</a></li>
+        <li><a href="#ai">Assistente de IA</a></li>
+        <li><a href="#plugins">Plugins</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

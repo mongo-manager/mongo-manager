@@ -1,0 +1,85 @@
+import type { Completion } from '@/ds/code/completion'
+const QUERY_OPERATORS = [
+  '$eq',
+  '$ne',
+  '$gt',
+  '$gte',
+  '$lt',
+  '$lte',
+  '$in',
+  '$nin',
+  '$and',
+  '$or',
+  '$nor',
+  '$not',
+  '$exists',
+  '$type',
+  '$regex',
+  '$options',
+  '$elemMatch',
+  '$size',
+  '$all',
+  '$expr',
+  '$mod',
+  '$text',
+  '$search',
+  '$jsonSchema',
+  '$geoWithin',
+  '$geoIntersects',
+  '$near',
+  '$nearSphere',
+  '$bitsAllSet',
+  '$bitsAnySet',
+  '$bitsAllClear',
+  '$bitsAnyClear',
+]
+const UPDATE_OPERATORS = [
+  '$set',
+  '$unset',
+  '$inc',
+  '$mul',
+  '$rename',
+  '$min',
+  '$max',
+  '$currentDate',
+  '$setOnInsert',
+  '$push',
+  '$pull',
+  '$pullAll',
+  '$addToSet',
+  '$pop',
+  '$bit',
+  '$each',
+  '$position',
+  '$slice',
+  '$sort',
+]
+const CONSTRUCTORS = [
+  'ObjectId',
+  'ISODate',
+  'NumberInt',
+  'NumberLong',
+  'NumberDecimal',
+  'Double',
+  'UUID',
+  'BinData',
+  'Timestamp',
+  'RegExp',
+  'MinKey',
+  'MaxKey',
+  'DBRef',
+]
+
+/** Completion list for a query, an update or a whole document, with the page's field paths. */
+export function completionsFor(
+  kind: 'query' | 'update' | 'document',
+  fields: readonly string[],
+): Completion[] {
+  const operators =
+    kind === 'query' ? QUERY_OPERATORS : kind === 'update' ? [...UPDATE_OPERATORS, ...QUERY_OPERATORS] : []
+  return [
+    ...operators.map((label): Completion => ({ label, kind: 'operator' })),
+    ...fields.map((label): Completion => ({ label, kind: 'field' })),
+    ...CONSTRUCTORS.map((label): Completion => ({ label, kind: 'constructor' })),
+  ]
+}

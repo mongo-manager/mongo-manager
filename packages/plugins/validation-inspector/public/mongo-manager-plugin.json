@@ -1,0 +1,103 @@
+{
+  "id": "validation-inspector",
+  "name": {
+    "en": "Validation check",
+    "tr": "Doğrulama denetimi",
+    "zh": "验证检查",
+    "ja": "検証チェック",
+    "es": "Comprobación de validación",
+    "pt": "Verificação de validação",
+    "ko": "유효성 검사 점검",
+    "de": "Validierungsprüfung",
+    "fr": "Contrôle de validation",
+    "ru": "Проверка валидации"
+  },
+  "version": "1.2.0",
+  "description": {
+    "en": "Checks a collection's documents against its validation rules one by one — over a random sample or all of them — and says how many break each rule, with those documents a click away in Documents.",
+    "tr": "Bir koleksiyonun belgelerini doğrulama kurallarına göre tek tek — rastgele bir örnek üzerinde ya da hepsinde — denetler; her kuralı kaç belgenin bozduğunu söyler, o belgeleri tek tıkla Belgeler'de gösterir.",
+    "zh": "按验证规则逐条检查集合中的文档（可对随机采样或全部文档进行检查），并统计每条规则有多少文档违反，只需一次点击即可在文档中查看这些文档。",
+    "ja": "コレクションのドキュメントを検証ルールに照らして 1 件ずつ（ランダムサンプルまたはすべてを対象に）チェックし、ルールごとの違反件数を表示します。該当ドキュメントはワンクリックでドキュメントに表示できます。",
+    "es": "Comprueba uno a uno los documentos de una colección con sus reglas de validación (en una muestra al azar o en todos) e indica cuántos incumplen cada regla, con esos documentos a un clic en Documentos.",
+    "pt": "Verifica um a um os documentos de uma coleção com as regras de validação (em uma amostra aleatória ou em todos) e informa quantos violam cada regra, com esses documentos a um clique em Documentos.",
+    "ko": "컬렉션의 도큐먼트를 유효성 검사 규칙별로 하나씩(무작위 샘플 또는 전체 대상) 점검하여 규칙마다 위반하는 도큐먼트 수를 알려 주고, 해당 도큐먼트는 클릭 한 번으로 도큐먼트에서 볼 수 있습니다.",
+    "de": "Prüft die Dokumente einer Collection einzeln anhand ihrer Validierungsregeln – an einer zufälligen Stichprobe oder an allen – und sagt, wie viele gegen jede Regel verstoßen; diese Dokumente sind mit einem Klick in Dokumente zu sehen.",
+    "fr": "Vérifie un à un les documents d’une collection par rapport à ses règles de validation (sur un échantillon aléatoire ou sur tous) et indique combien enfreignent chaque règle, ces documents étant à un clic dans Documents.",
+    "ru": "Проверяет документы коллекции по одному на соответствие ее правилам валидации (по случайной выборке или все) и показывает, сколько документов нарушает каждое правило; эти документы доступны в «Документах» одним щелчком."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read", "collection:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "check",
+        "title": {
+          "en": "Rules check",
+          "tr": "Kural denetimi",
+          "zh": "规则检查",
+          "ja": "ルールチェック",
+          "es": "Comprobación de reglas",
+          "pt": "Verificação de regras",
+          "ko": "규칙 점검",
+          "de": "Regelprüfung",
+          "fr": "Contrôle des règles",
+          "ru": "Проверка правил"
+        },
+        "icon": "shield"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "CC-BY-NC-SA-4.0",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Document counts now take the right singular or plural in each language, and numbers are written the way each language writes them.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Belge sayıları her dilde doğru tekil ya da çoğul biçimle yazılır, sayılar da her dilin yazdığı gibi gösterilir.",
+        "zh": "现已与应用一样支持韩语、德语、法语和俄语。文档数量现在会按各语言使用正确的单数或复数形式，数字也按各语言的习惯书写。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。ドキュメント数は各言語で正しい単数形・複数形で表示され、数字も各言語の書式で表示されます。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, igual que la aplicación. Los recuentos de documentos usan el singular o el plural correcto en cada idioma y los números se escriben como los escribe cada idioma (por ejemplo, 1000 sin separador en español).",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o aplicativo. As contagens de documentos usam o singular ou o plural correto em cada idioma, e os números são escritos como cada idioma os escreve.",
+        "ko": "이제 앱과 같이 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 도큐먼트 수는 언어별로 알맞은 단수·복수 형태로 표시되고, 숫자도 각 언어의 표기법에 맞춰 표시됩니다.",
+        "de": "Jetzt wie die App auch auf Koreanisch, Deutsch, Französisch und Russisch. Dokumentzahlen stehen in jeder Sprache im richtigen Singular oder Plural, und Zahlen werden so geschrieben, wie es die jeweilige Sprache tut.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Les nombres de documents prennent le bon singulier ou pluriel dans chaque langue ; les nombres s’écrivent comme le fait chaque langue.",
+        "ru": "Теперь, как и приложение, также на корейском, немецком, французском и русском языках. Число документов теперь пишется в правильной форме единственного или множественного числа на каждом языке, а числа записываются так, как принято в каждом языке."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现已与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルポルトガル語に対応しました。それ以外の変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, igual que la aplicación. No cambia nada más.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o aplicativo. Nada mais muda.",
+        "ko": "이제 앱과 같이 중국어, 일본어, 스페인어, 브라질 포르투갈어도 지원합니다. 그 외 변경 사항은 없습니다.",
+        "de": "Jetzt wie die App auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь, как и приложение, также на китайском, японском, испанском и бразильском португальском языках. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-28",
+      "notes": {
+        "en": "First release. A Rules check tab splits the collection's validator into its rules — each required field, each property, no fields but the schema's own, other schema keywords, each query condition — and counts, in one read of 1,000 or 10,000 random documents or of all of them, how many break the rules and each rule. Show in Documents puts a filter selecting a rule's documents in the Documents query. The validation level and action are named, with what they mean.",
+        "tr": "İlk sürüm. Kural denetimi sekmesi koleksiyonun doğrulayıcısını kurallarına ayırır — her zorunlu alan, her özellik, şemadakiler dışında alan olmaması, diğer şema anahtar sözcükleri, her sorgu koşulu — ve rastgele 1.000 ya da 10.000 belgenin veya hepsinin tek bir okumasında kaç belgenin kurallara ve her kurala uymadığını sayar. Belgelerde göster, bir kuralın belgelerini seçen filtreyi Belgeler sorgusuna koyar. Doğrulama seviyesi ve eylemi anlamlarıyla birlikte söylenir.",
+        "zh": "首个版本。“规则检查”标签页会将集合的验证器拆分为各条规则（每个必填字段、每个属性、除模式自身字段外不允许其他字段、其他模式关键字、每个查询条件），并通过一次读取随机 1,000 个、随机 10,000 个或全部文档，统计整体以及每条规则有多少文档违反。“在文档中显示”会在文档查询中放入一个筛选条件，用于选出违反某条规则的文档。同时会标明验证级别和操作及其含义。",
+        "ja": "初回リリース。「ルールチェック」タブがコレクションのバリデーターを個々のルール（各必須フィールド、各プロパティ、スキーマで定義されたフィールド以外は不可、その他のスキーマキーワード、各クエリ条件）に分け、ランダムな 1,000 件または 10,000 件、あるいはすべてのドキュメントを 1 回の読み取りで調べて、全体および各ルールの違反件数を集計します。「ドキュメントで表示」は、ルールに違反するドキュメントを選択するフィルターをドキュメントのクエリに設定します。検証レベルとアクションも、その意味とともに表示されます。",
+        "es": "Primera versión. La pestaña Comprobación de reglas divide el validador de la colección en sus reglas (cada campo obligatorio, cada propiedad, ningún campo aparte de los del esquema, otras palabras clave del esquema y cada condición de consulta) y cuenta, en una sola lectura de 1.000 o 10.000 documentos al azar o de todos, cuántos incumplen las reglas y cada regla. Mostrar en Documentos coloca en la consulta de Documentos un filtro que selecciona los documentos de una regla. Se indican el nivel y la acción de validación, con su significado.",
+        "pt": "Primeira versão. A aba Verificação de regras divide o validador da coleção em suas regras (cada campo obrigatório, cada propriedade, nenhum campo além dos do esquema, outras palavras-chave do esquema e cada condição de consulta) e conta, em uma única leitura de 1.000 ou 10.000 documentos aleatórios ou de todos, quantos violam as regras e cada regra. Mostrar em Documentos coloca na consulta de Documentos um filtro que seleciona os documentos de uma regra. O nível e a ação de validação são indicados, com o que significam.",
+        "ko": "첫 릴리스. 규칙 점검 탭이 컬렉션의 유효성 검사기를 개별 규칙(필수 필드별, 속성별, 스키마에 정의된 필드 외 불허, 기타 스키마 키워드, 쿼리 조건별)으로 나누고, 무작위 1,000개 또는 10,000개 도큐먼트나 전체를 한 번 읽어 전체와 규칙별로 위반하는 도큐먼트 수를 집계합니다. 도큐먼트에서 보기는 규칙을 위반하는 도큐먼트를 선택하는 필터를 도큐먼트 쿼리에 넣습니다. 유효성 검사 수준과 동작도 그 의미와 함께 표시됩니다.",
+        "de": "Erste Version. Der Tab „Regelprüfung“ zerlegt den Validator der Collection in seine Regeln – jedes Pflichtfeld, jede Eigenschaft, keine Felder außer denen des Schemas, weitere Schema-Schlüsselwörter, jede Abfragebedingung – und zählt in einem einzigen Lesevorgang über 1.000 oder 10.000 zufällige Dokumente oder über alle, wie viele gegen die Regeln insgesamt und gegen jede einzelne Regel verstoßen. „In Dokumente anzeigen“ setzt einen Filter, der die Dokumente einer Regel auswählt, in die Abfrage von Dokumente. Validierungslevel und -aktion werden samt ihrer Bedeutung genannt.",
+        "fr": "Première version. L’onglet Contrôle des règles découpe le validateur de la collection en ses règles (chaque champ obligatoire, chaque propriété, aucun champ en dehors de ceux du schéma, autres mots-clés du schéma, chaque condition de requête) et compte, en une seule lecture de 1 000 ou 10 000 documents au hasard ou de tous, combien enfreignent les règles et chaque règle. Afficher dans Documents place dans la requête de Documents un filtre qui sélectionne les documents d’une règle. Le niveau et l’action de validation sont indiqués, avec leur signification.",
+        "ru": "Первый выпуск. Вкладка «Проверка правил» разбивает валидатор коллекции на отдельные правила (каждое обязательное поле, каждое свойство, отсутствие полей, кроме определенных в схеме, прочие ключевые слова схемы, каждое условие запроса) и за одно чтение 1 000 или 10 000 случайных документов либо всех документов подсчитывает, сколько из них нарушают правила в целом и каждое правило. «Показать в документах» помещает в запрос «Документов» фильтр, выбирающий документы, нарушающие правило. Уровень и действие валидации указываются вместе с их значением."
+      }
+    }
+  ]
+}

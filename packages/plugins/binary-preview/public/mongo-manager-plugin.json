@@ -1,0 +1,130 @@
+{
+  "id": "binary-preview",
+  "name": {
+    "en": "Binary preview",
+    "tr": "İkili veri önizleme",
+    "zh": "二进制数据预览",
+    "ja": "バイナリプレビュー",
+    "es": "Vista previa de binarios",
+    "pt": "Pré-visualização de binários",
+    "ko": "바이너리 미리보기",
+    "de": "Binärvorschau",
+    "fr": "Aperçu des données binaires",
+    "ru": "Просмотр двоичных данных"
+  },
+  "version": "1.2.0",
+  "description": {
+    "en": "Says what a binary value holds — an image's kind and size, a PDF, an archive — when you point at it, and shows the images stored in a collection's documents, or in one document, drawn from their own bytes.",
+    "tr": "Bir ikili değerin ne taşıdığını — bir görselin türünü ve boyutunu, bir PDF'i, bir arşivi — üzerine geldiğinizde söyler; bir koleksiyonun belgelerinde ya da tek bir belgede saklanan görselleri kendi baytlarından çizerek gösterir.",
+    "zh": "将指针悬停在二进制值上时，会说明它是什么——图片的类型和尺寸、PDF、压缩包——并显示集合文档或单个文档中存储的图片，直接由其字节绘制。",
+    "ja": "バイナリ値にポインターを合わせると、その中身（画像の種類とサイズ、PDF、アーカイブなど）を表示します。また、コレクションのドキュメントや 1 件のドキュメントに保存された画像を、そのバイト列から描画して表示します。",
+    "es": "Dice qué contiene un valor binario —el tipo y el tamaño de una imagen, un PDF, un archivo comprimido— al apuntarlo, y muestra las imágenes almacenadas en los documentos de una colección, o en un solo documento, dibujadas a partir de sus propios bytes.",
+    "pt": "Informa o que um valor binário contém — o tipo e o tamanho de uma imagem, um PDF, um arquivo compactado — ao apontar para ele, e mostra as imagens armazenadas nos documentos de uma coleção, ou em um único documento, desenhadas a partir dos próprios bytes.",
+    "ko": "바이너리 값에 포인터를 올리면 그 안에 든 것(이미지의 종류와 크기, PDF, 압축 파일 등)을 알려 주고, 컬렉션의 도큐먼트나 단일 도큐먼트에 저장된 이미지를 자체 바이트에서 직접 그려 보여 줍니다.",
+    "de": "Sagt beim Darauf-Zeigen, was ein Binärwert enthält – Art und Größe eines Bildes, ein PDF, ein Archiv – und zeigt die in den Dokumenten einer Collection oder in einem einzelnen Dokument gespeicherten Bilder, gezeichnet aus ihren eigenen Bytes.",
+    "fr": "Indique ce que contient une valeur binaire — le type et la taille d’une image, un PDF, une archive — lorsqu’on la pointe, et affiche les images stockées dans les documents d’une collection, ou dans un seul document, dessinées à partir de leurs propres octets.",
+    "ru": "Подсказывает, что содержит двоичное значение — тип и размер изображения, PDF, архив, — при наведении на него и показывает изображения из документов коллекции или одного документа, отрисованные из их собственных байтов."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "images",
+        "title": {
+          "en": "Images",
+          "tr": "Görseller",
+          "zh": "图片",
+          "ja": "画像",
+          "es": "Imágenes",
+          "pt": "Imagens",
+          "ko": "이미지",
+          "de": "Bilder",
+          "fr": "Images",
+          "ru": "Изображения"
+        },
+        "icon": "image"
+      }
+    ],
+    "documentActions": [
+      {
+        "id": "show-images",
+        "title": {
+          "en": "Show images",
+          "tr": "Görselleri göster",
+          "zh": "显示图片",
+          "ja": "画像を表示",
+          "es": "Mostrar imágenes",
+          "pt": "Mostrar imagens",
+          "ko": "이미지 표시",
+          "de": "Bilder anzeigen",
+          "fr": "Afficher les images",
+          "ru": "Показать изображения"
+        },
+        "icon": "image"
+      }
+    ],
+    "cellRenderers": [
+      {
+        "id": "binary",
+        "match": "binary",
+        "display": "tooltip"
+      }
+    ]
+  },
+  "author": {
+    "name": "Gokhan OZGEZER"
+  },
+  "license": "CC-BY-NC-SA-4.0",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Some wording and counts also read better in several languages.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Bazı ifadeler ve sayılar da birçok dilde daha doğru okunuyor.",
+        "zh": "现在还支持韩语、德语、法语和俄语，与应用一致。部分措辞和计数在多种语言中也更加准确。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。いくつかの言語で、一部の文言と件数の表記もより正確になりました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, igual que la aplicación. Además, algunos textos y recuentos se leen mejor en varios idiomas.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o aplicativo. Além disso, alguns textos e contagens ficaram mais corretos em vários idiomas.",
+        "ko": "앱과 마찬가지로 이제 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 또한 여러 언어에서 일부 문구와 개수 표기가 더 정확해졌습니다.",
+        "de": "Jetzt auch auf Koreanisch, Deutsch, Französisch und Russisch, wie die App. Außerdem lesen sich einige Formulierungen und Zählungen in mehreren Sprachen besser.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Certaines formulations et certains décomptes se lisent aussi mieux dans plusieurs langues.",
+        "ru": "Теперь также на корейском, немецком, французском и русском, как и приложение. Кроме того, некоторые формулировки и счетчики теперь точнее на нескольких языках."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他方面不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルのポルトガル語に対応しました。ほかに変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, igual que la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o aplicativo. Nada mais muda.",
+        "ko": "앱과 마찬가지로 이제 중국어, 일본어, 스페인어, 브라질 포르투갈어도 지원합니다. 그 외에는 달라진 것이 없습니다.",
+        "de": "Jetzt auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais brésilien, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь также на китайском, японском, испанском и бразильском португальском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-26",
+      "notes": {
+        "en": "First release. Pointing at a binary value in Documents says what it holds: a PNG, JPEG, GIF, WebP, AVIF, BMP or SVG image with its size in pixels, a PDF, a ZIP or gzip archive, MP3 audio, MP4 video, or its subtype — with its length. An Images tab shows the images in the collection's documents (within the Documents filter, 12 at a time), each opening large and its document in the app; a document's Show images action shows its own.",
+        "tr": "İlk sürüm. Belgelerde bir ikili değerin üzerine gelmek, ne taşıdığını söyler: piksel boyutuyla bir PNG, JPEG, GIF, WebP, AVIF, BMP ya da SVG görseli; bir PDF, bir ZIP ya da gzip arşivi, MP3 sesi, MP4 videosu ya da alt türü — uzunluğuyla birlikte. Görseller sekmesi koleksiyonun belgelerindeki görselleri gösterir (Belgeler filtresi içinde, 12'şer); her biri büyük açılır, belgesi uygulamada açılır. Bir belgenin Görselleri göster eylemi kendi görsellerini gösterir.",
+        "zh": "首个版本。在“文档”中将指针悬停在二进制值上，会说明它是什么：带像素尺寸的 PNG、JPEG、GIF、WebP、AVIF、BMP 或 SVG 图片，PDF，ZIP 或 gzip 压缩包，MP3 音频，MP4 视频，或其子类型——并附带长度。“图片”标签页显示集合文档中的图片（在“文档”筛选范围内，每次 12 张），每张都可放大查看，其文档可在应用中打开；文档的“显示图片”操作则显示该文档自己的图片。",
+        "ja": "最初のリリースです。ドキュメントでバイナリ値にポインターを合わせると、その中身を表示します。ピクセル単位のサイズ付きの PNG、JPEG、GIF、WebP、AVIF、BMP、SVG 画像、PDF、ZIP または gzip アーカイブ、MP3 音声、MP4 動画、またはそのサブタイプを、長さとともに示します。「画像」タブはコレクションのドキュメントに含まれる画像を（ドキュメントのフィルターの範囲内で、12 件ずつ）表示し、それぞれ拡大表示でき、そのドキュメントをアプリで開けます。ドキュメントの「画像を表示」アクションは、そのドキュメント自身の画像を表示します。",
+        "es": "Primera versión. Al apuntar a un valor binario en Documentos, indica qué contiene: una imagen PNG, JPEG, GIF, WebP, AVIF, BMP o SVG con su tamaño en píxeles, un PDF, un archivo ZIP o gzip, audio MP3, vídeo MP4, o su subtipo, junto con su longitud. Una pestaña Imágenes muestra las imágenes de los documentos de la colección (dentro del filtro de Documentos, de 12 en 12), cada una se abre en grande y su documento, en la aplicación; la acción Mostrar imágenes de un documento muestra las suyas.",
+        "pt": "Primeira versão. Ao apontar para um valor binário em Documentos, indica o que ele contém: uma imagem PNG, JPEG, GIF, WebP, AVIF, BMP ou SVG com seu tamanho em pixels, um PDF, um arquivo ZIP ou gzip, áudio MP3, vídeo MP4, ou seu subtipo, junto com seu comprimento. Uma aba Imagens mostra as imagens dos documentos da coleção (dentro do filtro de Documentos, 12 por vez), cada uma abre em tamanho grande e seu documento, no aplicativo; a ação Mostrar imagens de um documento mostra as próprias imagens.",
+        "ko": "첫 릴리스입니다. 도큐먼트에서 바이너리 값에 포인터를 올리면 그 안에 든 것을 알려 줍니다. 픽셀 단위 크기가 함께 표시되는 PNG, JPEG, GIF, WebP, AVIF, BMP 또는 SVG 이미지, PDF, ZIP 또는 gzip 압축 파일, MP3 오디오, MP4 동영상, 또는 서브타입을 길이와 함께 보여 줍니다. 이미지 탭은 컬렉션의 도큐먼트에 들어 있는 이미지를(도큐먼트 필터 범위 안에서 12개씩) 보여 주며, 각 이미지는 크게 열 수 있고 해당 도큐먼트는 앱에서 열 수 있습니다. 도큐먼트의 이미지 표시 동작은 그 도큐먼트 자체의 이미지를 보여 줍니다.",
+        "de": "Erste Version. Zeigt man in Dokumente auf einen Binärwert, sagt das Plugin, was er enthält: ein PNG-, JPEG-, GIF-, WebP-, AVIF-, BMP- oder SVG-Bild mit seiner Größe in Pixeln, ein PDF, ein ZIP- oder gzip-Archiv, MP3-Audio, MP4-Video oder seinen Subtyp – jeweils mit der Länge. Ein Tab „Bilder“ zeigt die Bilder in den Dokumenten der Collection (innerhalb des Dokumentfilters, je 12), jedes lässt sich groß öffnen, sein Dokument in der App; die Aktion „Bilder anzeigen“ eines Dokuments zeigt dessen eigene Bilder.",
+        "fr": "Première version. Pointer une valeur binaire dans Documents indique ce qu’elle contient : une image PNG, JPEG, GIF, WebP, AVIF, BMP ou SVG avec sa taille en pixels, un PDF, une archive ZIP ou gzip, un audio MP3, une vidéo MP4, ou son sous-type, avec sa longueur. Un onglet Images affiche les images des documents de la collection (dans le filtre de Documents, 12 à la fois) ; chacune s’ouvre en grand et son document, dans l’application ; l’action Afficher les images d’un document montre les siennes.",
+        "ru": "Первый выпуск. Если навести указатель на двоичное значение в разделе «Документы», будет показано, что оно содержит: изображение PNG, JPEG, GIF, WebP, AVIF, BMP или SVG с размером в пикселях, PDF, архив ZIP или gzip, аудио MP3, видео MP4 или его подтип — с длиной. Вкладка «Изображения» показывает изображения из документов коллекции (в пределах фильтра «Документы», по 12 за раз); каждое открывается крупно, а его документ — в приложении; действие документа «Показать изображения» показывает его собственные изображения."
+      }
+    }
+  ]
+}

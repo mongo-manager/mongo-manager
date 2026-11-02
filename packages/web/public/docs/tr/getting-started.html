@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Başlarken · Mongo Manager belgeleri</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager belgeleri</a>
+      <details class="lang-menu">
+        <summary>Türkçe</summary>
+        <span class="langs" role="group" aria-label="Dil">
+          <a lang="en" hreflang="en" href="../getting-started.html">English</a>
+          <strong lang="tr">Türkçe</strong>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/getting-started.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/getting-started.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/getting-started.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/getting-started.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/getting-started.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/getting-started.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/getting-started.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/getting-started.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Genel bakış</a>
+      <strong>Başlarken</strong>
+      <a href="security.html">Güvenlik</a>
+      <a href="deployment.html">Kurulum ve dağıtım</a>
+      <a href="import-export.html">İçe ve dışa aktarma</a>
+      <a href="backup.html">Yedekleme ve geri yükleme</a>
+      <a href="watch.html">Değişiklikleri izleme</a>
+      <a href="sync.html">Canlı senkron</a>
+      <a href="server-admin.html">Sunucu yönetimi</a>
+      <a href="ai.html">AI asistanı</a>
+      <a href="plugins.html">Eklentiler</a>
+      <a href="shortcuts.html">Klavye kısayolları</a>
+    </nav>
+    <main>
+      <h1>Başlarken</h1>
+      <h2 id="install">Kurulum</h2>
+      <p>
+        Bunlardan birini kullanın. Her sürüm, ağa bağlı olmayan makineler için tüm dosyaları SHA-256 sağlama
+        toplamlarıyla birlikte sunar.
+      </p>
+      <ul>
+        <li>npm (Node.js 24 veya üstü): <code>npx @mongo-manager/app</code></li>
+        <li>Çevrimdışı npm: <code>npm install --global ./mongo-manager-&lt;sürüm&gt;.tgz</code></li>
+        <li>
+          Tek dosyalık çalıştırılabilir: sisteminize uygun dosyayı indirip çalıştırın; Node.js gerekmez.
+        </li>
+        <li>Docker: <code>docker compose -f deploy/docker-compose.yml up -d</code></li>
+      </ul>
+      <p>
+        Desteklenen MongoDB: 6.0 ve sonrası. Daha eski sunuculara bağlanırken bunu söyleyen bir mesajla
+        reddedilir.
+      </p>
+      <h2 id="first-run">İlk çalıştırma</h2>
+      <p>
+        <strong>Yerel mod</strong> (varsayılan) tek bilgisayardaki tek kişi içindir: Mongo Manager
+        <code>127.0.0.1:4321</code> adresini dinler ve tarayıcınızı açar. Giriş yoktur: tek kullanımlık bir
+        bağlantıdan açılır. Bir terminalde başlatıldığında bağlantıyı adresinin bir alt satırına yazdırır;
+        başka her yerde (bir hizmet, bir konteyner, bir günlük) onu açan ve yalnızca sizin hesabınızın
+        okuyabildiği bir dosyanın yolunu yazdırır. Tarayıcınız ardından bu siteye ait verileri tuttuğu sürece
+        içeride kalır (son kullanımından sonra en çok altı ay; Safari bir hafta ziyaret edilmeyince siler),
+        kurulu uygulaması da — Mac'teki bir Safari web uygulaması dışında: o kendi verilerini tutar ve ona
+        bağlantı verilemez; orada Mongo Manager'ı bir Safari sekmesinde kullanın. Bilgisayardaki başka bir
+        program ya da hesap adresi açarsa yalnızca uygulamanın nasıl açılacağını anlatan bir sayfa görür.
+        Bağlantı kullanıldıysa ya da tarayıcınız onu unuttuysa yenisi için
+        <code>mongo-manager open</code> çalıştırın; bir terminalde bağlantıyı da yazdırır, dosyayı açamayan
+        bir tarayıcı için (Linux'ta snap ya da Flatpak bir tarayıcı). Paylaştığınız bir bilgisayarda ekip
+        modunu kullanın.
+      </p>
+      <pre><code>mongo-manager
+mongo-manager open             # çalışan Mongo Manager için yeni bir bağlantı (--no-open yalnızca yazdırır)</code></pre>
+      <p>
+        <strong>Ekip modu</strong> kullanıcılar, roller ve iki adımlı giriş ekler. İlk başlatma terminale tek
+        kullanımlık bir kurulum anahtarı yazdırır (servis ya da konteyner olarak çalışırken anahtar veri
+        klasöründeki <code>setup-token</code> dosyasındadır); sayfayı açıp bu anahtarı girerek ilk yöneticiyi
+        oluşturun.
+      </p>
+      <pre><code>mongo-manager --auth</code></pre>
+      <h2 id="your-first-connection">İlk bağlantınız</h2>
+      <ol>
+        <li>
+          <em>Bağlantı ekle</em>'yi seçin ve ilk alana bağlantı dizesini yapıştırın ya da yazın; örneğin
+          <code>localhost:27017</code> veya bir <code>mongodb+srv://</code> adresi (<code>mongodb://</code>
+          yazılmayabilir). Form kendiliğinden dolar: alanın altındaki satır neyin anlaşıldığını söyler, siz
+          bir ad yazana kadar ad da sunucu adresinden gelir. Sunucu, kimlik doğrulama, TLS, SSH ve diğerleri
+          <em>Gelişmiş seçenekler</em> altındadır; <em>Kaydet ve bağlan</em> bağlantıyı kaydedip açar.
+        </li>
+        <li><em>Bağlantıyı test et</em>'i seçin. MongoDB sürümünü ve topolojiyi gösterir.</li>
+        <li>Kaydedin. Bağlantı soldaki ağaçta görünür.</li>
+      </ol>
+      <h2 id="sign-in-methods">Oturum açma yöntemleri</h2>
+      <p>
+        Kullanıcı adı ve şifrenin (SCRAM) yanı sıra bir bağlantı X.509 sertifikası, LDAP (PLAIN), AWS IAM
+        anahtarları, OIDC veya Kerberos ile oturum açabilir. Yöntemi <em>Gelişmiş seçenekler</em> →
+        <em>Kimlik doğrulama</em> altında seçin.
+      </p>
+      <ul>
+        <li>
+          <strong>MONGODB-OIDC</strong> (MongoDB Atlas, Enterprise): herkes sunucunun bildirdiği kimlik
+          sağlayıcıyla oturum açar — şifre saklanmaz. Bağlantıyı ilk açtığınızda bir pencere
+          <em>Oturum aç</em>'ı önerir: sağlayıcının sayfası bu sekmede açılır ve sizi geri gönderir.
+          Yönlendirmesi Mongo Manager'a ulaşamıyorsa <em>Bunun yerine kod kullan</em>'ı seçin ve gösterilen
+          kodu sağlayıcıda girin. Bu sunucunun <code>…/oidc/callback</code> adresini sağlayıcıya kaydedin ya
+          da <em>Yönlendirme adresi</em> altında başka bir adres verin. <em>İzin verilen sunucular</em>,
+          oturumunuzun gönderilebileceği sunuculardır (boş: Atlas ve bu bilgisayar). Bağlantının sayfası
+          oturumunuzun açık olup olmadığını gösterir ve oturumu kapatır. Bir <em>iş yükü kimliği</em> (Azure,
+          GCP, Kubernetes) ise Mongo Manager'ın çalıştığı makine olarak oturum açar: ekip modunda yalnızca bir
+          yöneticinin izin verdiği yerde.
+        </li>
+        <li>
+          <strong>Kerberos (GSSAPI)</strong>: asıl adı (principal), sunucularınız gerektiriyorsa hizmet adını,
+          alanı (realm) ve sunucu adının standartlaştırılmasını girin. Mongo Manager'ın çalıştığı hesabın
+          Kerberos biletiyle oturum açar — kendi bilgisayarınızda sizinkiyle, ekip modunda sunucununkiyle;
+          ekip modunda bir yönetici izin vermedikçe kapalıdır. npm paketinin isteğe bağlı
+          <code>kerberos</code> paketini gerektirir (bkz.
+          <a href="deployment.html#optional-packages">Kurulum</a>).
+        </li>
+      </ul>
+      <h2 id="encryption">İstemci tarafı şifreleme</h2>
+      <p>
+        <em>Gelişmiş seçenekler</em> → <em>Şifreleme</em> altında bir bağlantı istemci tarafı alan şifrelemesi
+        (CSFLE) ya da Queryable Encryption kullanabilir. npm paketinin isteğe bağlı
+        <code>mongodb-client-encryption</code> paketini gerektirir.
+      </p>
+      <ul>
+        <li>
+          <strong>Anahtar sağlayıcıları</strong>: 96 baytlık yerel bir ana anahtar (<em
+            >Yeni anahtar oluştur</em
+          >
+          bir tane üretir; bir kopyasını saklayın, yoksa veriler çözülemez), AWS KMS, Azure Key Vault, Google
+          Cloud KMS veya KMIP. Kimlik bilgileri şifreli saklanır ve bir daha gösterilmez.
+          <strong>Anahtar kasası</strong>, veri anahtarlarının bulunduğu koleksiyondur (varsayılan
+          <code>encryption.__keyVault</code>).
+        </li>
+        <li>
+          <strong>Mod</strong>: <em>Okuma ve yazma</em> okumaları çözer ve yazmaları şifreler (MongoDB
+          Enterprise veya Atlas); <em>Yalnızca şifre çözme</em> şifreli değerleri çözerek okur ve belge yazmaz
+          (MongoDB Community). <strong>Sorgu çözümleme</strong> crypt_shared kitaplığını (yolunu, ekip modunda
+          sunucununkini) ya da bu bilgisayardaki mongocryptd'yi kullanır.
+        </li>
+        <li>
+          <strong>Şifreli alanlar</strong>, bağlantı kendi haritalarını vermedikçe sunucunun koleksiyon
+          seçeneklerinden gelir — Queryable Encryption'ın <code>encryptedFields</code>'ı, bir CSFLE
+          <code>$jsonSchema</code> doğrulayıcısı. Belgeler görünümü şifreli alanları bir kilitle işaretler.
+        </li>
+        <li>
+          Bağlantının <em>Şifreleme</em> bölümü (yöneticileri için) veri anahtarlarını listeler, yenilerini
+          oluşturur ve bir ana anahtar altında yeniden şifreleyerek yeniler; Queryable Encryption
+          koleksiyonları oluşturur: her alan türüyle ve eşitlik ya da aralıkla sorgulanıp
+          sorgulanamayacağıyla, her biri için bir veri anahtarı oluşturularak.
+        </li>
+        <li>
+          Kişisel verilerin gizlendiği biri böyle bir bağlantıda şifreli değerleri saklandığı gibi görür ve
+          belge yazamaz. Kopyalama şifreli değerleri saklandığı gibi taşır; Queryable Encryption koleksiyonu
+          kopyalanamaz.
+        </li>
+      </ul>
+      <h2 id="home-and-next-steps">Ana sayfa ve sonraki adımlar</h2>
+      <p>
+        Ana sayfa, <em>Panoyu düzenle</em> ile eklediğiniz, kaldırdığınız, boyutlandırdığınız ve taşıdığınız
+        bileşenlerden oluşan bir panodur; sizin için sunucuda saklanır. <em>Sonraki adımlar</em> bileşeni,
+        uygulamanın son çalışmalarınızdan kendisinin çıkardığı en fazla beş adım önerir: etkin uyarılar, son
+        bir günde başarısız olan işler, ilginizi bekleyen canlı eşitlemeler ve zamanlanmış yedekler, en son
+        kullandığınız veritabanı için önerilen bir indeks (sunucusunu izleyebiliyorsanız, yavaş sorgularından)
+        ve son açtığınız, şu anda açık olmayan yerler. Her biri onu yapan bir bağlantıdır — bir indeks önerisi
+        anahtarı doldurulmuş olağan İndeks oluştur iletişim kutusunu açar ve siz orada onaylamadan hiçbir şey
+        oluşturulmaz. Bir adımı ✕ ile kapatın (Geri al onu geri getirir); kapatma panonuzla birlikte saklanır
+        ve aynı türden yeni bir olay yeni bir adım olarak geri gelir. Bileşenin menüsündeki
+        <em>Kapatılan adımları yeniden göster</em> hepsini geri getirir.
+      </p>
+      <p>
+        Bir yapay zekâ sağlayıcısı kuruluysa bileşenin menüsü <em>Yapay zekâyla sırala</em> seçeneğini sunar;
+        siz açana kadar kapalıdır. Açıkken yapay zekâ adımları yalnızca olgulardan sıraya koyar ve
+        başlıklarını yazar: her adımın türü, adları (bağlantı, veritabanı, koleksiyon, bir indeksin alan
+        adları) ve sayıları — asla bir değer, bir belge ya da bir hata metni değil. Bağlantısının yapay zekâ
+        ilkesi "kapalı" olan ya da "yalnızca yerel" olup sağlayıcısının yerel ağdan yanıt verdiği bilinmeyen
+        bir adım gönderilmez ve yerinde kalır. Yapay zekâ adım ekleyemez, bir adımın ne yaptığını da
+        değiştiremez: verdiği her başlığın altında uygulamanın kendi sözcükleri adımın ne yaptığını söyler;
+        başlıklarında sayı bulunmaz (bir sayı eskiyebilir; onu uygulamanın satırı verir). Adımlar yalnızca
+        değiştiklerinde (başka türden bir adım, başka bir yer) ya da
+        <em>Yapay zekâyla yeniden sırala</em> seçildiğinde yeniden sıralanır — bir sayı değişti ya da zaman
+        geçti diye asla. Her sıralama yapay zekâ geçmişinde ("Sonraki adımlar" olarak, sözcükleri olmadan) ve
+        denetim günlüğünde (kaç adım olduğu, adları asla) sayılır. İndeks önerisi yalnızca indeks
+        oluşturabildiğiniz yerde sunulur.
+      </p>
+      <h2 id="querying">Sorgulama</h2>
+      <p>
+        Bir koleksiyonu açın, <code>{ status: 'A', qty: { $lt: 30 } }</code> gibi bir filtre yazıp
+        <kbd>Enter</kbd>'a basın. <em>Seçenekler</em> projeksiyon, sıralama, atlama, sınır, collation, ipucu
+        ve süre sınırı ekler. <em>Son sorgular</em> o koleksiyonda çalıştırdıklarınızı listeler; yıldız
+        düğmesi sorguyu bir ad ve etiketlerle favori olarak saklar.
+      </p>
+      <p>
+        Çubuktaki bir değer <code>{{ad}}</code> biçiminde yazılan bir parametre olabilir:
+        <code>{ status: {{status}}, qty: { $gte: {{min}} } }</code>. Her biri için çubuğun altında bir alan
+        belirir; <em>Bul</em> sorguyu orada verilen değerlerle çalıştırır: <code>18</code> bir sayıdır,
+        <code>"18"</code> bir metin, <code>ISODate("2026-01-01")</code> bir tarih; diğer her yazı yazıldığı
+        gibi metindir. Çubuktan kaydedilen bir favori parametrelerini korur, verilen değerler de varsayılanları
+        olur; açıldığında değerler doldurulup çalıştırılır, varsayılanı olmayan bir parametre varsa değer
+        beklenir. Tırnak, düzenli ifade ya da yorum içindeki <code>{{ad}}</code> düz metindir. Bir bağlantının
+        kişisel verilerini göremeyen biri başka bir kullanıcının varsayılanlarını hiçbir zaman almaz.
+      </p>
+      <p>
+        Çubuğun altındaki çipler koşullar önerir: koleksiyonda son çalıştırdıklarınızı ve koleksiyondan alınan
+        küçük bir örneğin önerdiklerini (<code>status = "paid"</code> gibi sık görülen bir değer ya da birçok
+        belgede bulunmayan bir alan); birini seçmek onu filtreye ekler ve çalıştırır. Örnek, sayfa boştayken
+        ya da çubuk kullanıldığında alınır, bir view'da hiç alınmaz (view'ın pipeline'ını çalıştırırdı).
+        Sonuçların üstünde, kullanılan filtrenin her koşulu ayrı bir çiptir: çipi kaldırmak (çarpısıyla ya da
+        çip üzerindeyken <kbd>Delete</kbd> ile) filtreyi o koşul olmadan çalıştırır, <em>Geri al</em> onu geri
+        getirir. Çubuktaki metin yalnızca kullanılan filtreyle aynıyken güncellenir; hâlâ düzenlemekte
+        olduğunuz bir filtreye dokunulmaz. Çubuğun altındaki panel kullanılan sorguyu parça parça gösterir;
+        <em>Çalıştır</em>
+        düğmesi onu yeniden çalıştırır, yıldızı da favori olarak kaydeder.
+      </p>
+      <p>
+        Tabloda bir sütunun adına tıklayarak ona göre sıralayın: önce artan, sonra azalan, sonra sıralamasız.
+        <kbd>Shift</kbd> ile tıklamak sütunu sıralamaya ekler. Sıralama <em>Seçenekler</em>'e yazılır ve
+        çubuktaki filtreyle birlikte çalışır; böylece çubuk her zaman çalışan sorguyu gösterir. Bir sütunun
+        kenarını sürükleyerek (ya da kenara odaklanıp ok tuşlarıyla) genişliğini değiştirin; kenara çift
+        tıklamak sütunun boyutunu yeniden kendisine bırakır. Genişlikler her koleksiyon için, size özel olarak
+        bu tarayıcıda saklanır. Sütunun menüsü onu sıralar, adını kopyalar ya da gizler. Değerleri sizden
+        gizlenen (kişisel veri içeren) bir sütun hiçbir zaman sıralanmaz.
+      </p>
+      <p>
+        Tablo, Kartlar ve JSON'un yanındaki <em>Grafik</em>, sorgunun sonuçlarını çubuk, çizgi, nokta ya da
+        pasta grafiği olarak çizer: X ekseninde gösterilecek alanı, bir sayı alanının adedini, toplamını ya da
+        ortalamasını ve sonuçları serilere ayıracak alanı seçin. Eşleşen ilk 1.000 belgeye kadarını (yalnızca
+        çizilen alanları) okur ve daha fazlası olduğunda bunu söyler; aynı sayılar ekran okuyucular için bir
+        tabloda da yer alır. Sizden gizlenen alanlar sunulmaz ve hiçbir zaman grafiğe dökülmez. Veritabanı,
+        koleksiyon ve sütun menülerindeki ve Şema'da bir alanın yanındaki <em>Adı kopyala</em>, yalın adı
+        kopyalar.
+      </p>
+      <p>
+        Bir belgeyi düzenlerken hangi alanların değişeceği yazılmadan önce gösterilir; yalnızca o alanlar
+        kaydedilir. Tabloda bir değere çift tıklayarak (veya üzerindeyken <kbd>Enter</kbd>'a basarak) onu
+        yerinde düzenleyebilirsiniz; değer tipini korur.
+      </p>
+      <p>
+        <em>Belgeleri toplu güncelle</em> ve <em>Belgeleri toplu sil</em> çalışmadan önce önizleme gösterir:
+        kaç belgenin eşleştiği ve birkaçı. Güncellemede her örnek, kendisinde neyin değişeceğini gösterir;
+        bunu MongoDB hiçbir şey yazmayan bir okumayla hesaplar. Güncellemenin hata vereceği bir belge (metne
+        <code>$inc</code>, bir dizinin içinden geçen yol) işaretlenir. Konumsal yollar (<code>$[]</code>),
+        dizi sıra numaraları ve koşullu <code>$pull</code> örneklerde önizlenmez; önizleme bunu söyler.
+        Kişisel değerler örneklerde önce de sonra da maskeli kalır.
+      </p>
+      <h2 id="collections">Koleksiyonlar</h2>
+      <p>
+        <em>Yeni koleksiyon</em>, bir koleksiyon, sınırlı (capped) ya da zaman serisi koleksiyonu veya bir
+        view için varsayılan bir karşılaştırma kuralı (collation: dil, duyarlılık, sayısal sıralama ve
+        MongoDB'nin diğer seçenekleri) ayarlayabilir; MongoDB bunu oluştururken sabitler. Koleksiyon ya da
+        sınırlı koleksiyon, değişiklik akışı için önceki ve sonraki görüntüleri baştan tutabilir. Sonradan
+        koleksiyonun menüsündeki <em>Koleksiyonu düzenle</em> bu görüntüleri açar ya da kapatır (koleksiyonun
+        adını anan bir onaydan sonra), karşılaştırma kuralını gösterir ve kuralların durduğu Doğrulama
+        sekmesine götürür. Koleksiyonun başlığı karşılaştırma kuralını ve görüntülerin tutulup tutulmadığını
+        söyler.
+      </p>
+      <h2 id="performance">Performans</h2>
+      <p>
+        Bir bağlantının <em>Performans</em> sekmesi sunucuyu canlı olarak çizer: saniyedeki işlem,
+        bağlantılar, ağ ve bellek; sekme açıkken 2 saniyede bir örneklenir. Altında en yavaş süren işlemler
+        (veritabanı ya da koleksiyona, türe, çalışma süresine, kilit beklemeye ve boştaki bağlantılara göre
+        süzülebilir, yenileme duraklatılabilir) ve en çok süre harcanan koleksiyonlar yer alır. Editörler ve
+        yöneticiler açabilir; bir işlemin "…" menüsü komutunu, bağlantı yöneticilerine de önce onay soran
+        <em>İşlemi sonlandır</em> seçeneğini gösterir. MongoDB'nin de hesabın sunucu durumunu okumasına izin
+        vermesi gerekir: hesaba <code>clusterMonitor</code> rolünü verin, aksi hâlde sekme neyin eksik
+        olduğunu söyler.
+      </p>
+      <p>
+        <em>Profiler</em> bölümü her veritabanının profiler seviyesini, slowms değerini ve örnekleme oranını
+        gösterir; bağlantı yöneticisi bunları veritabanının satırındaki kalemle değiştirebilir. Seviye 2 (tüm
+        işlemler) önce onay ister ve 30 dakika sonra kendiliğinden önceki ayara döner.
+        <em>Yavaş sorgular</em>, profiler'dan ve sunucunun kendi günlüğünden (profiler kapalıyken de çalışır)
+        gelen yavaş işlemleri en yeniden başlayarak plan, taranan anahtar ve belge sayıları ve komutla
+        listeler; döndürdüğünden çok daha fazla belge okuyan sorgu işaretlenir ve <em>Explain'de aç</em> onu
+        kendi koleksiyonunda açar.
+      </p>
+      <p>
+        Bağlantının <em>Kişisel veriler</em> sekmesinde bağlantı yöneticisi kişisel veri tutan alanları
+        listeleyebilir (örneğin <code>crm.users.email</code> ya da <code>*.*.**.phone</code>); bir
+        koleksiyonun kendi <em>Kişisel veriler</em> sekmesi yalnız o koleksiyonun alanlarını listeler ve ekler
+        (yeni bir kural için alan adı yeterlidir), bağlantının o koleksiyonu da kapsayan genel kurallarını da
+        gösterir. <em>Kişisel verileri göremez</em> yetkisi verilen kullanıcı bu değerleri profiler, yavaş
+        sorgular ve işlem listesinde <code>***</code> olarak görür ve shell kullanamaz. Yerel modda (hesap
+        yokken) kurallar bu değerleri sizden de her yerde gizler — belgelerde, dışa aktarmada, AI'ın
+        bağlamında — ve gizliyken shell kapalı kalır; bağlantının sekmesindeki
+        <em>Benden de gizle</em> anahtarı bunu o bağlantı için kapatır.
+      </p>
+      <p>
+        <em>İndeks önerileri</em> bir veritabanının yavaş sorgularını okur ve tarama yapan her sorgu için, onu
+        zaten karşılayan bir indeks yoksa, eşitlik–sıralama–aralık kuralına göre bir indeks önerir; sunucu
+        başladığından beri kullanılmamış ya da başka bir indeksin baş kısmı olan indeksleri de listeler.
+        Yalnızca alan adları kullanılır. <em>İndeks oluştur</em> olağan pencereyi anahtarı dolu olarak açar:
+        siz orada onaylamadıkça hiçbir şey kurulmaz.
+      </p>
+      <p>
+        Performans açıkken bağlantının başlığından <em>Canlı</em> (son 5 dakika) ya da saklanan 1 saat, 24
+        saat veya 7 günlük bir aralık seçilir. Bağlantı yöneticisi yanındaki
+        <em>Metrik geçmişi</em> menüsünden <em>Metrik geçmişini kaydet</em> seçeneğini açar (saklananı aynı
+        menü, önce sorarak siler): sunucu o bağlantıdan dakikada bir örnek alır ve 7 gün saklar (yalnızca
+        sayılar). Kapalıyken sunucu o bağlantıya kendiliğinden hiç bağlanmaz. Bir mongos'ta sekme sharding
+        özetini gösterir: shard'lar, balancer, yönlendiriciler ve her sharded koleksiyonun anahtarı ile chunk
+        dağılımı; boyutlar ve jumbo chunk'lar istenince gelir. Oradan küme üzerinde hiçbir şey değiştirilmez.
+      </p>
+      <p>
+        Replica set'te aynı sekme her üyeyi listeler: hangisinin primary olduğu, hangilerinin düştüğü, her
+        secondary'nin primary'nin kaç saniye gerisinde olduğu (10 sn üstü sarı, 60 sn üstü kırmızı), çoğunluk
+        onay gecikmesi ve oplog penceresi; ayrıca son dakikalardaki gecikmenin grafiği. Primary'si olmayan
+        küme kırmızıyla gösterilir: biri seçilene kadar yazma kabul edemez.
+      </p>
+      <h2 id="aggregations">Aggregation</h2>
+      <p>
+        Koleksiyonun Aggregation sekmesi pipeline'ı aşama aşama kurar. Bir aşama ekleyin, operatörünü seçin
+        (operatör alanına yazarak bir aşamayı adıyla ya da ne yaptığıyla bulun — "join" <code>$lookup</code>'ı
+        bulur — ok tuşları ve Enter ile seçin; listenin yanında aşamanın ne yaptığı ve değerine bir örnek
+        görünür; her biri bir şablonla ve MongoDB kılavuzuna bağlantıyla gelir) ve değerini düzenleyin;
+        yazarken her aşamanın çıktısı koleksiyondan bir örneklem üzerinde (ilk 1000 belge ya da rastgele bir
+        örneklem) önizlenir. Aşamalar devre dışı bırakılabilir, sürükle-bırak ya da Alt+Yukarı ve Alt+Aşağı
+        ile sıralanabilir veya tümü birden metin olarak düzenlenebilir.
+      </p>
+      <p>
+        Çalıştır, sonucun tamamını (en çok 10 000 belge) Durdur düğmesiyle akıtarak gösterir; Toplamı hesapla
+        yalnızca istendiğinde sayar. <code>$out</code> ya da <code>$merge</code> ile biten bir pipeline hiç
+        önizlenmez: hedefi belirten bir onaydan sonra bir kez çalışır, bir koleksiyonun yerine yazmak için
+        adını yazmanız istenir. Pipeline'lar koleksiyonla birlikte kaydedilebilir (takım modunda isteğe bağlı
+        olarak paylaşılır), Node.js, Python, Java, Go, C#, PHP, Ruby ya da Rust programı olarak dışa
+        aktarılabilir (bağlantı adresi koda yazılmaz, <code>MONGODB_URI</code> ortam değişkeninden okunur) ya
+        da view'a dönüştürülebilir.
+      </p>
+      <p>
+        Bir view'ın pipeline'ı da aynı yolla değiştirilir: view'daki <em>Pipeline'ı düzenle</em> (genel
+        bakışında ya da menüsünde) onu, okuduğu koleksiyonun Aggregation sekmesinde, view'a ait olarak
+        işaretli ve her aşamanın önizlemesiyle açar. <em>Görünümü güncelle</em>, etkin aşamaları view'ın adını
+        anan bir onaydan sonra view'a geri yazar. Oluşturucunun okuyamadığı bir aşama içeren pipeline açılmaz
+        (kaydetmek o aşamayı kaybettirirdi); kişisel verilerin gizlendiği bir kullanıcı, tanımını maskeli
+        gördüğü bir view'ı değiştiremez.
+      </p>
+      <h2 id="queries">Sorgular</h2>
+      <p>
+        Sorgular sayfası (kenar çubuğunda Sorgular, komut paleti ya da <kbd>Ctrl / ⌘</kbd> +
+        <kbd>Shift</kbd> + <kbd>L</kbd>; adresi <code>/library</code>) bir bağlantının favorilerini, kayıtlı
+        pipeline'larını, shell snippet'lerini ve sorgu geçmişini ada, etikete, sorgu metnine, türe ya da
+        koleksiyona göre arar. Üzerinde çalıştığınız bağlantıda, yoksa ilk bağlantıda açılır ve döndüğünüzde
+        aradığınızı korur. Bir öğeyi açmak onu koleksiyonuna götürür: find sorgusu Belgeler'de çalışır,
+        pipeline Aggregation kartlarını doldurur (sekmede zaten kart varsa önce sorar). Geçmiş,
+        çalıştırdığınız find ve aggregation sorgularını koleksiyon başına en yeni 200, toplamda 2000 olmak
+        üzere, her birini bir kez ve kaç kez kullanıldığıyla saklar; kayıtlar tek tek kaldırılabilir ya da
+        temizlenebilir. Favoriler ve kayıtlı pipeline'lar Sorgular sayfasından yeniden adlandırılabilir,
+        etiketlenebilir, paylaşılabilir, silinebilir ve sabitlenebilir: sabitlenen sorgular yalnızca sizindir
+        (bağlantı başına en fazla 50), Sorgular sayfasında ve Ana sayfadaki Sorgular bileşeninde en üstte
+        listelenir. Komut paleti, bir sekmede açık her bağlantının favorilerini, kayıtlı pipeline'larını ve
+        shell snippet'lerini, her bağlantıyı kendi adı altında, üzerinde çalıştığınızı en başta listeler.
+        Takım modu başladığında yerel modun geçmişi silinir (hiçbir takım kullanıcısı onu göremez ya da
+        temizleyemezdi); kaç kaydın gittiği loga yazılır. Yerel modun favorileri ve kayıtlı pipeline'ları
+        bağlantı yöneticileri için kalır.
+      </p>
+      <h2 id="advanced-shell">Gelişmiş shell</h2>
+      <p>
+        Bir bağlantının shell sekmesi gerçek mongosh çalıştırır ve kod onun terminaline yazılır: veritabanı
+        seçin, find ve aggregation çalıştırın, betik yazın. Enter kod tamamlanınca çalıştırır; parantez, metin
+        ya da ifade açıkken (<code>.</code>, bir operatör ya da <code>if (…)</code> sonrasında)
+        <code>...</code> ile sonraki satırda devam eder, Shift+Enter her zaman satır ekler. Ctrl+Enter kodu
+        olduğu gibi çalıştırır. Çok satırlı kod terminale yapıştırılabilir: satır satır gösterilir ve ancak
+        Enter'a basınca çalışır. Betik, mongosh yazılanı nasıl çalıştırıyorsa öyle çalışır — <code>use</code>,
+        <code>show</code> ve <code>it</code> ayrı ayrı, sonra her ifade sırayla; bir hata betiği orada
+        durdurur ve kaç ifadenin çalışmadığını söyler. <code>print()</code> ve
+        <code>printjson()</code> terminale yazar; <code>cls</code> ekranı ve sonuçları temizler,
+        <code>exit</code> shell'i kapatır.
+      </p>
+      <p>
+        Yukarı ve Aşağı yazılanın satırları arasında, sonra geçmişte gezinir; Ctrl+R geçmişte arar (daha eski
+        eşleşmeler için yine Ctrl+R, çıkmak için Escape). Ctrl+C çalışan komutu durdurur ya da satırı
+        temizler; çıktı seçiliyken kopyalar. Alt+B ve Alt+F (ya da Ctrl+Sol ve Ctrl+Sağ) kelime kelime gider.
+        Her kullanıcının geçmişi bağlantı başına ayrı ve şifreli tutulur, temizlenebilir.
+      </p>
+      <p>
+        Shell, bağlantı yöneticilerine ve bir yöneticinin yetki verdiği editöre açıktır. Hiçbir kimlik bilgisi
+        tutmayan, yalnızca bağlantının kendi sunucularına ulaşabilen bir kum havuzunda çalışır; salt okunur
+        bağlantıda yazma reddedilir ve admin olmayan küme ya da kullanıcı yönetimi yapamaz.
+      </p>
+      <p>
+        Shell sayfası nerede çalıştığını — bağlantıyı ve shell'in bulunduğu veritabanını (<code>use</code> ile
+        değişir) — ve durumunu gösterir: bağlanıyor, bağlı, çalışıyor (geçen süreyle) ya da kapalı. Başlığında
+        bir komut çalışırken Durdur, Ekranı ve sonuçları temizle (Ctrl+L — bir komut çalışırken de — ya da
+        <code>cls</code>; bir bildirim bunu söyler, bildirimdeki Geri al ya da boş Sonuçlar kartındaki
+        Sonuçları geri getir onları geri getirir) ve yazılanı (ya da son çalıştırılan kodu) snippet olarak
+        kaydetmek, geçmişi temizlemek (sonuçlar da temizlenir) ya da shell'i yeniden başlatmak için bir menü
+        vardır (oturum kapanır ve yenisi başlar; değişkenler ve gösterilen sonuçlar kaybolur). Terminal
+        uygulamanın açık ya da koyu temasını ya da kendi temalarından birini alır ve kodu renklendirir.
+        Alttaki çubuk kısayolları listeler. Shell, sayfası açık kaldıkça ne kadar kullanılmazsa kullanılmasın
+        açık kalır. Kapanırsa (oturum açmanız sona erdiyse ya da sunucunun koyduğu boşta kalma veya ömür
+        sınırını aştıysa) sayfa nedenini söyler; Enter yenisini açar; bağlantı koptuğunda çalışmakta olan bir
+        komut, bağlantı geri gelince ekranda tamamlanır.
+      </p>
+      <p>
+        Yazarken Tab öneri tamamlar — <code>db.</code> sonrasında veritabanının koleksiyonları (shell'de
+        oluşturulan da), bir zincirin döndürdüğünün metotları, <code>$</code> sonrasında operatörler ve
+        koleksiyondan örneklenen alan adları. Shift+Tab ya da önce Escape sonra Tab terminalden çıkar.
+      </p>
+      <p>
+        Terminalin yanındaki Sonuçlar kartı son sonucu tablo, ağaç ya da metin olarak gösterir; Daha fazla bir
+        cursor'ın sonraki partisini getirir, başlıktaki sonuç geçmişi daha önceki bir sonucu seçer — her biri
+        geldiği komutla adlandırılır (yalnızca bellekte tutulur); Temizle kartı boşaltır; bildirimdeki Geri al
+        ya da boş karttaki Sonuçları geri getir, shell yeniden başlatılana ya da geçmişi temizlenene dek
+        sonuçları geri getirir. Kart genişletilebilir; dar ekranda terminal ve sonuçlar iki sekmedir. Birden
+        çok shell sekmesi aynı anda açık olabilir; her birinin kendi oturumu vardır. Düz bir find ya da
+        aggregation'ın cursor'ı kendi koleksiyon görünümünde açılır — bir find kendi skip değerinden başlar,
+        limit'i sayfa boyutu olur — ve gösterilen belgeler JSON ya da CSV olarak dışa aktarılır.
+      </p>
+      <p>
+        Kod, parametreleri <code>{{name}}</code> biçiminde yazılmış bir snippet olarak kaydedilebilir —
+        kişisel ya da ekiple paylaşılan. Bir snippet'i açmak (Sorgular sayfasından ya da komut paletinden)
+        parametrelerini sorar ve doldurulmuş kodu terminale yazar; Enter'a basana kadar hiçbir şey çalışmaz.
+        Kendi snippet'leriniz Sorgular sayfasında düzenlenir: adı, etiketleri, kodu ve parametreleri (siz
+        yazdıkça her <code>{{name}}</code> için bir satır gelir), yeni bir snippet gibi denetlenir; paylaşılan
+        bir snippet paylaşılmış kalır ve denetim kaydı kodun değiştiğini not eder, kodun kendisini asla.
+      </p>
+      <p>
+        Terminal ekran okuyucuyla çalışır: ekran okuyucu kipi varsayılan olarak açıktır; Hesap → Tercihler onu
+        kapatır ya da yeniden açar, açık shell'lerde de.
+      </p>
+      <h2 id="explain">Explain</h2>
+      <p>
+        Belgeler ya da Aggregation sekmesindeki "Neden yavaş?" düğmesi Explain bölümünü o sorgu ya da pipeline
+        için açar. MongoDB'nin seçtiği planı bir ağaç olarak (ok tuşlarıyla gezilir), her aşamanın okuduğunu
+        ve döndürdüğünü, reddedilen planları ve sözlü uyarıları gösterir: koleksiyonun tamamını tarama,
+        bellekte sıralama, döndürdüğünden çok daha fazlasını okuyan bir filtre, indeksi olmayan bir alanda
+        birleştirme. Bir indeks işe yarayacaksa Explain önerir (önce eşitlik alanları, sonra sıralama, sonra
+        aralıklar) ve "Bu indeksi oluştur" onu arka planda kurar. Yazan bir pipeline açıklanmaz, çünkü
+        açıklamak onu çalıştırır.
+      </p>
+      <h2 id="validation">Doğrulama</h2>
+      <p>
+        Doğrulama bölümü, eklenen ya da güncellenen her belgenin uyması gereken kuralları seviye ve eylemiyle
+        birlikte düzenler. "Örneklemden üret" koleksiyonun belgelerinden bir $jsonSchema yazar; "Mevcut
+        belgelere karşı test et" kaydetmeden önce kaç belgenin uymayacağını örnekleriyle sayar. Kaydetmeden
+        önce onay istenir ve kurallara uymayan belgelerin güncellemelerinin reddedileceği söylenir; sekme açık
+        kaldıkça "Önceki kuralları geri yükle" son kaydın değiştirdiklerini geri getirir.
+        Kurallara takılan bir yazma, hangi kurallara uymadığını söyler (eksik bir alan, yanlış bir tür, bir
+        alt sınır); içe aktarma ve kopyalama raporları da öyle. Kurala takılan değer hiçbir zaman yinelenmez.
+      </p>
+      <h2 id="schema">Şema</h2>
+      <p>
+        Bir koleksiyonun <em>Şema</em> sekmesi rastgele bir örneği (100, 1.000 veya 10.000 belge) analiz eder:
+        her alanın ne sıklıkla bulunduğu, tipleri ve bir histogram ya da en sık değerleri.
+        <em>Dışa aktar</em>, analizi kopyalamak veya indirmek üzere bir Mongoose şemasına, bir MongoDB JSON
+        Schema doğrulayıcısına veya bir TypeScript arayüzüne dönüştürür. Örneklenen her belgede bulunan alan
+        zorunlu sayılır.
+      </p>
+      <p>
+        Bir alanın çubukları — aralıkları ve en sık değerleri — ile tipleri birer düğmedir: birini seçmek o
+        koşulu koleksiyonun Belgeler süzgecine ekler (yazılmış koşulların yanına, alanda zaten bir koşul varsa
+        <code>$and</code> ile), çalıştırır ve belgeleri gösterir. Analizde kısaltılmış bir değer gösterilir
+        ama süzgeç olarak sunulmaz. Konum tutan bir alan — GeoJSON noktaları ya da <code>location</code>,
+        <code>coords</code> gibi bir adın altındaki koordinat çiftleri — bunları ağ bağlantısı olmadan çizilen
+        bir haritada gösterir (dünyanın ana hatları Natural Earth'ten, kamu malı): kaydırmak için sürükleyin
+        ya da ok tuşlarını kullanın, yakınlaştırmak için <kbd>Ctrl</kbd> ile tekerleği, iki parmağı ya da
+        <kbd>+</kbd> ve <kbd>−</kbd> tuşlarını; konumlar ayrıca tablo olarak listelenir;
+        <em>Bu alana göre süz</em> görünen alan için bir
+        <code>$geoWithin</code>
+        ekler. Kişisel veri içeren alanlar hiçbir zaman çizilmez.
+      </p>
+      <h2 id="data-model">Veri modeli</h2>
+      <p>
+        Bir veritabanının <em>Model</em> bölümü koleksiyonlarını ve aralarındaki referansları çizer.
+        <em>Modeli oku</em> her koleksiyondan (en fazla 50 koleksiyon, her birinden 100 ile 1.000 belge)
+        alanları için örnek alır — üst düzey alanlar ve bir alt düzey; daha derindekiler yalnızca referansa
+        benziyorsa — ve referansları üç yoldan bulur: bir koleksiyonun adını taşıyan alan (<code>userId</code>
+        ya da <code>user_id</code> → <code>users</code>, <code>tagIds</code> → <code>tags</code>), başka bir
+        koleksiyonun <code>_id</code> değeri olarak bulunan örneklenmiş ObjectId değerleri (alan başına en
+        fazla on değer, toplamda altmış küçük sayım) ve görünümlerle açabildiğiniz kayıtlı işlem hatlarındaki
+        <code>$lookup</code> ile <code>$graphLookup</code> aşamaları. Düz çizgi ada ya da değerlere göre,
+        kesikli çizgi yalnızca <code>$lookup</code> ile bulunmuştur; noktalı çizgi bir görünümü kaynağına
+        bağlar. Bir çizgi, referansı tutan alanın ucunda — birçok belge aynı kimliği tutabilir — kaz ayağıyla
+        ("çok"), başvurduğu koleksiyonun ucunda bir çubukla ("bir") biter; referans dizisi olan bir alanda o
+        uç da kaz ayağıdır. Bir alan <strong>PK</strong> (anahtar, <code>_id</code>),
+        <strong>UQ</strong> (yalnızca ona ait benzersiz bir dizin) ya da <strong>IX</strong> (bir dizinde)
+        olarak işaretlenir; dizinler yalnızca anahtarlarının adlarıyla okunur.
+      </p>
+      <p>
+        Diyagramı sürükleyerek ya da ok tuşlarıyla kaydırın; yakınlaştırmak için <kbd>+</kbd> ve <kbd>−</kbd>,
+        sığdırmak için <kbd>0</kbd> tuşunu kullanın. Diyagram odak almadıkça (ona tıklayın ya da Tab ile
+        geçin) tekerlek sayfayı kaydırır; odaktayken tekerlek diyagramı kaydırır, <kbd>Ctrl</kbd> /
+        <kbd>⌘</kbd> ve tekerlek yakınlaştırır (<kbd>Shift</kbd> ve tekerlek onu her zaman kaydırır). Bir
+        koleksiyona tıklayınca ya da Tab ile ona gelip <kbd>Enter</kbd>'a basınca bağlantıları görünür ve
+        açılabilir. <em>Liste</em> görünümü aynı modeli liste olarak gösterir: her koleksiyon alanlarını ve
+        bağlantılarını açar, bir bağlantı gösterdiği koleksiyona geçer. <em>Dışa aktar</em> diyagramı PNG ya
+        da SVG olarak (kullanılan temanın renkleri ve sizin dilinizle), modeli JSON olarak ve onu çizen bir
+        README, wiki ya da pull request için Mermaid <code>erDiagram</code> olarak (<code>.mmd</code> dosyası
+        ya da kopya) kaydeder; orada benzersiz bir alan, Mermaid'in adlandırdığı gibi <code>UK</code> olarak
+        yazılır. Yalnızca adlar, türler ve sayılar gösterilir; hiçbir değer sunucudan çıkmaz. Belgeleri
+        okuyabilen modeli de okuyabilir; kişisel veri olarak sizden gizlenen alanlar yalnızca adlarıyla
+        gösterilir ve değerleri hiç okunmaz. Yalnızca bazı koleksiyonlara izni olan bir MongoDB kullanıcısı
+        onları görür.
+      </p>
+      <p>
+        Bir modeli okumak sunucuya koleksiyon başına bir örnekleme maliyeti getirir: en fazla 50 koleksiyon
+        çarpı örnek boyutu, artı en fazla altmış küçük sayım. Sunucu bir modelin toplamda okuduğu belge
+        sayısını sınırlar (<code>MM_MODEL_MAX_DOCS</code>, varsayılan 20.000): koleksiyon çoksa her örnek
+        küçültülür ve bölüm bunu söyler. Yoğun bir üretim veritabanında modeli sunucu sakinken ya da daha
+        küçük bir örnekle okuyun.
+      </p>
+      <h2 id="search-indexes">Arama indeksleri</h2>
+      <p>
+        MongoDB Atlas'ta ya da arama süreciyle (mongot) çalışan MongoDB 8.0 veya sonrasında, İndeksler sekmesi
+        koleksiyonun Atlas Search ve Vector Search indekslerini de listeler: her birinin türü, durumu
+        (bekliyor, oluşturuluyor, hazır, nedeniyle birlikte başarısız) ve kapsadığı alanlar; bir indeks
+        oluşturulurken birkaç saniyede bir yeniden bakılır. <em>Arama indeksi oluştur</em> tanımı JSON olarak
+        alır; vektör indeksi için rehberli bir form da vardır: gömmeleri tutan alan, boyut sayısı ve
+        benzerlik, süzülecek alanlar. Bir tanım düzenlenebilir, bir indeks adını anan bir onaydan sonra
+        silinebilir. Başka sunucularda sekme, aramanın neye ihtiyaç duyduğunu söyler.
+      </p>
+      <h2 id="background-jobs">Arka plan işleri</h2>
+      <p>
+        İndeks oluşturma ve koleksiyon çoğaltma arka planda çalışır; uzun süren bir iş zaman aşımına uğramaz.
+        İş sürerken sayfadan ayrılabilir, sekmeyi kapatabilirsiniz. Üst çubuktaki
+        <em>Arka plan işleri</em> düğmesi her işi gösterir: MongoDB ilerlemeyi bildiriyorsa (indeks oluşturma)
+        bir çubuk ve sayılarla, bildirmiyorsa (çoğaltma) <em>Sürüyor</em> ve geçen süreyle. Kendi işleriniz
+        bittiğinde haber verilir; onları oradan iptal edebilirsiniz.
+      </p>
+      <p>
+        Çoğaltma sırasında sunucu yeniden başlarsa kopya bırakılır ve yarım kalan koleksiyon silinir; hedef
+        asla yarım dolu kalmaz. İndeks oluşturma MongoDB içinde sürebilir; İndeksler sekmesi bunu gösterir.
+      </p>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Bu sayfada</p>
+      <ol>
+        <li><a href="#install">Kurulum</a></li>
+        <li><a href="#first-run">İlk çalıştırma</a></li>
+        <li><a href="#your-first-connection">İlk bağlantınız</a></li>
+        <li><a href="#sign-in-methods">Oturum açma yöntemleri</a></li>
+        <li><a href="#encryption">İstemci tarafı şifreleme</a></li>
+        <li><a href="#home-and-next-steps">Ana sayfa ve sonraki adımlar</a></li>
+        <li><a href="#querying">Sorgulama</a></li>
+        <li><a href="#collections">Koleksiyonlar</a></li>
+        <li><a href="#performance">Performans</a></li>
+        <li><a href="#aggregations">Aggregation</a></li>
+        <li><a href="#queries">Sorgular</a></li>
+        <li><a href="#advanced-shell">Gelişmiş shell</a></li>
+        <li><a href="#explain">Explain</a></li>
+        <li><a href="#validation">Doğrulama</a></li>
+        <li><a href="#schema">Şema</a></li>
+        <li><a href="#data-model">Veri modeli</a></li>
+        <li><a href="#search-indexes">Arama indeksleri</a></li>
+        <li><a href="#background-jobs">Arka plan işleri</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

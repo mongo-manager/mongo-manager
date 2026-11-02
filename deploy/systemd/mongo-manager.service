@@ -1,0 +1,38 @@
+[Unit]
+Description=Mongo Manager
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mongo-manager
+EnvironmentFile=/etc/mongo-manager/env
+ExecStart="/opt/mongo-manager/app/bin/node" "/opt/mongo-manager/app/dist/cli.cjs" start --config "/etc/mongo-manager/config.json" --no-open
+WorkingDirectory=/var/lib/mongo-manager
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ReadWritePaths=/var/lib/mongo-manager
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+SystemCallArchitectures=native
+MemoryMax=1G
+
+[Install]
+WantedBy=multi-user.target

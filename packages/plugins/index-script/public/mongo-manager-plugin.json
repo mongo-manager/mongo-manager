@@ -1,0 +1,103 @@
+{
+  "id": "index-script",
+  "name": {
+    "en": "Index script",
+    "tr": "İndeks betiği",
+    "zh": "索引脚本",
+    "ja": "インデックススクリプト",
+    "es": "Script de índices",
+    "pt": "Script de índices",
+    "ko": "인덱스 스크립트",
+    "de": "Index-Skript",
+    "fr": "Script d’index",
+    "ru": "Скрипт индексов"
+  },
+  "version": "1.2.0",
+  "description": {
+    "en": "Writes a collection's indexes, or a whole database's, as the commands that make them again — for mongosh, the Node.js or Python driver, or as JSON — to copy or to save, for another environment or a migration.",
+    "tr": "Bir koleksiyonun ya da tüm veritabanının indekslerini, onları yeniden oluşturan komutlar olarak — mongosh, Node.js ya da Python sürücüsü için veya JSON olarak — başka bir ortam ya da bir taşıma için kopyalanacak ya da kaydedilecek biçimde yazar.",
+    "zh": "将集合或整个数据库的索引写成可重新创建它们的命令——适用于 mongosh、Node.js 或 Python 驱动，或输出为 JSON——可复制或保存，用于其他环境或迁移。",
+    "ja": "コレクションまたはデータベース全体のインデックスを、再作成するコマンドとして出力します。mongosh、Node.js や Python のドライバー、または JSON に対応し、別の環境や移行のためにコピーまたは保存できます。",
+    "es": "Escribe los índices de una colección, o de toda una base de datos, como los comandos que los vuelven a crear —para mongosh, el driver de Node.js o de Python, o como JSON— para copiarlos o guardarlos, en otro entorno o en una migración.",
+    "pt": "Escreve os índices de uma coleção, ou de um banco de dados inteiro, como os comandos que os criam novamente — para o mongosh, o driver do Node.js ou do Python, ou como JSON — para copiar ou salvar, em outro ambiente ou em uma migração.",
+    "ko": "컬렉션 또는 데이터베이스 전체의 인덱스를 다시 만드는 명령으로 작성합니다. mongosh, Node.js 또는 Python 드라이버용이나 JSON으로 작성할 수 있으며, 다른 환경이나 마이그레이션을 위해 복사하거나 저장할 수 있습니다.",
+    "de": "Schreibt die Indizes einer Collection oder einer ganzen Datenbank als Befehle, die sie neu erstellen – für mongosh, den Node.js- oder Python-Treiber oder als JSON – zum Kopieren oder Speichern, für eine andere Umgebung oder eine Migration.",
+    "fr": "Écrit les index d’une collection, ou de toute une base de données, sous forme de commandes qui les recréent — pour mongosh, le pilote Node.js ou Python, ou en JSON — à copier ou à enregistrer, pour un autre environnement ou une migration.",
+    "ru": "Записывает индексы коллекции или всей базы данных в виде команд, которые создают их заново, — для mongosh, драйвера Node.js или Python либо в формате JSON, — чтобы скопировать или сохранить для другой среды или миграции."
+  },
+  "entry": "index.html",
+  "permissions": ["collection:read", "database:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "script",
+        "title": {
+          "en": "Index script",
+          "tr": "İndeks betiği",
+          "zh": "索引脚本",
+          "ja": "インデックススクリプト",
+          "es": "Script de índices",
+          "pt": "Script de índices",
+          "ko": "인덱스 스크립트",
+          "de": "Index-Skript",
+          "fr": "Script d’index",
+          "ru": "Скрипт индексов"
+        },
+        "icon": "code"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "CC-BY-NC-SA-4.0",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Counts and notes also use the right singular and plural forms: one index, 2 indexes, 21 indexes.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Sayılar ve notlar ayrıca tekil ve çoğul biçimleri doğru kullanır: bir indeks, 2 indeks, 21 indeks.",
+        "zh": "现在与应用一样支持韩语、德语、法语和俄语。数量和提示也会使用正确的单复数形式，例如 1 个索引、2 个索引、21 个索引。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。件数と注意書きも、単数形と複数形を正しく使い分けます（1 件のインデックス、2 件のインデックス、21 件のインデックス）。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Las cifras y los avisos también usan bien el singular y el plural: un índice, 2 índices, 21 índices.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o app. As contagens e os avisos também usam corretamente o singular e o plural: um índice, 2 índices, 21 índices.",
+        "ko": "이제 앱과 마찬가지로 한국어, 독일어, 프랑스어, 러시아어로도 사용할 수 있습니다. 개수와 안내 문구도 언어별 단수·복수 형태를 올바르게 사용합니다(인덱스 1개, 2개, 21개).",
+        "de": "Jetzt wie die App auch auf Koreanisch, Deutsch, Französisch und Russisch. Anzahlen und Hinweise verwenden außerdem die richtige Einzahl und Mehrzahl: ein Index, 2 Indizes, 21 Indizes.",
+        "fr": "Désormais aussi en coréen, en allemand, en français et en russe, comme l’application. Les nombres et les avis emploient aussi le bon singulier ou pluriel : un index, 2 index, 21 index.",
+        "ru": "Теперь, как и приложение, доступно на корейском, немецком, французском и русском. Числа и уведомления также используют правильные формы единственного и множественного числа: 1 индекс, 2 индекса, 5 индексов."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルのポルトガル語に対応しました。ほかに変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o app. Nada mais muda.",
+        "ko": "이제 앱과 같이 중국어, 일본어, 스페인어, 브라질 포르투갈어도 지원합니다. 그 외 변경 사항은 없습니다.",
+        "de": "Jetzt wie die App auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, en japonais, en espagnol et en portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь, как и приложение, доступно на китайском, японском, испанском и бразильском португальском. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-28",
+      "notes": {
+        "en": "First release. An Index script tab writes the indexes of the collection, or of its whole database, as the commands that make them again: createIndex in mongosh, the Node.js driver's createIndex, PyMongo's create_index, or JSON — with their options (unique, partial filters, TTL, collations, text weights…), the default _id index left out. Copy puts the script on the clipboard; Download saves it. An index holding a value hidden from you is marked.",
+        "tr": "İlk sürüm. İndeks betiği sekmesi koleksiyonun ya da tüm veritabanının indekslerini onları yeniden oluşturan komutlar olarak yazar: mongosh'ta createIndex, Node.js sürücüsünün createIndex'i, PyMongo'nun create_index'i ya da JSON — seçenekleriyle birlikte (unique, kısmi filtreler, TTL, collation'lar, metin ağırlıkları…); varsayılan _id indeksi dışarıda kalır. Kopyala betiği panoya koyar; İndir onu kaydeder. Sizden gizlenen bir değer taşıyan indeks işaretlenir.",
+        "zh": "首次发布。“索引脚本”标签页会把集合或整个数据库的索引写成可重新创建它们的命令：mongosh 中的 createIndex、Node.js 驱动的 createIndex、PyMongo 的 create_index，或 JSON——包含各项选项（unique、部分筛选、TTL、排序规则、文本权重等），默认的 _id 索引不包含在内。“复制”会把脚本放入剪贴板；“下载”会保存脚本。包含对您隐藏的值的索引会被标记。",
+        "ja": "初回リリース。「インデックススクリプト」タブは、コレクションまたはデータベース全体のインデックスを、再作成するコマンドとして出力します。mongosh の createIndex、Node.js ドライバーの createIndex、PyMongo の create_index、または JSON に対応し、オプション（unique、部分フィルター、TTL、照合順序、テキストの重みなど）も含まれ、デフォルトの _id インデックスは除かれます。「コピー」でスクリプトをクリップボードに入れ、「ダウンロード」で保存できます。あなたには非表示の値を含むインデックスには印が付きます。",
+        "es": "Primera versión. La pestaña Script de índices escribe los índices de la colección, o de toda su base de datos, como los comandos que los vuelven a crear: createIndex en mongosh, el createIndex del driver de Node.js, el create_index de PyMongo o JSON, con sus opciones (unique, filtros parciales, TTL, collations, pesos de texto…); el índice _id predeterminado se omite. Copiar pone el script en el portapapeles; Descargar lo guarda. Un índice que contiene un valor oculto para ti se marca.",
+        "pt": "Primeira versão. A aba Script de índices escreve os índices da coleção, ou de todo o banco de dados dela, como os comandos que os criam novamente: createIndex no mongosh, o createIndex do driver do Node.js, o create_index do PyMongo ou JSON, com as opções deles (unique, filtros parciais, TTL, collations, pesos de texto…); o índice _id padrão fica de fora. Copiar coloca o script na área de transferência; Baixar o salva. Um índice que contém um valor oculto para você é marcado.",
+        "ko": "첫 릴리스. 인덱스 스크립트 탭은 컬렉션 또는 데이터베이스 전체의 인덱스를 다시 만드는 명령으로 작성합니다. mongosh의 createIndex, Node.js 드라이버의 createIndex, PyMongo의 create_index 또는 JSON으로 작성하며, 옵션(unique, 부분 필터, TTL, collation, 텍스트 가중치 등)도 포함하고 기본 _id 인덱스는 제외합니다. 복사는 스크립트를 클립보드에 넣고, 다운로드는 파일로 저장합니다. 사용자에게 숨겨진 값이 있는 인덱스는 표시됩니다.",
+        "de": "Erste Version. Ein Tab „Index-Skript“ schreibt die Indizes der Collection oder ihrer gesamten Datenbank als Befehle, die sie neu erstellen: createIndex in mongosh, createIndex des Node.js-Treibers, create_index von PyMongo oder JSON – mit ihren Optionen (unique, partielle Filter, TTL, Collations, Textgewichte …); der Standardindex _id wird ausgelassen. Kopieren legt das Skript in die Zwischenablage; Herunterladen speichert es. Ein Index mit einem vor Ihnen verborgenen Wert wird markiert.",
+        "fr": "Première version. Un onglet Script d’index écrit les index de la collection, ou de toute sa base de données, sous forme de commandes qui les recréent : createIndex dans mongosh, createIndex du pilote Node.js, create_index de PyMongo ou JSON — avec leurs options (unique, filtres partiels, TTL, collations, poids de texte…), l’index _id par défaut étant omis. Copier place le script dans le presse-papiers ; Télécharger l’enregistre. Un index contenant une valeur qui vous est masquée est signalé.",
+        "ru": "Первый выпуск. Вкладка «Скрипт индексов» записывает индексы коллекции или всей ее базы данных в виде команд, которые создают их заново: createIndex в mongosh, createIndex драйвера Node.js, create_index в PyMongo или JSON — вместе с их параметрами (unique, частичные фильтры, TTL, collation, веса текстового индекса…); индекс _id по умолчанию не включается. «Копировать» помещает скрипт в буфер обмена, «Скачать» сохраняет его. Индекс со значением, скрытым от вас, помечается."
+      }
+    }
+  ]
+}

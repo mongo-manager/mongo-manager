@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Canlı senkron · Mongo Manager belgeleri</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager belgeleri</a>
+      <details class="lang-menu">
+        <summary>Türkçe</summary>
+        <span class="langs" role="group" aria-label="Dil">
+          <a lang="en" hreflang="en" href="../sync.html">English</a>
+          <strong lang="tr">Türkçe</strong>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/sync.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/sync.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/sync.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/sync.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/sync.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/sync.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/sync.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/sync.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Genel bakış</a>
+      <a href="getting-started.html">Başlarken</a>
+      <a href="security.html">Güvenlik</a>
+      <a href="deployment.html">Kurulum ve dağıtım</a>
+      <a href="import-export.html">İçe ve dışa aktarma</a>
+      <a href="backup.html">Yedekleme ve geri yükleme</a>
+      <a href="watch.html">Değişiklikleri izleme</a>
+      <strong>Canlı senkron</strong>
+      <a href="server-admin.html">Sunucu yönetimi</a>
+      <a href="ai.html">AI asistanı</a>
+      <a href="plugins.html">Eklentiler</a>
+      <a href="shortcuts.html">Klavye kısayolları</a>
+    </nav>
+    <main>
+      <h1>Canlı senkron</h1>
+      <p>
+        Canlı senkron bir koleksiyonu veya veritabanını bir bağlantıdan diğerine kopyalar, sonra kaynakta
+        yapılan her değişikliği olduğu anda uygular. Sunucuda çalışır, yeniden başlatmalardan sonra da sürer
+        ve siz durdurana ya da bitirene kadar devam eder. İki şekilde kullanılır:
+      </p>
+      <ul>
+        <li><strong>Ayna olarak</strong>: aylarca güncel kalan bir test, raporlama veya yedek kopya.</li>
+        <li>
+          <strong>Veri taşımak için</strong>: kopyalayın, yetişmesini bekleyin, doğrulayın, sonra seçtiğiniz
+          anda bitirip (geçiş) uygulamalarınızı hedefe yönlendirin.
+        </li>
+      </ul>
+      <p>
+        <strong>Canlı senkronlar</strong> sekmesini hesap menüsünden veya komut paletinden (Ctrl+K) açın. Yeni
+        bir senkronu ağaçta bir koleksiyonun veya veritabanının menüsünden (<strong>Canlı senkron…</strong>),
+        bir koleksiyon açıkken paletten ("Bu koleksiyonu eşit tut…") ya da kopyalama sihirbazının özetinden
+        (<strong>Kopyala ve eşit tut…</strong>) başlatın.
+      </p>
+
+      <h2 id="requirements">Neler senkronlanabilir</h2>
+      <ul>
+        <li>
+          Bir koleksiyondan bir koleksiyona, ya da bir veritabanından bir veritabanına (tüm koleksiyonları
+          veya işaretledikleriniz).
+        </li>
+        <li>
+          Kaynak, MongoDB 6.0 veya üstünü çalıştıran bir replica set, sharded cluster veya load-balanced
+          kurulum olmalıdır (MongoDB Atlas her zaman öyledir): canlı senkron MongoDB'nin değişiklik akışlarını
+          okur. Geliştirme için tek düğümlü bir replica set yeterlidir. Hedef herhangi bir kurulum olabilir.
+        </li>
+        <li>
+          Tüm koleksiyonlarıyla senkronlanan bir veritabanı, sonradan oluşturulan koleksiyonları da
+          izleyebilir: bunlar hedefte kaynağın seçenekleriyle oluşturulur ve belgeleri izlenir. Görünümler
+          (view) yalnızca ilk kopyayla kopyalanır.
+        </li>
+        <li>
+          Bir koleksiyon senkronu yalnızca bir filtrenin eşleştiği belgeleri taşıyabilir (<em
+            >Yalnızca bir filtrenin eşleştiği belgeler</em
+          >, kabuktaki gibi yazılır). Bir değişiklik olayı tek başına bir güncellemenin belgeyi filtrenin
+          dışına çıkardığını söyleyemez; bu yüzden kaynak karar verir: her toplu işte değişen belgelerden
+          hangilerinin şimdi eşleştiği kaynağa sorulur; bunlar şimdiki halleriyle yazılır, diğerleri hedeften
+          kaldırılır. İlk kopya yalnızca eşleşen belgeleri alır. Maskeli ya da anonim bir senkron, gizli bir
+          alanı veya onun üstündeki bir alanı okuyan ya da bir ifade kullanan filtreyi reddeder. MongoDB
+          sunucusunda JavaScript çalıştıran bir filtre (<code>$where</code>, <code>$function</code>) yalnızca
+          sunucu buna izin verdiği sürece kabul edilir; her başlangıçta ve her toplu işlemden önce yeniden
+          değerlendirilir ve ayar kapatılınca senkron bekler ("Filtresi MongoDB sunucusunda JavaScript
+          çalıştırıyor…"). Bir veritabanı senkronu koleksiyonların tamamını taşır.
+        </li>
+        <li>
+          Nedeniyle reddedilenler: kaynak veya hedef olarak <code>admin</code>, <code>local</code>,
+          <code>config</code> ve <code>system.*</code>; zaman serisi bir kaynak; kaynak olarak bir görünüm
+          (kendi değişiklik akışı yoktur: arkasındaki koleksiyonu senkronlayın); sınırlı (capped) bir hedef
+          (silme kabul edemez); kaynağın kendisi olan ya da olabilecek bir hedef; ve bir döngü kuracak senkron
+          (B'den A'ya giden varken A'dan B'ye, ya da daha uzun bir zincir). Bir başkasından ayırt edilemeyen
+          bir sunucu, bu denetimlerde aynısı sayılır.
+        </li>
+      </ul>
+
+      <h2 id="start">Başlatma</h2>
+      <p>Sihirbaz senkronun nasıl başlayacağını sorar:</p>
+      <ul>
+        <li>
+          <strong>Önce kopyala</strong> (varsayılan): hedef olmamalı veya boş olmalı; her şey kopyalanır,
+          sonra değişiklikler izlenir.
+        </li>
+        <li>
+          <strong>Hedefi değiştir</strong>: hedef bir kenarda yeniden kurulup yerine konur (onaylamak için
+          adını yazarsınız). Koleksiyon oluşturma ve silme yetkisi gerekir; sharded bir hedef için reddedilir.
+        </li>
+        <li>
+          <strong>Hedefle birleştir</strong>: belgeler <code>_id</code> ile hedefte olanın üzerine yazılır
+          (upsert).
+        </li>
+        <li>
+          <strong>Şu andan itibaren</strong>: hedefte veri zaten var; yalnızca bundan sonraki değişiklikler
+          uygulanır.
+        </li>
+      </ul>
+      <p>
+        İlk kopya bir kopyalama işi olarak çalışır (işler panelinde görünür). Kopya ile değişiklikler arasında
+        hiçbir şey kaybolmaz: senkron kopyalamaya başlamadan önce kaynağın küme zamanını not eder, kopya
+        bitince o andan beri yapılan her değişikliği uygular. Uygulama tekrarlanabilir (idempotent)
+        olduğundan, değiştikten sonra kopyalanan ya da daha sonra yeniden değişen bir belge sonunda kaynakla
+        aynı olur.
+      </p>
+      <h3 id="scheduled">Daha sonra başlatma</h3>
+      <p>
+        <em>Seçtiğim bir zamanda başlat</em>, başlangıcı bir dakika ile 30 gün sonrası arasında bir zamana
+        (örneğin sakin bir geceye) zamanlar. Senkron onayladığınız özetle hemen oluşturulur ve
+        <strong>Duraklatıldı</strong> olarak bekler —
+        <em>… tarihinde başlar; o zamana kadar hiçbir şey kopyalanmaz ya da okunmaz</em>. Zamanı gelince
+        sahibinin adına yeniden planlanır (haklar, kurallar, döngüler, hedef, maskeleme ve verdiğiniz
+        onaylarla), küme zamanı okunur ve kopyası başlar. Plan artık geçerli değilse — hedef bu arada
+        doldurulmuş, bir hak kaybedilmiş — gerekçeleriyle <strong>İlgi bekliyor</strong> durumunda bekler ve
+        <em>Yeniden başlat</em> onu yeniden planlar. Sahibi onu daha erken <em>Şimdi başlat</em> ile
+        başlatabilir; bir yönetici onu durdurabilir ama başlatamaz (sahibinin adına başlar). Sunucu yeniden
+        başlasa da beklemeye devam eder.
+      </p>
+      <p>
+        Zamanı geldiğinde ve <em>Şimdi başlat</em> seçildiğinde, çalışan bir senkronun her toplu işlemden
+        önce denetlediği her şey önce denetlenir: sahibi kaynaktan hâlâ okuyabilmeli ve dışa aktarabilmeli,
+        bağlantılar değişmemiş olmalı ve kişisel veri kuralları zamanlandığı sıradaki kurallar olmalıdır. O
+        zamandan beri eklenen kurallar senkronu bir inceleme için durdurur (<em>İncele…</em>): sahibi onları
+        onayladığında başlar. Kopyalaması gereken bir senkron, sahibinin çalışan aktarımları arasında yer
+        açılmasını da bekler: zamanı geldiğinde biraz sonra yeniden dener; <em>Şimdi başlat</em> bunu
+        söyler. Neden giderildiğinde <em>Yeniden dene</em>, hiç başlamamış zamanlanmış bir senkronu başlatır
+        (o sırada planlanır).
+      </p>
+      <h3 id="oplog">Oplog penceresi</h3>
+      <p>
+        Kopya sırasında yapılan değişiklikler kaynağın değişiklik geçmişinde (oplog) bekler. Özet, kopyanın ne
+        kadar süreceğini ve bağlantının kullanıcısı okuyabiliyorsa kaynağın değişiklikleri ne kadar
+        sakladığını tahmin eder. Bu pencerenin yarısından uzun sürmesi beklenen bir kopya onay ister: geçmiş
+        kopya bitmeden tükenirse senkron yetişemez ve "Yeniden başlat" seçeneğiyle <em>Başarısız</em> olarak
+        biter. Pencere okunamıyorsa özet bunu belirtir.
+      </p>
+
+      <h2 id="applying">Değişiklikler nasıl uygulanır</h2>
+      <ul>
+        <li>
+          Ekleme, güncelleme veya değiştirme, belgeyi kaynakta şu an olduğu haliyle yazar (<code>_id</code>
+          ile, gerekirse oluşturarak); silme <code>_id</code> ile siler. Bir partide (en çok 1.000 değişiklik
+          veya 8 MB) her belgenin yalnızca son değişikliği yazılır.
+        </li>
+        <li>
+          Hedefin kabul ettiği her partiden sonra senkron yerini kaydeder. Yeniden başlatma tam oradan devam
+          eder; en fazla son parti yeniden uygulanır, bu da hiçbir şeyi değiştirmez.
+        </li>
+        <li>
+          <strong>Canlı senkron tek yönlüdür.</strong> Hedefte başkalarının yaptığı yazmalar fark edilmez:
+          kaynaktaki o belgenin bir sonraki değişikliği üzerine yazar. Sihirbaz bunu onaylamanızı ister.
+        </li>
+        <li>
+          Yeni ve silinen dizinler izlenir. Yeni koleksiyon seçenekleri veya doğrulayıcılar izlenmez: senkron
+          "Kaynak koleksiyonun seçenekleri veya doğrulayıcısı değişti" diyerek bekler;
+          <strong>Kaynağın seçeneklerini uygula</strong> (doğrulayıcı ve doğrulama ayarları hedefe uygulanır)
+          ya da <strong>Yok say</strong> seçersiniz.
+        </li>
+        <li>
+          Silinen veya yeniden adlandırılan bir kaynak koleksiyon hedefi asla silmez: senkron sizi bekler; onu
+          durdurur ya da yeniden başlatırsınız.
+        </li>
+      </ul>
+
+      <h2 id="verify">Doğrulama</h2>
+      <p>
+        <strong>Doğrula</strong>, senkron çalışmaya devam ederken kaynak ile hedefi belge belge karşılaştırır.
+        Farklı, eksik veya fazla bulunan belgeler, senkron karşılaştırmanın sonuna kadarki her şeyi
+        uyguladıktan sonra yeniden okunur; böylece hâlâ yolda olan değişiklikler fark olarak raporlanmaz
+        (koleksiyon başına en çok 10.000 belge; ötesi için rapor kaç belgenin yeniden denetlenmediğini
+        söyler). Kart sonucu gösterir, örneğin "12:40 doğrulandı — 1.204.331 aynı, 0 farklı"; ayrıntılar hâlâ
+        farklı olan <code>_id</code>'leri listeler. Maskeli bir senkron, maskelenmiş kaynakla doğrulanır.
+      </p>
+      <p>
+        Ayrıntılardaki <em>Farkları göster</em>, karşılaştırmayı karşılaştırma görünümündeki gibi açar: her
+        grup için (farklı, yalnızca kaynakta, yalnızca hedefte) koleksiyon başına en çok 10 belge ve farklı
+        bir belge için hedeften kaynağa değişen alanlar. Örnekler yalnızca senkronun sahibine aittir (bir
+        yönetici sayıları görür); sahip iki tarafı da okuyabildiği ve o zamandan beri ona orada hiçbir şey
+        gizlenmediği sürece verilir, kişisel alan kuralları değiştiğinde verilmez: o zaman yeniden doğrulayın.
+      </p>
+
+      <h2 id="finish">Bitirme (geçiş)</h2>
+      <ol>
+        <li>Kaynağa yazan uygulamaları durdurun. Mongo Manager diğer istemcileri durduramaz.</li>
+        <li>
+          <strong>Bitir…</strong> seçip onaylayın. Senkron o anki küme zamanını not eder; ondan önce yapılan
+          her değişikliği uygular, sonra biter. Sonra yapılan bir değişiklik yine de uygulanabilir (aynı toplu
+          yazmaya düşebilir); yazmaların önce durdurulmasının nedeni budur.
+        </li>
+        <li>Doğrular (varsayılan olarak açık; işareti kaldırabilirsiniz).</li>
+        <li>
+          Son sayılarıyla <em>Tamamlandı</em> olarak biter. Doğrulama farklar bulduysa rapor bunları gösterir:
+          karar verisi sizindir.
+        </li>
+      </ol>
+
+      <h2 id="two-way">İki yönlü senkron</h2>
+      <p>
+        <em>İki yönlü</em> (bir koleksiyon senkronu) hedefteki değişiklikleri de kaynağa geri getirir. Her
+        yöne bir tane olmak üzere bağlantılı iki senkrondur; birlikte duraklatılan, sürdürülen, durdurulan ve
+        silinen iki kart olarak görünür (<em>gidiş</em> ve <em>dönüş</em>); geçişi yoktur. Dikkatle kullanın:
+        aynı koleksiyona yazan iki konum için uygundur, bir taşıma için değil.
+      </p>
+      <ul>
+        <li>
+          Şu andan başlar: iki koleksiyon da zaten aynı belgeleri tutmalıdır (önce kopyalayın ya da tek yönlü
+          bir senkronu bitirin). Koleksiyonların tamamını taşır (filtre yoktur), maskeleyemez (iki tarafta da
+          aynı kişisel alan kuralları olmalı ve kimse iki taraftan birinde kısıtlı olmamalıdır), parçalanmamış
+          koleksiyonlar ister ve reddedilen bir belgede duraklar. Sınırlara iki senkron olarak sayılır.
+        </li>
+        <li>
+          İki koleksiyon da <strong>öncesi ve sonrası görüntüleri</strong> ister
+          (<code>changeStreamPreAndPostImages</code>, MongoDB 6.0+):
+          <em>İki koleksiyonda da öncesi ve sonrası görüntülerini aç</em>, senkron başlarken bunu
+          <code>collMod</code> ile yapar. İki sunucuda da yer tutarlar.
+        </li>
+        <li>
+          <strong>Hiçbir şey geldiği yere geri dönmez.</strong> Her taraf öbürünün değişikliklerini kendi
+          oturumunun işlemleri içinde yazar; MongoDB bu yazmaların değişiklik olaylarını oturumla işaretler ve
+          dönüş yönü onları atlar. Bunun için belgelere dokunulmaz.
+        </li>
+        <li>
+          <strong>Çakışmalar: son yazan kazanır.</strong> Bir değişiklik yalnızca öbür taraf hâlâ değişikliğin
+          bulduğunu (öncesi görüntüsünü) tutuyorsa uygulanır. İki taraf da aynı belgeyi, değişikliklerden biri
+          ulaşmadan değiştirdiyse, duvar saati daha sonra olan değişiklik iki tarafta da kazanır; öbürü
+          kaybolur. Her çakışma etkinlikte listelenir (<code>_id</code>'si ve hangi tarafın kazandığı, asla
+          bir değer), kartta sayılır ve uyarılar için bir uygulama olayı olarak bildirilir. Öbür taraf başka
+          bir şey tutuyor ve kendi değişikliği gelmiyorsa değişiklik uygulanır ve öyle listelenir — ancak
+          öbür taraf okunduğu sırada tuttuğunu hâlâ tutuyorsa yazılır; bu arada yeniden değiştiyse o yeni
+          değişiklik beklenir ve bir çakışma olarak çözülür. Belgeler değerlerinin türleriyle karşılaştırılır
+          ve yazılır: tam sayı tutan bir Double, Int32 sayılmaz; her senkron (tek yönlü de) bir Double'ı,
+          Long'u ya da Decimal128'i kaynağın sakladığı türle yazar.
+        </li>
+        <li>
+          <strong>Saatler.</strong> Öbür tarafın bir değişikliğinin hâlâ gelip gelmeyeceğine o tarafın kendi
+          küme saatiyle karar verilir: uyuşmazlık, üyelerin çoğunluğunun tuttuğu verinin anlık görüntüsünde
+          okunur ve değişiklik, dönüş yönünün değişiklik akışı o anı geçene kadar bekler. Mongo Manager'ı
+          çalıştıran bilgisayarın saatinin bir rolü yoktur; yavaş bir çoğunluk onayının da: değişiklik, henüz
+          gelmemiş bir değişikliğin üzerine yazmak yerine bekler. İki çakışan değişiklikten hangisinin
+          kazanacağı ise hâlâ iki sunucunun duvar saatlerini karşılaştırır: ikisini de doğru tutun (NTP).
+          Saatler birbirinden kayarsa, saati ileride olan taraf kaybetmesi gereken çakışmaları kazanır; iki
+          taraf yine aynı belgeyi tutar, ama bu daha eski değişiklik olabilir. Sakin bir sunucuda dönüş
+          yönünün akışı yaklaşık 10 saniyede bir ilerler; öbür tarafın yalnızca farklı olduğu bir değişiklik
+          bu kadar sürebilir.
+        </li>
+        <li>
+          <strong>Bir yön durunca öbürü de durur.</strong> Bir kişinin bakması için duran (reddedilen bir
+          belge, kaybedilen haklar, bir seçenek değişikliği) ya da başarısız olan bir yön, öbürünü duraklatır
+          ("Diğer yönü durduğu için duraklatıldı"): kendi başına bırakılsa, ilerlemeyen bir akışı bekleyerek
+          değişikliklerini biriktirir, bu sırada yeri ve ihtiyaç duyduğu oplog geride kalırdı. Herhangi bir
+          yönü sürdürmek ikisini birden sürdürür. Bir yön, değişikliklerinden 10.000'den fazlası diğer tarafı
+          beklediğinde ya da kaynağın neredeyse dolu oplog'u tuttuğu yeri geçmek üzereyken de durur
+          ("Değişikliklerinin çok fazlası diğer tarafı bekliyor…"). Sonra sürdürüldüğünde önce diğer yön
+          başlar; bu yön bekler ("… diğer yönünün yetişmesini bekliyor") ve o yön canlı olunca kendiliğinden
+          devam eder.
+        </li>
+        <li>
+          <strong>Reddedilen bir belge.</strong> Bir taraf bir değişikliği reddettiğinde (bir doğrulayıcı,
+          benzersiz bir dizin), o yön durur ve belgenin <code>_id</code>'sini söyler. Nedeni düzeltip
+          <em>Yeniden dene</em>'yi seçin ya da <em>Bu belgeyi atla</em>: o değişiklik kalıcı olarak dışarıda
+          kalır ve kaybedilmiş olarak hatırlanır; bu yüzden iki taraf o belge yeniden değişene kadar farklı
+          olabilir. Belgeyi denetleyin, gerekirse elle kopyalayın.
+        </li>
+        <li>
+          Koleksiyonlardan birinde öncesi ve sonrası görüntüler kapatılırsa o yön durur ("Öncesi ve sonrası
+          görüntüler kapatıldı"): onlar olmadan her değişiklik öbür tarafın üzerine denetlenmeden yazılırdı.
+          Yeniden açın (İzle sayfası bunu önerir), seçenek değişikliğini geçin, sonra <em>Yeniden dene</em>'yi
+          seçin.
+        </li>
+        <li>
+          Arada bir yeniden başlatma, hâlâ çözülmekte olan bir değişiklikten öncesinden yeniden okur; zaten
+          uygulanmış değişiklikler tanınır ve kaybetmiş bir değişiklik geri gelmez.
+        </li>
+      </ul>
+
+      <h2 id="states">Durumlar ve yapılacaklar</h2>
+      <ul>
+        <li><strong>Kopyalanıyor</strong>: ilk kopya çalışıyor; kart ilerlemesini gösterir.</li>
+        <li>
+          <strong>Yetişiyor</strong>: değişiklikler uygulanıyor, 2 saniyeden fazla geride; kart ne kadar
+          geride olduğunu söyler.
+        </li>
+        <li>
+          <strong>Canlı</strong>: 2 saniyeden az geride. Kart son 10 dakikada ne kadar geride kaldığını çizer;
+          sunucu bu geçmişi bir gün tutar (her 10 saniyenin en büyük gecikmesi), böylece sayfa yenilense ya da
+          sunucu yeniden başlasa da kaybolmaz ve senkronun ayrıntıları son 1, 6 ya da 24 saati çizer.
+        </li>
+        <li>
+          <strong>Duraklatıldı</strong>: sahibi veya bir yönetici tarafından. Yeri korunur; Devam ettir
+          kaldığı yerden sürdürür.
+        </li>
+        <li>
+          <strong>İlgi bekliyor</strong>: bir kişinin bakması gereken bir nedenle durdu — hedef bir belgeyi
+          reddetti (Bu belgeyi atla, ya da düzelttikten sonra Yeniden dene), kaynakta yeni seçenekler, silinen
+          bir kaynak, değişen kişisel veri kuralları veya düzenlenen bir bağlantı (özeti inceleyin),
+          kaybedilen yetkiler, salt okunur mod, kapatılan özellik ya da beklemenin çözmeyeceği bir değişiklik
+          akışı hatası (16 MB'tan büyük bir değişiklik, kaynak kullanıcısının kaybettiği bir yetki: düzeltin,
+          sonra Yeniden dene). Senkronun arkasından silinen bir hedef koleksiyon ya da bir bağlantıyı başka
+          bir sunucuya yönelten bir düzenleme <strong>Yeniden başlat</strong> ister. Bir yöneticinin
+          duraklatmasını bir yönetici kaldırır.
+        </li>
+        <li>
+          <strong>Yeniden deneniyor</strong>: bir bağlantıya ulaşılamıyor; 1 saniye sonra, sonra daha uzun
+          aralıklarla, en çok 5 dakikada bir yeniden dener.
+        </li>
+        <li><strong>Bitiriliyor</strong>, sonra <strong>Tamamlandı</strong>: geçiş.</li>
+        <li>
+          <strong>Başarısız</strong>: kaldığı yerden devam edemiyor; çoğunlukla kaynağın geçmişi oraya artık
+          uzanmadığı için. <strong>Yeniden başlat</strong> aynı ayarlarla, hedefte olanla birleştiren yeni bir
+          senkron oluşturur; eskisinin yerine geçer (eskisi artık sınırlara sayılmaz).
+        </li>
+        <li><strong>Durduruldu</strong>: sahibi veya bir yönetici tarafından. Hedef elindekini korur.</li>
+      </ul>
+      <p>
+        Hedef bir belgeyi reddettiğinde (başka bir benzersiz dizinde yinelenen anahtar, doğrulama, boyut),
+        sihirbazdaki seçim uygulanır: <strong>Duraklat ve sor</strong> (varsayılan) belgenin
+        <code>_id</code>'sini ve hatayı bildirir; <strong>Atla ve kaydet</strong> onu atlar, etkinlik kaydında
+        listeler (<code>_id</code>
+        ve hata kodu, asla içeriği) ve 1.000 belgeden sonra duraklar.
+      </p>
+      <p>
+        <strong>Atla ve kaydet</strong> seçildiğinde reddedilen belgelerin kendisi de, senkronun yazmaya
+        çalıştığı haliyle (senkron maskeliyorsa maskeli), her satıra bir Extended JSON belge olarak bir
+        dosyada tutulur; senkronun ayrıntıları bunu sahibine <em>Reddedilen belgeleri indir</em> olarak sunar.
+        Sunucu yeniden başlasa da dosya kalır ve senkron yeniden çalışınca büyümeye devam eder.
+        Dosya sahibin aktarım alanından düşülür; alan dolunca belgeler yine atlanır ve günlüğe yazılır ama
+        artık dosyada tutulmaz ve etkinlik kaydı bunu söyler. Dosya yalnızca sahibi kaynaktan hâlâ okuyup dışa
+        aktarabiliyorsa verilir: maskelemeyen bir senkronda kişisel değerler ona orada gizlendiğinde ya da
+        maskeleyen bir senkronda kaynağın kuralları değiştiğinde verilmez. Senkron silinince dosya da silinir.
+      </p>
+
+      <h2 id="personal-data">Kişisel veriler</h2>
+      <ul>
+        <li>
+          Kaynakta kişisel verileri göremiyorsanız ya da
+          <strong>Kişisel verileri maskele</strong> işaretliyse, senkronun yazdığı her belge — kopya ve her
+          değişiklik — kaynağın kurallarıyla maskelenir (<code>***</code>). Maskeli alanlar üzerindeki
+          benzersiz dizinler kurulmaz.
+        </li>
+        <li>
+          Hedefte kişisel verileri göremiyorsanız ve hedefin kuralları varsa senkron reddedilir: belgeleri
+          bütün olarak yazar, bu da kurallarınıza alan alan uyamaz.
+        </li>
+        <li>
+          Aynı kuralları olmayan bir hedefe maskesiz senkron onayınızı ister, ya da "Önce bu kuralları hedefe
+          ekle" (hedef bağlantının yöneticileri için). İkisi de denetim kaydına yazılır.
+        </li>
+        <li>
+          Kurallar iki taraftan birinde değişirse senkron bekler: daha önce yazılmış değerler artık kişisel
+          olabilir. Devam etmek için özeti inceleyin ya da yeniden başlatın.
+        </li>
+      </ul>
+
+      <h2 id="limits">Yetkiler, sınırlar ve ayarlar</h2>
+      <ul>
+        <li>
+          Kaynaktan dışa aktarma yetkiniz, hedefte de belge yazma, koleksiyon ve dizin oluşturma ve iş
+          çalıştırma yetkiniz olmalıdır. Bu yetkiler her partiden önce yeniden okunur: birini ya da hesabınızı
+          kaybetmek senkronu hemen durdurur. Oturumu kapatmak durdurmaz.
+        </li>
+        <li>
+          Bir senkronun kullandığı bağlantıyı düzenlemek, siz özeti inceleyene kadar onu durdurur (bağlantı
+          artık başka bir sunucuyu gösteriyor olabilir); bağlantıyı silmek senkronu kalıcı olarak durdurur.
+        </li>
+        <li>
+          Her kullanıcının sona ermemiş en çok 3 canlı senkronu olabilir; bir sunucu en çok
+          <code>MM_LIVE_SYNC_MAX</code> (varsayılan 10) senkron çalıştırır.
+          <code>MM_LIVE_SYNC=0</code> özelliği kapatır: çalışan senkronlar bekler ve yeniden açılınca devam
+          eder. Bkz. <a href="deployment.html#live-sync">Kurulum ve dağıtım</a>.
+        </li>
+        <li>
+          Yöneticiler her senkronu görür; duraklatabilir, devam ettirebilir, doğrulayabilir, durdurabilir ve
+          silebilir. Yalnızca sahibi bitirebilir veya bir incelemeyi onaylayabilir.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Bu sayfada</p>
+      <ol>
+        <li><a href="#requirements">Neler senkronlanabilir</a></li>
+        <li><a href="#start">Başlatma</a></li>
+        <li><a href="#applying">Değişiklikler nasıl uygulanır</a></li>
+        <li><a href="#verify">Doğrulama</a></li>
+        <li><a href="#finish">Bitirme (geçiş)</a></li>
+        <li><a href="#two-way">İki yönlü senkron</a></li>
+        <li><a href="#states">Durumlar ve yapılacaklar</a></li>
+        <li><a href="#personal-data">Kişisel veriler</a></li>
+        <li><a href="#limits">Yetkiler, sınırlar ve ayarlar</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Prise en main · Documentation de Mongo Manager</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Documentation de Mongo Manager</a>
+      <details class="lang-menu">
+        <summary>Français</summary>
+        <span class="langs" role="group" aria-label="Langue">
+          <a lang="en" hreflang="en" href="../getting-started.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/getting-started.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/getting-started.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/getting-started.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/getting-started.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/getting-started.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/getting-started.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/getting-started.html">Deutsch</a>
+          <strong lang="fr">Français</strong>
+          <a lang="ru" hreflang="ru" href="../ru/getting-started.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Vue d’ensemble</a>
+      <strong>Prise en main</strong>
+      <a href="security.html">Sécurité</a>
+      <a href="deployment.html">Déploiement</a>
+      <a href="import-export.html">Import et export</a>
+      <a href="backup.html">Sauvegarde et restauration</a>
+      <a href="watch.html">Suivi des modifications</a>
+      <a href="sync.html">Synchronisation en continu</a>
+      <a href="server-admin.html">Administration du serveur</a>
+      <a href="ai.html">Assistant IA</a>
+      <a href="plugins.html">Plug-ins</a>
+      <a href="shortcuts.html">Raccourcis clavier</a>
+    </nav>
+    <main>
+      <h1>Prise en main</h1>
+      <h2 id="install">Installation</h2>
+      <p>
+        Utilisez l’une de ces méthodes. Chaque version fournit aussi chaque fichier avec des sommes de contrôle
+        SHA-256 pour les machines isolées du réseau.
+      </p>
+      <ul>
+        <li>npm (Node.js 24 ou version ultérieure) : <code>npx @mongo-manager/app</code></li>
+        <li>npm hors ligne : <code>npm install --global ./mongo-manager-&lt;version&gt;.tgz</code></li>
+        <li>
+          Binaire autonome : téléchargez le fichier correspondant à votre système et exécutez-le ; Node.js n’est
+          pas nécessaire.
+        </li>
+        <li>Docker : <code>docker compose -f deploy/docker-compose.yml up -d</code></li>
+      </ul>
+      <p>
+        MongoDB pris en charge : 6.0 et versions ultérieures. Les serveurs plus anciens sont refusés lors de la
+        connexion, avec un message qui l’indique.
+      </p>
+      <h2 id="first-run">Premier lancement</h2>
+      <p>
+        Le <strong>mode local</strong> (par défaut) s’adresse à une personne sur un ordinateur : Mongo Manager
+        écoute sur <code>127.0.0.1:4321</code> et ouvre votre navigateur. Il n’y a pas de connexion : il s’ouvre
+        à partir d’un lien à usage unique. Lancé dans un terminal, il affiche le lien sur la ligne qui suit son
+        adresse ; ailleurs (un service, un conteneur, un journal), il affiche le chemin d’un fichier qui
+        l’ouvre, que seul votre compte peut lire. Votre navigateur reste ensuite connecté tant qu’il conserve
+        les données de ce site (six mois au plus après sa dernière utilisation ; Safari les supprime après une
+        semaine sans visite), et son application installée de même — sauf une application web Safari sur Mac,
+        qui conserve ses propres données et ne peut pas recevoir de lien : utilisez-y Mongo Manager dans un
+        onglet Safari. Un autre programme ou compte de l’ordinateur qui ouvre l’adresse n’obtient qu’une page
+        indiquant comment l’ouvrir. Lorsque le lien est épuisé ou que votre navigateur l’a oublié, exécutez
+        <code>mongo-manager open</code> pour en obtenir un nouveau ; dans un terminal, il affiche aussi le lien,
+        pour un navigateur qui ne peut pas ouvrir le fichier (un navigateur snap ou Flatpak sous Linux). Sur un
+        ordinateur partagé, utilisez le mode équipe.
+      </p>
+      <pre><code>mongo-manager
+mongo-manager open             # a new link for a running Mongo Manager (--no-open prints it)</code></pre>
+      <p>
+        Le <strong>mode équipe</strong> ajoute des utilisateurs, des rôles et une connexion à deux facteurs. Le
+        premier démarrage affiche dans le terminal un jeton de configuration à usage unique (exécuté comme
+        service ou dans un conteneur, il se trouve dans <code>setup-token</code> dans le dossier de données) ;
+        ouvrez la page et saisissez-le pour créer le premier administrateur.
+      </p>
+      <pre><code>mongo-manager --auth</code></pre>
+      <h2 id="your-first-connection">Votre première connexion</h2>
+      <ol>
+        <li>
+          Choisissez <em>Ajouter une connexion</em> et collez ou saisissez une chaîne de connexion dans son
+          premier champ, par exemple <code>localhost:27017</code> ou une adresse <code>mongodb+srv://</code>
+          (<code>mongodb://</code> peut être omis). Le formulaire se remplit tout seul : la ligne sous le champ
+          indique ce qui a été compris, et le nom suit l’hôte tant que vous n’en saisissez pas un. Serveur,
+          authentification, TLS, SSH et le reste se trouvent sous <em>Options avancées</em> ; <em>Enregistrer
+          et se connecter</em> enregistre la connexion et l’ouvre.
+        </li>
+        <li>Choisissez <em>Tester la connexion</em>. Elle affiche la version de MongoDB et la topologie.</li>
+        <li>Enregistrez. La connexion apparaît dans l’arborescence à gauche.</li>
+      </ol>
+      <h2 id="sign-in-methods">Méthodes de connexion</h2>
+      <p>
+        Outre le nom d’utilisateur et le mot de passe (SCRAM), une connexion peut s’authentifier avec un
+        certificat X.509, LDAP (PLAIN), des clés AWS IAM, OIDC ou Kerberos. Choisissez la méthode sous
+        <em>Options avancées</em> → <em>Authentification</em>.
+      </p>
+      <ul>
+        <li>
+          <strong>MONGODB-OIDC</strong> (MongoDB Atlas, Enterprise) : chaque personne se connecte avec le
+          fournisseur d’identité que nomme le serveur — aucun mot de passe n’est stocké. La première fois que
+          vous ouvrez la connexion, une boîte de dialogue propose <em>Se connecter</em> : la page du
+          fournisseur s’ouvre dans cet onglet et vous renvoie ensuite. Lorsque sa redirection ne peut pas
+          atteindre Mongo Manager, choisissez <em>Utiliser un code à la place</em> et saisissez le code affiché
+          chez le fournisseur. Enregistrez l’adresse <code>…/oidc/callback</code> de ce serveur auprès du
+          fournisseur, ou indiquez-en une autre sous <em>Adresse de redirection</em>. Les <em>Hôtes
+          autorisés</em> sont les hôtes vers lesquels votre connexion peut être envoyée (vide : Atlas et cet
+          ordinateur). La page de la connexion indique si vous êtes connecté et vous déconnecte. Une
+          <em>identité de charge de travail</em> (Azure, GCP, Kubernetes) se connecte plutôt en tant que la
+          machine sur laquelle Mongo Manager s’exécute : en mode équipe, seulement là où un administrateur
+          l’a autorisée.
+        </li>
+        <li>
+          <strong>Kerberos (GSSAPI)</strong> : indiquez le principal, ainsi que le nom du service, le realm et
+          la canonicalisation du nom d’hôte lorsque vos serveurs l’exigent. Il se connecte avec le ticket
+          Kerberos du compte sous lequel Mongo Manager s’exécute — le vôtre sur votre propre ordinateur, celui du
+          serveur en mode équipe, où il est désactivé sauf si un administrateur l’a autorisé. Il nécessite le
+          paquet facultatif <code>kerberos</code> du paquet npm (voir
+          <a href="deployment.html#optional-packages">Déploiement</a>).
+        </li>
+      </ul>
+      <h2 id="encryption">Chiffrement côté client</h2>
+      <p>
+        Sous <em>Options avancées</em> → <em>Chiffrement</em>, une connexion peut utiliser le chiffrement au
+        niveau des champs côté client (CSFLE) ou Queryable Encryption. Cela nécessite le paquet facultatif
+        <code>mongodb-client-encryption</code> du paquet npm.
+      </p>
+      <ul>
+        <li>
+          <strong>Fournisseurs de clés</strong> : une clé maître locale de 96 octets (<em>Générer une nouvelle
+          clé</em> en crée une ; conservez-en une copie, faute de quoi les données ne peuvent pas être
+          déchiffrées), AWS KMS, Azure Key Vault, Google Cloud KMS ou KMIP. Leurs identifiants sont conservés
+          scellés et ne sont plus jamais affichés. Le <strong>key vault</strong> est la collection où résident
+          les clés de données (<code>encryption.__keyVault</code> par défaut).
+        </li>
+        <li>
+          <strong>Mode</strong> : <em>Lecture et écriture</em> déchiffre les lectures et chiffre les écritures
+          (MongoDB Enterprise ou Atlas) ; <em>Déchiffrement uniquement</em> lit les valeurs chiffrées
+          déchiffrées et n’écrit aucun document (MongoDB Community). L’<strong>analyse des requêtes</strong>
+          utilise la bibliothèque crypt_shared (son chemin, ou en mode équipe celui du serveur) ou mongocryptd
+          sur cet ordinateur.
+        </li>
+        <li>
+          Les <strong>champs chiffrés</strong> proviennent des options de collection du serveur —
+          <code>encryptedFields</code> pour Queryable Encryption, un validateur <code>$jsonSchema</code> pour
+          CSFLE — sauf si la connexion fournit ses propres cartes. La vue des documents signale les champs
+          chiffrés par un cadenas.
+        </li>
+        <li>
+          La section <em>Chiffrement</em> de la connexion (pour ses administrateurs) liste les clés de données,
+          en crée de nouvelles et les fait pivoter (en les ré-enveloppant sous une clé maître), et crée des
+          collections Queryable Encryption : chaque champ avec son type et la possibilité de l’interroger par
+          égalité ou par plage, une clé de données étant créée pour chacun.
+        </li>
+        <li>
+          Une personne à qui les données personnelles sont masquées voit les valeurs chiffrées telles que
+          stockées et ne peut pas écrire de documents sur une telle connexion. Les copies déplacent les valeurs
+          chiffrées telles que stockées ; une collection Queryable Encryption ne peut pas être copiée.
+        </li>
+      </ul>
+      <h2 id="home-and-next-steps">Accueil et prochaines étapes</h2>
+      <p>
+        L’accueil est un tableau de bord de widgets que vous ajoutez, supprimez, redimensionnez et déplacez
+        avec <em>Personnaliser le tableau de bord</em> ; il est enregistré pour vous sur le serveur. Le widget
+        <em>Prochaines étapes</em> suggère jusqu’à cinq choses à faire, déterminées par l’application elle-même
+        à partir de votre travail récent : des alertes qui se déclenchent, des tâches qui ont échoué au cours
+        du dernier jour, des synchronisations en continu et des sauvegardes planifiées qui ont besoin de vous,
+        un index suggéré pour la base de données que vous avez utilisée en dernier (d’après ses requêtes
+        lentes, lorsque vous pouvez surveiller son serveur), et des lieux que vous avez ouverts récemment qui
+        ne le sont plus. Chacune est un lien qui l’exécute — un index ouvre la boîte de dialogue habituelle
+        Créer un index avec la clé renseignée, et rien n’est construit tant que vous n’avez pas confirmé
+        là. Écartez-en une avec son ✕ (Annuler la rétablit) ; l’abandon est conservé avec votre tableau de
+        bord, et un nouvel événement du même type revient comme une nouvelle étape. <em>Afficher à nouveau les
+        étapes ignorées</em> dans le menu du widget les rétablit toutes.
+      </p>
+      <p>
+        Lorsqu’un fournisseur d’IA est configuré, le menu du widget propose <em>Trier avec l’IA</em> ; c’est
+        désactivé tant que vous ne l’activez pas. L’IA met alors les étapes en ordre et rédige leurs titres, à
+        partir de faits uniquement : le type de chaque étape, des noms (connexion, base de données,
+        collection, noms de champs d’un index) et des nombres — jamais une valeur, un document ou un texte
+        d’erreur. Une étape dont la politique d’IA de la connexion est « désactivée », ou « locale uniquement »
+        avec un fournisseur dont on ne sait pas qu’il répond depuis le réseau local, n’est pas envoyée et garde
+        sa place. L’IA ne peut ni ajouter une étape ni changer ce qu’une étape fait : sous chaque titre qu’elle
+        donne, les propres mots de l’application disent ce que fait l’étape, et ses titres ne contiennent aucun
+        nombre (un nombre deviendrait obsolète ; la ligne de l’application l’indique). Les étapes ne sont remises
+        en ordre que lorsqu’elles changent (un autre type d’étape, un autre lieu) ou lorsque vous choisissez
+        <em>Retrier avec l’IA</em> — jamais parce qu’un nombre a bougé ou que le temps a passé. Chaque tri est
+        compté dans l’historique de l’IA (comme « Prochaines étapes », sans ses mots) et dans le journal d’audit
+        (combien d’étapes, jamais leurs noms). Un index suggéré n’est proposé que là où vous pouvez créer des
+        index.
+      </p>
+      <h2 id="querying">Interrogation</h2>
+      <p>
+        Ouvrez une collection et saisissez un filtre tel que <code>{ status: 'A', qty: { $lt: 30 } }</code>,
+        puis appuyez sur <kbd>Enter</kbd>. <em>Options</em> ajoute la projection, le tri, Ignorer, la limite, la
+        collation, le hint et une limite de temps. <em>Requêtes récentes</em> liste ce que vous avez exécuté
+        sur cette collection, et l’étoile conserve la requête comme favori avec un nom et des étiquettes.
+      </p>
+      <p>
+        Une valeur de la barre peut être un paramètre, écrit <code>{{name}}</code> :
+        <code>{ status: {{status}}, qty: { $gte: {{min}} } }</code>. Un champ pour chacun apparaît sous la
+        barre, et <em>Rechercher</em> exécute la requête avec les valeurs qui y sont données : <code>18</code>
+        est un nombre, <code>"18"</code> une chaîne, <code>ISODate("2026-01-01")</code> une date, et tout autre
+        texte une chaîne telle que saisie. Un favori enregistré depuis la barre conserve ses paramètres, les
+        valeurs données devenant leurs valeurs par défaut ; l’ouvrir les renseigne et l’exécute, ou attend une
+        valeur lorsqu’un paramètre n’en a pas. Entre guillemets, dans une expression régulière ou dans un
+        commentaire, <code>{{name}}</code> est du texte brut. Une personne qui ne peut pas voir les données
+        personnelles d’une connexion n’obtient jamais les valeurs par défaut d’un autre utilisateur.
+      </p>
+      <p>
+        Des pastilles sous la barre suggèrent des conditions : celles que vous avez exécutées récemment sur la
+        collection, et celles qu’un petit échantillon de la collection suggère (une valeur courante, comme
+        <code>status = "paid"</code>, ou un champ que beaucoup de documents n’ont pas) ; en choisir une
+        l’ajoute au filtre et l’exécute. L’échantillon est prélevé lorsque la page est inactive ou que la
+        barre est utilisée, et jamais sur une vue (il exécuterait le pipeline de la vue). Au-dessus des
+        résultats, chaque condition du filtre en cours est une pastille à part : la retirer (sa croix, ou
+        <kbd>Delete</kbd> sur la pastille) exécute le filtre sans elle, et <em>Annuler</em> la remet. Le texte
+        de la barre ne suit que tant qu’il est le filtre en cours ; un filtre que vous êtes encore en train de
+        modifier est laissé tel quel. Le panneau sous la barre montre la requête en cours, partie par partie ;
+        son <em>Exécuter</em> la relance et son étoile l’enregistre comme favori.
+      </p>
+      <p>
+        Dans le tableau, cliquez sur le nom d’une colonne pour trier selon elle : croissant, puis décroissant,
+        puis sans tri. <kbd>Shift</kbd> + clic ajoute la colonne au tri. Le tri est écrit dans
+        <em>Options</em> et s’exécute avec le filtre de la barre, de sorte que la barre montre toujours ce qui
+        s’exécute. Faites glisser le bord d’une colonne (ou placez-y le focus et utilisez les touches fléchées)
+        pour changer sa largeur, et double-cliquez sur le bord pour que la colonne se redimensionne d’elle-même ;
+        les largeurs sont conservées pour chaque collection, pour vous, dans ce navigateur. Le menu d’une
+        colonne la trie, copie son nom ou la masque. Une colonne dont les valeurs vous sont masquées (données
+        personnelles) n’est jamais triée.
+      </p>
+      <p>
+        <em>Graphique</em>, à côté de Tableau, Cartes et JSON, trace les résultats de la requête sous forme de
+        barres, de ligne, de points ou de secteurs : choisissez le champ de l’axe X, un décompte, une somme ou
+        une moyenne d’un champ numérique, et un champ qui répartit les résultats en séries. Il lit jusqu’aux
+        1 000 premiers documents correspondants (seulement les champs tracés) et indique lorsqu’il y en a
+        davantage ; un tableau des mêmes nombres est présent pour les lecteurs d’écran. Les champs qui vous
+        sont masqués ne sont pas proposés et ne sont jamais tracés. <em>Copier le nom</em> dans les menus des
+        bases de données, des collections et des colonnes, et à côté d’un champ dans Schéma, copie le nom brut.
+      </p>
+      <p>
+        Modifier un document montre exactement quels champs changent avant que quoi que ce soit soit écrit ;
+        seuls ces champs sont enregistrés. Dans le tableau, double-cliquez sur une valeur (ou appuyez sur
+        <kbd>Enter</kbd> dessus) pour la modifier sur place ; elle conserve son type.
+      </p>
+      <p>
+        <em>Mettre à jour plusieurs documents</em> et <em>Supprimer plusieurs documents</em> affichent un
+        aperçu avant de s’exécuter : combien de documents correspondent, et quelques-uns d’entre eux. Pour une
+        mise à jour, chaque échantillon montre ce qui change dedans, calculé par MongoDB dans une lecture qui
+        n’écrit rien ; un document sur lequel la mise à jour échouerait (un <code>$inc</code> sur du texte, un
+        chemin à travers un tableau) est signalé. Les chemins positionnels (<code>$[]</code>), les index de
+        tableau et <code>$pull</code> avec une condition ne sont pas prévisualisés sur les échantillons, et
+        l’aperçu l’indique. Les valeurs personnelles restent masquées dans les échantillons, avant et après.
+      </p>
+      <h2 id="collections">Collections</h2>
+      <p>
+        <em>Nouvelle collection</em> peut définir une collation par défaut (une langue, sa force, l’ordre
+        numérique et le reste des options de MongoDB) pour une collection, une collection plafonnée ou de séries
+        chronologiques, ou une vue ; MongoDB la fixe à la création. Une collection ou une collection plafonnée
+        peut aussi conserver dès le départ les préimages et postimages des flux de modifications. Plus tard, le
+        menu de la collection <em>Modifier la collection</em> active ou désactive ces images (après une
+        confirmation qui la nomme), affiche sa collation et mène à l’onglet Validation, où les règles
+        demeurent. L’en-tête de la collection indique sa collation et si les images sont conservées.
+      </p>
+      <h2 id="performance">Performances</h2>
+      <p>
+        L’onglet <em>Performances</em> d’une connexion trace le serveur en direct : opérations par seconde,
+        connexions, réseau et mémoire, échantillonnés toutes les 2 secondes tant que l’onglet est ouvert.
+        En dessous figurent les opérations en cours les plus lentes, que vous pouvez filtrer par base de données
+        ou collection, type, durée d’exécution, attente d’un verrou et connexions inactives, et mettre en
+        pause ; ainsi que les collections qui ont pris le plus de temps. Les éditeurs et les administrateurs
+        peuvent l’ouvrir ; le menu « … » d’une opération montre sa commande et, pour les administrateurs de la
+        connexion, <em>Interrompre l’opération</em>, qui demande d’abord confirmation. MongoDB lui-même doit
+        autoriser le compte à lire l’état du serveur : donnez-lui le rôle <code>clusterMonitor</code>, sinon
+        l’onglet indique ce qui manque.
+      </p>
+      <p>
+        La section <em>Profileur</em> montre le niveau du profileur de chaque base de données, slowms et le taux
+        d’échantillonnage ; un administrateur de la connexion peut les modifier avec le crayon sur la ligne de la
+        base de données. Le niveau 2 (chaque opération) demande d’abord confirmation et revient de lui-même au
+        réglage précédent après 30 minutes. <em>Requêtes lentes</em> liste les opérations lentes issues du
+        profileur et du journal propre au serveur (ce qui fonctionne même profileur désactivé), les plus
+        récentes d’abord, avec le plan, les clés et documents examinés et la commande ; une opération qui lit
+        bien plus de documents qu’elle n’en renvoie est signalée, et <em>Ouvrir dans Explain</em> l’ouvre dans
+        sa collection.
+      </p>
+      <p>
+        Dans l’onglet <em>Données personnelles</em> de la connexion, un administrateur de la connexion peut
+        lister les champs qui contiennent des données personnelles (par exemple <code>crm.users.email</code> ou
+        <code>*.*.**.phone</code>) ; l’onglet <em>Données personnelles</em> d’une collection liste et ajoute
+        uniquement les champs de cette collection, un nom de champ étant tout ce que demande un nouveau, et
+        montre les règles plus larges de la connexion qui l’atteignent. Un utilisateur à qui l’on a accordé
+        <em>Ne peut pas voir les données personnelles</em> voit leurs valeurs sous la forme <code>***</code>
+        dans le profileur, les requêtes lentes et les opérations, et ne peut pas utiliser le shell. En mode
+        local (sans comptes), les règles vous masquent aussi les valeurs, partout — documents, exports, contexte
+        de l’IA — et le shell reste fermé tant qu’elles sont masquées ; <em>Me les masquer aussi</em> dans
+        l’onglet de la connexion désactive cela pour la connexion.
+      </p>
+      <p>
+        <em>Suggestions d’index</em> lit les requêtes lentes d’une base de données et propose un index pour
+        chaque requête qui a effectué une analyse, selon la règle égalité–tri–plage, sauf si un index la sert
+        déjà ; elle liste aussi les index qui n’ont pas été utilisés depuis le démarrage du serveur ou qui sont
+        le début d’un autre index. Seuls les noms de champs sont utilisés. <em>Créer un index</em> ouvre la
+        boîte de dialogue habituelle avec la clé renseignée : rien n’est construit tant que vous n’avez pas
+        confirmé là.
+      </p>
+      <p>
+        Dans l’en-tête de la connexion, tant que Performances est ouvert, choisissez <em>En direct</em> (les 5
+        dernières minutes) ou une période enregistrée de 1 heure, 24 heures ou 7 jours. Un administrateur de la
+        connexion active <em>Enregistrer l’historique des métriques</em> dans le menu <em>Historique des
+        métriques</em> à côté (le même menu supprime ce qui a été stocké, après confirmation) : le serveur
+        échantillonne alors cette connexion une fois par minute et conserve 7 jours (uniquement des nombres).
+        Tant que c’est désactivé, le serveur ne se connecte jamais de lui-même à cette connexion. Sur un mongos,
+        l’onglet affiche la vue d’ensemble du partitionnement : partitions (shards), équilibreur, routeurs, et
+        la clé et la répartition des chunks de chaque collection partitionnée, avec les tailles et les chunks
+        jumbo à la demande. Rien là ne modifie le cluster.
+      </p>
+      <p>
+        Sur un jeu de réplicas, le même onglet liste chaque membre : lequel est le nœud principal, lesquels sont
+        hors service, de combien de secondes chaque nœud secondaire est en retard sur le nœud principal (orange
+        au-delà de 10 s, rouge au-delà de 60 s), le retard du majority commit et la fenêtre de l’oplog, avec un
+        graphique du retard sur les dernières minutes. Un jeu sans nœud principal est affiché en rouge : il ne
+        peut pas accepter d’écritures tant qu’un nœud n’est pas élu.
+      </p>
+      <h2 id="aggregations">Agrégations</h2>
+      <p>
+        L’onglet Agrégations d’une collection construit un pipeline étape par étape. Ajoutez une étape,
+        choisissez son opérateur (saisissez dans le champ de l’opérateur pour trouver une étape par son nom ou
+        par ce qu’elle fait — « join » trouve <code>$lookup</code> — avec les touches fléchées et Entrée ; à
+        côté de la liste, ce que fait l’étape et un exemple de sa valeur ; chacune part d’un modèle, avec un
+        lien vers le manuel de MongoDB) et modifiez sa valeur ; la sortie de chaque étape est prévisualisée sur
+        un échantillon de la collection (les 1 000 premiers documents, ou un échantillon aléatoire) pendant
+        que vous saisissez. Les étapes peuvent être désactivées, réordonnées par glisser-déposer ou avec
+        Alt+Haut et Alt+Bas, ou modifiées d’un coup sous forme de texte.
+      </p>
+      <p>
+        Exécuter diffuse tout le résultat (jusqu’à 10 000 documents) avec un bouton Arrêter ; Calculer le total
+        ne le compte que sur demande. Un pipeline se terminant par <code>$out</code> ou <code>$merge</code> n’est
+        jamais prévisualisé : il s’exécute une fois, après une confirmation qui nomme la cible, et le
+        remplacement d’une collection demande son nom. Les pipelines peuvent être enregistrés avec la
+        collection (en mode équipe, éventuellement partagés), exportés sous forme de programme pour Node.js,
+        Python, Java, Go, C#, PHP, Ruby ou Rust (la chaîne de connexion est lue depuis
+        <code>MONGODB_URI</code>, jamais écrite dans le code), ou transformés en vue.
+      </p>
+      <p>
+        Le pipeline d’une vue se modifie de la même façon : <em>Modifier le pipeline</em> sur la vue (sa vue
+        d’ensemble ou son menu) l’ouvre dans l’onglet Agrégations de la collection qu’elle lit, signalé comme
+        celui de la vue, avec un aperçu de chaque étape. <em>Mettre à jour la vue</em> réécrit les étapes
+        activées dans la vue, après une confirmation qui la nomme. Un pipeline contenant une étape que le
+        générateur ne sait pas lire n’est pas ouvert (l’enregistrer ferait perdre cette étape) ; un utilisateur
+        à qui les données personnelles sont masquées ne peut pas modifier une vue dont il voit la définition
+        masquée.
+      </p>
+      <h2 id="queries">Requêtes</h2>
+      <p>
+        La page Requêtes (Requêtes dans la barre latérale, la palette de commandes, ou <kbd>Ctrl / ⌘</kbd> +
+        <kbd>Shift</kbd> + <kbd>L</kbd> ; son adresse est <code>/library</code>) recherche les favoris, les
+        pipelines enregistrés, les extraits de code du shell et l’historique des requêtes d’une connexion par
+        nom, étiquette, texte de requête, type ou collection. Elle s’ouvre sur la connexion sur laquelle vous
+        travailliez, sinon sur la première, et conserve votre recherche lorsque vous y revenez. Ouvrir un
+        élément mène à sa collection : un find s’exécute dans Documents, un pipeline remplit les cartes
+        Agrégations (après avoir demandé, lorsque l’onglet en contient déjà). L’historique conserve les find et
+        les agrégations que vous avez exécutés, les 200 derniers par collection et 2 000 au total, chacun une
+        seule fois avec le nombre de fois où il a été utilisé ; les entrées peuvent être retirées une à une ou
+        effacées. Les favoris et les pipelines enregistrés peuvent être renommés, ré-étiquetés, partagés et
+        supprimés depuis la page Requêtes, et épinglés : les requêtes épinglées sont à vous seul (jusqu’à 50 par
+        connexion), listées en premier sur la page Requêtes et dans le widget Requêtes de l’accueil. La palette
+        de commandes liste les favoris, les pipelines enregistrés et les extraits de code du shell de chaque
+        connexion ouverte dans un onglet, chaque connexion sous son propre nom, celle sur laquelle vous
+        travaillez en premier. Au démarrage du mode équipe, l’historique du mode local est supprimé (aucun
+        utilisateur de l’équipe ne pourrait le voir ni l’effacer) ; le journal indique combien d’entrées ont été
+        supprimées. Les favoris et les pipelines enregistrés du mode local restent, pour les administrateurs de
+        la connexion.
+      </p>
+      <h2 id="advanced-shell">Shell avancé</h2>
+      <p>
+        L’onglet shell d’une connexion exécute un vrai mongosh, et son terminal est l’endroit où l’on saisit le
+        code : utiliser une base de données, exécuter des find et des agrégations, écrire des scripts. Entrée
+        exécute le code une fois complet ; tant qu’une parenthèse, une chaîne ou une instruction est ouverte
+        (après <code>.</code>, un opérateur, <code>if (…)</code>), il continue à la ligne suivante après
+        <code>...</code>, et Maj+Entrée ajoute toujours une ligne. Ctrl+Entrée exécute le code tel quel. Du code
+        de plusieurs lignes peut être collé dans le terminal : il est affiché ligne par ligne et ne s’exécute
+        que lorsque vous appuyez sur Entrée. Un script s’exécute comme mongosh exécute ce qui est saisi —
+        <code>use</code>, <code>show</code> et <code>it</code> chacun seul, puis chaque instruction à son tour ;
+        une erreur l’arrête là et indique combien d’instructions ne se sont pas exécutées. <code>print()</code>
+        et <code>printjson()</code> écrivent dans le terminal ; <code>cls</code> l’efface ainsi que les
+        résultats, et <code>exit</code> met fin au shell.
+      </p>
+      <p>
+        Haut et Bas se déplacent entre les lignes de ce qui est saisi, puis dans l’historique ; Ctrl+R recherche
+        dans l’historique (Ctrl+R de nouveau pour des correspondances plus anciennes, Échap pour le quitter).
+        Ctrl+C arrête une commande en cours, ou efface la ligne — ou copie, lorsque la sortie est sélectionnée.
+        Alt+B et Alt+F (ou Ctrl+Gauche et Ctrl+Droite) se déplacent par mot. L’historique de chaque utilisateur
+        est conservé par connexion, chiffré, et peut être effacé.
+      </p>
+      <p>
+        Le shell est disponible pour les administrateurs de la connexion, et pour un éditeur à qui un
+        administrateur l’accorde. Il s’exécute dans un bac à sable qui ne contient aucun identifiant et ne peut
+        atteindre que les propres serveurs de la connexion ; sur une connexion en lecture seule, il refuse les
+        écritures, et un non-administrateur ne peut pas exécuter d’administration de cluster ou d’utilisateurs.
+      </p>
+      <p>
+        La page du shell indique où il s’exécute — la connexion et la base de données sur lesquelles se trouve
+        le shell (elle suit <code>use</code>) — et son état : connexion en cours, connecté, en cours
+        d’exécution (avec la durée d’exécution) ou fermé. Son en-tête contient Arrêter pendant qu’une commande
+        s’exécute, Effacer l’écran et les résultats (Ctrl+L, aussi pendant qu’une commande s’exécute, ou
+        <code>cls</code> ; un avis l’indique, et son Annuler, ou Rétablir les résultats sur la carte Résultats
+        vide, les restitue), et un menu pour enregistrer ce qui est saisi (ou le dernier code exécuté) comme
+        extrait de code, effacer l’historique (les résultats partent avec) ou redémarrer le shell (la session
+        prend fin et une nouvelle démarre ; les variables et les résultats affichés sont perdus). Le terminal
+        adopte le thème clair ou sombre de l’application, ou l’un des siens, et colore le code. Une barre en
+        bas liste les touches. Un shell reste ouvert tant que sa page l’est, même s’il n’est pas utilisé
+        pendant longtemps. Lorsqu’il se ferme (votre connexion a pris fin, ou il a dépassé une limite
+        d’inactivité ou de durée fixée par le serveur), la page en indique la raison ; Entrée en ouvre un
+        nouveau ; une commande encore en cours lorsque la connexion tombe se termine à l’écran une fois la
+        connexion rétablie.
+      </p>
+      <p>
+        La saisie propose des complétions avec Tab — les collections de la base de données après
+        <code>db.</code> (y compris une créée dans le shell), les méthodes de ce que renvoie une chaîne, les
+        opérateurs après <code>$</code>, et les noms de champs échantillonnés dans la collection. Maj+Tab, ou
+        Échap puis Tab, quitte le terminal.
+      </p>
+      <p>
+        À côté du terminal, la carte Résultats montre le dernier résultat sous forme de tableau, d’arbre ou de
+        texte ; Plus récupère le lot suivant d’un curseur, et l’historique des résultats dans son en-tête permet
+        de choisir un résultat antérieur, chacun nommé d’après la commande dont il provient (conservé en
+        mémoire uniquement) ; Effacer vide la carte ; l’Annuler de l’avis, ou Rétablir les résultats sur la carte
+        vide, restitue les résultats jusqu’au redémarrage du shell ou à l’effacement de son historique. La
+        carte peut être élargie ; sur un écran étroit, le terminal et les résultats sont deux onglets. Plusieurs
+        onglets de shell peuvent être ouverts ensemble, chacun avec sa propre session. Un curseur d’un simple
+        find ou d’une simple agrégation s’ouvre dans la vue de sa collection — un find commençant à son skip,
+        sa limite servant de taille de page — et les documents affichés s’exportent en JSON ou en CSV.
+      </p>
+      <p>
+        Le code peut être enregistré comme extrait de code — privé, ou partagé avec l’équipe — avec des
+        paramètres écrits <code>{{name}}</code>. Ouvrir un extrait de code (depuis la page Requêtes ou la
+        palette de commandes) demande ses paramètres et place le code renseigné dans le terminal ; rien ne
+        s’exécute tant que vous n’appuyez pas sur Entrée. Vos propres extraits de code se modifient sur la page
+        Requêtes : le nom, les étiquettes, le code et ses paramètres (une ligne suit chaque
+        <code>{{name}}</code> à mesure que vous saisissez), vérifiés comme pour un nouvel extrait de code ; un
+        extrait de code partagé reste partagé, et le journal d’audit note que son code a changé, jamais le code.
+      </p>
+      <p>
+        Le terminal fonctionne avec un lecteur d’écran : son mode lecteur d’écran est activé par défaut, et
+        Compte → Préférences le désactive ou le réactive, y compris dans les shells ouverts.
+      </p>
+      <h2 id="explain">Explain</h2>
+      <p>
+        « Pourquoi est-ce lent ? » dans Documents ou Agrégations ouvre la section Explain sur cette requête ou
+        ce pipeline. Elle montre le plan choisi par MongoDB sous forme d’arbre (les touches fléchées s’y
+        déplacent), ce que chaque étape a lu et renvoyé, les plans qu’il a rejetés, et des avertissements en
+        clair : une analyse de toute la collection, un tri effectué en mémoire, un filtre qui lit bien plus
+        qu’il ne renvoie, une jointure sur un champ sans index. Lorsqu’un index aiderait, Explain en suggère un
+        (champs d’égalité, puis le tri, puis les plages) et « Créer cet index » le construit en arrière-plan. Un
+        pipeline qui écrit n’est pas expliqué, car l’expliquer l’exécuterait.
+      </p>
+      <h2 id="validation">Validation</h2>
+      <p>
+        La section Validation modifie les règles que doit respecter chaque document inséré ou mis à jour, avec
+        le niveau et l’action de validation. « Générer à partir d’un échantillon » écrit un $jsonSchema à partir
+        des documents de la collection ; « Tester sur les documents existants » compte combien échoueraient,
+        avec des exemples, avant que vous enregistriez. L’enregistrement demande d’abord confirmation, et
+        indique lorsque des documents qui enfreignent les règles verraient leurs mises à jour refusées ;
+        « Restaurer les règles précédentes » remet ce que le dernier enregistrement a remplacé tant que l’onglet
+        est ouvert. Une écriture que les règles refusent indique celles qu’elle n’a pas respectées (un champ
+        manquant, un mauvais type, un minimum), de même que le rapport d’un import ou d’une copie ; la valeur
+        qui a échoué n’est jamais répétée.
+      </p>
+      <h2 id="schema">Schéma</h2>
+      <p>
+        L’onglet <em>Schéma</em> d’une collection analyse un échantillon aléatoire (100, 1 000 ou 10 000
+        documents) : chaque champ avec la fréquence de sa présence, ses types, et un histogramme ou ses valeurs
+        les plus courantes. <em>Exporter</em> transforme l’analyse en schéma Mongoose, en validateur JSON Schema
+        de MongoDB ou en interface TypeScript, à copier ou à télécharger. Un champ est considéré comme requis
+        lorsque tous les documents de l’échantillon l’ont.
+      </p>
+      <p>
+        Les barres d’un champ — ses plages et ses valeurs les plus courantes — et ses types sont des boutons :
+        en choisir un ajoute cette condition au filtre Documents de la collection (à côté des conditions déjà
+        saisies, ou avec <code>$and</code> lorsque le champ en a une), l’exécute et affiche les documents. Une
+        valeur tronquée dans l’analyse est affichée mais non proposée. Un champ contenant des lieux — des points
+        GeoJSON, ou des paires de coordonnées sous un nom tel que <code>location</code> ou <code>coords</code> —
+        les montre sur une carte dessinée sans aucun réseau (le contour du monde provenant de Natural Earth, du
+        domaine public) : faites glisser ou utilisez les touches fléchées pour la déplacer ; <kbd>Ctrl</kbd> et
+        la molette, deux doigts, ou <kbd>+</kbd> et <kbd>−</kbd> pour zoomer ; les lieux sont aussi listés sous
+        forme de tableau ; et <em>Filtrer sur cette zone</em> ajoute un <code>$geoWithin</code> de la zone
+        visible. Les champs contenant des données personnelles ne sont jamais dessinés.
+      </p>
+      <h2 id="data-model">Modèle de données</h2>
+      <p>
+        La section <em>Modèle</em> d’une base de données dessine ses collections et les références entre elles.
+        <em>Lire le modèle</em> échantillonne chaque collection (100 à 1 000 documents, 50 collections au plus)
+        pour ses champs — le premier niveau et un niveau en dessous, les niveaux plus profonds seulement
+        lorsqu’ils ressemblent à des références — et trouve les références de trois façons : un champ nommé
+        d’après une collection (<code>userId</code> ou <code>user_id</code> → <code>users</code>,
+        <code>tagIds</code> → <code>tags</code>), des valeurs ObjectId échantillonnées retrouvées comme
+        <code>_id</code> d’une autre collection (au plus dix valeurs par champ, soixante petits décomptes au
+        total), et les étapes <code>$lookup</code> et <code>$graphLookup</code> des vues et des pipelines
+        enregistrés que vous pouvez ouvrir. Un trait plein a été trouvé par le nom ou les valeurs, un trait
+        discontinu par <code>$lookup</code> seulement, un trait pointillé relie une vue à sa source. Un trait
+        se termine par une patte de corbeau (« plusieurs ») au champ qui contient la référence — plusieurs
+        documents peuvent contenir le même identifiant — et par une barre (« un ») à la collection vers laquelle
+        il pointe, avec là aussi une patte de corbeau pour un tableau de références. Un champ est marqué
+        <strong>PK</strong> (la clé, <code>_id</code>), <strong>UQ</strong> (un index unique sur lui seul) ou
+        <strong>IX</strong> (dans un index) ; les index ne sont lus que par les noms de leurs clés.
+      </p>
+      <p>
+        Faites glisser le diagramme ou utilisez les touches fléchées pour le déplacer, <kbd>+</kbd> et
+        <kbd>−</kbd> pour zoomer, <kbd>0</kbd> pour l’ajuster. La molette fait défiler la page tant que le
+        diagramme n’a pas le focus (cliquez dessus ou atteignez-le avec Tab) ; elle le déplace alors, et
+        <kbd>Ctrl</kbd> / <kbd>⌘</kbd> et la molette zooment (<kbd
+          >Shift</kbd
+        >
+        et la molette le déplacent à tout moment). Cliquez sur une collection, ou atteignez-la avec Tab et
+        appuyez sur <kbd>Enter</kbd>, pour voir ses liens et l’ouvrir. La vue <em>Liste</em> montre le même
+        modèle sous forme de liste : chaque collection ouvre ses champs et ses liens, et un lien mène à la
+        collection vers laquelle il pointe. <em>Exporter</em> enregistre le diagramme en PNG ou SVG (aux
+        couleurs du thème utilisé et dans votre langue), le modèle en JSON, et le modèle sous forme de
+        <code>erDiagram</code> de Mermaid (enregistré en <code>.mmd</code> ou copié) pour un README, un wiki
+        ou une pull request qui le dessine, où un champ unique est écrit <code>UK</code> comme Mermaid le
+        nomme. Seuls les noms, les types et les décomptes sont affichés ; aucune valeur ne quitte le serveur.
+        Qui peut lire des documents peut lire le modèle ; les champs qui vous sont masqués comme données
+        personnelles sont affichés par leur nom seulement et leurs valeurs ne sont jamais lues. Un utilisateur
+        MongoDB autorisé sur certaines collections seulement voit celles-ci.
+      </p>
+      <p>
+        Lire un modèle coûte au serveur un échantillon par collection : jusqu’à 50 collections multipliées par
+        la taille de l’échantillon, plus soixante petits décomptes au plus. Le serveur plafonne le total des
+        documents qu’un modèle lit (<code>MM_MODEL_MAX_DOCS</code>, 20 000 par défaut) : avec de nombreuses
+        collections, chaque échantillon est réduit, et la section l’indique. Lisez-le lorsque le serveur est
+        calme, ou avec un échantillon plus petit, sur une base de données de production occupée.
+      </p>
+      <h2 id="search-indexes">Index de recherche</h2>
+      <p>
+        Sur MongoDB Atlas, ou MongoDB 8.0 ou version ultérieure avec le processus de recherche (mongot),
+        l’onglet Index liste aussi les index Atlas Search et Vector Search d’une collection : chacun avec son
+        type, son état (en attente, en construction, prêt, en échec avec la raison) et ce qu’il couvre,
+        revérifié toutes les quelques secondes pendant qu’un index se construit. <em>Créer un index de
+        recherche</em> prend la définition en JSON, ou pour un index vectoriel un formulaire guidé : le champ
+        contenant les embeddings, leurs dimensions et leur similarité, et les champs sur lesquels filtrer. Une
+        définition peut être modifiée et un index supprimé, après une confirmation qui le nomme. Ailleurs,
+        l’onglet indique ce dont la recherche a besoin.
+      </p>
+      <h2 id="background-jobs">Tâches en arrière-plan</h2>
+      <p>
+        La construction d’un index et la duplication d’une collection s’exécutent en arrière-plan, de sorte
+        qu’une opération longue ne rencontre jamais de délai d’attente. Vous pouvez quitter la page, ou fermer
+        l’onglet, pendant qu’elles s’exécutent. Le bouton <em>Tâches en arrière-plan</em> de la barre
+        supérieure montre chaque tâche : avec une barre et des nombres lorsque MongoDB rapporte sa progression
+        (constructions d’index), ou <em>Toujours en cours</em> et le temps écoulé lorsqu’il ne le fait pas
+        (copies). Vous êtes prévenu de la fin de vos propres tâches, et vous pouvez les y annuler.
+      </p>
+      <p>
+        Si le serveur redémarre pendant une copie, la copie est abandonnée et sa collection à moitié créée est
+        supprimée ; la cible n’est jamais laissée à moitié remplie. Une construction d’index peut se poursuivre
+        à l’intérieur de MongoDB ; l’onglet Index l’affiche.
+      </p>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Sur cette page</p>
+      <ol>
+        <li><a href="#install">Installation</a></li>
+        <li><a href="#first-run">Premier lancement</a></li>
+        <li><a href="#your-first-connection">Votre première connexion</a></li>
+        <li><a href="#sign-in-methods">Méthodes de connexion</a></li>
+        <li><a href="#encryption">Chiffrement côté client</a></li>
+        <li><a href="#home-and-next-steps">Accueil et prochaines étapes</a></li>
+        <li><a href="#querying">Interrogation</a></li>
+        <li><a href="#collections">Collections</a></li>
+        <li><a href="#performance">Performances</a></li>
+        <li><a href="#aggregations">Agrégations</a></li>
+        <li><a href="#queries">Requêtes</a></li>
+        <li><a href="#advanced-shell">Shell avancé</a></li>
+        <li><a href="#explain">Explain</a></li>
+        <li><a href="#validation">Validation</a></li>
+        <li><a href="#schema">Schéma</a></li>
+        <li><a href="#data-model">Modèle de données</a></li>
+        <li><a href="#search-indexes">Index de recherche</a></li>
+        <li><a href="#background-jobs">Tâches en arrière-plan</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

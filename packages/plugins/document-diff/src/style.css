@@ -1,0 +1,163 @@
+/* Document diff (redesigned 2026-10-10): what the kit (kit/src/ui.css) does not already give. */
+.dd-sides {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+.dd-side {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--ds-line);
+  border-radius: var(--mm-radius);
+  background: var(--ds-subtle);
+}
+.dd-side-label {
+  flex: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ds-fg-subtle);
+}
+.dd-side-id {
+  color: var(--ds-v-oid);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dd-side-name {
+  min-width: 0;
+  color: var(--ds-fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dd-side-empty {
+  border-style: dashed;
+  background: transparent;
+}
+.dd-side-empty .dd-side-name {
+  color: var(--ds-fg-subtle);
+  font-style: italic;
+}
+.dd-sides-arrow {
+  display: grid;
+  place-items: center;
+  color: var(--ds-fg-subtle);
+}
+.dd-other {
+  flex: 1;
+  min-width: 220px;
+  font-family: var(--mm-mono);
+  font-size: 12px;
+}
+.dd-other::placeholder {
+  font-family: var(--mm-font);
+  font-size: 12.5px;
+}
+.dd-list {
+  max-width: 320px;
+  min-width: 180px;
+}
+.dd-counts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.dd-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dd-notes:empty {
+  display: none;
+}
+.dd-table {
+  table-layout: fixed;
+}
+.dd-table th:first-child {
+  width: 30%;
+}
+.dd-head-id {
+  margin-left: 6px;
+  color: var(--ds-fg-subtle);
+  font-weight: 400;
+  font-size: 11px;
+}
+.dd-table td {
+  vertical-align: top;
+}
+.dd-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.dd-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 5px;
+  background: var(--ds-subtle);
+  color: var(--ds-fg-subtle);
+}
+.dd-path {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dd-value .mm-value {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.dd-missing {
+  color: var(--ds-fg-subtle);
+}
+/* Rows tinted by kind; the mark beside the field says the kind in words. */
+.mm-table tbody tr.dd-changed td {
+  background: var(--ds-warning-soft);
+}
+.dd-changed .dd-mark {
+  background: color-mix(in srgb, var(--ds-warning) 18%, transparent);
+  color: var(--ds-warning);
+}
+.mm-table tbody tr.dd-removed td {
+  background: var(--ds-danger-soft);
+}
+.dd-removed .dd-mark {
+  background: color-mix(in srgb, var(--ds-danger) 18%, transparent);
+  color: var(--ds-danger);
+}
+.mm-table tbody tr.dd-added td {
+  background: var(--ds-success-soft);
+}
+.dd-added .dd-mark {
+  background: color-mix(in srgb, var(--ds-success) 18%, transparent);
+  color: var(--ds-success);
+}
+/* The tint stays under the pointer, a little stronger. */
+.mm-table tbody tr.dd-changed:hover td {
+  background: color-mix(in srgb, var(--ds-warning) 16%, var(--ds-raised));
+}
+.mm-table tbody tr.dd-removed:hover td {
+  background: color-mix(in srgb, var(--ds-danger) 16%, var(--ds-raised));
+}
+.mm-table tbody tr.dd-added:hover td {
+  background: color-mix(in srgb, var(--ds-success) 16%, var(--ds-raised));
+}
+/* A success state for the kit's empty state (the kit colours danger and warning only). */
+@media (max-width: 640px) {
+  .dd-sides {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dd-sides-arrow {
+    display: none;
+  }
+}

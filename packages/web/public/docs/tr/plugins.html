@@ -1,0 +1,1789 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Eklentiler · Mongo Manager belgeleri</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager belgeleri</a>
+      <details class="lang-menu">
+        <summary>Türkçe</summary>
+        <span class="langs" role="group" aria-label="Dil">
+          <a lang="en" hreflang="en" href="../plugins.html">English</a>
+          <strong lang="tr">Türkçe</strong>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/plugins.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/plugins.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/plugins.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/plugins.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/plugins.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/plugins.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/plugins.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/plugins.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Genel bakış</a>
+      <a href="getting-started.html">Başlarken</a>
+      <a href="security.html">Güvenlik</a>
+      <a href="deployment.html">Kurulum ve dağıtım</a>
+      <a href="import-export.html">İçe ve dışa aktarma</a>
+      <a href="backup.html">Yedekleme ve geri yükleme</a>
+      <a href="watch.html">Değişiklikleri izleme</a>
+      <a href="sync.html">Canlı senkron</a>
+      <a href="server-admin.html">Sunucu yönetimi</a>
+      <a href="ai.html">AI asistanı</a>
+      <strong>Eklentiler</strong>
+      <a href="shortcuts.html">Klavye kısayolları</a>
+    </nav>
+    <main>
+      <h1>Eklenti geliştirme</h1>
+      <p>
+        Bir eklenti Mongo Manager'a bir görünüm, bir eylem ya da bir sayfa ekler: bir koleksiyondaki yerlerin
+        haritası, bir grafik, bir kopya bulucu, SQL'den çeviri. Bu rehber eklenti geliştirenler içindir:
+        eklentinin hangi dosyalardan oluştuğunu, uygulamadan neler isteyebileceğini, uygulamanın uyguladığı
+        kuralları ve eklentinin nasıl paketlenip denendiğini ve yayımlandığını anlatır. Yöneticiler
+        eklentileri
+        <strong>Eklentiler</strong> sayfasında kurar ve onaylar; onay modeli için
+        <a href="security.html#plugins">Güvenlik</a> sayfasına bakın. Bu sayfa tüm eklentileri listeler.
+        Liste; etkin olanlara, bir yöneticinin işlem yapması gerekenlere (onay bekleyen, değişmiş ya da
+        kullanılamayan) ya da devre dışı olanlara, tek bir kaynağa ve eklentinin adında, açıklamasında,
+        kimliğinde, sürümünde, istediği izinlerde ya da eklediklerinde yapılan bir aramaya göre
+        daraltılabilir.
+      </p>
+      <ul class="toc-inline">
+        <li><a href="#what">Eklenti nedir</a></li>
+        <li><a href="#quick-start">Hızlı başlangıç</a></li>
+        <li><a href="#files">Dosyalar ve klasör düzeni</a></li>
+        <li><a href="#manifest">Manifest</a></li>
+        <li><a href="#contributions">Katkı noktaları</a></li>
+        <li><a href="#context">Bağlam</a></li>
+        <li><a href="#bridge">Köprü API'si</a></li>
+        <li><a href="#permissions">İzinler</a></li>
+        <li><a href="#sandbox">Korumalı alan</a></li>
+        <li><a href="#scan">Güvenlik taraması</a></li>
+        <li><a href="#ui">Arayüz ve tema</a></li>
+        <li><a href="#localization">Diller</a></li>
+        <li><a href="#readme">README ve sürüm notları</a></li>
+        <li><a href="#versions">Sürümler ve onay</a></li>
+        <li><a href="#packaging">Paketleme</a></li>
+        <li><a href="#github">GitHub'da yayımlama</a></li>
+        <li><a href="#testing">Kendi sunucunuzda deneme</a></li>
+        <li><a href="#ai-files">Bir AI asistanıyla geliştirme</a></li>
+        <li><a href="#checklist">Yayımlamadan önce kontrol listesi</a></li>
+      </ul>
+
+      <h2 id="what">Eklenti nedir</h2>
+      <p>
+        Eklenti, <strong>durağan dosyalardan</strong> oluşan bir klasördür: bir HTML sayfası; onun betikleri,
+        stilleri, resimleri ve yazı tipleri; bir de eklentinin neler eklediğini ve neler yapabileceğini
+        söyleyen <code>mongo-manager-plugin.json</code> adlı bir manifest. Uygulama sayfayı
+        <strong>korumalı bir çerçevede</strong> gösterir ve sayfa uygulamayla yalnızca mesajlarla konuşur:
+        belge ister, uygulama da oturum açmış kullanıcı olarak, o kullanıcının yetkileri ve uygulamanın
+        maskelemesiyle yanıtlar.
+      </p>
+      <ul>
+        <li>
+          <strong>Sunucuda kod yok.</strong> Eklentinin hiçbir parçası sunucuda çalışmaz. Sunucu dosyaları
+          saklar, denetler ve çerçeveye sunar.
+        </li>
+        <li>
+          <strong>Ağ yok.</strong> Sayfa hiçbir adresten, geldiği sunucudan bile bir şey isteyemez. Çerezi,
+          depolaması ve uygulamanın sayfasına erişimi yoktur. İki çıkış yolu tarayıcıya kalır: WebRTC'yi
+          yalnız politikanın <code>webrtc</code> yönergesini uygulayan tarayıcılar engeller — Chromium tabanlı
+          tarayıcılar (Chrome, Edge) 149 sürümü itibarıyla bunu yok sayar, Firefox'a da güvenmeyin — bu yüzden
+          bu tarayıcılarda bir eklenti okuduklarını WebRTC ile hâlâ dışarı gönderebilir; bir önceden yükleme
+          ipucu (<code>dns-prefetch</code>, <code>preconnect</code>) da bir adı çözdürebilir. Çerçeve
+          tarayıcıdan önceden çözümleme yapmamasını ister ve tarama ikisini de yüksek risk olarak işaretler —
+          ama tarama dosyaların metninde bilinen kalıpları arar: ondan gizlenmek için yazılmış kod bulunmaz.
+          Yalnızca güvendiğiniz eklentileri onaylayın.
+        </li>
+        <li>
+          <strong>Onaysız hiçbir şey yok.</strong> Eklenti, ancak bir yönetici tam olarak o dosyaları ve
+          istediği izinleri onayladıktan sonra çalışır. Dosyalarındaki her değişiklik yeni bir onay
+          gerektirir.
+        </li>
+        <li>
+          <strong>Değişiklikler kullanıcıdan geçer.</strong> Belge değiştirebilen bir eklenti sorar; uygulama
+          değişikliği kendi penceresinde gösterir ve kararı kullanıcı verir. Eklentinin hazırladığı bir sorgu
+          ya da pipeline kullanıcının kendi düzenleyicilerine konur ve kullanıcı çalıştırana dek hiçbir şey
+          çalışmaz.
+        </li>
+      </ul>
+      <p>
+        Mongo Manager kendi eklentileriyle gelir (Harita, Grafikler, Şema sağlığı, Yinelenen kayıt bulucu,
+        Değer arama, Referanslar, Belge karşılaştırma, SQL'den MongoDB'ye, Zaman ipuçları, İkili veri
+        önizleme, Veri sözlüğü, Yerel saat, Log analizcisi, Test verisi, Yeniden şekillendir, Anonimleştirici,
+        Arama alanı, Parça anahtarı çözümleyici, Depolama raporu, Doğrulama denetimi, Eski UUID'ler, Tarih
+        filtreleri, İndeks betiği, Süre dolumu (TTL), Kişisel veri bulucu, Belge boyutu). Bunlar da sizinkiyle
+        aynı korumalı alanda çalışır, aynı köprüyle konuşur ve aynı biçimde taranır; uygulamanın kendi kodu
+        oldukları için onaylanırken kimlikleri hiçbir zaman sorulmaz (bkz.
+        <a href="#versions">Sürümler ve onay</a>). Eklentiler bir sunucunun tamamında
+        <code>MM_PLUGINS=0</code> ile kapatılabilir (bkz.
+        <a href="deployment.html#plugins">Kurulum ve dağıtım</a>).
+      </p>
+
+      <h2 id="quick-start">Hızlı başlangıç</h2>
+      <p>
+        Başlangıç şablonundan başlayın: <strong>Eklentiler</strong> sayfasında,
+        <strong>Kendi eklentinizi yapın</strong> bölümünde
+        <strong>Başlangıç şablonunu indirin (.zip)</strong> seçeneğini kullanın (şablon, Mongo Manager kaynak
+        kodundaki <code>packages/plugins/starter</code>
+        klasörüdür de). Düz JavaScript ile yazılmış, derleme adımı ve bağımlılığı olmayan, eksiksiz bir
+        eklentidir: bir koleksiyonun belgelerini listeleyen bir koleksiyon sekmesi ve bir kenar çubuğu
+        sayfası.
+      </p>
+      <ol>
+        <li>Arşivi açın ya da klasörü kendinize ait yeni bir depoya kopyalayın.</li>
+        <li>
+          <code>mongo-manager-plugin.json</code> içinde <code>id</code>, <code>name</code>,
+          <code>author</code> ve <code>repository</code> alanlarını değiştirin. Kimlik (id) benzersiz
+          olmalıdır: her sunucuda eklentinin klasörüne adını verir.
+        </li>
+        <li>Sayfanızı <code>main.js</code> ve <code>style.css</code> içinde yazın.</li>
+        <li>
+          Kendi sunucunuzda deneyin:
+          <code>node scripts/pack.mjs --folder ~/.mongo-manager/plugins</code>, ardından
+          <strong>Eklentiler → Yeniden tara</strong>; taramaya bakın ve onaylayın. Bkz.
+          <a href="#testing">Kendi sunucunuzda deneme</a>.
+        </li>
+        <li>
+          <code>node scripts/pack.mjs</code> ile paketleyin; komut <code>&lt;id&gt;-&lt;version&gt;.tgz</code>
+          dosyasını yazar. Bu dosyayı bir GitHub sürümüne ekleyin. Bkz.
+          <a href="#github">GitHub'da yayımlama</a>.
+        </li>
+      </ol>
+      <p>
+        Şablonda AI kod asistanları için talimat dosyaları da vardır (<code>CLAUDE.md</code>,
+        <code>AGENTS.md</code>, <code>GEMINI.md</code> ve <code>.github/copilot-instructions.md</code>); bkz.
+        <a href="#ai-files">Bir AI asistanıyla geliştirme</a>.
+      </p>
+
+      <h2 id="files">Dosyalar ve klasör düzeni</h2>
+      <pre><code>hello-documents/
+  mongo-manager-plugin.json   manifest (zorunlu, en üstte)
+  index.html                  her katkının açtığı giriş sayfası
+  main.js                     sayfanın betiği (bir ES modülü)
+  style.css                   sayfanın stilleri
+  README.md                   yöneticilere eklentinin ayrıntılar sayfasında gösterilir
+  README.tr.md, README.zh.md  aynısı uygulamanın başka bir dilinde (isteğe bağlı)
+  scripts/pack.mjs            paketleme (eklentinin parçası değil: arşive girmez)
+  CLAUDE.md, AGENTS.md, ...   AI asistanı dosyaları (arşive girmez)</code></pre>
+      <p>Uygulamanın bir eklentinin dosyaları için kuralları:</p>
+      <ul>
+        <li>
+          En fazla <strong>500 dosya</strong> ve toplam <strong>25 MB</strong>; manifest en fazla 64 KB.
+        </li>
+        <li>
+          Her yol göreli ve sadedir: her parça bir harf, rakam, <code>_</code> ya da <code>-</code> ile
+          başlar, yalnızca harf, rakam, <code>.</code>, <code>_</code> ve <code>-</code> içerir ve en fazla
+          100 karakterdir; en fazla 16 düzey derinlik ve toplam 240 karakter. Gizli dosya ya da klasör (<code
+            >.</code
+          >
+          ile başlayan ad), boşluk, aygıt adları (<code>con</code>, <code>nul</code>, <code>com1</code>...),
+          <code>__proto__</code>, <code>constructor</code> ya da <code>prototype</code>
+          olamaz.
+        </li>
+        <li>
+          Yalnızca dosya ve klasör: bağlantılar, junction'lar ve özel dosyalar eklentiyi kullanılamaz yapar.
+        </li>
+        <li>Yalnızca büyük/küçük harfle ayrılan iki yol olamaz.</li>
+        <li>
+          Dosyalar uzantılarına göre bir türle sunulur: <code>html</code>, <code>js</code>, <code>mjs</code>,
+          <code>css</code>, <code>json</code>, <code>map</code>, <code>txt</code>, <code>svg</code>,
+          <code>png</code>, <code>jpg</code>, <code>jpeg</code>, <code>gif</code>, <code>webp</code>,
+          <code>avif</code>, <code>ico</code>, <code>woff</code>, <code>woff2</code>, <code>ttf</code>,
+          <code>otf</code>. Diğer her şey ham bayt olarak sunulur ve asla çalışmaz.
+        </li>
+      </ul>
+
+      <h2 id="manifest">Manifest</h2>
+      <p>
+        <code>mongo-manager-plugin.json</code> sıkı biçimde denetlenir: bilinmeyen bir alan, yanlış bir tür ya
+        da sınır dışı bir değer eklentiyi kullanılamaz yapar ve Eklentiler sayfası hangi alanın yanlış
+        olduğunu söyler. Bir kişinin okuduğu metinler (adlar, başlıklar, notlar) denetim karakteri ya da metni
+        gizleyen veya ters çeviren karakterler içeremez.
+      </p>
+      <pre><code>{
+  "id": "hello-documents",
+  "name": { "en": "Hello documents", "tr": "Merhaba belgeler" },
+  "version": "0.1.0",
+  "description": { "en": "Lists the documents of a collection.", "tr": "Bir koleksiyonun belgelerini listeler." },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [{ "id": "list", "title": { "en": "Hello", "tr": "Merhaba" }, "icon": "table" }],
+    "sidebarPanels": [{ "id": "page", "title": { "en": "Hello documents" }, "icon": "puzzle" }]
+  },
+  "settings": {},
+  "author": { "name": "Adınız", "url": "https://example.com" },
+  "homepage": "https://example.com/hello-documents",
+  "repository": "https://github.com/your-name/hello-documents",
+  "license": "MIT",
+  "publishedAt": "2026-10-11",
+  "changelog": [
+    { "version": "0.1.0", "date": "2026-10-11", "notes": { "en": "First release.", "tr": "İlk sürüm." } }
+  ]
+}</code></pre>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Alan</th>
+              <th>Zorunlu</th>
+              <th>Kurallar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td>evet</td>
+              <td>
+                Küçük harf ve rakamlar, tireyle ayrılmış (<code>geojson-map</code>), en fazla 64 karakter.
+                Eklentinin klasör adıyla aynı olmalıdır. Mongo Manager ile gelen bir eklentinin kimliği ve
+                uygulamanın ayırdığı bir ad gibi okunan bir kimlik (aşağıda) kullanılamaz.
+              </td>
+            </tr>
+            <tr>
+              <td><code>name</code></td>
+              <td>evet</td>
+              <td>
+                Dillere göre metin, en fazla 60 karakter: <code>{ "en": "...", "tr": "..." }</code>. Görünmez
+                karakter (sıfır genişlikli, etiket, varyasyon seçici) içeremez ve uygulamanın kendi mesajları
+                gibi okunan bir ad olamaz: <em>Mongo Manager</em> (ya da böyle başlayan bir ad),
+                <em>MongoDB</em>, <em>Sistem</em>, <em>Oturum</em>, <em>Güvenlik</em>, <em>Yönetici</em>,
+                <em>Sunucu</em>, <em>Güncelleme</em> ve benzerleri, uygulamanın herhangi bir dilinde; büyük-küçük harf,
+                boşluk, aksan ve benzer görünen harfler gözetilmeden karşılaştırılır. Her sözcükte harflerin
+                hepsi Latin harfi olmalı ya da hiçbiri olmamalıdır (Yunan ve Kiril harfleri de birlikte olamaz)
+                ve hiçbir ayraç bir kimlik gibi okunan bir şey içeremez (<code>(value-search)</code>;
+                <code>(beta)</code> olabilir). Bir emojinin kendi birleştiricisi ve seçicisi sorun değildir.
+                Uygulama, bir eklentinin mesajlarını ve sorularını adının yanında kimliğiyle gösterir.
+              </td>
+            </tr>
+            <tr>
+              <td><code>version</code></td>
+              <td>evet</td>
+              <td>
+                Anlamsal sürümleme: <code>major.minor.patch</code>, isteğe bağlı bir ön sürüm eki
+                (<code>1.2.0-beta.1</code>), en fazla 64 karakter.
+              </td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td>hayır</td>
+              <td>Dillere göre metin, en fazla 300 karakter.</td>
+            </tr>
+            <tr>
+              <td><code>entry</code></td>
+              <td>evet</td>
+              <td>Her katkının açtığı sayfa: eklentideki bir <code>.html</code> dosyasının sade yolu.</td>
+            </tr>
+            <tr>
+              <td><code>permissions</code></td>
+              <td>hayır</td>
+              <td>
+                <code>documents:read</code>, <code>documents:write</code>, <code>collection:read</code>,
+                <code>database:read</code> izinlerinden herhangi biri, her biri en fazla bir kez. Varsayılan:
+                hiçbiri. Bkz. <a href="#permissions">İzinler</a>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>contributes</code></td>
+              <td>hayır</td>
+              <td>
+                <code>collectionTabs</code>, <code>documentActions</code>, <code>sidebarPanels</code> ve
+                <code>cellRenderers</code>: her biri en fazla 5 öğelik listeler; kimlikler liste içinde
+                benzersiz. Bkz. <a href="#contributions">Katkı noktaları</a>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>settings</code></td>
+              <td>hayır</td>
+              <td>
+                Anahtara göre en fazla 10 ayar (bir harf, ardından harf ve rakamlar, en fazla 32 karakter):
+                <code
+                  >{ "type": "url" | "text" | "boolean", "title": en fazla 60 karakterlik dillere göre metin
+                  }</code
+                >. Değerleri yöneticiler belirler; sayfa onları bağlamda okur.
+              </td>
+            </tr>
+            <tr>
+              <td><code>author</code></td>
+              <td>hayır</td>
+              <td><code>{ "name": en fazla 80 karakter, "url": bir https adresi (isteğe bağlı) }</code>.</td>
+            </tr>
+            <tr>
+              <td><code>homepage</code>, <code>repository</code></td>
+              <td>hayır</td>
+              <td>
+                Ana makinesi olan bir <code>https://</code> adresi, en fazla 300 karakter; kimlik bilgisi,
+                boşluk ya da ters eğik çizgi içeremez.
+              </td>
+            </tr>
+            <tr>
+              <td><code>license</code></td>
+              <td>hayır</td>
+              <td>
+                En fazla 40 karakterlik bir SPDX ifadesi: <code>MIT</code>, <code>Apache-2.0 OR MIT</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>publishedAt</code></td>
+              <td>hayır</td>
+              <td>1900 ile 2100 arasında var olan bir gün, <code>YYYY-MM-DD</code>.</td>
+            </tr>
+            <tr>
+              <td><code>changelog</code></td>
+              <td>hayır</td>
+              <td>
+                En fazla 50 kayıt:
+                <code
+                  >{ "version", "date": "YYYY-MM-DD", "notes": en fazla 1000 karakterlik dillere göre metin
+                  }</code
+                >; her sürüm en fazla bir kez ve hiçbiri manifestteki <code>version</code> değerinden sonra
+                olamaz.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Dillere göre metin, <code>en</code> (zorunlu) ve isteğe bağlı olarak uygulamanın diğer dillerinin
+        alanları olan bir nesnedir: <code>tr</code>, <code>zh</code> (basitleştirilmiş Çince), <code>ja</code>,
+        <code>es</code>, <code>pt</code> (Brezilya Portekizcesi), <code>ko</code>, <code>de</code>,
+        <code>fr</code> ve <code>ru</code>; okurun dili eksikse İngilizcesi gösterilir. Bir katkı
+        <code>{ "id", "title": en fazla 40 karakterlik dillere göre metin, "icon" }</code> biçimindedir:
+        kimliği küçük bir harfle başlar, küçük harf, rakam ve tire içerir, en fazla 32 karakterdir; simgesi
+        <code>map</code>, <code>chart</code>, <code>table</code>, <code>file</code>, <code>image</code>,
+        <code>globe</code>, <code>layers</code>, <code>puzzle</code>, <code>book</code>, <code>wand</code>,
+        <code>shapes</code>, <code>scroll</code>, <code>code</code>, <code>calendar</code>,
+        <code>hourglass</code>, <code>shield</code>, <code>fingerprint</code>,
+        <code>ruler</code> değerlerinden biridir (uygulamanın kendi simgeleri: eklenti simge getirmez). Hücre
+        işleyicisi ise <code>{ "id", "match" }</code> biçimindedir; isteğe bağlı <code>"display"</code>
+        <code>inline</code> (varsayılan) ya da <code>tooltip</code> olur.
+      </p>
+      <p>
+        <code>url</code> türündeki bir ayar, kimlik bilgisi içermeyen bir https adresi olmalıdır (düz http
+        yalnız bu bilgisayar için: <code>localhost</code>, <code>127.0.0.1</code> ya da <code>[::1]</code>);
+        şeması, ana makinesi ve bağlantı noktası çerçevenin yükleyebileceği resim kaynaklarına eklenir (harita
+        döşemeleri için başta gelen <code>{s}.</code> herhangi bir alt alan adı olur; yalnız en az iki parçalı
+        bir addan önce, asla bir IP adresinden önce değil). Bir resmin adresi veri taşıyabilir: eklenti
+        okuduklarını o sunucuya gönderebilir; onay ekranı ve ayar bunu söyler. <code>text</code> türündeki bir
+        ayar en fazla 500 karakterdir. Eklentiyi kullanan herkes ayarlarını okuyabilir: asla bir sır
+        istemeyin. Sunucu bunları, kaydedilen diğer her değer gibi kendi anahtarıyla şifreli saklar.
+      </p>
+
+      <h2 id="contributions">Katkı noktaları</h2>
+      <p>
+        Her katkı aynı giriş sayfasını açar. Sayfa hangisi olduğunu adresin parça kısmından,
+        <code>#&lt;tür&gt;=&lt;id&gt;</code> (örneğin <code>#collectionTab=list</code>), ve bağlamdaki
+        <code>contribution</code> alanından öğrenir.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Tür</th>
+              <th>Nerede görünür, nasıl açılır</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>collectionTabs</code></td>
+              <td>
+                Her koleksiyonda, uygulamanın kendi sekmelerinden sonra bir sekme; görünümlerde de. Çerçeve
+                sekmeyi doldurur. <code>place</code> o koleksiyondur ve kullanıcının Belgeler'de kurduğu
+                <code>filter</code> değerini taşır. Sayfa, sekme her gösterildiğinde yeniden yüklenir;
+                <code>ui.keepOpen</code> ile kalmayı istediyse o koleksiyon sekmesinin başka bir bölümü
+                gösterilirken yüklü kalır (görünmezken okuyabilir ama bir şey yapamaz:
+                <code>not_visible</code>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>documentActions</code></td>
+              <td>
+                Belgeler'de bir belgenin işlemler menüsünde bir öğe; yalnızca <code>documents:read</code> için
+                onaylanmış bir eklentide gösterilir. Sayfayı bir pencerede açar; <code>place.documentId</code> o
+                belgenin <code>_id</code> değeridir. Eklenti bir sorgu ya da pipeline yerleştirdiğinde
+                (<code>ui.useQuery</code>, <code>ui.useQueryIn</code>, <code>ui.useAggregation</code>) pencere kapanır.
+              </td>
+            </tr>
+            <tr>
+              <td><code>sidebarPanels</code></td>
+              <td>
+                Kenar çubuğunda, kendine ait bir sayfa açan bir öğe:
+                <code>/plugin/&lt;id&gt;/&lt;katkı&gt;</code> adresinde bir çalışma alanı sekmesi. Bir
+                koleksiyonun sekmesi etkinken tıklanırsa sayfa o koleksiyonda açılır
+                (<code>/plugin/&lt;id&gt;/&lt;katkı&gt;/&lt;bağlantı&gt;/&lt;veritabanı&gt;/&lt;koleksiyon&gt;</code>)
+                ve <code>place</code> onu belirtir; başka bir yerden açılırsa <code>place</code> değeri
+                <code>null</code> olur. Bir bağlantıdan açılan sayfa, o koleksiyonu okumadan önce kullanıcıya
+                sorar; kullanıcı koleksiyonsuz da devam edebilir. Başka bir sekme gösterilirken sayfa yüklü
+                kalır; görünmez durumdayken okuyabilir ama eylemde bulunamaz (<code>not_visible</code>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>cellRenderers</code></td>
+              <td>
+                Belgeler'in değerleri gösterdiği her yerde (tablo, ağaç, kartlar, belge denetçisi, değişiklik
+                akışı ayrıntıları) değerler hakkında kısa bir metin; örneğin bir ObjectId'nin oluşturulduğu
+                tarih: değerin yanında (<code>"display": "inline"</code>, varsayılan) ya da hücresinin veya
+                satırının üzerine gelindiğinde ya da odaklanıldığında açılan bir araç ipucunda (<code
+                  >"display": "tooltip"</code
+                >), değerin tamamının altında ve eklentinin adıyla. Araç ipucundaki metin düzdür,
+                <code>tone</code> kullanılmaz; ekran okuyucu onu değerle birlikte okur. Bir eklenti bir değerin
+                yanında bir, araç ipucunda bir metin söyler: her yer için yanıt veren ilk işleyicisi. Sayfa
+                gizli bir çerçevede, eklenti başına bir tane olarak ve yalnızca <code>documents:read</code> için
+                onaylanmış bir eklentide çalışır; kendini hiç göstermez. <code>match</code>,
+                <code>geojson</code>, <code>string</code>, <code>number</code>, <code>date</code>,
+                <code>object</code>, <code>objectId</code>, <code>binary</code> (UUID değil) değerlerinden
+                biridir. Bkz. <a href="#cells">Hücre işleyicileri</a>.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="cells">Hücre işleyicileri</h3>
+      <p>
+        Uygulama gizli çerçeveye gösterdiği değerleri en fazla 200'lük gruplar hâlinde, bir
+        <code>cells.render</code> mesajıyla sorar. Kit ile <code>client.onCells</code> üzerinden yanıtlayın:
+      </p>
+      <pre><code>client.onCells((renderer, values, locale, paths, place) =&gt;
+  values.map((v) =&gt; (typeof v?.$oid === 'string' ? { text: createdAt(v.$oid, locale), tone: 'info' } : null)),
+)</code></pre>
+      <ul>
+        <li>
+          <code>renderer</code> katkının kimliği, <code>values</code> kanonik Extended JSON olarak değerler,
+          <code>locale</code> uygulamanın dili, <code>paths</code> her değerin alan yolu (ya da
+          <code>null</code>), <code>place</code> değerlerin geldiği koleksiyondur (ya da <code>null</code>).
+        </li>
+        <li>
+          Bir <code>binary</code> değer asla bütünüyle değil, yalnızca başıyla gönderilir:
+          <code>{ "$binaryHead": { "base64", "subType", "length" } }</code>, ilk 2.048 baytıyla — bir görselin
+          türünü ve boyutunu anlamaya yeter.
+        </li>
+        <li>
+          Her değer için sırasıyla bir öğe döndürün: <code>{ "text", "tone" }</code>, metin yoksa
+          <code>null</code>, daha sonra yeniden sorulmak için <code>{ "retry": true }</code>. Uzunluğu farklı
+          bir liste yok sayılır.
+        </li>
+        <li>
+          Metin düz metin olarak gösterilir: değerin yanında en fazla 80, ipucunda en fazla 200 karakter;
+          denetim ve gizli karakterler çıkarılır.
+          <code>tone</code>, <code>neutral</code>, <code>info</code>, <code>success</code>,
+          <code>warning</code>, <code>danger</code> değerlerinden biridir.
+        </li>
+        <li>
+          Yanıt 3 saniye içinde gelmelidir; gelmezse düz değer kalır ve değer 30 saniye sonra yeniden sorulur.
+          Yanıtlar değer, dil ve eklentinin ayarları başına saklanır: ayarları değişince yeniden sorulur, bir
+          dakikadan eski bir yanıt da değeri bir sonraki gösterilişinde yeniden sorulur; eski yanıt yenisi
+          gelene dek (yeniden sorma başarısız olursa da) kalır. Bir <code>binary</code> değerin yanıtı
+          uzunluğu, alt türü ve başının bir özetiyle saklanır.
+        </li>
+        <li>
+          Bir hücre işleyicisi yanıt vermeden önce okuyabilir (örneğin başka belgelere referanslar): kendisine
+          verilen <code>place</code> değerini isteğinde geçirir, <code>{ place, filter, ... }</code>, ve
+          yalnızca orada okuyabilir. Bağlamındaki <code>place</code> değeri <code>null</code> olur.
+        </li>
+      </ul>
+
+      <h2 id="context">Bağlam</h2>
+      <p>
+        <code>context.get</code>, sayfanın nerede olduğunu ve nasıl görünmesi gerektiğini yanıtlar. İlk önce
+        onu çağırın; bir koleksiyon açıksa uygulama onun bir görünüm olup olmadığını denetlerken yanıt 3
+        saniyeye kadar sürebilir.
+      </p>
+      <pre><code>{
+  "plugin": { "id": "hello-documents", "version": "0.1.0" },
+  "contribution": { "kind": "collectionTab", "id": "list" },
+  "locale": "tr",
+  "theme": "dark",
+  "accent": "emerald",
+  "place": {
+    "connectionId": "6650...",
+    "connectionName": "Üretim",
+    "db": "shop",
+    "coll": "orders",
+    "view": false,
+    "documentId": null,
+    "filter": { "status": "open" }
+  },
+  "settings": { "tileUrl": "https://tile.example.org/{z}/{x}/{y}.png" }
+}</code></pre>
+      <ul>
+        <li>
+          <code>kind</code>: <code>collectionTab</code>, <code>documentAction</code>,
+          <code>sidebarPanel</code> ya da <code>cellRenderer</code>.
+        </li>
+        <li><code>locale</code>: uygulamanın dili, <code>en</code>, <code>tr</code>, <code>zh</code>, <code>ja</code>, <code>es</code>, <code>pt</code>, <code>ko</code>, <code>de</code>, <code>fr</code>, <code>ru</code>.</li>
+        <li><code>theme</code>: <code>light</code> ya da <code>dark</code>.</li>
+        <li>
+          <code>accent</code>: kullanıcının vurgu rengi; <code>emerald</code>, <code>indigo</code>,
+          <code>violet</code>, <code>ocean</code> ya da <code>rose</code>. Başka bir değeri
+          <code>emerald</code> sayın.
+        </li>
+        <li>
+          Sayfa hiçbir koleksiyonda açılmadıysa (bir kenar çubuğu sayfası, bir hücre işleyicisi)
+          <code>place</code> değeri <code>null</code> olur. <code>connectionName</code>
+          <code>null</code> olabilir. <code>view</code>, bir görünüm için true'dur: okunabilir, asla yazılamaz
+          ve indeksi yoktur. <code>documentId</code>, bir belge eyleminin belgesidir (kanonik Extended JSON),
+          yoksa <code>null</code>. <code>filter</code>, bir koleksiyon sekmesi için Belgeler filtresi, yoksa
+          <code>{}</code> olur. İkisi de veridir: <code>documents:read</code> izni olmayan bir eklenti
+          <code>null</code> ve <code>{}</code> alır.
+        </li>
+        <li>
+          <code>hidden</code>, kişisel veri kurallarının koleksiyonda kullanıcıdan gizlediği alan yollarını
+          anahtar listeleri olarak verir (<code>[["contact", "phone"]]</code>; <code>"*"</code> tek bir
+          anahtar, <code>"**"</code> her derinlikte istenen sayıda anahtar) — yalnızca adlar,
+          <code>documents:read</code> izni olan bir eklenti için; aksi hâlde <code>[]</code>; uygulama
+          zamanında (3 saniye) anlayamadığında <code>null</code>. Böyle bir alanın değerleri
+          <code>"***"</code> olarak gelir: bunu asla türü sanmayın.
+        </li>
+        <li>
+          <code>settings</code>, bir yöneticinin belirlediği değerleri taşır; belirlenmemiş bir ayar yer
+          almaz.
+        </li>
+      </ul>
+      <p>
+        Kullanıcı dili, temayı ya da vurgu rengini değiştirdiğinde uygulama <code>locale</code>,
+        <code>theme</code> ve <code>accent</code> ile <code>context.changed</code> gönderir (kitte
+        <code>client.onContext</code>). Bunu hemen uygulayın: sayfa hiçbir zaman öteki temayı ya da dili
+        göstermemelidir. Belge okuyabilen bir eklentiye, sayfası yüklüyken Belgeler filtresi değiştiğinde de
+        <code>context.changed</code> gönderilir; <code>ui.keepOpen</code> çağıran bir koleksiyon sekmesi,
+        görünmezken kullanıcının kurduğu her filtreyi böyle öğrenir. Yeni <code>place</code> için
+        <code>context.get</code>'i yeniden sorun.
+      </p>
+
+      <h2 id="bridge">Köprü API'si</h2>
+      <h3 id="protocol">Protokol</h3>
+      <p>
+        Sayfa ile uygulama <code>postMessage</code> ile düz JSON alışverişi yapar. Kit
+        (<code>packages/plugins/kit/src/client.ts</code>) ve şablonun <code>main.js</code> dosyası bunu
+        uygular; kendinizinkini yazacaksanız kurallar şunlardır:
+      </p>
+      <ol>
+        <li>
+          Yalnızca <code>event.source</code> değeri <code>window.parent</code> olan ve <code>mm</code> değeri
+          <code>1</code> olan mesajları okuyun.
+        </li>
+        <li>
+          Sayfa yüklendiğinde uygulama onu selamlar:
+          <code>{ "mm": 1, "type": "hello", "token": "..." }</code>. İlk jetonu (token) saklayın. Ondan önce
+          hiçbir şey göndermeyin.
+        </li>
+        <li>
+          Bir istek
+          <code>{ "mm": 1, "id": 1, "method": "documents.find", "params": { ... }, "token": "..." }</code>
+          biçimindedir ve <code>'*'</code> hedefiyle <code>window.parent</code> üzerine gönderilir (çerçevenin
+          kaynağı opaktır). Kimlik bir sayı ya da en fazla 64 karakterlik bir metindir; uygulama jetonsuz bir
+          isteği yok sayar.
+        </li>
+        <li>
+          Yanıt aynı kimliği taşır: <code>{ "mm": 1, "id": 1, "result": ... }</code> ya da
+          <code>{ "mm": 1, "id": 1, "error": { "code": "...", "message": "..." } }</code>.
+        </li>
+        <li>
+          Kullanıcı değiştirdikçe uygulama
+          <code>{ "mm": 1, "type": "context.changed", "locale", "theme", "accent" }</code> gönderir (<code
+            >documents:read</code
+          >
+          izni olan eklentiye Belgeler filtresi değiştiğinde de); bir hücre işleyicisine de
+          <code>{ "mm": 1, "id": "h1", "method": "cells.render", "params": { ... } }</code> diye sorar ve
+          yanıt <code>{ "mm": 1, "id": "h1", "token", "result": [...] }</code> olur.
+        </li>
+      </ol>
+      <p>
+        Sayfa adresinden ayrılmamalıdır. Başka bir sayfa yüklerse (bir bağlantı, bir form,
+        <code>location</code>
+        değişikliği) uygulama köprüyü kapatır ve çerçeveyi kaldırır; kullanıcının eklentiyi yeniden açması
+        gerekir. Her şeyi tek bir sayfada tutun.
+      </p>
+      <pre><code>import { createClient, askMessage, AskError } from './kit/client'
+
+const client = createClient()                       // istekler 15 sn sonra zaman aşımına uğrar ("timeout")
+client.onContext((locale, theme, accent) =&gt; restyle(locale, theme, accent))
+client.onReady(async () =&gt; {
+  const context = await client.ask('context.get')
+  if (!context.place) return showNoCollection()
+  try {
+    const { documents, hasMore } = await client.ask('documents.find', { filter: context.place.filter, limit: 100 })
+    show(documents, hasMore)
+  } catch (e) {
+    showError(askMessage(e, context.locale))         // uygulamanın kodu, kullanıcının dilinde
+  }
+})</code></pre>
+
+      <h3 id="methods">Yöntemler</h3>
+      <p>
+        Değerler her iki yönde de kanonik Extended JSON'dur: bir ObjectId <code>{ "$oid": "..." }</code>, bir
+        tarih <code>{ "$date": { "$numberLong": "..." } }</code>, bir int
+        <code>{ "$numberInt": "3" }</code> olur. Her okuma kullanıcı olarak, kullanıcının yetkileri ve
+        uygulamanın maskelemesiyle yapılır. "Kendi koleksiyonunda" diye belirtilen yöntemler
+        <code>place</code> içindeki koleksiyonda çalışır, koleksiyon yoksa <code>no_collection</code> ile
+        başarısız olur.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Yöntem ve izin</th>
+              <th>Parametreler → sonuç</th>
+              <th>Kurallar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>context.get</code><br />yok</td>
+              <td>yok → bağlam</td>
+              <td>Bkz. <a href="#context">Bağlam</a>.</td>
+            </tr>
+            <tr>
+              <td><code>documents.find</code><br /><code>documents:read</code></td>
+              <td>
+                <code>{ filter?, projection?, sort?, limit? }</code> → <code>{ documents, hasMore }</code>
+              </td>
+              <td>
+                Kendi koleksiyonunda. <code>limit</code> 1 ile 1000 arası, varsayılan 100. En fazla 10 saniye.
+                Kullanıcının göremediği bir belge dışarıda kalır. Kullanıcının son sorguları arasına girmez.
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.get</code><br /><code>documents:read</code></td>
+              <td><code>{ id }</code> → belge ya da <code>null</code></td>
+              <td>Kendi koleksiyonunda. <code>id</code>, <code>_id</code> değeridir.</td>
+            </tr>
+            <tr>
+              <td><code>documents.aggregate</code><br /><code>documents:read</code></td>
+              <td><code>{ pipeline, limit? }</code> → <code>{ documents, truncated }</code></td>
+              <td>
+                Kendi koleksiyonunda. Yalnızca okuyan aşamalar: <code>$match</code>, <code>$group</code>,
+                <code>$sort</code>, <code>$limit</code>, <code>$skip</code>, <code>$project</code>,
+                <code>$addFields</code>, <code>$set</code>, <code>$unset</code>, <code>$count</code>,
+                <code>$unwind</code>, <code>$sortByCount</code>, <code>$bucket</code>, <code>$bucketAuto</code>,
+                <code>$facet</code> (içinde <code>$facet</code> olmadan), <code>$replaceRoot</code>,
+                <code>$replaceWith</code>, <code>$sample</code>; en fazla 50 aşama.
+                <code>database:read</code> ile aynı veritabanındaki bir koleksiyondan, tam olarak
+                <code>from</code>, <code>localField</code>, <code>foreignField</code> ve <code>as</code> içeren
+                sade bir <code>$lookup</code> da olur. <code>limit</code> 1 ile 1000 arası, varsayılan 100. En
+                fazla 10 saniye, diske taşmadan, aynı anda tek pipeline (<code>busy</code>: kitteki
+                <code>serialAsk</code> onları sıraya koyar).
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.update</code><br /><code>documents:write</code></td>
+              <td><code>{ id, set?, unset? }</code> → <code>{ modified }</code></td>
+              <td>
+                Kendi koleksiyonunda, yalnızca görünürken ve yalnızca eklentinin sayfasındaki bir tıklamanın
+                hemen ardından. <code>set</code> alan ve değerlerden oluşan bir nesne, <code>unset</code> alan
+                adlarından oluşan bir listedir; en az bir değişiklik olmalıdır; denetim, satır sonu ya da yön
+                karakteri içeren bir alan adı reddedilir (<code>bad_params</code>). Uygulama sorunun ilk
+                satırında değişen her alanı tırnak içinde, ardından değişikliğin tamamını, her gizli ya da
+                görünmez karakteri açıkça yazarak kullanıcıya gösterir ve yalnızca kullanıcı kabul ederse
+                uygular; Onayla düğmesi bir tıklamayı ancak hiçbir basışın olmadığı kısa bir sürenin ardından,
+                işaretçi üzerine geldikten sonra alır. Bir görünümde (<code>read_only</code>), gösterilemeyecek
+                kadar uzun bir değişiklikte (2000 karakterden uzun: <code>too_large</code>), başka bir soru
+                beklerken (<code>busy</code>) ve kullanıcı iki kez reddettikten sonra (<code>blocked</code>,
+                eklenti yeniden açılana dek) reddedilir. Ret <code>declined</code> olarak döner.
+              </td>
+            </tr>
+            <tr>
+              <td><code>indexes.list</code><br /><code>collection:read</code></td>
+              <td><code>{ coll? }</code> → <code>[{ name, key, options, usage }]</code></td>
+              <td>
+                Kendi koleksiyonunda ya da veritabanının başka bir koleksiyonunda (<code>coll</code>;
+                <code>collections.list</code>'in adlandırdığı biri), ki bu ayrıca
+                <code>database:read</code> ister. Görünümün indeksi yoktur: <code>[]</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>collections.list</code><br /><code>database:read</code></td>
+              <td>yok → <code>[{ name, type }]</code></td>
+              <td>
+                Kendi veritabanının koleksiyonları ve görünümleri; <code>system.</code> ile başlayanlar hariç,
+                en fazla 500, 30 saniye saklanır.
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.findIn</code><br /><code>database:read</code></td>
+              <td><code>{ coll, filter?, projection?, limit? }</code> → <code>{ documents }</code></td>
+              <td>
+                Aynı veritabanındaki, <code>collections.list</code> tarafından listelenen başka bir koleksiyon.
+                <code>limit</code> 1 ile 200 arası, varsayılan 50. En fazla 10 saniye.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.toast</code><br />yok</td>
+              <td><code>{ message, kind? }</code> → <code>true</code></td>
+              <td>
+                Uygulamada, eklentinin adı ve kimliğinden sonra kısa bir bildirim. <code>kind</code>:
+                <code>info</code> (varsayılan), <code>success</code> ya da <code>error</code>. Denetim, yön ve
+                görünmez karakterler çıkarılarak en fazla 200 karakter gösterilir; dakikada en fazla 5 mesaj,
+                <code>ui.copy</code> ile ortak. Yalnızca görünürken.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.openDocument</code><br />yok</td>
+              <td><code>{ id }</code> → <code>true</code></td>
+              <td>
+                Kendi koleksiyonunda, yalnızca görünürken. O belgeyi Belgeler'de gösterir. <code>id</code> bir
+                <code>_id</code> değeri olmalıdır, asla bir sorgu değil. Yalnızca eklentinin sayfasındaki bir
+                tıklamanın hemen ardından; dakikada en fazla 30.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.resize</code><br />yok</td>
+              <td><code>{ height }</code> → <code>true</code></td>
+              <td>Çerçevenin piksel cinsinden yüksekliği, 80 ile 2000 arasında tutulur.</td>
+            </tr>
+            <tr>
+              <td><code>ui.keepOpen</code><br />yok</td>
+              <td>– → <code>true</code> / <code>false</code></td>
+              <td>
+                Bir koleksiyon sekmesinin sayfası, başka bir bölüm gösterilirken yüklü kalır (başka her yerde
+                <code>false</code>). Yalnızca sayfa <code>context.changed</code> geldiğinde
+                <code>context.get</code>'i yeniden okuyorsa isteyin; görünmezken okuyabilir ama bir şey yapamaz.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.copy</code><br />yok</td>
+              <td><code>{ text }</code> → <code>true</code></td>
+              <td>
+                Metni (en fazla 100.000 karakter) panoya kopyalar. Yalnızca sayfasındaki bir tıklamanın hemen
+                ardından; dakikada en fazla 5, <code>ui.toast</code> ile ortak.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useQuery</code><br />yok</td>
+              <td><code>{ filter?, projection?, sort? }</code> → <code>true</code></td>
+              <td>
+                Kendi koleksiyonunda. Sorguyu koleksiyonun sekmesindeki Belgeler'e, kullanıcı yazmış gibi koyar.
+                Yalnızca sayfasındaki bir tıklamanın hemen ardından; dakikada en fazla 10, diğer
+                <code>ui.use…</code> ve SQL yöntemleriyle ortak.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useQueryIn</code><br /><code>database:read</code></td>
+              <td><code>{ coll, filter?, projection?, sort? }</code> → <code>true</code></td>
+              <td>
+                Veritabanının <code>collections.list</code> ile verilen başka bir koleksiyonunda. Sorguyu o
+                koleksiyonun sekmesindeki Belgeler'e koyar; <code>ui.useQuery</code>'nin kendi koleksiyonunda
+                yaptığı gibi (Referanslar, bir belgeye başvuran belgeleri göstermek için kullanır); sekme onu
+                kullanıcının yazdığı bir sorgu gibi çalıştırır. Bir seferde bir tane (biri yerine konurken
+                <code>busy</code>), sayfası görünürken ve yalnızca sayfasındaki bir tıklamanın hemen ardından;
+                dakikada en fazla 10, diğer <code>ui.use…</code> ve SQL yöntemleriyle ortak.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.suggestPersonalData</code><br /><code>documents:read</code></td>
+              <td><code>{ fields: string[] }</code> → <code>true</code></td>
+              <td>
+                Koleksiyonunun kişisel veri olarak önerilen alanları: düz adlardan oluşan 1 ile 50 arası yol
+                (<code>contact.phone</code>; <code>*</code> yok, <code>$</code> ile başlayan anahtar yok).
+                Hiçbir şey kaydedilmez: koleksiyonun Kişisel veriler bölümü, eklentinin adıyla listelenmiş bu
+                alanlarla açılır; yalnızca koleksiyonun bir örneğinin taşıdıklarını sunar ve bir yönetici her
+                birini orada (ya da hepsini tek bir kayıtla) ekler. Adlarda gizli karakter ya da baştaki/sondaki
+                boşluk olmaz; bağlantının yöneticileri için, bir koleksiyonda (görünümde ve
+                <code>system.*</code> içinde değil), yalnızca sayfasındaki bir tıklamanın hemen ardından;
+                <code>ui.use…</code>
+                yöntemleriyle birlikte sayılır.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useAggregation</code><br />yok</td>
+              <td><code>{ stages }</code> → <code>true</code></td>
+              <td>
+                Kendi koleksiyonunda. Aşamaları Aggregations sekmesine kartlar olarak koyar; orada bir pipeline
+                varsa değiştirmeden önce kullanıcıya sorar; kullanıcı çalıştırana dek hiçbir şey çalışmaz. En
+                fazla 50 aşama; yazan ya da kod çalıştıranlar dışında her aşama. Yalnızca bir tıklamanın hemen
+                ardından;
+                <code>declined</code>, <code>busy</code> ve <code>blocked</code>, <code>documents.update</code>
+                ile aynıdır.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.importSql</code><br />yok</td>
+              <td>yok → <code>true</code></td>
+              <td>
+                Kendi koleksiyonunda. Uygulamanın <a href="import-export.html#sql">SQL ↔ MongoDB</a> sayfasını
+                içe aktarma bölümünde, koleksiyonun veritabanında açar. Eklenti bir şey iletmez ve içe
+                aktarmadan bir şey görmez; dosyayı kullanıcı seçer ve başlatır. Yalnızca bir tıklamanın hemen
+                ardından; kullanıcının orada belge yazma ve iş çalıştırma yetkisi yoksa ya da bu bir sistem
+                veritabanıysa <code>not_permitted</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.exportSql</code><br />yok</td>
+              <td>yok → <code>true</code></td>
+              <td>
+                Kendi koleksiyonunda. Uygulamanın <a href="import-export.html#sql">SQL ↔ MongoDB</a> sayfasını
+                dışa aktarma bölümünde, koleksiyonun veritabanında ve o koleksiyon seçili olarak açar.
+                Seçenekleri kullanıcı belirler ve başlatır. Yalnızca sayfasındaki bir tıklamanın hemen ardından;
+                kullanıcı bu bağlantıdan dışa aktaramıyorsa <code>not_permitted</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>validation.get</code><br /><code>collection:read</code></td>
+              <td>
+                <code>{ coll? }</code> → <code>{ validator, validationLevel, validationAction }</code> ya da
+                <code>null</code>
+              </td>
+              <td>
+                Koleksiyonun doğrulama kuralları, Doğrulama bölümünün okuduğu gibi (kuralı yoksa
+                <code>validator</code> <code>null</code> olur); bir görünüm için <code>null</code>.
+                Veritabanının başka bir koleksiyonu (<code>coll</code>) ayrıca <code>database:read</code> ister.
+                Bir kuralın kullanıcıdan gizlenen bir alan için söyledikleri (türü, deseni, sınırları) çıkarılır
+                — şeması <code>{}</code> olur, onu adlandıran bir sorgu kuralı ya da <code>$expr</code> atılır —
+                adı ise kalır (örneğin <code>required</code> içinde); neyin gizlendiği anlaşılamazsa
+                <code>failed</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>database.model</code><br /><code>database:read</code></td>
+              <td>yok → veri modeli</td>
+              <td>
+                Veritabanının, Veritabanı sekmesinin çizdiği modeli:
+                <code>{ db, sampleSize, collections, references, skipped, at }</code> — her koleksiyonun
+                alanları türleri ve oranlarıyla (kullanıcıdan gizlenen bir alan yalnızca adıyla,
+                <code>masked: true</code>, türsüz), koleksiyonlar arasında bulunan referanslar. Koleksiyon
+                başına en fazla 200 örnek belge. Çerçeve için tek okuma, 60 saniye saklanır; o sürerken gelen
+                istekler onu paylaşır (90 saniyeye kadar: sunucu bir modeli 60 saniyede bitirir), başarısız olan
+                saklanmaz.
+              </td>
+            </tr>
+            <tr>
+              <td><code>storage.stats</code><br /><code>database:read</code></td>
+              <td>yok → <code>{ collections, more }</code></td>
+              <td>
+                Veritabanının depolaması, Depolama raporunun okuduğu gibi: her koleksiyonun
+                <code
+                  >{ name, type, count, size, storageSize, freeBytes, indexSize, indexFreeBytes, indexes }</code
+                >
+                değerleri (her indeksin <code>{ name, size, freeBytes }</code> değerleri), ada göre en fazla 500
+                (daha fazlası varsa <code>more</code>). MongoDB'nin söylemediği bir değer <code>null</code> olur
+                (<code>unread</code>); kişisel veri kurallarının gizlediği boyutlar da öyle
+                (<code>sizesHidden</code>). Bir okuma, her çerçeve için veritabanı başına 30 saniye tutulur ve
+                orada bir compact yapılınca unutulur.
+              </td>
+            </tr>
+            <tr>
+              <td><code>storage.compactEstimate</code><br /><code>collection:read</code></td>
+              <td>
+                <code>{ coll? }</code> → <code>{ available, estimatedBytes }</code> ya da
+                <code>{ available: false, reason }</code>
+              </td>
+              <td>
+                <code>compact</code>'ın geri kazandıracağı yer (MongoDB 8.0 ve sonrası); kendi koleksiyonu için
+                ya da <code>database:read</code> ile veritabanının başka bir koleksiyonu için.
+                <code>reason</code>: <code>version</code>, <code>mongos</code> ya da <code>timeseries</code>;
+                bir görünümde <code>read_only</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.compact</code><br /><code>collection:read</code></td>
+              <td><code>{ coll? }</code> → <code>{ bytesFreed }</code></td>
+              <td>
+                Koleksiyonu uygulamanın kendi penceresinde sıkıştırır; pencere eklentiyi ve koleksiyonu
+                adlandırır ve yalnızca kullanıcı koleksiyonun adını yazınca çalışır. Veritabanlarını yönetebilen
+                bir kullanıcı için, salt okunur olmayan bir bağlantıda; zaman serisi, görünüm ya da kişisel veri
+                kurallarının uzandığı bir koleksiyonda asla; bir koleksiyonda aynı anda tek compact
+                (<code>busy</code>). Yalnızca sayfasındaki bir tıklamanın hemen ardından;
+                <code>ui.use…</code> yöntemleriyle birlikte sayılır; kullanıcı devam etmezse
+                <code>declined</code> ya da <code>unanswered</code>, iki hayırdan sonra <code>blocked</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>shardKey.analyze</code><br /><code>documents:read</code></td>
+              <td><code>{ key }</code> → çözümleme ya da <code>{ available: false, reason }</code></td>
+              <td>
+                Aday bir parça anahtarının özellikleri (<code>analyzeShardKey</code>): <code>key</code> bir ile
+                beş arası alandır, her biri <code>1</code> ya da <code>"hashed"</code> (en fazla bir tane).
+                <code
+                  >{ numDocsTotal, numDocsSampled, numDistinctValues, avgDocSizeBytes, isUnique,
+                  mostCommonValues, monotonicity }</code
+                >
+                döner — sık değerleri veridir, kanonik Extended JSON olarak; <code>reason</code>:
+                <code>version</code>, <code>standalone</code> ya da <code>no_index</code>. Bir görünümde
+                <code>read_only</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>searchIndexes.list</code><br /><code>collection:read</code></td>
+              <td>yok → <code>{ supported, reason?, indexes }</code></td>
+              <td>
+                Koleksiyonun arama indeksleri (Atlas Search, vektör araması): her biri
+                <code>{ name, type, status, queryable, dynamic, fields }</code>, bir alan
+                <code>{ path, type, numDimensions?, similarity? }</code>. Kullanıcıdan gizlenen bir alan,
+                <code>validation.get</code>'te olduğu gibi dışarıda kalır; gizlenenler öğrenilemezse
+                <code>failed</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.download</code><br />yok</td>
+              <td><code>{ name, type, text? | base64? | html? }</code> → <code>true</code></td>
+              <td>
+                Eklentinin ürettiği bir dosyayı uygulama kaydeder (çerçeve indirme yapamaz). <code>type</code>,
+                <code>markdown</code>, <code>mermaid</code>, <code>csv</code>, <code>json</code>,
+                <code>text</code> (<code>text</code> ile), <code>png</code> (<code>base64</code> ile; bir PNG
+                olmalıdır) ya da <code>html</code> (<code>{ title, css, body }</code> ile) olur: sayfayı
+                uygulama kurar — önce betik çalıştırmayan ve hiçbir şey yüklemeyen bir politika, metin olarak
+                başlık (en fazla 200 karakter), işaretleme, kaçış (<code>\</code>), <code>@import</code>,
+                <code>@font-face</code>, görsel kümesi, <code>src()</code>, ifade ya da
+                <code>data:</code> dışında adres içeremeyen bir stil ve yapısal öğelerden oluşan bir izin
+                listesinden geçirilmiş gövde (betik, form, çerçeve, görsel, <code>svg</code>, MathML, şablon,
+                <code>#çapa</code> dışında bağlantı, yorum ya da <code>on…</code> niteliği yok). Metin, stil ve
+                gövdenin her biri en fazla 1.000.000 karakterdir. Bir CSV'de formül gibi başlayan bir hücre
+                (<code>=</code>, <code>+</code>, <code>-</code>, <code>@</code>, sekme ya da satır başı ile
+                başlayan ve sayı olmayan) başına <code>'</code> eklenerek yazılır. Ad her türlü yolu, ayrılmış
+                aygıt adını (<code>CON</code>, <code>COM¹</code>, <code>CONIN$</code>…), gizli ya da ters
+                çeviren karakterleri ve noktalarını (<code>_</code>) kaybeder: tek uzantısı türün uzantısıdır.
+                Yalnızca sayfasındaki bir tıklamanın hemen ardından; <code>ui.use…</code> yöntemleriyle birlikte
+                sayılır; uygulamanın başka bir yerindeki bir basıştan sonra önce sorulur (bkz.
+                <a href="#limits">Sınırlar</a>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.importDocuments</code><br />yok</td>
+              <td><code>{ ndjson }</code> → <code>true</code></td>
+              <td>
+                Kendi koleksiyonunda. Uygulamanın İçe aktarma sihirbazını bu belgeler dosyası olarak açar — her
+                satırda bir JSON nesnesi, en fazla 1.000.000 karakter; mesajın tamamı da JSON olarak en fazla 1
+                MB (içindeki her tırnak ya da ters eğik çizgi iki kez sayılır). Kullanıcı onları kontrol eder,
+                eşler ve içe aktarmayı kendi yetkileriyle başlatır. Yalnızca sayfasındaki bir tıklamanın hemen
+                ardından; <code>ui.use…</code> yöntemleriyle birlikte sayılır; uygulamanın başka bir yerindeki
+                bir basıştan sonra önce sorulur; uygulamada bir iletişim kutusu açıkken <code>busy</code>;
+                kullanıcı orada belge yazamıyor ve iş çalıştıramıyorsa ya da bir sistem veritabanı için
+                <code>not_permitted</code>; bir görünümde <code>read_only</code>.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <code>documents.find</code>, <code>documents.findIn</code> ve <code>ui.useQuery</code> yöntemlerinin
+        filtre, projeksiyon ve sıralamalarında ve <code>documents.aggregate</code> içinde <code>$where</code>,
+        <code>$function</code>, <code>$accumulator</code>, <code>$out</code>, <code>$merge</code>,
+        <code>$lookup</code>, <code>$graphLookup</code> ve <code>$unionWith</code> operatörleri her derinlikte
+        reddedilir (yukarıdaki sade, en üst düzeydeki <code>$lookup</code> hariç).
+        <code>ui.useAggregation</code> aşamaları, kullanıcı onları kendi yetkileriyle çalıştırdığı için başka
+        koleksiyonları okuyabilir; ama asla <code>$where</code>, <code>$function</code>,
+        <code>$accumulator</code>, <code>$out</code> ya da <code>$merge</code> içeremez. Okumalar hemen
+        çalışır; <code>ui.useQuery</code> ve <code>ui.useAggregation</code> ise yalnızca işi kullanıcıya
+        bırakır.
+      </p>
+
+      <h3 id="limits">Sınırlar</h3>
+      <ul>
+        <li>
+          Bir mesaj iki yönde de en fazla 1 MB'tır; daha büyük bir yanıt <code>too_large</code> ile başarısız
+          olur. Daha az belge isteyin ya da daha az alan seçin.
+        </li>
+        <li>Aynı anda en fazla 8 istek bekleyebilir (<code>too_many</code>).</li>
+        <li>
+          Çerçeve başına dakikada en fazla 60 okuma (<code>documents.find</code>, <code>.get</code>,
+          <code>.aggregate</code>, <code>.findIn</code>, <code>collections.list</code>,
+          <code>database.model</code>) ve onlardan ayrı olarak 120 tanım okuması (<code>indexes.list</code>,
+          <code>validation.get</code>): 50 koleksiyonluk bir sözlük bir model ve 100 tanımdır.
+        </li>
+        <li>
+          <strong>Eklentinin sayfasındaki tıklamanın hemen ardından.</strong> <code>ui.copy</code>,
+          <code>ui.useQuery</code>, <code>ui.useAggregation</code>, <code>ui.importSql</code>,
+          <code>ui.exportSql</code>, <code>ui.openDocument</code>, <code>ui.download</code>,
+          <code>ui.importDocuments</code> ve <code>documents.update</code> yalnızca kullanıcının eklentinin
+          kendi sayfasındaki tıklaması ya da tuş basışı tazeyken kabul edilir: odak çerçevede olmalıdır, bu
+          yüzden uygulamanın başka bir yerindeki tıklama hiç sayılmaz. Bunları doğrudan tıklama işleyicisinde,
+          başka bir şeyi beklemeden çağırın; yoksa <code>no_activation</code> ile başarısız olurlar.
+          <code>ui.copy</code>, bir <code>ui.use…</code>, bir SQL sayfası ya da
+          <code>ui.openDocument</code> için her deneme, reddedilsin ya da edilmesin, o yöntemin sınırına
+          sayılır: bir tıklamayı bekleyip tekrar tekrar deneyen eklenti dakikasını tüketir
+          (<code>too_many</code>); <code>documents.update</code> ise aynı anda tek soru ve iki hayır kuralıyla
+          sınırlıdır. Bir çerçeve odağı tıklama olmadan da alabildiği için, uygulamanın başka bir yerindeki
+          bir tıklama ya da tuş basışından sonraki 5 saniye içinde (tarayıcının o basışa tanıdığı etkinlik
+          süresi) istenen bir <code>ui.copy</code>, <code>ui.download</code> ya da
+          <code>ui.importDocuments</code> eklentinin sözüyle yapılmaz: uygulama kullanıcıya eklentiyi ve ne
+          istediğini (kaç karakter olduğunu ve metnin nasıl başladığını, gizli karakterler açıkça yazılarak;
+          dosyanın adını ve boyutunu; hangi koleksiyon için kaç belge olduğunu) gösterip sorar ve kendi
+          <strong>Kopyala</strong>, <strong>Kaydet</strong> ya da <strong>Aç</strong> düğmesine tıklanınca
+          yapar; eklentinin yanıtı bunu bekler (kullanıcı kapatırsa <code>declined</code>, soru yanıtsız
+          kalırsa <code>unanswered</code>, biri beklerken <code>busy</code>). Uygulamanın bir eklenti için
+          sorduğu her soru — bunlar, bir değişiklik, yerine konan aşamalar — üzerinde durulsa bile 150 saniye
+          sonra biter; kit bu istekler için 180 saniye bekler, böylece sayfa kendi zaman aşımını değil
+          uygulamanın yanıtını duyar.
+        </li>
+        <li>
+          <strong>Görünürken.</strong> <code>documents.update</code>, <code>ui.openDocument</code> ve
+          yukarıdaki yöntemler bir hücre işleyicisinden ya da başka bir sekme gösterilirken arka planda kalan
+          bir sayfadan <code>not_visible</code> ile başarısız olur.
+        </li>
+      </ul>
+
+      <h3 id="errors">Hatalar</h3>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Kod</th>
+              <th>Anlamı</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>bad_params</code></td>
+              <td>Bir parametre eksik, yanlış türde, sınır dışında ya da reddedilen bir operatör içeriyor.</td>
+            </tr>
+            <tr>
+              <td><code>not_permitted</code></td>
+              <td>Eklenti bu izin için onaylanmadı ya da kullanıcı bunu yapamaz.</td>
+            </tr>
+            <tr>
+              <td><code>unknown_method</code></td>
+              <td>Böyle bir yöntem yok.</td>
+            </tr>
+            <tr>
+              <td><code>unavailable</code></td>
+              <td>Yöntem bu yerde sunulmuyor.</td>
+            </tr>
+            <tr>
+              <td><code>no_collection</code></td>
+              <td>Sayfa hiçbir koleksiyonda açılmadı.</td>
+            </tr>
+            <tr>
+              <td><code>not_visible</code></td>
+              <td>Çerçeve görünmüyor (bir hücre işleyicisi, arka plandaki bir sayfa).</td>
+            </tr>
+            <tr>
+              <td><code>no_activation</code></td>
+              <td>Eklentinin sayfasındaki bir tıklamanın ya da tuş basışının hemen ardından değil.</td>
+            </tr>
+            <tr>
+              <td><code>too_many</code></td>
+              <td>Bekleyen ya da son bir dakikadaki istekler çok fazla.</td>
+            </tr>
+            <tr>
+              <td><code>too_large</code></td>
+              <td>1 MB'tan büyük bir mesaj ya da kullanıcıya gösterilemeyecek kadar uzun bir değişiklik.</td>
+            </tr>
+            <tr>
+              <td><code>busy</code></td>
+              <td>Bu çerçevenin bir pipeline'ı hâlâ çalışıyor ya da kullanıcıya sorulan bir soru bekliyor.</td>
+            </tr>
+            <tr>
+              <td><code>declined</code></td>
+              <td>Kullanıcı hayır dedi.</td>
+            </tr>
+            <tr>
+              <td><code>unanswered</code></td>
+              <td>
+                Kullanıcı uygulamanın sorusunu zamanında yanıtlamadı; hiçbir şey yapılmadı. Asla hayır sayılmaz.
+              </td>
+            </tr>
+            <tr>
+              <td><code>blocked</code></td>
+              <td>Kullanıcı iki kez hayır dedi; eklentinin yeniden açılması gerekir.</td>
+            </tr>
+            <tr>
+              <td><code>read_only</code></td>
+              <td>Bir görünüm ya da uygulama salt okunur çalışıyor.</td>
+            </tr>
+            <tr>
+              <td><code>not_found</code></td>
+              <td>Böyle bir belge yok.</td>
+            </tr>
+            <tr>
+              <td><code>timeout</code></td>
+              <td>Zamanında yanıt gelmedi (kitin istemcisi 15 saniye sonra verir).</td>
+            </tr>
+            <tr>
+              <td><code>failed</code></td>
+              <td>Diğer her şey; uygulama iç hatalarını asla aktarmaz.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Sunucunun kendi retleri de küçük harfle gelir; örneğin <code>forbidden</code>,
+        <code>conflict</code> (belge bu arada değişti) ya da <code>validation_error</code>. Kitteki
+        <code>askMessage(error, locale)</code>, yaygın kodları okurun dilinde bir cümleye çevirir.
+      </p>
+
+      <h2 id="permissions">İzinler</h2>
+      <p>
+        Yönetici bir eklentiyi, Eklentiler sayfasının adlandırdığı biçimiyle listelediği izinler için onaylar.
+        İhtiyacınız olan en az izni isteyin: her biri, yöneticinin hayır demesi için bir nedendir.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>İzin</th>
+              <th>Yöneticinin okuduğu</th>
+              <th>Neye izin verir</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>documents:read</code></td>
+              <td>belgeleri okuma</td>
+              <td>
+                <code>documents.find</code>, <code>.get</code>, <code>.aggregate</code>; belge eylemleri ve
+                hücre işleyicileri yalnızca bu izinle sunulur.
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents:write</code></td>
+              <td>belgeleri değiştirme (her değişiklik onaylanır)</td>
+              <td>
+                <code>documents.update</code>; her değişikliği kullanıcı onaylar. İstenmesi her zaman kendi
+                başına orta bir tarama bulgusudur.
+              </td>
+            </tr>
+            <tr>
+              <td><code>collection:read</code></td>
+              <td>bu koleksiyonun indekslerini okuma</td>
+              <td><code>indexes.list</code>.</td>
+            </tr>
+            <tr>
+              <td><code>database:read</code></td>
+              <td>aynı veritabanındaki diğer koleksiyonları okuma (adlar ve belgeler)</td>
+              <td>
+                <code>collections.list</code>, <code>documents.findIn</code>, sade bir <code>$lookup</code>.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Hiç izni olmayan bir eklenti de bir sayfa gösterebilir, bağlamını ve ayarlarını okuyabilir ve
+        <code>ui.*</code> yöntemlerini kullanabilir. Bir izin asla kullanıcının kendi yetkisinden fazlası
+        değildir: bir koleksiyonu okuyamayan kullanıcı onu bir eklenti aracılığıyla da okuyamaz.
+      </p>
+
+      <h2 id="sandbox">Korumalı alan</h2>
+      <p>
+        Sayfa <code>sandbox="allow-scripts"</code> özellikli bir <code>iframe</code> içinde, eklentiyi,
+        sürümünü, onaylanmış dosyalarını ve kullanıcının oturumunu (mühürlü olarak) belirten imzalı bir
+        adresten yüklenir (bir bilet: sayfa 10 dakika içinde, diğer dosyaları o oturum sürdükçe, en fazla 12
+        saat yüklenebilir — başka bir sekmedeki oturum açma ya da parola değişikliğiyle yerinde yenilenen
+        oturum izlenir; oturum kapanınca adres artık hiçbir şey sunmaz ve tarayıcı dosyalarından hiçbirini
+        saklamaz). Sunulan her dosya onaylanmış SHA-256 değerine göre denetlenir. Politikası
+        (Content-Security-Policy), <code>X-DNS-Prefetch-Control: off</code> ile:
+      </p>
+      <pre><code>default-src 'none'; script-src &lt;kendi dosyaları&gt;; style-src &lt;kendi dosyaları&gt;;
+img-src &lt;kendi dosyaları&gt; data: blob: &lt;url ayarlarının kaynakları&gt;; font-src &lt;kendi dosyaları&gt;;
+connect-src 'none'; webrtc 'block'; frame-ancestors 'self'; base-uri 'none'; form-action 'none';
+sandbox allow-scripts</code></pre>
+      <p>Bunun kodunuz için anlamı:</p>
+      <ul>
+        <li>
+          <strong>Hiç ağ yok.</strong> Eklentinin kendi dosyaları da dahil hiçbir adrese istek yapılamaz:
+          verileri yükleyeceğiniz bir <code>.json</code> dosyası yerine bir betik modülüne
+          (<code>data.js</code>) koyun. WebRTC ve önceden yükleme ipuçlarını da kullanmayın: her tarayıcı
+          bunları engellemez ve tarama onları yüksek risk olarak işaretler.
+        </li>
+        <li>
+          <strong>Satır içi kod ya da stil yok.</strong> Betikler ve stiller yalnızca eklentinin dosyalarından
+          gelir. Satır içi <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code> öğesi, stil özniteliği,
+          satır içi olay işleyicisi ya da <code>eval</code> olmaz. Betikte bir özellik atamak (<code
+            >el.style.width = '40px'</code
+          >) çalışır.
+        </li>
+        <li>
+          <strong>Opak bir kaynak.</strong> Çerez, <code>localStorage</code> ve IndexedDB yok: başarısız
+          olurlar. Durumu bellekte tutun; yöneticinin seçtiği ayarlar manifestteki <code>settings</code>
+          alanından gelir.
+        </li>
+        <li>
+          <strong>Açılır pencere, iletişim kutusu, form ya da indirme yok.</strong> <code>window.open</code>,
+          <code>alert</code>, <code>confirm</code> ve form gönderme hiçbir şey yapmaz. Kopyalamak için
+          <code>ui.copy</code> kullanın; dosyaları kullanıcıya uygulamanın kendi içe ve dışa aktarmasıyla
+          verin.
+        </li>
+        <li>
+          <strong>Uygulamaya erişim yok.</strong> Sayfa uygulamanın sayfasını, oturumunu ya da depolamasını
+          okuyamaz. Onunla yalnızca mesaj alışverişi yapar.
+        </li>
+        <li>
+          <strong>Yazı tipleri ve resimler kendi dosyalarıdır</strong> (ya da <code>data:</code> ve
+          <code>blob:</code> resimler).
+        </li>
+      </ul>
+
+      <h2 id="scan">Güvenlik taraması</h2>
+      <p>
+        Her eklentinin dosyaları, bulunduğunda ya da kurulduğunda, bir yönetici onaylamadan önce taranır.
+        Tarama betik (<code>.js</code>, <code>.mjs</code>, <code>.cjs</code>), işaretleme (<code>.html</code>,
+        <code>.htm</code>, <code>.svg</code>) ve stil (<code>.css</code>) dosyalarını yorumlar dahil satır
+        satır okur ve her bulguyu önem derecesi, kuralı, dosyası, satırı ve bir alıntıyla listeler. İşaretleme
+        dosyaları ayrıca bütün olarak da okunur; böylece birkaç satıra yayılan bir
+        <code>&lt;script&gt;</code> etiketi ya da satır içi olay işleyicisi de bulunur. Eklentiye paketlenmiş
+        kütüphaneler de sizin kodunuz gibi taranır. Tarama sezgiseldir: metinde bilinen kalıpları arar; bu
+        yüzden ondan gizlenmek için yazılmış kod (örneğin parçalardan kurulan bir ad) bulunmaz — temiz bir
+        tarama kanıt değildir. <strong>Yüksek</strong> bulgusu olan bir eklenti, ancak yönetici riski kabul
+        ettiğini göstermek için eklentinin kimliğini yazdıktan sonra onaylanabilir; bunu sunucu uygular ve
+        denetim kaydı taramanın sayılarını ve bir riskin kabul edilip edilmediğini yazar. Her yüksek bulgudan
+        kaçının ve orta bulguları açıklayabileceklerinizle sınırlı tutun.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Önem</th>
+              <th>Kural</th>
+              <th>Neyi işaretler</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>yüksek</td>
+              <td><code>code-from-text</code></td>
+              <td>
+                <code>eval(</code> (<code>eval?.(</code> de), dolaylı yoldan ulaşılan <code>eval</code> (<code
+                  >(0, eval)(…)</code
+                >, <code>['eval']</code>), doğrudan ya da <code>new</code> ile çağrılan
+                <code>Function(</code> (<code>window.Function(</code>, <code>self.</code>, <code>globalThis.</code> ya da <code>global.Function(</code>, <code>['Function']</code>, <code>Function.call(</code>, <code>.apply(</code> ya da <code>.bind(</code>, <code>Reflect.apply(Function</code> ya da <code>Reflect.construct(Function</code> da işaretlenir; başka bir nesnenin <code>.Function(</code> metodu işaretlenmez) ve
+                metinle çağrılan <code>setTimeout</code> ya da <code>setInterval</code>.
+              </td>
+            </tr>
+            <tr>
+              <td>yüksek</td>
+              <td><code>html-injection</code></td>
+              <td>
+                <code>.innerHTML</code> ve <code>.outerHTML</code> değerine atama (<code>=</code>) ya da ekleme
+                (<code>+=</code>), köşeli parantezle yazıldığında da (<code>['innerHTML'] =</code>);
+                <code>insertAdjacentHTML(</code>, <code>document.write(</code> ve
+                <code>document.writeln(</code> (<code>?.(</code> ile çağrıldığında da);
+                <code>createContextualFragment(</code>; <code>setHTMLUnsafe(</code>.
+                <code>innerHTML ===</code> gibi bir karşılaştırma işaretlenmez.
+              </td>
+            </tr>
+            <tr>
+              <td>yüksek</td>
+              <td><code>remote-code</code></td>
+              <td>
+                <code>src</code> değeri <code>http</code> ya da <code>//</code> ile başlayan bir
+                <code>&lt;script&gt;</code>, etiket birkaç satıra yayıldığında da; bir
+                <code>import("http…")</code>; durağan bir <code>import … from "https://…"</code> ya da
+                <code>import "//…"</code>; bir <code>export … from "https://…"</code>;
+                <code>importScripts(</code>; ve böyle bir adresin CSS <code>@import</code> ile yüklenmesi.
+              </td>
+            </tr>
+            <tr>
+              <td>yüksek</td>
+              <td><code>escape-attempt</code></td>
+              <td>
+                <code>parent.document</code>, <code>parent.location</code>, <code>top.document</code>,
+                <code>top.location</code>, <code>window.opener</code>, <code>self.opener</code>,
+                <code>globalThis.opener</code>, <code>opener.document</code>, <code>opener.location</code>,
+                <code>opener.postMessage</code>, <code>frameElement</code>. <code>opener</code> adlı bir
+                değişken işaretlenmez.
+              </td>
+            </tr>
+            <tr>
+              <td>yüksek</td>
+              <td><code>packed-code</code></td>
+              <td><code>eval(atob(</code> ya da <code>Function(atob(</code>.</td>
+            </tr>
+            <tr>
+              <td>yüksek</td>
+              <td><code>webrtc</code></td>
+              <td>
+                <code>RTCPeerConnection</code> (ayrıca <code>webkitRTCPeerConnection</code>,
+                <code>mozRTCPeerConnection</code>) ve <code>RTCDataChannel</code> sözcükleri. Bir eş bağlantısı
+                <code>connect-src 'none'</code> kuralını aşarak dışarı ulaşır; çerçevenin
+                <code>webrtc 'block'</code> yönergesi onu yalnız bu yönergeyi tanıyan tarayıcılarda durdurur.
+              </td>
+            </tr>
+            <tr>
+              <td>yüksek</td>
+              <td><code>prefetch-hint</code></td>
+              <td>
+                Her yerde <code>dns-prefetch</code>; bir bağlantının <code>rel</code> değeri olarak
+                <code>preconnect</code>, <code>prefetch</code> ya da <code>prerender</code> (işaretlemede,
+                <code>.rel =</code>, <code>setAttribute('rel', …)</code> ya da <code>relList.add(…)</code>
+                olarak). Önceden çözülen bir ad, hiçbir politikanın görmediği bir istektir: veri bu adın içinde
+                taşınabilir.
+              </td>
+            </tr>
+            <tr>
+              <td>orta</td>
+              <td><code>network</code></td>
+              <td>
+                Genel <code>fetch(</code> (<code>window.fetch(</code>, <code>self.fetch(</code> ya da
+                <code>globalThis.fetch(</code> olarak da; başka bir nesnenin <code>.fetch(</code> metodu
+                işaretlenmez) ile <code>XMLHttpRequest</code>, <code>WebSocket</code>, <code>EventSource</code>,
+                <code>sendBeacon</code> sözcükleri. Korumalı alan bunların hepsini engeller; bulgu niyeti
+                gösterir.
+              </td>
+            </tr>
+            <tr>
+              <td>orta</td>
+              <td><code>inline-handler</code></td>
+              <td>
+                İşaretlemede: bir etiketin içindeki <code>on…=</code> özniteliği (etiket birkaç satıra
+                yayıldığında da) ve her yerde geçen <code>javascript:</code>.
+              </td>
+            </tr>
+            <tr>
+              <td>orta</td>
+              <td><code>workers</code></td>
+              <td><code>new Worker(</code>, <code>new SharedWorker(</code>, <code>WebAssembly.</code>.</td>
+            </tr>
+            <tr>
+              <td>orta</td>
+              <td><code>unusual-encoding</code></td>
+              <td>
+                UTF-16 olarak kaydedilmiş (bayt sırası işaretiyle başlayan; tarama onu tarayıcının okuyacağı
+                gibi okur) ya da NUL baytı içeren, taranan bir dosya.
+              </td>
+            </tr>
+            <tr>
+              <td>orta</td>
+              <td><code>write-permission</code></td>
+              <td>Manifest <code>documents:write</code> istiyor.</td>
+            </tr>
+            <tr>
+              <td>düşük</td>
+              <td><code>storage</code></td>
+              <td>
+                <code>localStorage</code>, <code>sessionStorage</code>, <code>indexedDB</code>,
+                <code>document.cookie</code> (korumalı alanda başarısız olurlar).
+              </td>
+            </tr>
+            <tr>
+              <td>bilgi</td>
+              <td><code>minified</code></td>
+              <td>
+                2000 karakterden uzun bir betik satırı (küçültülmüş ya da üretilmiş kod), dosya başına bir kez.
+              </td>
+            </tr>
+            <tr>
+              <td>bilgi</td>
+              <td><code>data-blob</code></td>
+              <td>Yaklaşık 10 KB ya da daha uzun bir base64 dizisi.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Taramadan nasıl geçilir:</p>
+      <ul>
+        <li>
+          Metni <code>textContent</code>, <code>append('metin')</code> ya da kitteki
+          <code>h()</code> yardımcısıyla yazın; öğeleri <code>document.createElement</code> ile oluşturun. Bir
+          öğeyi temizlemek için <code>replaceChildren()</code> kullanın. Bunların hiçbiri işaretlenmez;
+          işaretleme atamak ya da eklemek (<code>innerHTML =</code> ya da <code>innerHTML +=</code>) ise her
+          zaman işaretlenir.
+        </li>
+        <li>Olay işleyicilerini işaretlemede değil, <code>addEventListener</code> ile bağlayın.</li>
+        <li>
+          <code>setTimeout</code> ve <code>setInterval</code> çağrılarına işlev verin. Uygulamaya yalnızca
+          <code>window.parent.postMessage</code> ile ulaşın.
+        </li>
+        <li>Her dosyayı NUL baytı olmadan UTF-8 olarak kaydedin (asla UTF-16 olarak değil).</li>
+        <li>
+          Kullanılmasa bile dışarıya ulaşan kod göndermeyin: bir kütüphanenin neler getirdiğine bakın.
+          Küçültülmemiş bir derlemeyi tercih edin ya da <code>minified</code> bulgusunu README'nizde
+          açıklayın; büyük verileri base64 metinlerin dışında tutun.
+        </li>
+        <li>
+          Yorumların da tarandığını unutmayın: <code>eval(</code> ya da <code>innerHTML =</code> geçen bir
+          yorum da bir bulgudur.
+        </li>
+        <li>
+          Kalan her bulgunun neden güvenli olduğunu README'nizde yazın: hangi kütüphane, hangi satır, neden
+          hiç çalışmadığı ya da korumalı alanın onu neden durdurduğu.
+        </li>
+      </ul>
+      <p>
+        Yalnızca betik, işaretleme ve stil dosyaları taranır; manifest yalnızca
+        <code>documents:write</code> için okunur (bu her zaman orta bir bulgudur: yalnızca eklenti belge
+        değiştiriyorsa isteyin). Bir dosyada bir kuralın en fazla 10 bulgusu ve toplamda en fazla 200 bulgu
+        (en ciddileri önce) listelenir; sayılar her zaman bütün bulguları kapsar. Her desen doğrusal sürede
+        çalışır; tarama her dosyada çabucak biter. Taramanın kendisi başarısız olursa eklenti bozuk sayılmaz:
+        taraması olmaz ve (Mongo Manager ile gelmiyorsa) yüksek bulgusu olan bir eklenti gibi yalnızca kimliği
+        yazılarak onaylanabilir. Mongo Manager ile gelen bir eklentinin taraması da gösterilir, ama onu
+        onaylamak hiçbir zaman kimliğini yazmayı gerektirmez.
+      </p>
+
+      <h2 id="ui">Arayüz ve tema</h2>
+      <p>
+        Bir eklenti uygulamanın parçası gibi görünmelidir: onun renkleri, yazısı ve boşluklarıyla,
+        kullanıcının temasında ve vurgu renginde. Mongo Manager'ın kendi eklentileri
+        <code>packages/plugins/kit</code>
+        içindeki eklenti kitini kullanır:
+      </p>
+      <ul>
+        <li>
+          <code>kit/src/ui.css</code>: uygulamanın tasarım belirteçleri (<code>--ds-surface</code>,
+          <code>--ds-fg</code>, <code>--ds-accent</code>...), açık ve koyu tema ile her vurgu rengi için, ve
+          bileşenler (<code>mm-btn</code>, <code>mm-table</code>, <code>mm-empty</code>,
+          <code>mm-callout</code>...). Yazı tipleri <code>@fontsource</code> paketlerinin dosyalarıdır: onları
+          eklentinizle birlikte paketleyin ya da sistem yazı tipini kullanmak için <code>@font-face</code>
+          kurallarını kaldırın.
+        </li>
+        <li>
+          <code>kit/src/ui.ts</code>: <code>applyLook(theme, accent)</code>, <code>html.dark</code> ve
+          <code>html[data-accent]</code> değerlerini ayarlar; <code>h(tag, props, ...children)</code> metnin
+          her zaman metin kaldığı öğeler oluşturur; ayrıca <code>icon</code>, <code>button</code>,
+          <code>segmented</code>, <code>switchControl</code>, <code>chip</code>, <code>badge</code>,
+          <code>pageHeader</code>, <code>emptyState</code>, <code>skeleton</code>, <code>callout</code>,
+          <code>table</code>, <code>valueView</code>, <code>describeValue</code>, <code>formatNumber</code>,
+          <code>statusLine</code>, <code>setBusy</code>, <code>serialAsk</code>.
+        </li>
+        <li>
+          <code>kit/src/client.ts</code>: <code>createClient</code>, <code>AskError</code>,
+          <code>askMessage</code>.
+        </li>
+      </ul>
+      <p>
+        Kit TypeScript ile yazılmıştır ve paketlenmek içindir: <code>kit/src</code> klasörünü projenize
+        kopyalayın ve Vite (ya da başka bir paketleyici) ile, birinci taraf eklentilerin
+        <code>vite.config.ts</code> dosyasındaki gibi göreli yollarla ve satır içi betik olmadan derleyin:
+        <code>base: './'</code>, <code>modulePreload: { polyfill: false }</code>,
+        <code>assetsInlineLimit: 0</code>. Kaynaklarınızı değil, derleme çıktısını paketleyin. Başlangıç
+        şablonu ise istemcinin ve renklerin kısa bir kopyasını düz JavaScript ve CSS olarak taşır.
+      </p>
+      <pre><code>import './kit/ui.css'
+import { createClient } from './kit/client'
+import { applyLook, h, pageHeader, emptyState, button } from './kit/ui'
+
+const client = createClient()
+client.onContext((locale, theme, accent) =&gt; applyLook(theme, accent))
+client.onReady(async () =&gt; {
+  const context = await client.ask('context.get')
+  applyLook(context.theme, context.accent)
+  document.body.append(
+    h('div', { class: 'mm-page' },
+      pageHeader({ icon: 'table', title: 'Merhaba', description: context.place?.coll ?? '' }),
+      emptyState({ icon: 'search', title: 'Henüz bir şey yok', action: button({ label: 'Yükle', variant: 'primary' }) }),
+    ),
+  )
+})</code></pre>
+      <p>
+        Sayfanın göründüğü yere göre tasarlayın: koleksiyon sekmesi geniştir, belge eylemi bir penceredir,
+        kenar çubuğu sayfası çalışma alanını doldurur. Gösterilecek bir şey olmadığında ve
+        <code>place</code> değeri <code>null</code> olduğunda boş bir durum, okurken bir iskelet, bir retle
+        karşılaşınca da uygulamanın sözcüklerini gösterin. Sayfanın klavyeyle çalışması için düğmeler ve
+        gerçek denetimler kullanın.
+      </p>
+
+      <h2 id="localization">Diller</h2>
+      <p>
+        Uygulama İngilizce, Türkçe, basitleştirilmiş Çince, Japonca, İspanyolca, Brezilya Portekizcesi,
+        Korece, Almanca, Fransızca ve Rusça konuşur: <code>context.locale</code>; <code>en</code>,
+        <code>tr</code>, <code>zh</code>, <code>ja</code>, <code>es</code>, <code>pt</code>, <code>ko</code>,
+        <code>de</code>, <code>fr</code> ve <code>ru</code> değerlerinden biridir. Eklenti bunlardan
+        olabildiğince çoğunu, İngilizceyi de her zaman konuşmalıdır:
+      </p>
+      <ul>
+        <li>Manifestte, dillere göre her metinde <code>en</code> yanına elinizdeki her dili verin.</li>
+        <li>
+          Sayfada sözcüklerinizi dile göre bir tabloda tutun, <code>context.locale</code> ile seçin
+          (olmayan bir dilde İngilizce), <code>document.documentElement.lang</code> değerini sözcüklerinizin
+          gerçekten yazıldığı dile ayarlayın — İngilizceye düştüyseniz <code>en</code> — (doğru karakterler
+          görünsün diye Çince ve Portekizce için <code>zh-CN</code> ve <code>pt-BR</code>), sayıları da aynı
+          dilde biçimlendirin ve
+          <code>context.changed</code> geldiğinde yeniden çizin.
+        </li>
+        <li>Hücre işleyicisi, her grubun sorulduğu <code>locale</code> ile yanıt verir.</li>
+        <li>
+          Sayıları ve tarihleri dile göre biçimlendirin (<code>Intl.NumberFormat</code>,
+          <code>Intl.DateTimeFormat</code>).
+        </li>
+        <li>
+          <code>README.md</code> yanına her dil için <code>README.&lt;dil&gt;.md</code>
+          (<code>README.tr.md</code>, <code>README.zh.md</code>, …) ve her dilde sürüm notları ekleyin.
+        </li>
+      </ul>
+
+      <h2 id="readme">README ve sürüm notları</h2>
+      <p>
+        Eklentinin en üstündeki <code>README.md</code>, yöneticilerin eklentiyi onaylamadan önce okuduğu
+        ayrıntılar sayfasında gösterilir; uygulamayı başka bir dilde kullanan birine onun yerine
+        <code>README.&lt;dil&gt;.md</code> (<code>README.tr.md</code>, <code>README.ja.md</code>, …) gösterilir. Dile özel README yalnızca
+        <code>README.md</code> de varsa gösterilir. Güvenli Markdown olarak gösterilir: başlıklar,
+        paragraflar, listeler (tek düzey), kalın, italik, satır içi kod ve kod blokları. Bağlantılar,
+        resimler, tablolar ve HTML düz metin olarak gösterilir. En fazla 64 KB gösterilir.
+      </p>
+      <p>İyi bir README şu sırayla anlatır:</p>
+      <ol>
+        <li>Eklentinin ne yaptığını, iki üç cümleyle.</li>
+        <li>Nerede göründüğünü: hangi sekme, eylem, sayfa ya da hücre metni.</li>
+        <li>Nasıl kullanıldığını, adım adım ve bir örnekle.</li>
+        <li>Her izni ve neden gerektiğini.</li>
+        <li>Varsa ayarlarını.</li>
+        <li>Sınırlarını: kaç belge okuduğunu, neleri ele almadığını.</li>
+        <li>Kalan her tarama bulgusunu ve neden güvenli olduğunu.</li>
+      </ol>
+      <p>
+        Sürüm notları manifestteki <code>changelog</code> alanına, en yenisi önce, her sürüm için günüyle ve
+        İngilizce ve diğer dillerinizdeki notlarıyla bir kayıt olarak yazılır. Ayrıntılar sayfası onları gösterir; bir
+        güncellemeden sonra son sürümden bu yana gelenler yeni olarak işaretlenir.
+      </p>
+
+      <h2 id="versions">Sürümler ve onay</h2>
+      <ul>
+        <li>
+          Onay tam olarak belirli dosyalar içindir: özetleri (digest), yani her dosyanın yolu ve SHA-256
+          değerinin SHA-256 özeti. Yönetici onaylamadan önce onu görür.
+        </li>
+        <li>
+          Yüklenmiş bir eklentinin ya da bir eklenti klasörünün
+          <strong>herhangi bir dosyasındaki her değişiklik</strong> (yeni bir sürüm, README'deki bir yazım
+          hatasının düzeltilmesi) eklentiyi, bir yönetici yeniden onaylayana dek devre dışı bırakır. Her
+          yayında <code>version</code> değerini artırın ve bir sürüm notu ekleyin; böylece yöneticiler neyi
+          onayladıklarını bilir.
+        </li>
+        <li>
+          Kurulu bir kimlikle eklenti yüklemek onu değiştirir; eklenti yalnızca dosyalar tam olarak
+          onaylananlarsa etkin kalır. Ayarları, yeni manifest onları aynı türle bildirmeye devam ettikçe
+          korunur.
+        </li>
+        <li>
+          Elle yerleştirilen bir eklenti klasörü elle yönetilir: aynı kimlikle yükleme reddedilir ve
+          uygulamada kaldırmak klasörü silmeden eklentiyi unutur.
+        </li>
+        <li>
+          Onayını bir güncelleme boyunca yalnızca Mongo Manager ile gelen eklentiler korur; o da yalnızca
+          etkin oldukları sürece ve güncelleme yeni bir izin istemiyorsa. Bu durumda yöneticiden hiçbir şey
+          istenmez ve eklentinin ayrıntılar sayfası onayının korunduğunu söyler. Bir yöneticinin elle
+          onayladığı bir güncellemede ise bir yöneticinin onayladığı yazar.
+        </li>
+      </ul>
+
+      <h2 id="packaging">Paketleme</h2>
+      <p>
+        Bir eklenti, dosyaları arşivin kökünde duran ve aralarında
+        <code>mongo-manager-plugin.json</code> bulunan gzip ile sıkıştırılmış bir tar arşivi
+        (<code>.tgz</code>) olarak taşınır. Her şeyi içeren tek bir üst klasör (<code>npm pack</code>
+        çıktısındaki <code>package/</code> gibi) kabul edilir ve kaldırılır. Arşiv yalnızca normal dosyalar
+        içermelidir (klasörler örtüktür); bağlantılar, aygıtlar, özel girdiler, sade olmayan yollar ve iki kez
+        verilen yollar reddedilir; açılmış hâliyle en fazla 500 dosya ve 25 MB, yüklenirken en fazla 30 MB.
+      </p>
+      <p>Şablondaki <code>scripts/pack.mjs</code> bunu yalnızca Node.js ile yapar:</p>
+      <pre><code>node scripts/pack.mjs
+Packed 14 files (64.6 KB):
+  README.de.md
+  README.es.md
+  README.fr.md
+  README.ja.md
+  README.ko.md
+  README.md
+  README.pt.md
+  README.ru.md
+  README.tr.md
+  README.zh.md
+  index.html
+  main.js
+  mongo-manager-plugin.json
+  style.css
+
+hello-documents-0.1.0.tgz
+digest (sha256): 9ac77c4a...</code></pre>
+      <p>
+        Yolları ve sınırları uygulamanın yaptığı gibi denetler; eklentinin parçası olmayanları dışarıda
+        bırakır (gizli dosyalar, <code>scripts/</code>, <code>node_modules/</code>, AI asistanı dosyaları,
+        paket dosyaları ve arşivler; <code>SKIP</code> listesini ihtiyacınıza göre düzenleyin);
+        <code>&lt;id&gt;-&lt;version&gt;.tgz</code> dosyasını yazar ve yöneticinin göreceği özeti yazdırır.
+        Bir paketleyiciyle derliyorsanız, bunun yerine manifesti en üstte olan derleme çıktısı klasörünü
+        paketleyin.
+      </p>
+
+      <h2 id="github">GitHub'da yayımlama</h2>
+      <p>
+        GitHub'dan kurulumun açık olduğu bir sunucuda (<code>MM_PLUGINS_GITHUB=1</code>; varsayılan olarak
+        kapalıdır) yöneticiler bir eklentiyi doğrudan herkese açık bir GitHub deposundan kurabilir. Eklentiler
+        sayfasına şu adreslerden birini yapıştırırlar:
+      </p>
+      <ul>
+        <li>
+          <strong>en son sürüm</strong> (latest release) için
+          <code>https://github.com/&lt;sahip&gt;/&lt;depo&gt;</code>, <code>…/releases</code> ya da
+          <code>…/releases/latest</code>;
+        </li>
+        <li>
+          belirli bir sürüm için
+          <code>https://github.com/&lt;sahip&gt;/&lt;depo&gt;/releases/tag/&lt;etiket&gt;</code>. Etiket eğik
+          çizgi içerebilir (en fazla 4 parça).
+        </li>
+      </ul>
+      <p>
+        Adreste başka bir şey olamaz: sorgu, parça (#), bağlantı noktası ya da kimlik bilgisi yok. Adı
+        değişmiş bir depo izlenir: sürümün kendi sayfa adresi deposunu belirtir. Uygulama o sürümün eklenti
+        arşivini indirir: adı <code>.tgz</code> ya da <code>.tar.gz</code> ile biten tek dosyasını (asset).
+        Böyle bir dosyası olmayan ya da birden çok olan bir sürüm reddedilir. Etiket ve dosya adları
+        yazdırılabilir ASCII karakterlerden oluşmalıdır. Dosya o deponun sürümlerine ait olmalı ve bir
+        yüklemeden büyük olmamalıdır (30 MB); bu sınır hem bildirilen boyuta hem okunan veriye uygulanır.
+      </p>
+      <p>
+        Uygulama yalnızca <code>github.com</code>, <code>api.github.com</code>,
+        <code>objects.githubusercontent.com</code> ve <code>release-assets.githubusercontent.com</code> ile,
+        https üzerinden ve yalnızca herkese açık adreslerde konuşur; sunucuya ait hiçbir şey (çerez, jeton ya
+        da kimlik bilgisi) göndermez. Yalnızca bu sunucular arasında en fazla 4 yönlendirme izler, sürümün
+        açıklamasını en fazla 5 MB okur ve kurulumun tamamına 4 dakika tanır. Eklenti taramasıyla birlikte
+        devre dışı olarak kurulur ve bir yüklemede olduğu gibi onay bekler. Nereden geldiğini (depo, sürüm ve
+        arşiv) hatırlar; bu bilgi ayrıntılar sayfasında gösterilir.
+      </p>
+      <p>
+        Kurulum başarısız olursa Eklentiler sayfası nedenini söyler: depoda yayımlanmış bir sürüm yok,
+        GitHub'ın istek sınırına ulaşıldı, GitHub reddetti (depo herkese açık değil), sunucu GitHub'a
+        ulaşamıyor, bir yönlendirme izin verilmeyen bir sunucuya gitti, çok fazla yönlendirme oldu, sürümde
+        hiç arşiv yok ya da birden çok arşiv var, ya da arşiv o deponun sürümlerinde değil.
+      </p>
+      <ol>
+        <li>
+          <code>version</code> değerini artırın, bir <code>changelog</code> kaydı ekleyin ve
+          <code>publishedAt</code> değerini ayarlayın.
+        </li>
+        <li><code>node scripts/pack.mjs</code> komutunu çalıştırın.</li>
+        <li>
+          Bir GitHub sürümü (örneğin <code>v0.1.0</code> etiketiyle) oluşturun ve
+          <code>hello-documents-0.1.0.tgz</code> dosyasını ona ekleyin. Başka bir <code>.tgz</code> ya da
+          <code>.tar.gz</code> dosyası eklemeyin.
+        </li>
+        <li>
+          Onu en son sürüm (latest) olarak işaretleyin. Yöneticilerin uygulamanın gösterdiğiyle
+          karşılaştırabilmesi için <code>pack.mjs</code> komutunun yazdırdığı özeti sürüm notlarına koyun.
+        </li>
+      </ol>
+      <p>
+        GitHub'dan kurulum, sunucuda açılmadıkça kapalıdır; ayrıca sunucu GitHub'a ulaşamayabilir ya da
+        dışarıya yalnızca bir vekil sunucu (proxy) üzerinden çıkabilir (kurulum GitHub'a doğrudan bağlanır ve
+        HTTP vekil ayarlarını kullanmaz); o zaman yöneticileri <code>.tgz</code> dosyasını indirip
+        <strong>Eklenti yükle</strong> ile yükler.
+      </p>
+
+      <h2 id="testing">Kendi sunucunuzda deneme</h2>
+      <ol>
+        <li>
+          Mongo Manager'ı eklentiler açıkken (varsayılan) çalıştırın ve yönetici olarak oturum açın. Veri
+          dizinini bulun: <code>MM_DATA_DIR</code> başka bir yer söylemiyorsa <code>~/.mongo-manager</code>.
+        </li>
+        <li>
+          Eklentiyi <code>&lt;veri-dizini&gt;/plugins/&lt;id&gt;</code> klasörüne kopyalayın:
+          <code>node scripts/pack.mjs --folder ~/.mongo-manager/plugins</code>. Klasörün adı kimlik olmalıdır
+          ve gizli dosya içeremez (betiğin yalnızca eklentinin dosyalarını kopyalamasının nedeni budur).
+          <code>~/</code> her kabukta ev klasörünüzdür; <code>~\</code> ise cmd ve PowerShell'de ya da tırnak
+          içinde (bash ve zsh tırnaksız ters eğik çizgiyi siler, betik de geriye kalanı reddeder). Betik
+          yalnızca bu eklentiye ait, kendisinin kopyalayabileceği dosya ve klasörlerden başka bir şey
+          (betikler, gizli dosyalar, bağlantılar, adlandırılmış kanallar ya da soketler) tutmayan ve ne
+          kendisine ne içine bir dosya sistemi bağlanmış olan bir klasörün yerine yazar; yeni kopyayı
+          hazırlayıp yerine koyar, böylece yarıda kalan bir kopya klasörü olduğu gibi bırakır. Eklentinin
+          kendi klasörünü, onun içindeki ya da onu içeren bir hedefi, yol ona nasıl ulaşırsa ulaşsın (sembolik
+          bağlantı, junction ya da ağ paylaşımı) reddeder ve o zaman hiçbir şey yazmaz.
+        </li>
+        <li>
+          <strong>Eklentiler</strong> sayfasını açıp <strong>Yeniden tara</strong> düğmesine tıklayın.
+          Kullanılamayan bir eklenti nedenini söyler (bir manifest alanı, bir yol). Ayrıntılarını açın: tarama
+          bulgularını, izinleri ve README'yi bir yöneticinin okuyacağı gibi okuyun.
+        </li>
+        <li>
+          <strong>Onayla ve etkinleştir</strong> düğmesine tıklayın, ardından bir koleksiyon açıp her katkıyı
+          deneyin.
+        </li>
+        <li>
+          Her değişiklikten sonra yeniden kopyalayın, <strong>Yeniden tara</strong> düğmesine tıklayın ve
+          yeniden onaylayın (dosyalar değişti); sonra sekmeyi, sayfayı ya da pencereyi yeniden açın. Birkaç dili,
+          iki temayı, bir görünümü, belgesi olmayan bir koleksiyonu ve koleksiyonsuz açılan bir kenar çubuğu
+          sayfasını deneyin.
+        </li>
+        <li>
+          Son olarak <code>.tgz</code> dosyasının kendisini temiz bir sunucuda, kullanıcılarınızın yapacağı
+          gibi, <strong>Eklenti yükle</strong> ile yükleyin.
+        </li>
+      </ol>
+      <p>
+        Tarayıcının geliştirici araçları çerçevenin içinde de çalışır: hatalarını ve mesajlarını görmek için
+        konsolda eklentinin çerçevesini seçin. Konsolda bir politika ihlali, sayfanın korumalı alanın
+        yasakladığı bir şeyi denediği anlamına gelir.
+      </p>
+
+      <h2 id="ai-files">Bir AI asistanıyla geliştirme</h2>
+      <p>
+        Başlangıç şablonu, bir AI kod asistanına bu sayfadaki her şeyi öğreten talimat dosyaları içerir:
+        manifestin kuralları, köprü yöntemleri ve izinler, korumalı alan, tarama, diller, README, paketleme ve
+        yayımlama. Onları eklentinizin deposunun en üstünde tutun; <code>pack.mjs</code> onları arşive koymaz.
+        <strong>Eklentiler</strong> sayfası başlangıç şablonunu bir <code>.zip</code> olarak, her dosyayı da
+        hazır bir eklentiye eklemek için <strong>Yapay zekâ asistanınız için talimatlar</strong> bölümünden
+        ayrı ayrı kaydeder; Copilot'unki, deponuzun <code>.github</code> klasörüne konmak üzere
+        <code>copilot-instructions.md</code> adıyla kaydedilir.
+      </p>
+      <ul>
+        <li><code>CLAUDE.md</code>: Claude Code.</li>
+        <li><code>AGENTS.md</code>: OpenAI Codex ve <code>AGENTS.md</code> okuyan diğer ajanlar.</li>
+        <li><code>GEMINI.md</code>: Gemini CLI.</li>
+        <li><code>.github/copilot-instructions.md</code>: GitHub Copilot.</li>
+      </ul>
+      <p>
+        Asistandan eklentinizin ne yapması gerektiğini isteyin; taramadan ve aşağıdaki kontrol listesinden
+        geçen kodla yanıt vermelidir. Yayımlamadan önce yazdıklarını okuyun: yöneticilerin güvendiği kişi
+        sizsiniz.
+      </p>
+
+      <h2 id="checklist">Yayımlamadan önce kontrol listesi</h2>
+      <ul>
+        <li>
+          Kimlik benzersiz ve klasör adıyla aynı; sürüm artırıldı ve bugünün tarihiyle bir sürüm notu var.
+        </li>
+        <li>
+          Dillere göre her metinde <code>en</code> ve <code>tr</code> var; sayfa <code>locale</code> ve
+          <code>context.changed</code> değerlerini izliyor.
+        </li>
+        <li>İzinler çalışan en az izinler ve README her birinin neden gerektiğini söylüyor.</li>
+        <li>Taramada yüksek bulgu yok ve README diğer her bulguyu açıklıyor.</li>
+        <li>
+          Metin <code>textContent</code> ya da <code>h()</code> ile yazılıyor; metinden işaretleme
+          oluşturulmuyor.
+        </li>
+        <li>
+          Hiçbir şey ağa ulaşmıyor (<code>fetch</code>, WebRTC ya da önceden yükleme ipucu yok), depolama
+          kullanmıyor, açılır pencere açmıyor ya da sayfadan ayrılmıyor.
+        </li>
+        <li>Satır içi betik, stil ya da olay işleyicisi yok; her yol göreli (<code>./main.js</code>).</li>
+        <li>Her dosya NUL baytı olmadan UTF-8 olarak kaydedildi.</li>
+        <li>Sayfa temayı ve vurgu rengini izliyor ve klavyeyle çalışıyor.</li>
+        <li>
+          <code>place</code> değerinin <code>null</code> olmasını, bir görünümü, boş bir koleksiyonu ve
+          karşılaşabileceği her hata kodunu ele alıyor.
+        </li>
+        <li>Tıklama gerektiren çağrılar doğrudan tıklama işleyicisinde yapılıyor.</li>
+        <li>Büyük okumalar sınırlı: bir <code>limit</code>, bir projeksiyon, aynı anda tek pipeline.</li>
+        <li>
+          <code>README.md</code> ve çevirileri eklentiyi anlatıyor; <code>license</code>,
+          <code>author</code> ve <code>repository</code> ayarlı.
+        </li>
+        <li><code>.tgz</code> temiz bir sunucuya yüklendi, tarandı, onaylandı ve orada denendi.</li>
+        <li>
+          GitHub sürümünde tam olarak bir eklenti arşivi var ve adı
+          <code>&lt;id&gt;-&lt;version&gt;.tgz</code>.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Bu sayfada</p>
+      <ol>
+        <li><a href="#what">Eklenti nedir</a></li>
+        <li><a href="#quick-start">Hızlı başlangıç</a></li>
+        <li><a href="#files">Dosyalar ve klasör düzeni</a></li>
+        <li><a href="#manifest">Manifest</a></li>
+        <li><a href="#contributions">Katkı noktaları</a></li>
+        <li><a href="#context">Bağlam</a></li>
+        <li><a href="#bridge">Köprü API'si</a></li>
+        <li><a href="#permissions">İzinler</a></li>
+        <li><a href="#sandbox">Korumalı alan</a></li>
+        <li><a href="#scan">Güvenlik taraması</a></li>
+        <li><a href="#ui">Arayüz ve tema</a></li>
+        <li><a href="#localization">Diller</a></li>
+        <li><a href="#readme">README ve sürüm notları</a></li>
+        <li><a href="#versions">Sürümler ve onay</a></li>
+        <li><a href="#packaging">Paketleme</a></li>
+        <li><a href="#github">GitHub'da yayımlama</a></li>
+        <li><a href="#testing">Kendi sunucunuzda deneme</a></li>
+        <li><a href="#ai-files">Bir AI asistanıyla geliştirme</a></li>
+        <li><a href="#checklist">Yayımlamadan önce kontrol listesi</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

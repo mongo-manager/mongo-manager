@@ -1,0 +1,184 @@
+{
+  "version": "8.2.6",
+  "sharded": true,
+  "raw": {
+    "queryPlanner": {
+      "winningPlan": {
+        "stage": "SINGLE_SHARD",
+        "shards": [
+          {
+            "explainVersion": "1",
+            "shardName": "shard0",
+            "connectionString": "shard0/127.0.0.1:47371",
+            "serverInfo": {
+              "host": "capture-host",
+              "port": {
+                "$numberInt": "47371"
+              },
+              "version": "8.2.6",
+              "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+            },
+            "namespace": "shop.none",
+            "parsedQuery": {
+              "a": {
+                "$eq": {
+                  "$numberInt": "1"
+                }
+              }
+            },
+            "indexFilterSet": false,
+            "optimizationTimeMillis": {
+              "$numberInt": "0"
+            },
+            "maxIndexedOrSolutionsReached": false,
+            "maxIndexedAndSolutionsReached": false,
+            "maxScansToExplodeReached": false,
+            "prunedSimilarIndexes": false,
+            "winningPlan": {
+              "isCached": false,
+              "stage": "EOF",
+              "type": "nonExistentNamespace"
+            },
+            "rejectedPlans": []
+          }
+        ]
+      }
+    },
+    "executionStats": {
+      "nReturned": {
+        "$numberInt": "0"
+      },
+      "executionTimeMillis": {
+        "$numberInt": "15"
+      },
+      "totalKeysExamined": {
+        "$numberInt": "0"
+      },
+      "totalDocsExamined": {
+        "$numberInt": "0"
+      },
+      "executionStages": {
+        "stage": "SINGLE_SHARD",
+        "nReturned": {
+          "$numberInt": "0"
+        },
+        "executionTimeMillis": {
+          "$numberInt": "15"
+        },
+        "totalKeysExamined": {
+          "$numberInt": "0"
+        },
+        "totalDocsExamined": {
+          "$numberInt": "0"
+        },
+        "totalChildMillis": {
+          "$numberInt": "12"
+        },
+        "shards": [
+          {
+            "shardName": "shard0",
+            "executionSuccess": true,
+            "nReturned": {
+              "$numberInt": "0"
+            },
+            "executionTimeMillis": {
+              "$numberInt": "12"
+            },
+            "totalKeysExamined": {
+              "$numberInt": "0"
+            },
+            "totalDocsExamined": {
+              "$numberInt": "0"
+            },
+            "executionStages": {
+              "isCached": false,
+              "stage": "EOF",
+              "nReturned": {
+                "$numberInt": "0"
+              },
+              "executionTimeMillisEstimate": {
+                "$numberInt": "0"
+              },
+              "works": {
+                "$numberInt": "1"
+              },
+              "advanced": {
+                "$numberInt": "0"
+              },
+              "needTime": {
+                "$numberInt": "0"
+              },
+              "needYield": {
+                "$numberInt": "0"
+              },
+              "saveState": {
+                "$numberInt": "0"
+              },
+              "restoreState": {
+                "$numberInt": "0"
+              },
+              "isEOF": {
+                "$numberInt": "1"
+              },
+              "type": "nonExistentNamespace"
+            }
+          }
+        ]
+      }
+    },
+    "queryShapeHash": "CA5B6147B9660B01A807C66DA978714341F7E3C97B684A49B741E296AD7E602E",
+    "serverInfo": {
+      "host": "capture-host",
+      "port": {
+        "$numberInt": "47373"
+      },
+      "version": "8.2.6",
+      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFacetMaxOutputDocSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceGroupMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryMaxBlockingSortMemoryUsageBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryProhibitBlockingMergeOnMongoS": {
+        "$numberInt": "0"
+      },
+      "internalQueryMaxAddToSetBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": {
+        "$numberInt": "1"
+      }
+    },
+    "command": {
+      "find": "none",
+      "filter": {
+        "a": {
+          "$numberInt": "1"
+        }
+      },
+      "maxTimeMS": {
+        "$numberInt": "30000"
+      },
+      "$db": "shop"
+    },
+    "ok": {
+      "$numberInt": "1"
+    }
+  }
+}

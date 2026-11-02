@@ -1,0 +1,126 @@
+{
+  "version": "6.0.29",
+  "raw": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "shop.items",
+      "indexFilterSet": false,
+      "parsedQuery": {
+        "_id": {
+          "$eq": {
+            "$numberInt": "1"
+          }
+        }
+      },
+      "queryHash": "0AF833B2",
+      "planCacheKey": "19C9D71D",
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "winningPlan": {
+        "stage": "IDHACK"
+      },
+      "rejectedPlans": []
+    },
+    "executionStats": {
+      "executionSuccess": true,
+      "nReturned": {
+        "$numberInt": "0"
+      },
+      "executionTimeMillis": {
+        "$numberInt": "0"
+      },
+      "totalKeysExamined": {
+        "$numberInt": "0"
+      },
+      "totalDocsExamined": {
+        "$numberInt": "0"
+      },
+      "executionStages": {
+        "stage": "IDHACK",
+        "nReturned": {
+          "$numberInt": "0"
+        },
+        "executionTimeMillisEstimate": {
+          "$numberInt": "0"
+        },
+        "works": {
+          "$numberInt": "1"
+        },
+        "advanced": {
+          "$numberInt": "0"
+        },
+        "needTime": {
+          "$numberInt": "0"
+        },
+        "needYield": {
+          "$numberInt": "0"
+        },
+        "saveState": {
+          "$numberInt": "0"
+        },
+        "restoreState": {
+          "$numberInt": "0"
+        },
+        "isEOF": {
+          "$numberInt": "1"
+        },
+        "keysExamined": {
+          "$numberInt": "0"
+        },
+        "docsExamined": {
+          "$numberInt": "0"
+        }
+      }
+    },
+    "command": {
+      "find": "items",
+      "filter": {
+        "_id": {
+          "$numberInt": "1"
+        }
+      },
+      "maxTimeMS": {
+        "$numberInt": "30000"
+      },
+      "$db": "shop"
+    },
+    "serverInfo": {
+      "host": "capture-host",
+      "port": {
+        "$numberInt": "57561"
+      },
+      "version": "6.0.29",
+      "gitVersion": "84e761de17af58439056c9d0444b51bda6b38e4f"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFacetMaxOutputDocSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceGroupMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryMaxBlockingSortMemoryUsageBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryProhibitBlockingMergeOnMongoS": {
+        "$numberInt": "0"
+      },
+      "internalQueryMaxAddToSetBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      }
+    },
+    "ok": {
+      "$numberInt": "1"
+    }
+  }
+}

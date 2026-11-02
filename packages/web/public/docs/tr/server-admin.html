@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Sunucu yönetimi · Mongo Manager belgeleri</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager belgeleri</a>
+      <details class="lang-menu">
+        <summary>Türkçe</summary>
+        <span class="langs" role="group" aria-label="Dil">
+          <a lang="en" hreflang="en" href="../server-admin.html">English</a>
+          <strong lang="tr">Türkçe</strong>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/server-admin.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/server-admin.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/server-admin.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/server-admin.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/server-admin.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/server-admin.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/server-admin.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/server-admin.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Genel bakış</a>
+      <a href="getting-started.html">Başlarken</a>
+      <a href="security.html">Güvenlik</a>
+      <a href="deployment.html">Kurulum ve dağıtım</a>
+      <a href="import-export.html">İçe ve dışa aktarma</a>
+      <a href="backup.html">Yedekleme ve geri yükleme</a>
+      <a href="watch.html">Değişiklikleri izleme</a>
+      <a href="sync.html">Canlı senkron</a>
+      <strong>Sunucu yönetimi</strong>
+      <a href="ai.html">AI asistanı</a>
+      <a href="plugins.html">Eklentiler</a>
+      <a href="shortcuts.html">Klavye kısayolları</a>
+    </nav>
+    <main>
+      <h1>Sunucu yönetimi</h1>
+      <p>
+        Mongo Manager verilerinizin ötesinde MongoDB sunucusunun kendisini de yönetir: veritabanı
+        kullanıcılarını ve rollerini, bir kümenin parçalanmasını, bir şeyler ters gittiğinde uyarıları ve her
+        bağlantının sağlığını tek bakışta.
+      </p>
+
+      <h2 id="users-roles">Kullanıcılar ve roller</h2>
+      <p>
+        Bağlantı sayfası → <strong>Kullanıcılar ve roller</strong>, Atlas'taki <em>Database Access</em> gibi
+        MongoDB'nin kendi hesaplarını yönetir. Bunlar uygulamaların ve kişilerin MongoDB'ye girmek için
+        kullandığı hesaplardır; Mongo Manager'ın kullanıcıları değil.
+      </p>
+      <h3>Kimler kullanabilir</h3>
+      <ul>
+        <li>
+          Bağlantıda <code>databases:admin</code> uygulama yetkisi olanlar: uygulama yöneticileri ya da o
+          bağlantıda yönetici yetkisi verilmiş bir kullanıcı. Bir yöneticinin kişisel verileri gizlediği kullanıcı bu bölümü hiç görmez; verileri kendinden gizleyen biri ise görür.
+        </li>
+        <li>
+          MongoDB'nin kendi yetkileri de geçerlidir: bağlantının oturum açtığı hesabın veritabanında
+          <code>userAdmin</code> ya da <code>userAdminAnyDatabase</code> rolü olmalıdır (listelemek için
+          <code>viewUser</code> ve <code>viewRole</code> yeter). MongoDB reddederse sayfa bunu uygulamanın
+          değil MongoDB'nin reddettiğini ve hangi komutu reddettiğini söyler.
+        </li>
+        <li>Salt okunur bir bağlantıda kullanıcılar ve roller listelenir, asla değiştirilmez.</li>
+      </ul>
+      <h3>Liste</h3>
+      <p>
+        Tüm veritabanlarının ya da tek birinin (veritabanı filtresi) kullanıcıları, bir arama kutusuyla. Her
+        kullanıcının rolleri çip olarak görünür, örneğin "shop üzerinde readWrite". Bağlantının kendisinin
+        oturum açtığı hesap <strong>Bu bağlantı</strong> diye işaretlenir.
+      </p>
+      <h3>Kullanıcı ekleme</h3>
+      <ul>
+        <li>
+          <strong>Kimlik doğrulama veritabanı</strong>: kullanıcının oturum açtığı yer. <code>admin</code>
+          önerilir (oradaki kullanıcılar her veritabanında rol alabilir), ama herhangi bir veritabanı olur.
+          <code>$external</code>, parolası olmayan x.509, LDAP, Kerberos ve AWS IAM kullanıcıları içindir: ad,
+          o kaynağın gönderdiğiyle birebir aynı olmalıdır.
+        </li>
+        <li><strong>Kullanıcı adı.</strong></li>
+        <li>
+          <strong>Parola</strong>: kendiniz yazın ya da <strong>Oluştur</strong>'a basın: tarayıcınızda,
+          sistemin rastgelelik kaynağından üretilen, bağlantı dizesinde sorun çıkarmayan 24 karakter.
+          Kopyalayabilmeniz için gösterilir.
+        </li>
+        <li>
+          <strong>Roller</strong>: her biri neye izin verdiğiyle birlikte hazır roller ya da özel rolleriniz,
+          her biri bir veritabanı üzerinde. Yalnızca <code>admin</code>'de bulunan roller
+          (<code>clusterMonitor</code>, <code>backup</code>, <code>root</code> gibi) ona sabitlenir.
+        </li>
+      </ul>
+      <p>
+        Parolalar SCRAM-SHA-256 kullanır ve en az 12 karakter olmalıdır. Parola MongoDB'ye bir kez gönderilir;
+        Mongo Manager onu hiçbir zaman saklamaz, günlüğe ya da denetim kaydına yazmaz. Oluşturulan bir
+        parolayı formu kapatmadan önce kopyalayın. Geniş yetki vermek önce onay ister; sunucu da onaysız
+        isteği reddeder. Geniş sayılanlar: <code>root</code>, <code>userAdminAnyDatabase</code>,
+        <code>userAdmin</code>, <code>dbOwner</code>, <code>clusterAdmin</code>, <code>clusterManager</code>,
+        <code>hostManager</code>, <code>backup</code>, <code>restore</code>,
+        <code>readWriteAnyDatabase</code> ve <code>dbAdminAnyDatabase</code> hazır rolleri; admin
+        veritabanının diğer tüm hazır rolleri (<code>readAnyDatabase</code>, <code>clusterMonitor</code>,
+        <code>enableSharding</code>); <code>local</code> (oplog'u, yani yapılan her yazmayı tutar) ya da
+        <code>config</code> (parçalama bilgileri) veritabanının her rolü; bunlardan birini devralan, kümede,
+        her kaynakta, aynı anda her veritabanında ya da <code>local</code> ve <code>config</code> üzerinde
+        yetkisi olan ya da kullanıcı veya rol oluşturabilen
+        (<code>createUser</code>, <code>grantRole</code>, <code>changePassword</code> gibi) özel roller. Böyle
+        özel roller geniş olarak işaretlenir ve oluşturulmaları da onay ister.
+      </p>
+      <h3>Kullanıcıyı değiştirme ve silme</h3>
+      <ul>
+        <li>
+          <strong>Düzenle</strong> yeni bir parola, yeni roller ya da ikisini birden belirler. Kaydettiğiniz
+          roller kullanıcının listesinin yerine geçer.
+        </li>
+        <li>
+          Bağlantının kendi hesabını değiştirmek ya da silmek, bağlantının erişimini kesebileceği uyarısıyla
+          onay ister. Bu hesabın sahip olduğu bir özel rolü değiştirmek ya da silmek de öyle. Hesabın hangisi
+          olduğunu MongoDB'nin kendisi söyler (bir SRV kaydının ya da sertifikanın değiştirebileceği bağlantı
+          ayarları değil). Yeni bir paroladan sonra bağlantıyı da düzenleyin.
+        </li>
+        <li>Bir kullanıcıyı ya da rolü silmek adının yazılmasını ister.</li>
+      </ul>
+      <h3>Özel roller</h3>
+      <p>
+        <strong>Özel roller</strong> bir ekibe tam olarak gereken işlemleri verir, fazlasını değil. Bir rolün
+        veritabanı, adı, yetkileri ve devraldığı roller vardır.
+      </p>
+      <ul>
+        <li>
+          Her yetki bir veritabanı ve koleksiyona (boş bırakılırsa her veritabanı ya da her koleksiyon),
+          kümeye ya da her kaynağa uygulanır.
+        </li>
+        <li>
+          İşlemleri MongoDB'nin listesinden seçilir; gruplar: sorgu ve yazma, veritabanı yönetimi,
+          kullanıcılar ve roller, sunucu, çoğaltma ve parçalama.
+        </li>
+        <li>
+          <code>admin</code> dışındaki bir rol yalnızca kendi veritabanının rollerini devralır (MongoDB
+          kuralı); <code>admin</code> içindeki bir rol herhangi bir veritabanının rollerini devralabilir.
+        </li>
+      </ul>
+      <p>
+        Her değişiklik denetim kaydına <code>mongo.users.create</code>, <code>mongo.users.update</code>,
+        <code>mongo.users.grant</code>, <code>mongo.users.revoke</code>, <code>mongo.users.drop</code>,
+        <code>mongo.roles.create</code>, <code>mongo.roles.update</code> ve <code>mongo.roles.drop</code>
+        olarak, adlar ve rol listeleriyle yazılır; parola asla.
+      </p>
+
+      <h2 id="sharding">Parçalama</h2>
+      <p>
+        Bağlantı sayfası → <strong>Parçalama</strong>, bağlantı bir <code>mongos</code>'a gidiyorsa görünür.
+        Sunucuyu izleyebilen herkes dengeleyicinin durumunu, parça dağılımını ve küme özetini görür.
+        Değişiklikler <code>databases:admin</code> yetkisi ve salt okunur olmayan bir bağlantı ister.
+      </p>
+      <h3>Parça dağılımı</h3>
+      <p>
+        Parçalanmış her koleksiyon için bir çubuk, her parça sunucusu için bir renk; sayılar ekran okuyucular
+        için sözle de verilir.
+      </p>
+      <h3>Dengeleyici</h3>
+      <ul>
+        <li>
+          Başlatın ya da durdurun; durdurmadan önce sorulur. Durduğu sürece parçalar parça sunucuları arasında
+          taşınmaz; sürmekte olan bir taşıma önce biter. Yedek ya da bakım için durdurun, ardından yeniden
+          başlatın.
+        </li>
+        <li>
+          <strong>Çalışma aralığı</strong>: başlangıç–bitiş, yapılandırma sunucusunun saatiyle. Parçalar o
+          zaman yalnızca bu saatler arasında taşınır. <strong>Her zaman</strong> aralığı kaldırır.
+        </li>
+      </ul>
+      <h3>Bir koleksiyonu parçalama</h3>
+      <ol>
+        <li>Veritabanını ve koleksiyonu seçin.</li>
+        <li>
+          Parçalama anahtarını alan alan kurun. Her alan aralıklı ya da hash'lidir; en çok bir alan hash'li
+          olabilir. Sıra önemlidir: alanları yukarı ve aşağı taşıyın.
+        </li>
+        <li>
+          <strong>Bu anahtarı denetle</strong>: sunucu 1000 belge örnekler ve yalnızca sayılarla yanıt verir,
+          böylece hiçbir değer MongoDB'den çıkmaz: her alanın bulunduğu belgelerin oranı, farklı değer sayısı,
+          en sık değerin oranı, değerlerin zamanla artıp artmadığı (ObjectId, tarihler) ve anahtarın
+          alanlarıyla başlayan bir dizin olup olmadığı. Sonuç iyi, orta ya da zayıftır.
+        </li>
+        <li>
+          Seçenekler: <strong>Benzersiz anahtar</strong> (yalnızca aralıklı anahtarlar);
+          <strong>Parçaları baştan oluştur</strong> (boş bir koleksiyonda hash'li anahtar, MongoDB 6.0 ve
+          öncesi, 1–8192 parça); <strong>Her bölge için parça oluştur</strong> (bölgeleri önceden tanımlanmış
+          hash'li bir anahtar).
+        </li>
+        <li>Parçalama geri alınamaz: ad alanını yazarak onaylayın.</li>
+      </ol>
+      <p>
+        Zamanla artan bir alan aralıklı anahtar olursa her yeni belgeyi tek bir parça sunucusuna gönderir: onu
+        hash'leyin ya da başka bir alanı öne alın. Veri içeren bir koleksiyon parçalanmadan önce anahtarın
+        alanlarıyla başlayan bir dizin ister. MongoDB'nin kendi ve sistem ad alanları (<code>admin</code>,
+        <code>config</code>, <code>local</code>, <code>system.*</code>) reddedilir.
+      </p>
+      <h3>Bölgeler</h3>
+      <ul>
+        <li>Her parça sunucusu kendi bölgelerini listeler; bir sunucuya bölge ekleyin ya da çıkarın.</li>
+        <li>
+          Koleksiyon başına anahtar aralıkları: sınırlar parçalama anahtarının alanlarıyla Extended JSON'dur;
+          açık uçlar için <code>{"$minKey":1}</code> ve <code>{"$maxKey":1}</code>, örneğin
+          <code>{"region": "eu"}</code> ile <code>{"region": "us"}</code> arası. Operatörler reddedilir.
+          Başlangıç dahildir, bitiş değildir.
+        </li>
+        <li>Belgeleri yeniden herhangi bir sunucuda durabilecekse bir aralığı kaldırın.</li>
+      </ul>
+      <p>
+        Denetim kaydı <code>sharding.collection.shard</code>, <code>sharding.zone.shard</code>,
+        <code>sharding.zone.range</code> (ad alanı ve bölge, sınır değerleri asla),
+        <code>sharding.balancer</code> ve <code>sharding.balancer.window</code> eylemlerini yazar. Mongo
+        Manager'ın testleri bu ekranları kaydedilmiş <code>mongos</code> yanıtlarına karşı çalıştırır.
+      </p>
+
+      <h2 id="alerts">Uyarılar</h2>
+      <p>
+        Uyarılar bir sunucu bir eşiği aştığında ya da uygulamanın kendi işlerinden biri başarısız olduğunda
+        haber verir: zilde, e-postayla ya da bir webhook'a.
+      </p>
+      <h3>Eşikler</h3>
+      <p>
+        Bağlantı sayfası → <strong>Uyarılar</strong>, uygulama yöneticileri için
+        (<code>settings:manage</code>). Bir eşik tek bir ölçümü izler:
+      </p>
+      <ul>
+        <li><strong>Bağlantılar</strong>: açık istemci bağlantılarının sayısı.</li>
+        <li><strong>İşlemler</strong>: saniyedeki işlem sayısı, tüm türler birlikte.</li>
+        <li>
+          <strong>Çoğaltma gecikmesi</strong>: en geride kalan ikincilin kaç saniye geride olduğu (replica
+          set'ler).
+        </li>
+        <li><strong>WiredTiger önbelleği</strong>: önbelleğin yüzde kaç dolu olduğu.</li>
+        <li>
+          <strong>Disk kullanımı</strong>: veri dosyalarının bulunduğu diskin yüzde kaç dolu olduğu (MongoDB
+          4.4 ve sonrası).
+        </li>
+        <li>
+          <strong>Yavaş işlemler</strong>: seçtiğiniz saniyeden uzun süren işlemlerin sayısı (<code
+            >clusterMonitor</code
+          >
+          gerekir).
+        </li>
+      </ul>
+      <p>
+        Sunucu bunları dakikada bir, ölçüm geçmişiyle aynı <code>serverStatus</code> örneklemesinden
+        değerlendirir. Uyarılar, geçmişi kapalı olsa da bir bağlantıyı örnekler; örnekler yalnızca geçmiş
+        açıkken saklanır. Geçmiş ve uyarılar için birlikte en çok 50 bağlantı örneklenir.
+      </p>
+      <p>
+        Uyarılar gidip gelmez: değer seçtiğiniz süre (1–60 dakika, varsayılan 2) boyunca eşiğin üstünde
+        kalınca uyarı tetiklenir; ancak aynı süre boyunca eşiğin %90'ında ya da altında kalınca çözülür.
+        Önbellek doluluğu için %80'lik bir eşik %72 ya da altında çözülür.
+      </p>
+      <h3>Olay uyarıları</h3>
+      <p>Uyarılar sayfasında, tüm bağlantılar ya da tek biri için, ya da bir bağlantının bölümünde:</p>
+      <ul>
+        <li>
+          <strong>Yedekleme başarısız</strong>: bir yedekleme, gönderim ya da indirme işi başarısız oldu.
+        </li>
+        <li>
+          <strong>Zamanlanmış yedekleme başarısız</strong>: bir çalışma başarısız oldu ya da hedeflerinin
+          yalnızca bazılarına ulaştı.
+        </li>
+        <li>
+          <strong>Canlı eşitleme durdu</strong>: kendiliğinden başarısız oldu, durdu ya da ilgi bekliyor —
+          biri onu durdurduğunda değil.
+        </li>
+        <li><strong>İş başarısız</strong>: diğer her iş (geri yükleme tatbikatının kendi olayı vardır).</li>
+        <li>
+          <strong>Geri yükleme tatbikatı başarısız</strong>: zamanlanmış bir geri yükleme tatbikatı yedeğini
+          geri yükleyemedi, farklı veri buldu ya da geçici veritabanını silemedi (bir uyarı: veri
+          eşleşmişti). Başarılı bir tatbikat bir uyarı değil, zamanlamanın geçmişindedir.
+        </li>
+        <li>
+          <strong>İki yönlü eşitleme çakışmaları çözdü</strong>: iki yönlü bir canlı eşitlemenin iki tarafı da
+          aynı belgeleri değiştirdi; son yazan kazandı (<code>_id</code>'ler eşitlemenin etkinliğindedir).
+        </li>
+        <li>
+          <strong>İzleme, uyarı filtresine uyan değişiklik gördü</strong>: sahibinin uyarı istediği bir İzle
+          akışı filtresinden değişiklikler geçirdi (akış açıkken, en sık 10 saniyede bir).
+        </li>
+      </ul>
+      <p>
+        Bildirimler yalnızca adlar ve sayılar taşır: belge değerleri, hata metinleri, bağlantı dizeleri ya da
+        sunucu adresleri asla.
+      </p>
+      <h3>Zamanlanmış raporlar</h3>
+      <p>
+        Uyarılar sayfasında (uygulama yöneticileri): bir rapor, bir bağlantının birkaç sayımını bir zamanlamayla —
+        her sabah, her pazartesi, saatte bir kadar sık — zilde, e-postayla ya da webhook'lara, uyarıların
+        gönderildiği gibi söyler. Her sayımın etiketi, bir koleksiyonu ve isteğe bağlı bir filtresi (JSON;
+        filtresiz olan bütün belgeleri, koleksiyonun tahminini sayar) vardır; bir milyonu aşan sayım "en az"
+        der. Satırından şimdi çalıştırın, değiştirin, kapatın ya da silin; son çalışmasının sayımları orada
+        görünür.
+      </p>
+      <p>
+        Yalnızca sayılar, asla bir değer. Kişisel bir alanı anan — ya da kişisel veri kurallarının başka türlü
+        okuyacağı — bir filtre rapor kaydedilirken reddedilir, kurallar sonradan değişince de nedeni söylenerek
+        dışarıda bırakılır; MongoDB'nin kendi ad alanları, sunucu JavaScript'i, görünümler ve zaman serileri de
+        öyle (bir görünümün pipeline'ı kişisel bir alana göre seçebilir). Rapor bağlantının kendi kimlik
+        bilgileriyle sayar: her kişinin kendisinin oturum açtığı bir bağlantı reddedilir; bağlantının alanları
+        istemcide şifrelediği yerde bir filtre de (okuyabildiği hiçbir şeyle eşleşmez). Zilde ve geçmişte
+        yöneticiler bir çalışmanın sayımlarını etiketleriyle görür; diğerleri bir raporun çalıştığını görür,
+        sayımlarını değil. Her raporun son 30 çalışması geçmişte tutulur; zamanlaması artık hesaplanamayan
+        bir rapor nedeni söylenerek kapatılır.
+      </p>
+      <h3>Kanallar</h3>
+      <ul>
+        <li>
+          <strong>Zil.</strong> Her kullanıcı <em>Uyarıları zilde göster</em>'i kendisi için Tercihler'den ya
+          da Uyarılar sayfasından açar. Yalnızca sunucusunu izleyebildiği (<code>server:monitor</code>)
+          bağlantıların uyarılarını görür.
+        </li>
+        <li>
+          <strong>E-posta.</strong> SMTP sunucusu, port ve baştan TLS (genelde 465) ya da STARTTLS (genelde
+          587): ikisini de sunmayan bir sunucu reddedilir, posta asla şifresiz gitmez. Kullanıcı adı ve parola
+          (mühürlü), gönderen adresi ve en çok 20 alıcı. Sunucu, port, şifreleme ya da kullanıcı adı değişirse
+          parola yeniden girilmelidir: kayıtlı parola hiçbir zaman başka bir sunucuya gönderilmez.
+          <em>Deneme iletisi gönder</em> kayıtlı ayarlarla gönderir. TLS el sıkışmasını ya da görüşmeyi
+          zamanında bitirmeyen bir oturumdan vazgeçilir. Posta Mongo Manager'ın kendi istemcisinden ve çıkış
+          korumasından geçer: genel adresler, özel adresler ise yalnızca
+          <code>MM_ALERTS_PRIVATE_NETWORKS</code> içinde.
+        </li>
+        <li>
+          <strong>Webhook'lar.</strong> Bir https adresi; düz http yalnızca
+          <code>MM_ALERTS_PRIVATE_NETWORKS</code> içindeki adreslere. Adreste kimlik bilgisi olamaz, bulut
+          meta veri ve bağlantı-yerel (link-local) adreslere asla ulaşılmaz, yönlendirmeler izlenmez. Her
+          webhook'un imza anahtarını sunucu üretir ve bir kez gösterir; <em>Yeni anahtar oluştur</em> onu
+          yeniler ve eski anahtar hemen çalışmaz olur.
+        </li>
+      </ul>
+      <p>Her kural nereye gönderileceğini seçer; kanalı olmayan bir kural yalnızca kaydedilir.</p>
+
+      <h3 id="webhook-delivery">Webhook gönderimleri</h3>
+      <p>Her gönderim JSON gövdeli bir POST'tur:</p>
+      <pre><code>{
+  "type": "alert.firing",
+  "id": "…",
+  "at": "2026-10-16T09:30:00.000Z",
+  "alert": {
+    "metric": "cacheFill",
+    "event": null,
+    "state": "firing",
+    "value": 91,
+    "threshold": 80,
+    "unit": "percent",
+    "startedAt": "2026-10-16T09:28:00.000Z",
+    "resolvedAt": null,
+    "connection": { "id": "…", "name": "Production" },
+    "detail": {}
+  }
+}</code></pre>
+      <p>
+        <code>type</code> şunlardan biridir: <code>alert.firing</code>, <code>alert.resolved</code>,
+        <code>alert.event</code> ya da <code>alert.test</code> (deneme yalnızca <code>type</code> ve
+        <code>at</code> taşır). Olay uyarılarında <code>metric</code> yerine <code>event</code> dolar
+        (<code>backup.failed</code>, <code>schedule.failed</code>, <code>liveSync.stopped</code>,
+        <code>job.failed</code>). Başlıklar:
+      </p>
+      <ul>
+        <li><code>x-mm-event</code>: yine tür.</li>
+        <li><code>x-mm-delivery</code>: gönderimin benzersiz kimliği; her yeniden denemede aynıdır.</li>
+        <li><code>x-mm-timestamp</code>: bu denemenin imzalandığı an, Unix saniyesi olarak.</li>
+        <li>
+          <code>x-mm-signature</code>: <code>sha256=</code> ve ardından zaman damgası, bir nokta ve gövdenin
+          webhook'un imza anahtarıyla hesaplanan onaltılı HMAC-SHA256 değeri.
+        </li>
+      </ul>
+      <p>
+        İmzayı gövdeyi ayrıştırmadan önce, ham gövde üzerinde denetleyin ve 5 dakikadan eski zaman damgalarını
+        reddedin. Node.js ile:
+      </p>
+      <pre><code>const crypto = require('node:crypto')
+
+function verify(secret, headers, rawBody) {
+  const timestamp = headers['x-mm-timestamp']
+  const signature = headers['x-mm-signature'] ?? ''
+  if (!/^\d+$/.test(timestamp ?? '')) return false
+  if (Math.abs(Date.now() / 1000 - Number(timestamp)) &gt; 300) return false
+  const expected =
+    'sha256=' + crypto.createHmac('sha256', secret).update(timestamp + '.' + rawBody).digest('hex')
+  const a = Buffer.from(signature)
+  const b = Buffer.from(expected)
+  return a.length === b.length &amp;&amp; crypto.timingSafeEqual(a, b)
+}</code></pre>
+      <p>Python ile:</p>
+      <pre><code>import hashlib, hmac, time
+
+def verify(secret: bytes, headers, raw_body: bytes) -&gt; bool:
+    timestamp = headers.get("x-mm-timestamp", "")
+    if not timestamp.isdigit() or abs(time.time() - int(timestamp)) &gt; 300:
+        return False
+    mac = hmac.new(secret, timestamp.encode() + b"." + raw_body, hashlib.sha256)
+    expected = "sha256=" + mac.hexdigest()
+    return hmac.compare_digest(headers.get("x-mm-signature", ""), expected)</code></pre>
+      <p>
+        Bir gönderim ağ hatasında, 5xx yanıtında, 408 ya da 429'da 2 saniye, 10 saniye ve 60 saniye sonra en
+        çok üç kez daha denenir; diğer 4xx yanıtlarında ve çıkış korumasının reddettiği adreslerde asla. Her
+        deneme yeni bir zaman damgasıyla yeniden imzalanır. Zaten işlediğiniz bir gönderimi
+        <code>x-mm-delivery</code> ile tanıyıp yok sayın.
+      </p>
+
+      <h3>Erteleme, duraklatma ve görüldü işaretleme</h3>
+      <ul>
+        <li>
+          Bir kuralı 1 saat, 8 saat ya da 1 gün <strong>erteleyin</strong>: uyarılar kaydedilmeye devam eder,
+          hiçbir şey gönderilmez. <strong>Şimdi uyandır</strong> ertelemeyi erken bitirir.
+        </li>
+        <li>Bir kuralı anahtarıyla duraklatın ve yeniden açın.</li>
+        <li>
+          Yöneticiler bir uyarıyı herkes için <strong>Gördüm</strong> olarak işaretler; herkes kimin
+          işaretlediğini görür. Diğer kullanıcılar uyarıyı yalnızca kendi zillerinden
+          <strong>kapatır</strong>. Yöneticiler dışındakiler zilde ne olduğunu (kodlarını) görür; hangi
+          eşitleme, iş, zamanlama ya da ad alanı olduğunu görmez.
+        </li>
+        <li>
+          Gönderimler tek bir kuyruktan birkaçar birkaçar gider; aynı anda ne kadar kanal ve uyarı
+          tetiklenirse tetiklensin.
+        </li>
+        <li>
+          <strong>Geçmiş</strong>, Uyarılar sayfasında ve her bağlantının bölümünde 90 gün (en çok 20.000
+          kayıt) tutulur; her gönderimin sonucu ve kaç denemede gittiğiyle.
+        </li>
+      </ul>
+      <p>
+        <code>MM_ALERTS=0</code> sunucuda uyarıları kapatır: hiçbir şey değerlendirilmez ya da gönderilmez
+        (bkz. <a href="deployment.html#alerts">Kurulum ve dağıtım</a>). Denetim kaydı
+        <code>alerts.rule.create</code>, <code>alerts.rule.update</code>, <code>alerts.rule.delete</code>,
+        <code>alerts.rule.snooze</code>, <code>alerts.email.update</code>, <code>alerts.email.test</code>,
+        <code>alerts.webhook.create</code>, <code>alerts.webhook.update</code>,
+        <code>alerts.webhook.delete</code>, <code>alerts.webhook.test</code> ve
+        <code>alerts.acknowledge</code> eylemlerini yazar — SMTP parolasını ya da webhook imza anahtarlarını
+        asla.
+      </p>
+
+      <h2 id="health">Canlı sağlık</h2>
+      <p>
+        Genel bakıştaki bağlantı kartları her bağlantının ping gecikmesini, MongoDB sürümünü, topolojisini ve
+        tetiklenmiş uyarılarını gösterir. Bağlantı sayfasının başlığı aynısını bir durum noktasıyla gösterir.
+      </p>
+      <ul>
+        <li>Sunucu her yanıtı 30 saniye saklar.</li>
+        <li>
+          Liste kendiliğinden hiçbir yere bağlanmaz: açık olmayan bir bağlantı <strong>Bağlı değil</strong>
+          gösterir. Bir bağlantının sayfasını açmak onu, veritabanlarını listelemenin yapacağı gibi, denetler.
+        </li>
+        <li>Uyarı sayıları yalnızca sunucusunu izleyebildiğiniz bağlantılar için gösterilir.</li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Bu sayfada</p>
+      <ol>
+        <li><a href="#users-roles">Kullanıcılar ve roller</a></li>
+        <li><a href="#sharding">Parçalama</a></li>
+        <li><a href="#alerts">Uyarılar</a></li>
+        <li><a href="#health">Canlı sağlık</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

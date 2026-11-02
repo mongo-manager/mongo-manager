@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Getting started · Mongo Manager documentation</title>
+    <link rel="stylesheet" href="docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager documentation</a>
+      <details class="lang-menu">
+        <summary>English</summary>
+        <span class="langs" role="group" aria-label="Language">
+          <strong lang="en">English</strong>
+          <a lang="tr" hreflang="tr" href="tr/getting-started.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="zh/getting-started.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="ja/getting-started.html">日本語</a>
+          <a lang="es" hreflang="es" href="es/getting-started.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="pt/getting-started.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="ko/getting-started.html">한국어</a>
+          <a lang="de" hreflang="de" href="de/getting-started.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="fr/getting-started.html">Français</a>
+          <a lang="ru" hreflang="ru" href="ru/getting-started.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Overview</a>
+      <strong>Getting started</strong>
+      <a href="security.html">Security</a>
+      <a href="deployment.html">Deployment</a>
+      <a href="import-export.html">Import and export</a>
+      <a href="backup.html">Backup and restore</a>
+      <a href="watch.html">Watching changes</a>
+      <a href="sync.html">Live sync</a>
+      <a href="server-admin.html">Server administration</a>
+      <a href="ai.html">AI assistant</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Keyboard shortcuts</a>
+    </nav>
+    <main>
+      <h1>Getting started</h1>
+      <h2 id="install">Install</h2>
+      <p>
+        Use any one of these. Each release also ships every file with SHA-256 checksums for air-gapped
+        machines.
+      </p>
+      <ul>
+        <li>npm (Node.js 24 or newer): <code>npx @mongo-manager/app</code></li>
+        <li>Offline npm: <code>npm install --global ./mongo-manager-&lt;version&gt;.tgz</code></li>
+        <li>Standalone binary: download the file for your system and run it; no Node.js needed.</li>
+        <li>Docker: <code>docker compose -f deploy/docker-compose.yml up -d</code></li>
+      </ul>
+      <p>
+        Supported MongoDB: 6.0 and later. Older servers are refused when you connect, with a message that says
+        so.
+      </p>
+      <h2 id="first-run">First run</h2>
+      <p>
+        <strong>Local mode</strong> (the default) is for one person on one computer: Mongo Manager listens on
+        <code>127.0.0.1:4321</code> and opens your browser. There is no sign-in: it opens from a one-time
+        link. Started in a terminal, it prints the link on the line after its address; anywhere else (a
+        service, a container, a log) it prints the path of a file that opens it, which only your account can
+        read. Your browser then stays in for as long as it keeps this site's data (at most six months after
+        its last use; Safari removes it after a week without a visit), and so does its installed app — except
+        a Safari web app on a Mac, which keeps data of its own and cannot be given a link: use Mongo Manager
+        in a Safari tab there. Another program or account on the computer that opens the address gets only a
+        page saying how to open it. When the link is used up or your browser forgot it, run
+        <code>mongo-manager open</code> for a new one; in a terminal it also prints the link, for a browser
+        that cannot open the file (a snap or Flatpak browser on Linux). On a computer you share, use team
+        mode.
+      </p>
+      <pre><code>mongo-manager
+mongo-manager open             # a new link for a running Mongo Manager (--no-open prints it)</code></pre>
+      <p>
+        <strong>Team mode</strong> adds users, roles and two-factor sign-in. The first start prints a one-time
+        setup token in the terminal (run as a service or in a container, it is in <code>setup-token</code> in
+        the data folder); open the page and enter it to create the first administrator.
+      </p>
+      <pre><code>mongo-manager --auth</code></pre>
+      <h2 id="your-first-connection">Your first connection</h2>
+      <ol>
+        <li>
+          Choose <em>Add connection</em> and paste or type a connection string in its first field, such as
+          <code>localhost:27017</code> or a <code>mongodb+srv://</code> address (<code>mongodb://</code> may
+          be left out). The form fills itself: the line under the field says what was understood, and the name
+          follows the host until you type one. Server, authentication, TLS, SSH and the rest are under
+          <em>Advanced options</em>; <em>Save and connect</em> saves the connection and opens it.
+        </li>
+        <li>Choose <em>Test connection</em>. It shows the MongoDB version and the topology.</li>
+        <li>Save. The connection appears in the tree on the left.</li>
+      </ol>
+      <h2 id="sign-in-methods">Sign-in methods</h2>
+      <p>
+        Besides user name and password (SCRAM), a connection can sign in with an X.509 certificate, LDAP
+        (PLAIN), AWS IAM keys, OIDC or Kerberos. Choose the method under <em>Advanced options</em> →
+        <em>Authentication</em>.
+      </p>
+      <ul>
+        <li>
+          <strong>MONGODB-OIDC</strong> (MongoDB Atlas, Enterprise): each person signs in with the identity
+          provider the server names — no password is stored. The first time you open the connection, a dialog
+          offers <em>Sign in</em>: the provider's page opens in this tab and sends you back. Where its
+          redirect cannot reach Mongo Manager, choose <em>Use a code instead</em> and enter the code shown at
+          the provider. Register this server's <code>…/oidc/callback</code> address with the provider, or give
+          another under <em>Redirect address</em>. <em>Allowed hosts</em> are the hosts your sign-in may be
+          sent to (empty: Atlas and this computer). The connection's page shows whether you are signed in, and
+          signs you out. A <em>workload identity</em> (Azure, GCP, Kubernetes) signs in as the machine Mongo
+          Manager runs on instead: in team mode only where an administrator allowed it.
+        </li>
+        <li>
+          <strong>Kerberos (GSSAPI)</strong>: give the principal, and the service name, realm and host name
+          canonicalization when your servers need them. It signs in with the Kerberos ticket of the account
+          Mongo Manager runs as — yours on your own computer, the server's in team mode, where it is off
+          unless an administrator allowed it. It needs the optional <code>kerberos</code> package of the npm
+          package (see <a href="deployment.html#optional-packages">Deployment</a>).
+        </li>
+      </ul>
+      <h2 id="encryption">Client-side encryption</h2>
+      <p>
+        Under <em>Advanced options</em> → <em>Encryption</em> a connection can use client-side field level
+        encryption (CSFLE) or Queryable Encryption. It needs the optional
+        <code>mongodb-client-encryption</code> package of the npm package.
+      </p>
+      <ul>
+        <li>
+          <strong>Key providers</strong>: a local 96-byte master key (<em>Generate a new key</em> makes one;
+          keep a copy, or the data cannot be decrypted), AWS KMS, Azure Key Vault, Google Cloud KMS or KMIP.
+          Their credentials are kept sealed and never shown again. The <strong>key vault</strong> is the
+          collection the data keys live in (<code>encryption.__keyVault</code> by default).
+        </li>
+        <li>
+          <strong>Mode</strong>: <em>Read and write</em> decrypts reads and encrypts writes (MongoDB
+          Enterprise or Atlas); <em>Decrypt only</em> reads encrypted values decrypted and writes no documents
+          (MongoDB Community). <strong>Query analysis</strong> uses the crypt_shared library (its path, or in
+          team mode the server's) or mongocryptd on this computer.
+        </li>
+        <li>
+          <strong>Encrypted fields</strong> come from the server's collection options — Queryable Encryption's
+          <code>encryptedFields</code>, a CSFLE <code>$jsonSchema</code> validator — unless the connection
+          gives its own maps. The documents view marks encrypted fields with a lock.
+        </li>
+        <li>
+          The connection's <em>Encryption</em> section (for its administrators) lists the data keys, makes new
+          ones and rotates them (rewrapping them under a master key), and creates Queryable Encryption
+          collections: each field with its type and whether it can be queried by equality or range, a data key
+          made for each.
+        </li>
+        <li>
+          Someone from whom personal data is hidden sees encrypted values as stored and cannot write documents
+          on such a connection. Copies move encrypted values as stored; a Queryable Encryption collection
+          cannot be copied.
+        </li>
+      </ul>
+      <h2 id="home-and-next-steps">Home and next steps</h2>
+      <p>
+        Home is a dashboard of widgets you add, remove, resize and move with <em>Customize dashboard</em>; it
+        is saved for you on the server. The <em>Next steps</em> widget suggests up to five things to do,
+        worked out by the app itself from your recent work: alerts firing, jobs that failed in the last day,
+        live syncs and scheduled backups that need you, an index suggested for the database you used last
+        (from its slow queries, when you may watch its server), and places you opened lately that are not open
+        now. Each one is a link that does it — an index opens the usual Create index dialog with the key
+        filled in, and nothing is built until you confirm there. Dismiss one with its ✕ (Undo brings it back);
+        the dismissal is kept with your dashboard, and a new event of the same kind comes back as a new step.
+        <em>Show dismissed steps again</em> in the widget's menu brings them all back.
+      </p>
+      <p>
+        Where an AI provider is set up, the widget's menu offers <em>Order with AI</em>; it is off until you
+        turn it on. The AI then puts the steps in order and words their titles, from facts only: each step's
+        kind, names (connection, database, collection, an index's field names) and counts — never a value, a
+        document or an error text. A step whose connection's AI policy is "off", or "local only" with a
+        provider not known to answer from the local network, is not sent and keeps its place. The AI cannot
+        add a step or change what a step does: under each title it gives, the app's own words say what the
+        step does, and its titles carry no numbers (a count would go stale; the app's line gives it). The
+        steps are put in order again only when they change (another kind of step, another place) or when you
+        choose <em>Reorder with AI</em> — never because a count moved or time passed. Each ordering is counted
+        in the AI history (as "Next steps", without its words) and in the audit log (how many steps, never
+        their names). A suggested index is offered only where you may create indexes.
+      </p>
+      <h2 id="querying">Querying</h2>
+      <p>
+        Open a collection and type a filter such as <code>{ status: 'A', qty: { $lt: 30 } }</code>, then press
+        <kbd>Enter</kbd>. <em>Options</em> adds projection, sort, skip, limit, collation, hint and a time
+        limit. <em>Recent queries</em> lists what you ran on that collection, and the star keeps the query as
+        a favourite with a name and tags.
+      </p>
+      <p>
+        A value in the bar may be a parameter, written <code>{{name}}</code>:
+        <code>{ status: {{status}}, qty: { $gte: {{min}} } }</code>. A field for each one appears under the
+        bar, and <em>Find</em> runs the query with the values given there: <code>18</code> is a number,
+        <code>"18"</code> a string, <code>ISODate("2026-01-01")</code> a date, and any other text a string as
+        typed. A favourite saved from the bar keeps its parameters, the values given as their defaults;
+        opening it fills them in and runs it, or waits for a value where a parameter has none. Inside quotes,
+        a regular expression or a comment, <code>{{name}}</code> is plain text. Someone who may not see a
+        connection's personal data never gets another user's defaults.
+      </p>
+      <p>
+        Chips under the bar suggest conditions: those you ran lately on the collection, and those a small
+        sample of it suggests (a common value, such as <code>status = "paid"</code>, or a field many documents
+        lack); choosing one adds it to the filter and runs it. The sample is taken once the page is idle or
+        the bar is used, and never on a view (it would run the view's pipeline). Above the results, each
+        condition of the filter in use is a chip of its own: removing it (its cross, or <kbd>Delete</kbd> on
+        the chip) runs the filter without it, and <em>Undo</em> puts it back. The text in the bar follows only
+        while it is the filter in use; a filter you are still editing is left as it is. The panel under the
+        bar shows the query in use, part by part; its <em>Run</em> runs it again and its star saves it as a
+        favourite.
+      </p>
+      <p>
+        In the table, click a column's name to sort by it: ascending, then descending, then no sort.
+        <kbd>Shift</kbd> + click adds the column to the sort. The sort is written into <em>Options</em> and
+        runs with the filter in the bar, so the bar always shows what runs. Drag a column's edge (or focus it
+        and use the arrow keys) to change its width, and double-click the edge to let the column size itself
+        again; widths are kept for each collection, for you, in this browser. A column's menu sorts it, copies
+        its name or hides it. A column whose values are hidden from you (personal data) is never sorted.
+      </p>
+      <p>
+        <em>Chart</em>, beside Table, Cards and JSON, draws the query's results as bars, a line, points or a
+        pie: choose the field along the X axis, a count, sum or average of a number field, and a field that
+        splits the results into series. It reads up to the first 1,000 matching documents (only the fields
+        drawn) and says when there are more; a table of the same numbers is there for screen readers. Fields
+        hidden from you are not offered and are never charted. <em>Copy name</em> in the menus of databases,
+        collections and columns, and beside a field in Schema, copies the plain name.
+      </p>
+      <p>
+        Editing a document shows exactly which fields change before anything is written; only those fields are
+        saved. In the table, double-click a value (or press <kbd>Enter</kbd> on it) to edit it in place; it
+        keeps its type.
+      </p>
+      <p>
+        <em>Update many documents</em> and <em>Delete many documents</em> preview before they run: how many
+        documents match, and a few of them. For an update, each sample shows what changes in it, computed by
+        MongoDB in a read that writes nothing; a document the update would fail on (an <code>$inc</code> on
+        text, a path through an array) is marked. Positional paths (<code>$[]</code>), array indexes and
+        <code>$pull</code> with a condition are not previewed on samples, and the preview says so. Personal
+        values stay masked in the samples, before and after.
+      </p>
+      <h2 id="collections">Collections</h2>
+      <p>
+        <em>New collection</em> can set a default collation (a language, its strength, numeric ordering and
+        the rest of MongoDB's options) for a collection, a capped or time-series collection or a view; MongoDB
+        fixes it at creation. A collection or capped collection can also keep change-stream pre- and
+        post-images from the start. Later, the collection's menu <em>Edit collection</em> turns those images
+        on or off (after a confirmation naming it), shows its collation and leads to the Validation tab, where
+        the rules stay. The collection's header says its collation and whether images are kept.
+      </p>
+      <h2 id="performance">Performance</h2>
+      <p>
+        A connection's <em>Performance</em> tab charts the server live: operations per second, connections,
+        network and memory, sampled every 2 seconds while the tab is open. Below are the slowest running
+        operations, which you can filter by database or collection, kind, running time, waiting for a lock and
+        idle connections, and pause; and the collections that took the most time. Editors and admins can open
+        it; an operation's "…" menu shows its command, and for connection admins <em>Kill operation</em>,
+        which asks first. MongoDB itself must allow the account to read server status: give it the
+        <code>clusterMonitor</code> role, or the tab says what is missing.
+      </p>
+      <p>
+        The <em>Profiler</em> section shows each database's profiler level, slowms and sample rate; a
+        connection admin can change them with the pencil on the database's row. Level 2 (every operation) asks
+        first and goes back to the previous setting by itself after 30 minutes. <em>Slow queries</em> lists
+        slow operations from the profiler and from the server's own log (which works even with the profiler
+        off), newest first, with the plan, the keys and documents examined and the command; one that reads far
+        more documents than it returns is flagged, and <em>Open in Explain</em> opens it in its collection.
+      </p>
+      <p>
+        On the connection's <em>Personal data</em> tab, a connection admin can list the fields that hold
+        personal data (for example <code>crm.users.email</code> or <code>*.*.**.phone</code>); a collection's
+        own <em>Personal data</em> tab lists and adds that collection's fields only, a field name being all a
+        new one asks for, and shows the connection's wider rules that reach it. A user granted
+        <em>Cannot see personal data</em> sees their values as <code>***</code> in the profiler, slow queries
+        and operations, and cannot use the shell. In local mode (no accounts) the rules hide the values from
+        you too, everywhere — documents, exports, the AI's context — and the shell stays closed while they are
+        hidden; <em>Hide them from me too</em> on the connection's tab turns that off for the connection.
+      </p>
+      <p>
+        <em>Index suggestions</em> reads a database's slow queries and proposes an index for each query that
+        scanned, by the equality–sort–range rule, unless an index already serves it; it also lists indexes
+        that were not used since the server started or that are the start of another index. Only field names
+        are used. <em>Create index</em> opens the usual dialog with the key filled in: nothing is built until
+        you confirm there.
+      </p>
+      <p>
+        In the connection's header, while Performance is open, pick <em>Live</em> (the last 5 minutes) or a
+        stored span of 1 hour, 24 hours or 7 days. A connection admin turns <em>Record metric history</em> on
+        in the <em>Metric history</em> menu beside it (the same menu deletes what was stored, after asking):
+        the server then samples that connection once a minute and keeps 7 days (numbers only). While it is
+        off, the server never connects to that connection on its own. On a mongos, the tab shows the sharding
+        overview: shards, the balancer, the routers and each sharded collection's key and chunk spread, with
+        sizes and jumbo chunks on demand. Nothing there changes the cluster.
+      </p>
+      <p>
+        On a replica set, the same tab lists every member: which one is primary, which are down, how many
+        seconds each secondary is behind the primary (amber over 10 s, red over 60 s), the majority commit lag
+        and the oplog window, with a chart of the lag over the last minutes. A set without a primary is shown
+        in red: it cannot accept writes until one is elected.
+      </p>
+      <h2 id="aggregations">Aggregations</h2>
+      <p>
+        The Aggregations tab of a collection builds a pipeline stage by stage. Add a stage, pick its operator
+        (type in the operator's field to find a stage by its name or by what it does — "join" finds
+        <code>$lookup</code> — with the arrow keys and Enter; beside the list, what the stage does and an
+        example of its value; each starts from a template, with a link to the MongoDB manual) and edit its
+        value; the output of every stage is previewed on a sample of the collection (the first 1000 documents,
+        or a random sample) while you type. Stages can be disabled, reordered with drag and drop or Alt+Up and
+        Alt+Down, or edited all at once as text.
+      </p>
+      <p>
+        Run streams the whole result (up to 10 000 documents) with a Stop button; Compute total counts it only
+        when asked. A pipeline ending in <code>$out</code> or <code>$merge</code> is never previewed: it runs
+        once, after a confirmation that names the target, and replacing a collection asks for its name.
+        Pipelines can be saved with the collection (in team mode, optionally shared), exported as a program
+        for Node.js, Python, Java, Go, C#, PHP, Ruby or Rust (the connection string is read from
+        <code>MONGODB_URI</code>, never written into the code), or turned into a view.
+      </p>
+      <p>
+        A view's pipeline is changed the same way: <em>Edit pipeline</em> on the view (its overview or its
+        menu) opens it in the Aggregations tab of the collection it reads, marked as the view's, with a
+        preview of each stage. <em>Update view</em> writes the enabled stages back to the view, after a
+        confirmation that names it. A pipeline with a stage the builder cannot read is not opened (saving it
+        would lose that stage); a user from whom personal data is hidden cannot change a view whose definition
+        they see masked.
+      </p>
+      <h2 id="queries">Queries</h2>
+      <p>
+        The Queries page (Queries in the sidebar, the command palette, or <kbd>Ctrl / ⌘</kbd> +
+        <kbd>Shift</kbd> + <kbd>L</kbd>; its address is <code>/library</code>) searches a connection's
+        favourites, saved pipelines, shell snippets and query history by name, tag, query text, kind or
+        collection. It opens on the connection you were working on, else the first one, and keeps what you
+        searched when you come back to it. Opening an item goes to its collection: a find runs in Documents, a
+        pipeline fills the Aggregations cards (after asking, when the tab already has some). The history keeps
+        the finds and aggregations you ran, the latest 200 per collection and 2000 in all, each once with how
+        many times it was used; entries can be removed one by one or cleared. Favourites and saved pipelines
+        can be renamed, re-tagged, shared and deleted from the Queries page, and pinned: pinned queries are
+        yours alone (up to 50 per connection), listed first on the Queries page and in the Queries widget on
+        Home. The command palette lists the favourites, saved pipelines and shell snippets of every connection
+        open in a tab, each connection under its own name, the one you are working on first. When team mode
+        starts, the history of local mode is deleted (no team user could see or clear it); the log says how
+        many entries went. Favourites and saved pipelines of local mode stay, for connection admins.
+      </p>
+      <h2 id="advanced-shell">Advanced shell</h2>
+      <p>
+        A connection's shell tab runs a real mongosh, and its terminal is where code is typed: use a database,
+        run finds and aggregations, write scripts. Enter runs the code once it is complete; while a bracket, a
+        string or a statement is open (after <code>.</code>, an operator, <code>if (…)</code>) it continues on
+        the next line after <code>...</code>, and Shift+Enter always adds a line. Ctrl+Enter runs the code as
+        it is. Code of many lines can be pasted into the terminal: it is shown line by line and runs only when
+        you press Enter. A script runs as mongosh runs what is typed — <code>use</code>, <code>show</code> and
+        <code>it</code> each on their own, then each statement in turn; an error stops it there and says how
+        many statements did not run. <code>print()</code> and <code>printjson()</code> write to the terminal;
+        <code>cls</code> clears it and the results, and <code>exit</code> ends the shell.
+      </p>
+      <p>
+        Up and Down move between the lines of what is typed, then through the history; Ctrl+R searches the
+        history (Ctrl+R again for older matches, Escape to leave it). Ctrl+C stops a running command, or
+        clears the line — or copies, when output is selected. Alt+B and Alt+F (or Ctrl+Left and Ctrl+Right)
+        move by word. Each user's history is kept per connection, encrypted, and can be cleared.
+      </p>
+      <p>
+        The shell is available to connection admins, and to an editor an admin grants it. It runs in a sandbox
+        that holds no credential and can reach only the connection's own servers; on a read-only connection it
+        refuses writes, and a non-admin cannot run cluster or user administration.
+      </p>
+      <p>
+        The shell page says where it runs — the connection and the database the shell is on (it follows
+        <code>use</code>) — and its state: connecting, connected, running (with the time it has run) or
+        closed. Its header holds Stop while a command runs, Clear the screen and the results (Ctrl+L, also
+        while a command runs, or <code>cls</code>; a notice says so, and its Undo, or Bring the results back
+        on the empty Results card, returns them), and a menu to save what is typed (or the last code run) as a
+        snippet, clear the history (the results go with it) or restart the shell (the session ends and a new
+        one starts; variables and the results shown are lost). The terminal takes the app's light or dark
+        theme or one of its own, and colours the code. A bar at the bottom lists the keys. A shell stays open
+        as long as its page is open, however long it is not used. When it closes (your sign-in ended, or it
+        passed an idle or lifetime limit the server sets), the page says why; Enter opens a new one; a command
+        still running when the connection drops finishes on screen once it is back.
+      </p>
+      <p>
+        Typing offers completions with Tab — the database's collections after <code>db.</code> (one made in
+        the shell too), the methods of what a chain returns, operators after <code>$</code>, and field names
+        sampled from the collection. Shift+Tab, or Escape then Tab, leaves the terminal.
+      </p>
+      <p>
+        Beside the terminal, the Results card shows the last result as a table, a tree or text; More fetches
+        the next batch of a cursor, and the result history in its header picks an earlier result, each named
+        by the command it came from (kept in memory only); Clear empties the card; the notice's Undo, or Bring
+        the results back on the empty card, returns the results until the shell restarts or its history is
+        cleared. The card can be widened; on a narrow screen the terminal and the results are two tabs.
+        Several shell tabs can be open together, each with its own session. A cursor of a plain find or
+        aggregation opens in its collection view — a find starting at its skip, its limit as the page size —
+        and the documents shown export as JSON or CSV.
+      </p>
+      <p>
+        Code can be saved as a snippet — private, or shared with the team — with parameters written
+        <code>{{name}}</code>. Opening a snippet (from the Queries page or the command palette) asks for its
+        parameters and puts the filled code in the terminal; nothing runs until you press Enter. Your own
+        snippets are edited on the Queries page: the name, the tags, the code and its parameters (a row
+        follows each <code>{{name}}</code> as you type), checked as a new snippet is; a shared snippet stays
+        shared, and the audit log notes that its code changed, never the code.
+      </p>
+      <p>
+        The terminal works with a screen reader: its screen-reader mode is on by default, and Account →
+        Preferences turns it off or on again, in open shells too.
+      </p>
+      <h2 id="explain">Explain</h2>
+      <p>
+        "Why is it slow?" in Documents or Aggregations opens the Explain section on that query or pipeline. It
+        shows the plan MongoDB chose as a tree (arrow keys move through it), what each stage read and
+        returned, the plans it rejected, and warnings in words: a scan of the whole collection, a sort done in
+        memory, a filter that reads far more than it returns, a join on a field with no index. When an index
+        would help, Explain suggests one (equality fields, then the sort, then ranges) and "Create this index"
+        builds it in the background. A pipeline that writes is not explained, because explaining runs it.
+      </p>
+      <h2 id="validation">Validation</h2>
+      <p>
+        The Validation section edits the rules every inserted or updated document must follow, with the
+        validation level and action. "Generate from sample" writes a $jsonSchema from the collection's
+        documents; "Test against existing documents" counts how many would fail, with examples, before you
+        save. Saving asks first, and says when documents that break the rules would have their updates
+        refused; "Restore the previous rules" puts back what the last save replaced while the tab is open.
+        A write the rules refuse says which ones it did not meet (a missing field, a wrong type, a minimum),
+        and so does the report of an import or a copy; the value that failed is never repeated.
+      </p>
+      <h2 id="schema">Schema</h2>
+      <p>
+        A collection's <em>Schema</em> tab analyses a random sample (100, 1,000 or 10,000 documents): each
+        field with how often it is present, its types, and a histogram or its most common values.
+        <em>Export</em>
+        turns the analysis into a Mongoose schema, a MongoDB JSON Schema validator or a TypeScript interface,
+        to copy or download. A field counts as required when every sampled document has it.
+      </p>
+      <p>
+        A field's bars — its ranges and its most common values — and its types are buttons: choosing one adds
+        that condition to the collection's Documents filter (beside the conditions already typed, or with
+        <code>$and</code> when the field has one), runs it and shows the documents. A value cut short in the
+        analysis is shown but not offered. A field holding places — GeoJSON points, or coordinate pairs under
+        a name such as <code>location</code> or <code>coords</code> — shows them on a map drawn without any
+        network (the world's outline from Natural Earth, in the public domain): drag or use the arrow keys to
+        move; <kbd>Ctrl</kbd> and the wheel, two fingers, or <kbd>+</kbd> and <kbd>−</kbd> to zoom; the places
+        are also listed as a table; and <em>Filter to this area</em> adds a <code>$geoWithin</code> of the
+        area in view. Fields with personal data are never drawn.
+      </p>
+      <h2 id="data-model">Data model</h2>
+      <p>
+        A database's <em>Model</em> section draws its collections and the references between them.
+        <em>Read the model</em> samples each collection (100 to 1,000 documents, at most 50 collections) for
+        its fields — the top level and one level below, deeper ones only when they look like references — and
+        finds references three ways: a field named after a collection (<code>userId</code> or
+        <code>user_id</code> → <code>users</code>, <code>tagIds</code> → <code>tags</code>), sampled ObjectId
+        values found as another collection's <code>_id</code> (at most ten values per field, sixty small
+        counts in all), and the <code>$lookup</code> and <code>$graphLookup</code> stages of views and of the
+        saved pipelines you may open. A solid line was found by name or values, a dashed one by
+        <code>$lookup</code> only, a dotted one joins a view to its source. A line ends in a crow's foot
+        ("many") at the field that holds the reference — many documents may hold the same id — and in a bar
+        ("one") at the collection it refers to, a crow's foot there too for an array of references. A field is
+        marked <strong>PK</strong> (the key, <code>_id</code>), <strong>UQ</strong> (a unique index of it
+        alone) or <strong>IX</strong> (in an index); indexes are read by their keys' names only.
+      </p>
+      <p>
+        Drag the diagram or use the arrow keys to move it, <kbd>+</kbd> and <kbd>−</kbd> to zoom,
+        <kbd>0</kbd> to fit it. The wheel scrolls the page until the diagram has the focus (click it or Tab
+        into it); then the wheel moves it and <kbd>Ctrl</kbd> / <kbd>⌘</kbd> and the wheel zoom (<kbd
+          >Shift</kbd
+        >
+        and the wheel move it at any time). Click a collection, or Tab to it and press <kbd>Enter</kbd>, to
+        see its links and open it. The <em>List</em> view shows the same model as a list: each collection
+        opens its fields and links, and a link moves to the collection it points to. <em>Export</em> saves the
+        diagram as PNG or SVG (in the colours of the theme in use and your language), the model as JSON, and
+        the model as Mermaid's <code>erDiagram</code> (saved as <code>.mmd</code> or copied) for a README, a
+        wiki or a pull request that draws it, where a unique field is written <code>UK</code> as Mermaid names
+        it. Only names, types and counts are shown; no value leaves the server. Who may read documents may
+        read the model; fields hidden from you as personal data are shown by name only and their values are
+        never read. A MongoDB user allowed only some collections sees those.
+      </p>
+      <p>
+        Reading a model costs the server one sample per collection: up to 50 collections times the sample
+        size, plus at most sixty small counts. The server caps the documents one model reads in all
+        (<code>MM_MODEL_MAX_DOCS</code>, 20,000 by default): with many collections each sample is made
+        smaller, and the section says so. Read it when the server is quiet, or with a smaller sample, on a
+        busy production database.
+      </p>
+      <h2 id="search-indexes">Search indexes</h2>
+      <p>
+        On MongoDB Atlas, or MongoDB 8.0 or later with the search process (mongot), the Indexes tab also lists
+        a collection's Atlas Search and Vector Search indexes: each with its kind, its status (pending,
+        building, ready, failed with the reason) and what it covers, checked again every few seconds while one
+        is building. <em>Create search index</em> takes the definition as JSON, or for a vector index a guided
+        form: the field with the embeddings, their dimensions and similarity, and the fields to filter on. A
+        definition can be edited and an index dropped, after a confirmation naming it. Elsewhere the tab says
+        what search needs.
+      </p>
+      <h2 id="background-jobs">Background jobs</h2>
+      <p>
+        Building an index and duplicating a collection run in the background, so a long one never meets a
+        timeout. You can leave the page, or close the tab, while they run. The <em>Background jobs</em> button
+        in the top bar shows each job: with a bar and numbers when MongoDB reports its progress (index
+        builds), or <em>Still running</em> and the time so far when it does not (copies). You are told when
+        your own jobs end, and you can cancel them there.
+      </p>
+      <p>
+        If the server restarts during a copy, the copy is abandoned and its half-made collection is removed;
+        the target is never left half-filled. An index build may go on inside MongoDB; the Indexes tab shows
+        it.
+      </p>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">On this page</p>
+      <ol>
+        <li><a href="#install">Install</a></li>
+        <li><a href="#first-run">First run</a></li>
+        <li><a href="#your-first-connection">Your first connection</a></li>
+        <li><a href="#sign-in-methods">Sign-in methods</a></li>
+        <li><a href="#encryption">Client-side encryption</a></li>
+        <li><a href="#home-and-next-steps">Home and next steps</a></li>
+        <li><a href="#querying">Querying</a></li>
+        <li><a href="#collections">Collections</a></li>
+        <li><a href="#performance">Performance</a></li>
+        <li><a href="#aggregations">Aggregations</a></li>
+        <li><a href="#queries">Queries</a></li>
+        <li><a href="#advanced-shell">Advanced shell</a></li>
+        <li><a href="#explain">Explain</a></li>
+        <li><a href="#validation">Validation</a></li>
+        <li><a href="#schema">Schema</a></li>
+        <li><a href="#data-model">Data model</a></li>
+        <li><a href="#search-indexes">Search indexes</a></li>
+        <li><a href="#background-jobs">Background jobs</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

@@ -1,0 +1,105 @@
+{
+  "id": "time-hints",
+  "name": {
+    "en": "Time hints",
+    "tr": "Zaman ipuçları",
+    "zh": "时间提示",
+    "ja": "時刻のヒント",
+    "es": "Pistas de tiempo",
+    "pt": "Dicas de tempo",
+    "ko": "시간 힌트",
+    "de": "Zeithinweise",
+    "fr": "Indices temporels",
+    "ru": "Подсказки времени"
+  },
+  "version": "1.3.0",
+  "description": {
+    "en": "Shows, when you point at an ObjectId, when it was made, and at a number that reads as a Unix time, its date.",
+    "tr": "Bir ObjectId'nin üzerine geldiğinizde ne zaman oluşturulduğunu, Unix zamanı gibi görünen bir sayının üzerine geldiğinizde tarihini gösterir.",
+    "zh": "将鼠标指向 ObjectId 时显示其创建时间，指向可视为 Unix 时间的数字时显示对应日期。",
+    "ja": "ObjectId にポインターを合わせると作成された日時を、Unix 時間に見える数値に合わせるとその日付を表示します。",
+    "es": "Al apuntar a un ObjectId, muestra cuándo se creó; al apuntar a un número que se lee como hora Unix, muestra su fecha.",
+    "pt": "Ao apontar para um ObjectId, mostra quando ele foi criado; ao apontar para um número que se lê como hora Unix, mostra a data.",
+    "ko": "ObjectId에 포인터를 올리면 생성된 시점을, Unix 시간으로 읽히는 숫자에 올리면 그 날짜를 보여 줍니다.",
+    "de": "Zeigt beim Zeigen auf eine ObjectId, wann sie erstellt wurde, und bei einer Zahl, die sich als Unix-Zeit lesen lässt, ihr Datum.",
+    "fr": "Affiche, en pointant un ObjectId, le moment de sa création et, en pointant un nombre qui se lit comme une heure Unix, sa date.",
+    "ru": "При наведении на ObjectId показывает, когда он был создан, а при наведении на число, читаемое как время Unix, — его дату."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "cellRenderers": [
+      { "id": "objectid", "match": "objectId", "display": "tooltip" },
+      { "id": "epoch", "match": "number", "display": "tooltip" }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "CC-BY-NC-SA-4.0",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.3.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Başka bir şey değişmez.",
+        "zh": "现在和应用一样支持韩语、德语、法语和俄语。其他内容不变。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語に対応しました。ほかに変更はありません。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, igual que la aplicación. Nada más cambia.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o app. Nada mais muda.",
+        "ko": "앱과 같이 한국어, 독일어, 프랑스어, 러시아어를 지원합니다. 다른 변경 사항은 없습니다.",
+        "de": "Jetzt auch auf Koreanisch, Deutsch, Französisch und Russisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en coréen, en allemand, en français et en russe, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь также на корейском, немецком, французском и русском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在和应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルのポルトガル語に対応しました。ほかに変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, igual que la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o app. Nada mais muda.",
+        "ko": "앱과 같이 중국어, 일본어, 스페인어, 브라질 포르투갈어를 지원합니다. 다른 변경 사항은 없습니다.",
+        "de": "Jetzt auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, en japonais, en espagnol et en portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь также на китайском, японском, испанском и бразильском португальском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-13",
+      "notes": {
+        "en": "The time is no longer written beside the value: it shows in a tooltip when you point at an ObjectId or a number that reads as a Unix time, with the whole value above it. Long values are no longer cut short to make room for it.",
+        "tr": "Zaman artık değerin yanına yazılmıyor: bir ObjectId'nin ya da Unix zamanı gibi görünen bir sayının üzerine geldiğinizde, değerin tamamının altında bir araç ipucunda görünüyor. Uzun değerler ona yer açmak için artık kısaltılmıyor.",
+        "zh": "时间不再写在值的旁边：将鼠标指向 ObjectId 或可视为 Unix 时间的数字时，会在工具提示中显示，完整的值位于其上方。较长的值不再为了腾出空间而被截断。",
+        "ja": "時刻は値の横には表示されなくなりました。ObjectId や Unix 時間に見える数値にポインターを合わせると、値全体の下にツールチップで表示されます。長い値も、場所を空けるために途中で切られることはなくなりました。",
+        "es": "La hora ya no se escribe junto al valor: aparece en una información emergente al apuntar a un ObjectId o a un número que se lee como hora Unix, con el valor completo encima. Los valores largos ya no se recortan para dejarle sitio.",
+        "pt": "A hora não é mais escrita ao lado do valor: ela aparece em uma dica ao apontar para um ObjectId ou para um número que se lê como hora Unix, com o valor completo acima. Valores longos não são mais cortados para abrir espaço para ela.",
+        "ko": "시간이 더 이상 값 옆에 쓰이지 않습니다. ObjectId나 Unix 시간으로 읽히는 숫자에 포인터를 올리면 값 전체 아래에 툴팁으로 표시됩니다. 긴 값도 더 이상 자리를 만들기 위해 잘리지 않습니다.",
+        "de": "Die Zeit steht nicht mehr neben dem Wert: Sie erscheint in einem Tooltip, wenn Sie auf eine ObjectId oder eine als Unix-Zeit lesbare Zahl zeigen, darüber der vollständige Wert. Lange Werte werden dafür nicht mehr gekürzt.",
+        "fr": "L’heure n’est plus écrite à côté de la valeur : elle s’affiche dans une info-bulle quand on pointe un ObjectId ou un nombre qui se lit comme une heure Unix, avec la valeur complète au-dessus. Les valeurs longues ne sont plus tronquées pour lui faire de la place.",
+        "ru": "Время больше не пишется рядом со значением: оно показывается во всплывающей подсказке при наведении на ObjectId или на число, читаемое как время Unix, а над ним — значение целиком. Длинные значения больше не обрезаются ради него."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "First release. Beside each ObjectId, cells show when it was made; beside a number that reads as a Unix time in seconds or milliseconds between 2001 and 2100, its date, marked ≈ because it may be a plain number. Times are shown in the app's language and your local time.",
+        "tr": "İlk sürüm. Hücrelerde her ObjectId'nin yanında ne zaman oluşturulduğu, saniye ya da milisaniye cinsinden 2001 ile 2100 arasındaki bir Unix zamanı gibi görünen bir sayının yanında da tarihi gösterilir; sıradan bir sayı olabileceği için ≈ ile işaretlenir. Zamanlar uygulamanın dilinde ve yerel saatinizle gösterilir.",
+        "zh": "首个版本。单元格会在每个 ObjectId 旁显示其创建时间；在 2001 年至 2100 年之间、可视为以秒或毫秒表示的 Unix 时间的数字旁显示其日期，并标记为 ≈，因为它可能只是普通数字。时间以应用的语言和您的本地时间显示。",
+        "ja": "最初のリリースです。セルには各 ObjectId の横に作成日時が、2001 年から 2100 年までの秒またはミリ秒の Unix 時間に見える数値の横にその日付が表示されます。普通の数値である可能性があるため、日付には ≈ が付きます。時刻はアプリの言語とお使いのローカル時間で表示されます。",
+        "es": "Primera versión. Junto a cada ObjectId, las celdas muestran cuándo se creó; junto a un número que se lee como hora Unix en segundos o milisegundos entre 2001 y 2100, su fecha, marcada con ≈ porque puede ser un número corriente. Las horas se muestran en el idioma de la aplicación y en su hora local.",
+        "pt": "Primeira versão. Ao lado de cada ObjectId, as células mostram quando ele foi criado; ao lado de um número que se lê como hora Unix em segundos ou milissegundos entre 2001 e 2100, a data, marcada com ≈ porque pode ser um número comum. As horas são mostradas no idioma do app e no seu horário local.",
+        "ko": "첫 번째 릴리스입니다. 셀에서 각 ObjectId 옆에는 생성된 시점이, 2001년부터 2100년 사이의 초 또는 밀리초 단위 Unix 시간으로 읽히는 숫자 옆에는 그 날짜가 표시되며, 일반 숫자일 수도 있으므로 ≈로 표시됩니다. 시간은 앱의 언어와 사용자의 현지 시간으로 표시됩니다.",
+        "de": "Erste Version. Neben jeder ObjectId zeigen Zellen, wann sie erstellt wurde; neben einer Zahl, die sich als Unix-Zeit in Sekunden oder Millisekunden zwischen 2001 und 2100 lesen lässt, ihr Datum, mit ≈ gekennzeichnet, weil es eine gewöhnliche Zahl sein kann. Zeiten werden in der Sprache der App und in Ihrer lokalen Zeit angezeigt.",
+        "fr": "Première version. À côté de chaque ObjectId, les cellules affichent le moment de sa création ; à côté d’un nombre qui se lit comme une heure Unix en secondes ou en millisecondes entre 2001 et 2100, sa date, marquée par ≈ car il peut s’agir d’un simple nombre. Les heures s’affichent dans la langue de l’application et à votre heure locale.",
+        "ru": "Первый выпуск. Рядом с каждым ObjectId ячейки показывают, когда он был создан; рядом с числом, читаемым как время Unix в секундах или миллисекундах между 2001 и 2100 годами, — его дату, отмеченную знаком ≈, так как это может быть обычное число. Время показывается на языке приложения и в вашем местном времени."
+      }
+    }
+  ]
+}

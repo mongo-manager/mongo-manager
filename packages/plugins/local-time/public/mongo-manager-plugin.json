@@ -1,0 +1,146 @@
+{
+  "id": "local-time",
+  "name": {
+    "en": "Local time",
+    "tr": "Yerel saat",
+    "zh": "本地时间",
+    "ja": "ローカル時刻",
+    "es": "Hora local",
+    "pt": "Hora local",
+    "ko": "현지 시간",
+    "de": "Ortszeit",
+    "fr": "Heure locale",
+    "ru": "Местное время"
+  },
+  "version": "1.2.0",
+  "description": {
+    "en": "Shows each date in your local time — or a time zone you set — with its offset from UTC, in a tooltip or beside the value; optionally how long ago it was.",
+    "tr": "Her tarihi yerel saatinizle — ya da ayarladığınız bir saat dilimiyle — UTC'den farkıyla birlikte, bir araç ipucunda ya da değerin yanında gösterir; isterseniz ne kadar önce olduğunu da ekler.",
+    "zh": "以本地时间（或您设置的时区）显示每个日期，并附带相对 UTC 的偏移，显示在提示框或值旁边；还可选择显示距今多久。",
+    "ja": "各日付をローカル時刻（または設定したタイムゾーン）で、UTC からのオフセットとともにツールチップまたは値の横に表示します。経過時間を加えることもできます。",
+    "es": "Muestra cada fecha en tu hora local, o en una zona horaria que establezcas, con su desfase respecto a UTC, en una información emergente o junto al valor; opcionalmente, hace cuánto fue.",
+    "pt": "Mostra cada data no seu horário local, ou em um fuso horário que você definir, com a diferença em relação ao UTC, em uma dica ou ao lado do valor; opcionalmente, há quanto tempo foi.",
+    "ko": "각 날짜를 현지 시간(또는 설정한 시간대)으로 UTC와의 오프셋과 함께 툴팁이나 값 옆에 표시하며, 원하면 얼마나 전인지도 보여 줍니다.",
+    "de": "Zeigt jedes Datum in Ihrer Ortszeit – oder in einer von Ihnen festgelegten Zeitzone – mit dem Versatz zu UTC an, in einem Tooltip oder neben dem Wert; auf Wunsch auch, wie lange es her ist.",
+    "fr": "Affiche chaque date dans votre heure locale, ou dans un fuseau horaire que vous définissez, avec son décalage par rapport à UTC, dans une infobulle ou à côté de la valeur ; si vous le souhaitez, il y a combien de temps c’était.",
+    "ru": "Показывает каждую дату в вашем местном времени или в заданном вами часовом поясе вместе со смещением от UTC во всплывающей подсказке или рядом со значением; при желании добавляет, как давно это было."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "cellRenderers": [
+      {
+        "id": "tip",
+        "match": "date",
+        "display": "tooltip"
+      },
+      {
+        "id": "beside",
+        "match": "date",
+        "display": "inline"
+      }
+    ]
+  },
+  "settings": {
+    "beside": {
+      "type": "boolean",
+      "title": {
+        "en": "Show it beside the date",
+        "tr": "Tarihin yanında göster",
+        "zh": "显示在日期旁边",
+        "ja": "日付の横に表示",
+        "es": "Mostrar junto a la fecha",
+        "pt": "Mostrar ao lado da data",
+        "ko": "날짜 옆에 표시",
+        "de": "Neben dem Datum anzeigen",
+        "fr": "Afficher à côté de la date",
+        "ru": "Показывать рядом с датой"
+      }
+    },
+    "timeZone": {
+      "type": "text",
+      "title": {
+        "en": "Time zone (e.g. Europe/Istanbul; empty: this browser's)",
+        "tr": "Saat dilimi (ör. Europe/Istanbul; boş: bu tarayıcınınki)",
+        "zh": "时区（如 Europe/Istanbul；留空：使用此浏览器的时区）",
+        "ja": "タイムゾーン（例: Europe/Istanbul。空欄: このブラウザーの設定）",
+        "es": "Zona horaria (p. ej. Europe/Istanbul; vacío: el navegador)",
+        "pt": "Fuso horário (ex.: Europe/Istanbul; vazio: o do navegador)",
+        "ko": "시간대(예: Europe/Istanbul, 비워 두면 이 브라우저의 시간대)",
+        "de": "Zeitzone (z. B. Europe/Istanbul; leer: die des Browsers)",
+        "fr": "Fuseau (p. ex. Europe/Istanbul ; vide : celui du navigateur)",
+        "ru": "Часовой пояс (напр. Europe/Istanbul; пусто: пояс браузера)"
+      }
+    },
+    "relative": {
+      "type": "boolean",
+      "title": {
+        "en": "Add how long ago it was",
+        "tr": "Ne kadar önce olduğunu ekle",
+        "zh": "附加距今多久",
+        "ja": "経過時間を追加",
+        "es": "Añadir hace cuánto fue",
+        "pt": "Adicionar há quanto tempo foi",
+        "ko": "얼마나 전인지 추가",
+        "de": "Zeitabstand hinzufügen",
+        "fr": "Ajouter il y a combien de temps",
+        "ru": "Добавлять, как давно это было"
+      }
+    }
+  },
+  "author": {
+    "name": "Gokhan OZGEZER"
+  },
+  "license": "CC-BY-NC-SA-4.0",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Başka bir şey değişmez.",
+        "zh": "现已支持韩语、德语、法语和俄语，与应用保持一致。其他内容不变。",
+        "ja": "アプリと同様に、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。それ以外は変わりません。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. No cambia nada más.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o app. Nada mais muda.",
+        "ko": "앱과 마찬가지로 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 그 외에는 달라지는 것이 없습니다.",
+        "de": "Jetzt auch auf Koreanisch, Deutsch, Französisch und Russisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь также на корейском, немецком, французском и русском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现已支持中文、日语、西班牙语和巴西葡萄牙语，与应用保持一致。其他内容不变。",
+        "ja": "アプリと同様に、中国語、日本語、スペイン語、ブラジルポルトガル語に対応しました。それ以外は変わりません。",
+        "es": "Ahora en chino, japonés, español y portugués de Brasil, como la aplicación. No cambia nada más.",
+        "pt": "Agora em chinês, japonês, espanhol e português do Brasil, como o app. Nada mais muda.",
+        "ko": "앱과 마찬가지로 중국어, 일본어, 스페인어, 브라질 포르투갈어를 지원합니다. 그 외에는 달라지는 것이 없습니다.",
+        "de": "Jetzt auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь также на китайском, японском, испанском и бразильском португальском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-26",
+      "notes": {
+        "en": "First release. Dates in Documents show in your local time, or a time zone set in the plugin's settings, with their offset from UTC (UTC+3, UTC+5:30), in a tooltip — or beside the value if you choose — and, if you like, how long ago they were.",
+        "tr": "İlk sürüm. Belgelerdeki tarihler yerel saatinizle ya da eklentinin ayarlarında belirlenen saat diliminde, UTC'den farkıyla (UTC+3, UTC+5:30) bir araç ipucunda — isterseniz değerin yanında — ve dilerseniz ne kadar önce olduklarıyla gösterilir.",
+        "zh": "首个版本。文档中的日期以本地时间或插件设置中指定的时区显示，并附带相对 UTC 的偏移（UTC+3、UTC+5:30），显示在提示框中，也可选择显示在值旁边；还可按需显示距今多久。",
+        "ja": "初回リリース。ドキュメントの日付を、ローカル時刻またはプラグインの設定で指定したタイムゾーンで、UTC からのオフセット（UTC+3、UTC+5:30）とともにツールチップに表示します。値の横への表示や、経過時間の追加も選べます。",
+        "es": "Primera versión. Las fechas de Documentos se muestran en tu hora local, o en una zona horaria definida en la configuración del complemento, con su desfase respecto a UTC (UTC+3, UTC+5:30), en una información emergente, o junto al valor si lo eliges, y, si quieres, hace cuánto fueron.",
+        "pt": "Primeira versão. As datas em Documentos aparecem no seu horário local, ou em um fuso horário definido nas configurações do plugin, com a diferença em relação ao UTC (UTC+3, UTC+5:30), em uma dica ou, se você preferir, ao lado do valor e, se quiser, há quanto tempo foram.",
+        "ko": "첫 릴리스입니다. 도큐먼트의 날짜가 현지 시간 또는 플러그인 설정에서 지정한 시간대로 UTC와의 오프셋(UTC+3, UTC+5:30)과 함께 툴팁에 표시되며, 원하면 값 옆에 표시하거나 얼마나 전인지도 덧붙일 수 있습니다.",
+        "de": "Erste Version. Datumswerte in Dokumenten erscheinen in Ihrer Ortszeit oder in einer in den Einstellungen des Plugins festgelegten Zeitzone, mit ihrem Versatz zu UTC (UTC+3, UTC+5:30), in einem Tooltip – auf Wunsch neben dem Wert – und, wenn Sie möchten, mit dem Zeitabstand.",
+        "fr": "Première version. Les dates des Documents s’affichent dans votre heure locale, ou dans un fuseau horaire défini dans les réglages du plugin, avec leur décalage par rapport à UTC (UTC+3, UTC+5:30), dans une infobulle, ou à côté de la valeur si vous le choisissez, et, si vous le souhaitez, il y a combien de temps c’était.",
+        "ru": "Первый выпуск. Даты в документах показываются в вашем местном времени или в часовом поясе из настроек плагина вместе со смещением от UTC (UTC+3, UTC+5:30) во всплывающей подсказке, а по желанию рядом со значением, и, если нужно, с указанием, как давно это было."
+      }
+    }
+  ]
+}

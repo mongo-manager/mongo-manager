@@ -1,0 +1,67 @@
+# Mongo Manager with Docker Compose. First start: the one-time setup token is in
+# `docker compose exec mongo-manager cat /data/setup-token`.
+# Optional local MongoDB for trying it out: docker compose --profile with-mongo up
+# (then add the connection mongodb://mongo:27017/?replicaSet=rs0 in Mongo Manager).
+# Inside the container, localhost is the container itself: reach a MongoDB by its service or
+# container name on a shared network (see deploy/README.md, "Reaching your MongoDB").
+services:
+  mongo-manager:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: mongo-manager:local
+    # On the host's loopback only: plain HTTP never reaches the network. To serve others, put an HTTPS
+    # reverse proxy in front and set MM_TRUSTED_PROXIES (see deploy/README.md).
+    ports:
+      - '127.0.0.1:4321:4321'
+    # Behind such a proxy, opened by a name: uncomment and set the name (see deploy/README.md).
+    # environment:
+    #   MM_ALLOWED_HOSTS: mongo.example.com
+    #   MM_TRUSTED_PROXIES: 172.31.240.1
+    volumes:
+      - mm-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  mongo:
+    # MongoDB 7.0, not 8 or later: those refuse Linux 6.19 to 7.0.13 (SERVER-121912), Ubuntu
+    # 26.04's and 24.04's newer kernels among them (SERVER-136848), and may crash there when they start.
+    image: mongo:7.0.45@sha256:c53852c00c23ca9f23fc39690350ffa9a80e3642fe8f96879726d8da0abe80a7
+    profiles: ['with-mongo']
+    # A one-member replica set, so Watch and Live sync (change streams) can be tried too. The health
+    # check makes it one on the first start (later starts find it already is), and says healthy once
+    # it is the primary. It has no users: with MONGO_INITDB_ROOT_* set, a replica set also needs a
+    # keyfile, and this check would never pass.
+    command: ['--replSet', 'rs0']
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --eval
+        - "try { rs.status() } catch (e) { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'mongo:27017' }] }) }; quit(db.hello().isWritablePrimary ? 0 : 1)"
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 10s
+    volumes:
+      - mongo-data:/data/db
+    # Not published on the host: reachable only by mongo-manager on the compose network.
+
+# A fixed subnet: a reverse proxy on the host reaches the container from its gateway, 172.31.240.1,
+# never from 127.0.0.1. Behind such a proxy, set MM_TRUSTED_PROXIES=172.31.240.1 (see deploy/README.md).
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.31.240.0/24
+          gateway: 172.31.240.1
+
+volumes:
+  mm-data:
+  mongo-data:

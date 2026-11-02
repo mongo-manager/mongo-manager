@@ -1,0 +1,103 @@
+{
+  "id": "log-analyzer",
+  "name": {
+    "en": "Log analyzer",
+    "tr": "Log analizcisi",
+    "zh": "日志分析器",
+    "ja": "ログアナライザー",
+    "es": "Analizador de registros",
+    "pt": "Analisador de logs",
+    "ko": "로그 분석기",
+    "de": "Log-Analyzer",
+    "fr": "Analyseur de journaux",
+    "ru": "Анализатор логов"
+  },
+  "version": "1.2.0",
+  "description": {
+    "en": "Reads a mongod or mongos log file in your browser — it never leaves it — and shows its slow operations grouped by query shape, errors and warnings, connections and a timeline.",
+    "tr": "Bir mongod ya da mongos log dosyasını tarayıcınızda okur — dosya oradan çıkmaz — ve yavaş işlemlerini sorgu biçimine göre gruplanmış hâlde, hatalarını ve uyarılarını, bağlantılarını ve bir zaman çizelgesini gösterir.",
+    "zh": "在浏览器中读取 mongod 或 mongos 日志文件（文件不会离开浏览器），并显示按查询形状分组的慢操作、错误和警告、连接以及时间线。",
+    "ja": "mongod または mongos のログファイルをブラウザー内で読み取り（ファイルは外部に送信されません）、クエリのシェイプ別にまとめた低速操作、エラーと警告、接続、タイムラインを表示します。",
+    "es": "Lee un archivo de registro de mongod o mongos en tu navegador (nunca sale de él) y muestra sus operaciones lentas agrupadas por forma de consulta, los errores y advertencias, las conexiones y una cronología.",
+    "pt": "Lê um arquivo de log do mongod ou do mongos no seu navegador (ele nunca sai dele) e mostra as operações lentas agrupadas por forma de consulta, os erros e avisos, as conexões e uma linha do tempo.",
+    "ko": "mongod 또는 mongos 로그 파일을 브라우저에서 읽고(파일은 브라우저 밖으로 나가지 않습니다) 쿼리 형태별로 묶은 느린 작업, 오류와 경고, 연결, 타임라인을 보여 줍니다.",
+    "de": "Liest eine mongod- oder mongos-Logdatei im Browser – sie verlässt ihn nie – und zeigt die langsamen Operationen nach Abfrageform gruppiert, Fehler und Warnungen, Verbindungen und einen Zeitverlauf.",
+    "fr": "Lit un fichier journal mongod ou mongos dans votre navigateur (il ne le quitte jamais) et affiche ses opérations lentes regroupées par forme de requête, les erreurs et avertissements, les connexions et une chronologie.",
+    "ru": "Читает файл лога mongod или mongos в вашем браузере (он его никогда не покидает) и показывает медленные операции, сгруппированные по форме запроса, ошибки и предупреждения, подключения и временную шкалу."
+  },
+  "entry": "index.html",
+  "permissions": [],
+  "contributes": {
+    "sidebarPanels": [
+      {
+        "id": "logs",
+        "title": {
+          "en": "Log analyzer",
+          "tr": "Log analizcisi",
+          "zh": "日志分析器",
+          "ja": "ログアナライザー",
+          "es": "Analizador de registros",
+          "pt": "Analisador de logs",
+          "ko": "로그 분석기",
+          "de": "Log-Analyzer",
+          "fr": "Analyseur de journaux",
+          "ru": "Анализатор логов"
+        },
+        "icon": "scroll"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "CC-BY-NC-SA-4.0",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Some wording and counts also read better in several languages.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Bazı ifadeler ve sayılar da birçok dilde daha doğru okunuyor.",
+        "zh": "现在与应用一样也支持韩语、德语、法语和俄语。部分措辞和计数在多种语言中也更加准确。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。いくつかの言語で、一部の文言と件数の表記もより正確になりました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Además, algunos textos y recuentos se leen mejor en varios idiomas.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o app. Além disso, alguns textos e contagens ficaram mais corretos em vários idiomas.",
+        "ko": "앱과 마찬가지로 한국어, 독일어, 프랑스어, 러시아어로도 사용할 수 있습니다. 또한 여러 언어에서 일부 문구와 개수 표기가 더 정확해졌습니다.",
+        "de": "Jetzt wie die App auch auf Koreanisch, Deutsch, Französisch und Russisch. Außerdem lesen sich einige Formulierungen und Zählungen in mehreren Sprachen besser.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Certaines formulations et certains décomptes se lisent aussi mieux dans plusieurs langues.",
+        "ru": "Теперь, как и приложение, также на корейском, немецком, французском и русском. Кроме того, некоторые формулировки и счетчики теперь точнее на нескольких языках."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルポルトガル語に対応しました。それ以外の変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o app. Nada mais muda.",
+        "ko": "앱과 마찬가지로 중국어, 일본어, 스페인어, 브라질 포르투갈어로도 사용할 수 있습니다. 그 외에는 달라지는 것이 없습니다.",
+        "de": "Jetzt wie die App auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь, как и приложение, также на китайском, японском, испанском и бразильском португальском. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-26",
+      "notes": {
+        "en": "First release. A Log analyzer page reads a mongod or mongos log you drop (structured JSON of 4.4 and later, legacy text, either gzipped, up to 2 GB) in a stream, in the browser: slow operations grouped by namespace, operation and query shape (values replaced by ?) with their count, total, mean, p95 and slowest time, plans (no index marked) and documents read; errors and warnings by message; connections by client and application; a timeline. Shapes copied, slow operations saved as CSV; a line as written is shown only when you ask for an example.",
+        "tr": "İlk sürüm. Log analizcisi sayfası bıraktığınız bir mongod ya da mongos logunu (4.4 ve sonrasının yapılandırılmış JSON'u, eski metin, ikisinin gzip hâlleri, 2 GB'a kadar) tarayıcıda akış olarak okur: ad alanı, işlem ve sorgu biçimine göre (değerler ? ile değiştirilerek) gruplanmış yavaş işlemler sayıları, toplam, ortalama, p95 ve en yavaş süreleri, planları (dizinsiz olanlar işaretli) ve okunan belgeleriyle; iletiye göre hatalar ve uyarılar; istemci ve uygulamaya göre bağlantılar; bir zaman çizelgesi. Biçimler kopyalanır, yavaş işlemler CSV olarak kaydedilir; bir satırın yazıldığı hâli yalnızca örnek istediğinizde gösterilir.",
+        "zh": "首个版本。日志分析器页面以流的方式在浏览器中读取你拖入的 mongod 或 mongos 日志（4.4 及更高版本的结构化 JSON、旧版文本，或其 gzip 文件，最大 2 GB）：慢操作按命名空间、操作和查询形状（值替换为 ?）分组，显示次数、总计、平均、p95 和最慢耗时、执行计划（无索引会标出）以及读取的文档数；按消息汇总的错误和警告；按客户端和应用程序汇总的连接；以及时间线。可复制形状，可将慢操作保存为 CSV；日志原文仅在你要求查看示例时才会显示。",
+        "ja": "初回リリース。ログアナライザーのページは、ドロップした mongod または mongos のログ（4.4 以降の構造化 JSON、従来のテキスト、またはその gzip 圧縮ファイル、最大 2 GB）をブラウザー内でストリームとして読み取ります。低速操作は名前空間、操作、クエリのシェイプ（値は ? に置き換え）ごとにまとめ、回数、合計、平均、p95、最も遅い時間、プラン（インデックスなしは目印付き）、読み取ったドキュメント数を表示します。さらにメッセージ別のエラーと警告、クライアントとアプリケーション別の接続、タイムラインも表示します。シェイプのコピーと低速操作の CSV 保存ができ、書かれたままの行は例を求めたときだけ表示されます。",
+        "es": "Primera versión. Una página Analizador de registros lee en streaming, en el navegador, un registro de mongod o mongos que sueltes (JSON estructurado de 4.4 y posteriores, texto antiguo, o ambos con gzip, hasta 2 GB): operaciones lentas agrupadas por espacio de nombres, operación y forma de consulta (los valores se reemplazan por ?) con su cantidad, total, media, p95 y tiempo más lento, los planes (se marca la falta de índice) y los documentos leídos; errores y advertencias por mensaje; conexiones por cliente y aplicación; y una cronología. Se pueden copiar las formas y guardar las operaciones lentas como CSV; una línea tal como está escrita solo se muestra cuando pides un ejemplo.",
+        "pt": "Primeira versão. Uma página Analisador de logs lê em streaming, no navegador, um log do mongod ou do mongos que você solta (JSON estruturado do 4.4 em diante, texto antigo, ou ambos com gzip, até 2 GB): operações lentas agrupadas por namespace, operação e forma de consulta (valores substituídos por ?) com contagem, total, média, p95 e tempo mais lento, os planos (a falta de índice é marcada) e os documentos lidos; erros e avisos por mensagem; conexões por cliente e aplicativo; e uma linha do tempo. As formas podem ser copiadas e as operações lentas salvas como CSV; uma linha como foi escrita só aparece quando você pede um exemplo.",
+        "ko": "첫 릴리스. 로그 분석기 페이지는 놓은 mongod 또는 mongos 로그(4.4 이상의 구조화된 JSON, 기존 텍스트, 또는 둘 다 gzip 압축, 최대 2 GB)를 브라우저에서 스트림으로 읽습니다. 느린 작업은 네임스페이스, 작업, 쿼리 형태(값은 ?로 대체)별로 묶어 횟수, 합계, 평균, p95, 가장 느린 시간, 플랜(인덱스 없음 표시), 읽은 도큐먼트 수와 함께 보여 주고, 메시지별 오류와 경고, 클라이언트와 애플리케이션별 연결, 타임라인도 보여 줍니다. 형태를 복사하고 느린 작업을 CSV로 저장할 수 있으며, 기록된 그대로의 줄은 예시를 요청할 때만 표시됩니다.",
+        "de": "Erste Version. Eine Seite Log-Analyzer liest eine abgelegte mongod- oder mongos-Logdatei (strukturiertes JSON ab 4.4, ältere Textlogs oder beide als gzip, bis 2 GB) als Stream im Browser: langsame Operationen gruppiert nach Namespace, Operation und Abfrageform (Werte durch ? ersetzt) mit Anzahl, Gesamt-, Mittel-, p95- und längster Zeit, Plänen (fehlender Index markiert) und gelesenen Dokumenten; Fehler und Warnungen nach Meldung; Verbindungen nach Client und Anwendung; ein Zeitverlauf. Formen lassen sich kopieren, langsame Operationen als CSV speichern; eine Zeile im Originaltext wird nur auf Wunsch als Beispiel gezeigt.",
+        "fr": "Première version. Une page Analyseur de journaux lit en flux, dans le navigateur, un journal mongod ou mongos que vous déposez (JSON structuré de 4.4 et ultérieurs, texte ancien, ou les deux en gzip, jusqu’à 2 Go) : opérations lentes regroupées par espace de noms, opération et forme de requête (valeurs remplacées par ?) avec leur nombre, total, moyenne, p95 et temps le plus lent, plans (l’absence d’index est signalée) et documents lus ; erreurs et avertissements par message ; connexions par client et application ; une chronologie. Les formes se copient, les opérations lentes s’enregistrent en CSV ; une ligne telle qu’elle a été écrite n’est affichée que si vous demandez un exemple.",
+        "ru": "Первый выпуск. Страница «Анализатор логов» читает потоком, в браузере, перетащенный вами лог mongod или mongos (структурированный JSON версий 4.4 и новее, старый текстовый формат или оба в gzip, до 2 ГБ): медленные операции, сгруппированные по пространству имен, операции и форме запроса (значения заменены на ?), с количеством, общим, средним, p95 и самым медленным временем, планами (отсутствие индекса отмечено) и прочитанными документами; ошибки и предупреждения по сообщениям; подключения по клиентам и приложениям; временную шкалу. Формы можно копировать, медленные операции — сохранять в CSV; строка в исходном виде показывается только по запросу примера."
+      }
+    }
+  ]
+}

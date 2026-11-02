@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Watching changes · Mongo Manager documentation</title>
+    <link rel="stylesheet" href="docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager documentation</a>
+      <details class="lang-menu">
+        <summary>English</summary>
+        <span class="langs" role="group" aria-label="Language">
+          <strong lang="en">English</strong>
+          <a lang="tr" hreflang="tr" href="tr/watch.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="zh/watch.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="ja/watch.html">日本語</a>
+          <a lang="es" hreflang="es" href="es/watch.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="pt/watch.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="ko/watch.html">한국어</a>
+          <a lang="de" hreflang="de" href="de/watch.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="fr/watch.html">Français</a>
+          <a lang="ru" hreflang="ru" href="ru/watch.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Overview</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="security.html">Security</a>
+      <a href="deployment.html">Deployment</a>
+      <a href="import-export.html">Import and export</a>
+      <a href="backup.html">Backup and restore</a>
+      <strong>Watching changes</strong>
+      <a href="sync.html">Live sync</a>
+      <a href="server-admin.html">Server administration</a>
+      <a href="ai.html">AI assistant</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Keyboard shortcuts</a>
+    </nav>
+    <main>
+      <h1>Watching changes</h1>
+      <p>
+        The Watch section shows the changes MongoDB makes to your data as they happen: every insert, update,
+        replace and delete, and, when you ask for them, schema changes such as new indexes. It uses MongoDB's
+        change streams. Nothing is stored: a feed starts when you open it and shows what happens from then on.
+      </p>
+
+      <h2 id="requirements">Where to find it</h2>
+      <ul>
+        <li>A collection tab → <strong>Watch</strong>: the changes of that collection.</li>
+        <li>A database tab → <strong>Watch</strong>: the changes of every collection in the database.</li>
+        <li>A connection tab → <strong>Watch</strong>: the changes of every database of the connection.</li>
+        <li>The command palette (Ctrl+K): "Watch changes…" opens the Watch section of the tab you are on.</li>
+      </ul>
+      <p>
+        Change streams need a replica set, a sharded cluster or a load-balanced deployment (MongoDB Atlas is
+        always one of these). A standalone server cannot be watched; the section says so. A single-node
+        replica set is enough for development: start <code>mongod --replSet rs0</code> and run
+        <code>rs.initiate()</code> once. Views cannot be watched: a view's Watch section offers the collection
+        the view reads from. A collection that does not exist yet can be watched; its changes appear once it
+        is created.
+      </p>
+
+      <h2 id="who-may-watch">Who may watch</h2>
+      <p>
+        Anyone who may read documents on the connection may watch it, in every scope. The connection's
+        database user needs the <code>changeStream</code> and <code>find</code> privileges on what is watched
+        (the built-in <code>read</code> role has both). Credential collections such as
+        <code>system.users</code> are shown to the connection's administrators only.
+      </p>
+
+      <h2 id="the-feed">The feed</h2>
+      <p>
+        The bar above the feed shows its state: Live, Paused, Behind (more than two seconds behind, with how
+        far), Reconnecting or Ended, and how many changes arrived and how fast. Newest changes are at the top.
+        Each row shows the kind of change (in words and colour), the collection in database and connection
+        feeds, the document's <code>_id</code>, the changed field names for updates, and how long ago it
+        happened (the exact time on hover). When you scroll down, new changes wait behind a "new events"
+        button instead of moving what you read. The latest 2,000 changes are kept; older ones leave the list.
+      </p>
+      <p>
+        Select a change to see it on the right: the fields that changed, the whole document for inserts and
+        replaces, or the event as JSON. "Open document" opens the collection's Documents section filtered by
+        that document's <code>_id</code>. "Copy as EJSON" copies the change in Extended JSON.
+      </p>
+
+      <h2 id="pause-resume-and-reconnects">Pause, resume and reconnects</h2>
+      <p>
+        Pause stops the list without losing your place: MongoDB keeps the changes on the server's side. Resume
+        with "Catch up" to see what happened while paused, or "From now" to skip it. Space on the feed's
+        toolbar pauses and resumes. A paused feed stays paused when you switch sections or tabs, until you
+        close its tab; a running one stops a few seconds after you leave its section.
+      </p>
+      <p>
+        When the connection to the app drops, the feed reconnects by itself. Within two minutes it resumes
+        right after the last change your browser received, with nothing missed and nothing repeated, and says
+        so; a paused feed comes back paused. If it can no longer resume from there (after a very long burst),
+        it resumes from where the server was and says some changes may be missing; after two minutes it starts
+        again from now and says that instead. The place a feed resumes from (MongoDB's resume token) stays on
+        the server.
+      </p>
+
+      <h2 id="filters">Filters</h2>
+      <p>
+        The chips choose the kinds of change: insert, update, replace and delete. "Include schema changes"
+        adds changes such as created or dropped collections and indexes and changed options. "Show the whole
+        document after updates" reads the document after each update, which costs one read per update.
+      </p>
+      <p>
+        "Edit filter" takes a <code>$match</code> on each change event, written like a query, for example:
+      </p>
+      <ul>
+        <li>
+          <code>{ 'updateDescription.updatedFields.status': 'paid' }</code>: updates that set the status to
+          paid.
+        </li>
+        <li><code>{ 'fullDocument.total': { $gt: 1000 } }</code>: inserts and replaces of large orders.</li>
+        <li><code>{ 'documentKey._id': ObjectId('…') }</code>: one document.</li>
+        <li><code>{ 'ns.coll': 'orders' }</code>: one collection, in a database or connection feed.</li>
+      </ul>
+      <p>
+        A filter may be up to 12 KB and 20 levels deep. Operators that run JavaScript on the server
+        (<code>$where</code>, <code>$function</code>, <code>$accumulator</code>) are never accepted. Changing
+        any filter starts the feed again from now, and the feed says so.
+      </p>
+
+      <h2 id="pre-images">Seeing the values before a change</h2>
+      <p>
+        MongoDB reports which fields an update changed and their new values. To also see the values before,
+        turn on pre-images for the collection; the feed then shows a full before/after comparison for updates
+        and the document as it was for deletes. On a collection's Watch page, someone who may change the
+        collection's options (validation rules, for example) sees <em>Turn on pre- and post-images</em>
+        while they are off; it says what they cost, then runs the same command (audited). Or in the shell:
+      </p>
+      <pre><code>db.runCommand({ collMod: 'orders', changeStreamPreAndPostImages: { enabled: true } })</code></pre>
+      <p>
+        Pre-images are kept in the server's storage for as long as its change stream settings say, so they
+        cost disk space on busy collections. Without them the feed shows the updated values, the removed field
+        names and how arrays were shortened.
+      </p>
+
+      <h2 id="recordings">Recording, replaying and alerts</h2>
+      <p>
+        <em>Record to a file</em> (in the filters, for those who may export from the connection) keeps the
+        feed's events on the server, exactly as you were sent them — masked where they were masked — one event
+        per line. A recording is your own transfer file: it counts against your transfer space, holds 64 MB at
+        most (then recording stops and the feed goes on, and the Watch page says so), and is kept for the
+        transfer files' time once its feed ends. A reconnect that records starts a new file. A server
+        restart ends a recording: what reached the disk is kept, as a finished recording. A file is marked
+        masked or not as its events were sent: when your masking changes during the feed (personal values
+        hidden from you now, or no longer, or the rules changed), the file ends there and a new one begins
+        under the new marking — the recordings list shows both.
+        <em>Recordings</em> on the toolbar lists yours for this connection: <em>Replay</em> shows one in place
+        of the live feed (with the same list and details) — the first 500 events, then 500 more each time you
+        choose <em>Load more events</em>, up to 5,000 (the file has the rest) — <em>Download</em> gives the
+        file (NDJSON), and they can be deleted. Nobody else, administrators included, can read them. A recording is not given once
+        personal values are hidden from you on the connection (when it was recorded unmasked), nor once its
+        rules changed (when it was recorded masked).
+      </p>
+      <p>
+        <em>Raise an alert on matches</em> tells the app's alerts (the <code>watch.matched</code> event) that
+        events passed the feed's filter: at most every 10 seconds, with how many and the kind of the last one,
+        never a value. It works while the feed runs.
+      </p>
+
+      <h2 id="personal-data">Personal data</h2>
+      <p>
+        For a user who may not see personal data, every change is shown with personal fields as
+        <code>***</code>: the document, its key, the values before and the updated values, by field path,
+        array positions included. A filter on a hidden field is refused, and in database and connection feeds
+        such a user may filter on the kind of change, the namespace and the time only. Exports of the feed
+        hold what was shown, hidden values included as <code>***</code>.
+      </p>
+
+      <h2 id="limits-and-settings">Limits and settings</h2>
+      <ul>
+        <li>
+          3 live feeds per browser window, 5 per user, and 50 on the server (<code>MM_WATCH_MAX_FEEDS</code>).
+        </li>
+        <li>A document larger than 256 KB is not sent in the feed; "Open document" shows it.</li>
+        <li>
+          At most 200 changes a second reach the browser per feed; when more happen, the feed shows how far
+          behind it is and catches up.
+        </li>
+        <li><code>MM_WATCH=0</code> turns watching off on the server.</li>
+        <li>
+          Starting and stopping a feed is recorded in the audit log, with the filter's fingerprint but never
+          its values.
+        </li>
+      </ul>
+
+      <h2 id="when-a-feed-ends">When a feed ends</h2>
+      <ul>
+        <li>
+          The collection was dropped or renamed: the feed ends; "Start again from now" watches the collection
+          by that name again.
+        </li>
+        <li>
+          The server's history (oplog) no longer reaches the feed's place, for example after a long time away:
+          start again from now.
+        </li>
+        <li>Your access, the connection or its settings changed: the feed ends and says why.</li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">On this page</p>
+      <ol>
+        <li><a href="#requirements">Where to find it</a></li>
+        <li><a href="#who-may-watch">Who may watch</a></li>
+        <li><a href="#the-feed">The feed</a></li>
+        <li><a href="#pause-resume-and-reconnects">Pause, resume and reconnects</a></li>
+        <li><a href="#filters">Filters</a></li>
+        <li><a href="#pre-images">Seeing the values before a change</a></li>
+        <li><a href="#recordings">Recording, replaying and alerts</a></li>
+        <li><a href="#personal-data">Personal data</a></li>
+        <li><a href="#limits-and-settings">Limits and settings</a></li>
+        <li><a href="#when-a-feed-ends">When a feed ends</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

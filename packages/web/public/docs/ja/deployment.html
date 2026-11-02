@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>デプロイメント · Mongo Manager ドキュメント</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager ドキュメント</a>
+      <details class="lang-menu">
+        <summary>日本語</summary>
+        <span class="langs" role="group" aria-label="言語">
+          <a lang="en" hreflang="en" href="../deployment.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/deployment.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/deployment.html">简体中文</a>
+          <strong lang="ja">日本語</strong>
+          <a lang="es" hreflang="es" href="../es/deployment.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/deployment.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/deployment.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/deployment.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/deployment.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/deployment.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">概要</a>
+      <a href="getting-started.html">はじめに</a>
+      <a href="security.html">セキュリティ</a>
+      <strong>デプロイメント</strong>
+      <a href="import-export.html">インポートとエクスポート</a>
+      <a href="backup.html">バックアップとリストア</a>
+      <a href="watch.html">変更の監視</a>
+      <a href="sync.html">ライブ同期</a>
+      <a href="server-admin.html">サーバー管理</a>
+      <a href="ai.html">AI アシスタント</a>
+      <a href="plugins.html">プラグイン</a>
+      <a href="shortcuts.html">キーボードショートカット</a>
+    </nav>
+    <main>
+      <h1>デプロイメント</h1>
+      <h2 id="as-a-system-service">システムサービスとして</h2>
+      <pre><code>sudo mongo-manager service install          # Linux, macOS
+mongo-manager service install               # Windows, elevated prompt
+mongo-manager service status
+mongo-manager service logs
+sudo mongo-manager service open             # local mode: a one-time link that opens it
+sudo mongo-manager service uninstall        # keeps data, config and key</code></pre>
+      <p>
+        サービスは、専用の非特権アカウントとして、管理者だけが変更できるプログラムフォルダーから、チームモードで <code>127.0.0.1:4321</code> 上で動作します。初回起動時のワンタイムセットアップトークンは、データフォルダー内の <code>setup-token</code> に保存されます。このファイルを読めるのはサービスアカウントと管理者だけで、読み方は <code>service install</code> が表示します。トークンがログに書き込まれることはなく、最初の管理者が作成されるとファイルは削除されます。
+      </p>
+      <p>
+        ローカルモード（<code>--no-auth</code>）でインストールした場合、サービスはワンタイムの起動リンクからしか開けません。<code>service install</code> が 1 つ表示し、<code>service open</code> は必要なときにいつでも新しいリンクを表示します（管理者として実行します。リンクはデータフォルダー内の <code>launch.key</code> から作られます）。管理者権限ではない、ご自身のブラウザーで開いてください。そのブラウザーは、このサイトのデータを保持している間はサインインしたままになり、最後に使ってから最長 6 か月間続きます。
+      </p>
+      <h2 id="docker">Docker</h2>
+      <p>
+        イメージは、読み取り専用のルートファイルシステム上で、非特権ユーザーとして、チームモードで動作します。データは <code>/data</code> ボリュームに保存されます。オフラインのマシンでは、<code>docker load -i</code> でイメージアーカイブを読み込めます。初回起動時のセットアップトークンは <code>docker exec &lt;container&gt; cat /data/setup-token</code> で確認します。compose ファイルは、ポートをホストのループバックにのみ公開します（<code>127.0.0.1:4321</code>）。ほかのマシンに提供する場合は、平文の HTTP を公開せず、前段に HTTPS のリバースプロキシを置いてください。ホスト上のプロキシは、compose ネットワークのゲートウェイからコンテナーに到達します。<code>127.0.0.1</code> ではなく <code>MM_TRUSTED_PROXIES=172.31.240.1</code> を信頼してください。
+      </p>
+      <p>
+        コンテナー内では、サーバーはすべてのアドレスで待ち受けます。そのため <code>MM_ALLOWED_HOSTS</code> がないと、IP アドレスと <code>localhost</code> にしか応答しません（起動のたびにその旨が表示されます）。名前でアクセスするもの（公開名を転送するプロキシ、サービス名を使う別のコンテナー（<code>mongo-manager:4321</code> をスクレイピングする Prometheus など）、Kubernetes のサービス）は、その名前を登録するまで 403 になります。例：<code>MM_ALLOWED_HOSTS=mongo-manager,mm.example.com</code>
+      </p>
+      <p>
+        ローカルモード（<code>MM_AUTH=0</code>）では、コンテナーのログにはリンクではなく、リンクを表示するコマンドが示されます。
+        <code>docker exec &lt;container&gt; node /app/dist/cli.cjs open --no-open</code>。ここに示されるのは、コンテナー内でサーバーが待ち受けているポートです。ホストの別のポートで公開している場合（<code
+          >-p 127.0.0.1:8080:4321</code
+        >）は、リンクを開く前に、リンク内のポートをホストのポートに書き換えてください。
+      </p>
+      <p>
+        サーバーでは、<code>mongo.example.com</code> として公開する HTTPS のリバースプロキシを前段に置き、次のように起動します。最後の行でセットアップトークンを読み取ります。セットアップはすぐに完了させてください。最初の管理者ができるまでは、トークンを持つ人なら誰でも管理者になれます。
+      </p>
+      <pre><code>docker run -d --name mongo-manager --restart unless-stopped \
+  -p 127.0.0.1:4321:4321 \
+  -e MM_ALLOWED_HOSTS=mongo.example.com \
+  -e MM_TRUSTED_PROXIES=172.17.0.1 \
+  -v mm-data:/data \
+  --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true \
+  ghcr.io/mongo-manager/mongo-manager:&lt;version&gt;
+docker exec mongo-manager cat /data/setup-token</code></pre>
+      <p>
+        <code>MM_TRUSTED_PROXIES</code> は、ホスト上のプロキシがコンテナーに到達するときのアドレス、つまり Docker ネットワークのゲートウェイです。デフォルトの bridge ネットワークでは通常 <code>172.17.0.1</code> です（<code>docker network inspect bridge -f '{{(index .IPAM.Config 0).Gateway}}'</code> で確認できます）。これがないと、すべてのリクエストがゲートウェイから来たように見え、監査ログとサインインの禁止でユーザーを区別できません。<code>MM_ALLOWED_HOSTS</code> を設定すると、そこに挙げた名前しか受け付けません。ホスト上で <code>http://127.0.0.1:4321</code> を引き続き開くには、<code>127.0.0.1</code> も加えてください。<code>--read-only</code>、<code>--tmpfs /tmp</code>、<code>--cap-drop ALL</code>、<code>no-new-privileges</code> は、compose ファイルが適用しているのと同じ強化設定です。
+      </p>
+      <h2 id="docker-mongodb">コンテナーから MongoDB に接続する</h2>
+      <p>
+        コンテナー内の <code>localhost</code> はコンテナー自身です。そのため、MongoDB が同じマシンで動いていても、<code>mongodb://localhost:27017</code> は <code>ECONNREFUSED</code> で失敗します。
+      </p>
+      <ul>
+        <li><strong>別のコンテナー内の MongoDB:</strong> 両方を同じ Docker ネットワークに入れ（<code>docker network create mm</code> のあと <code>docker network connect mm mongo-manager</code> と <code>docker network connect mm my-mongodb</code>、または起動時に <code>--network mm</code>）、<code>mongodb://my-mongodb:27017</code> に接続します。</li>
+        <li><strong>ホスト上の MongoDB（Docker Desktop、Windows・macOS）:</strong> <code>mongodb://host.docker.internal:27017</code>。</li>
+        <li><strong>ホスト上の MongoDB（Linux）:</strong> Mongo Manager を <code>--network host</code> で実行するか（このとき <code>localhost</code> はホストです。<code>-e MM_HOST=127.0.0.1</code> で外部に公開しないようにし、前段にプロキシを置いて <code>127.0.0.1</code> として信頼します）、<code>--add-host=host.docker.internal:host-gateway</code> を追加します。後者で到達できるのは、bridge のゲートウェイアドレスで待ち受けている MongoDB だけです。ホストの <code>127.0.0.1</code> にだけバインドされた MongoDB にも、そこにだけ公開されたコンテナー（<code>-p 127.0.0.1:27018:27017</code>）にも到達できません。その場合は共有ネットワークかホストネットワークを使ってください。</li>
+        <li>メンバー名が <code>localhost:27017</code> のレプリカセットでは、ドライバーが <code>localhost</code> に戻されてしまいます。<code>?directConnection=true</code> を付けてください。</li>
+      </ul>
+      <h2 id="behind-a-reverse-proxy">リバースプロキシの背後で</h2>
+      <ul>
+        <li>
+          信頼するのはプロキシだけにします：<code>--trusted-proxies 127.0.0.1</code>。これがないと、サーバーはリクエストが HTTPS で届いたかどうかを判断できず、セッション Cookie に Secure が付きません。チームモードの起動時にはその旨が表示され、サインインが平文の HTTP でネットワークを通る場合にもそのことが表示されます。
+        </li>
+        <li>公開ホスト名を指定します：<code>--allowed-hosts mm.example.com</code>。</li>
+        <li>サブパスで提供するには <code>--base-path /mm/</code> を使います。</li>
+        <li>
+          クライアントアドレスごとに、1 分あたり 600 件の API リクエストまで可能です。多くの人が 1 つのアドレスを共有する場合は、<code>MM_API_RATE_LIMIT</code>（60～100000）で引き上げてください。
+        </li>
+        <li>
+          同時に開ける接続は最大 1000 件（<code>MM_MAX_CONNECTIONS</code>、16～100000）、1 つのアドレスからは最大 256 件（<code>MM_MAX_CONNECTIONS_PER_IP</code>、2～100000）です。これを超えた接続は閉じられ、ログには 1 アドレスにつき 1 分に 1 回その旨が記録されます。ブラウザーは約 6 本の接続を開いたままにするため、NAT、VPN、Docker Desktop の背後など、多くの人が 1 つのアドレスから Mongo Manager にアクセスする環境では、<code>MM_MAX_CONNECTIONS_PER_IP</code> を引き上げてください。信頼するプロキシの背後では総数だけが適用されます。すべての接続がプロキシから来るため、クライアントの制限はプロキシ側で行ってください。
+        </li>
+        <li>
+          インポートとエクスポートのファイルは <code>&lt;data directory&gt;/transfer</code> に置かれます。
+          <code>MM_TRANSFER_MAX_UPLOAD</code> は最大アップロードサイズ（MiB、既定 1024、1～65536）、
+          <code>MM_TRANSFER_QUOTA</code> は各ユーザーが保持できるストレージ（MiB、既定 5120、16～1048576）、
+          <code>MM_TRANSFER_TOTAL_QUOTA</code> は全ユーザーの合計で保持できる量（MiB、既定 51200。<code>MM_TRANSFER_QUOTA</code> のほうが大きい場合はその値。16～16777216）、
+          <code>MM_TRANSFER_TTL_HOURS</code> はファイルの保持時間（既定 24、1～720）、
+          <code>MM_TRANSFER_MAX_JOB_HOURS</code> は 1 回のインポートまたはエクスポートが実行できる時間（既定 6、1～72）です。ディスクには、合計値分の空き容量を確保してください。ファイルを転送する人数に割り当てを掛けた値のほうが小さい場合は、その値で構いません。
+        </li>
+      </ul>
+      <h2 id="settings">設定と環境変数</h2>
+      <p>
+        サーバーの各設定は、コマンドラインオプション、環境変数、または <code>--config</code> もしくは <code>MM_CONFIG</code> で指定した JSON 設定ファイルで指定できます。優先順位は、コマンドライン、環境変数、ファイルの順です。スイッチには <code>1</code>/<code>0</code>、
+        <code>true</code>/<code>false</code>、<code>yes</code>/<code>no</code>、
+        <code>on</code>/<code>off</code> のいずれかを指定できます。各機能の設定は、以下のそれぞれのセクションにあります。
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>変数</th>
+              <th>オプション</th>
+              <th>説明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>MM_WEB_PORT</code></td>
+              <td><code>-p</code>, <code>--web-port</code></td>
+              <td>Web インターフェースのポート（既定は 4321）。</td>
+            </tr>
+            <tr>
+              <td><code>MM_HOST</code></td>
+              <td><code>--host</code></td>
+              <td>
+                待ち受けるアドレス（既定は <code>127.0.0.1</code>）。ネットワークアドレスにはチームモード、または
+                <code>MM_UNSAFE_NO_AUTH</code> が必要です。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_AUTH</code></td>
+              <td><code>--auth</code></td>
+              <td>チームモード：ユーザー、ロール、サインイン（既定はオフ）。</td>
+            </tr>
+            <tr>
+              <td><code>MM_DATA_DIR</code></td>
+              <td><code>--data-dir</code></td>
+              <td>データディレクトリ（既定は <code>~/.mongo-manager</code>）。</td>
+            </tr>
+            <tr>
+              <td><code>MM_CONFIG</code></td>
+              <td><code>--config</code></td>
+              <td>
+                JSON 設定ファイル。Linux と macOS では、シークレットを含むファイルがほかのユーザーから読める状態だと、サーバーはそのファイルを拒否します。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_SECRET_KEY</code></td>
+              <td></td>
+              <td>暗号化キー。データディレクトリの <code>secret.key</code> の代わりに使います。</td>
+            </tr>
+            <tr>
+              <td><code>MM_OPEN</code></td>
+              <td><code>--open</code></td>
+              <td>
+                起動時にブラウザーを開きます（既定はオン）。ローカルモードで、ループバックアドレスを使い、ターミナルから起動した場合に限ります。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_URI</code></td>
+              <td><code>--uri</code></td>
+              <td>
+                ごく最初の起動時にだけ作成される接続。パスワードを含む接続文字列には変数を使ってください。コマンドラインはほかのユーザーから見えます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_READ_ONLY</code></td>
+              <td><code>--read-only</code></td>
+              <td>各接続自体の設定にかかわらず、どの接続でもデータを変更できません。</td>
+            </tr>
+            <tr>
+              <td><code>MM_TRUSTED_PROXIES</code></td>
+              <td><code>--trusted-proxies</code></td>
+              <td>プロキシのアドレスまたは CIDR 範囲。ここからの <code>X-Forwarded-*</code> ヘッダーが信頼されます。</td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOWED_HOSTS</code></td>
+              <td><code>--allowed-hosts</code></td>
+              <td>
+                サーバーが応答するホスト名の一覧（これ以外には応答しません）。未設定の場合、ループバックで待ち受けているときはループバック名に、それ以外のときはループバック名と IP アドレスにのみ応答し、ほかの名前には応答しません（DNS リバインディング対策。起動時にその旨が表示されます）。人々がアクセスに使うホスト名はすべてここに指定してください。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_BASE_PATH</code></td>
+              <td><code>--base-path</code></td>
+              <td>アプリを <code>/mm/</code> などのサブパスで提供します。</td>
+            </tr>
+            <tr>
+              <td><code>MM_UNSAFE_NO_AUTH</code></td>
+              <td><code>--unsafe-no-auth</code></td>
+              <td>チームモードなしでネットワークアドレスを許可します。到達できる人は誰でも完全なアクセス権を持ちます。</td>
+            </tr>
+            <tr>
+              <td><code>MM_LOG_LEVEL</code></td>
+              <td><code>--log-level</code></td>
+              <td>
+                <code>fatal</code>、<code>error</code>、<code>warn</code>、<code>info</code>（既定）、
+                <code>debug</code>、<code>trace</code>、<code>silent</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_LOG_FILE</code></td>
+              <td><code>--log-file</code></td>
+              <td>
+                JSON ログを標準出力ではなく、このファイルに追記します。ファイルは非公開になり（モード 0600。Windows では全ユーザーへのアクセスが取り消され、このアカウント、SYSTEM、Administrators だけが保持します）、10 MiB でローテーションされ、直前の分は <code>&lt;file&gt;.1</code> として残ります。リンクであるパス、ほかの名前を持つファイル（ハードリンク）、通常のファイルではないパスは拒否され、起動はその旨を示して失敗します。削除または名前を変更するか、別のログファイルを指定してください。書き込めない行（ディスクの空き容量不足など）は破棄され、標準エラーに一度だけ通知されます。リクエストはパスで記録され、すべてのクエリ値と GridFS ファイルの ID は <code>***</code> と書かれます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_REQUIRE_ADMIN_2FA</code></td>
+              <td></td>
+              <td>
+                すべての管理者は、ほかの操作より先に二要素サインインを設定する必要があります。その後、アプリ内でオフにすることはできません。この変数がなくても、管理者はアプリ内で同じ要件を設定できます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_REQUIRE_2FA</code></td>
+              <td></td>
+              <td>
+                ロールにかかわらず、すべてのユーザーは、ほかの操作より先に二要素サインインを設定する必要があります。その後、アプリ内でオフにすることはできません。この変数がなくても、管理者はアプリ内で同じ要件を設定できます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_METRICS_TOKEN</code></td>
+              <td></td>
+              <td>
+                <code>&lt;base path&gt;metrics</code> で Prometheus メトリクスを有効にします。このトークンをベアラートークンとして読み取ります（32 文字以上）。数値にはユーザー、接続、データベース、コレクションの名前は含まれません。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_GRIDFS_MAX_MB</code></td>
+              <td></td>
+              <td>GridFS にアップロードできる最大ファイルサイズ（MB、既定 512、1～10240）。</td>
+            </tr>
+            <tr>
+              <td><code>MM_MODEL_MAX_DOCS</code></td>
+              <td></td>
+              <td>
+                1 つのデータモデル（データベースのモデルセクション）が合計でサンプリングできるドキュメント数（既定 20000、100～1000000）。コレクションが多い場合は各コレクションのサンプルが小さくなり、セクションにその旨が表示されます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOW_KERBEROS</code></td>
+              <td></td>
+              <td>
+                チームモード：Kerberos（GSSAPI）接続を許可します（既定はオフ）。サーバーを実行しているアカウントの Kerberos チケットでサインインするため、そのような接続のユーザー全員が、そのアカウントとしてサインインします。<a href="security.html#server-identity">セキュリティ</a>を参照してください。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOW_WORKLOAD_IDENTITY</code></td>
+              <td></td>
+              <td>
+                チームモード：接続側で選択した場合に、OIDC 接続がマシンのワークロードアイデンティティ（Azure、GCP、Kubernetes）を使えるようにします（既定はオフ）。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_OIDC_DEVICE_FLOW</code></td>
+              <td></td>
+              <td>
+                コードによる OIDC サインイン（デバイスフロー）。ブラウザーをこのサーバーに戻せない ID プロバイダー向けです。コードを承認した人がサインインするため、チームモードではここでオンにしない限りオフで、ローカルモードではオンです。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_OIDC_PRIVATE_NETWORKS</code></td>
+              <td></td>
+              <td>
+                OIDC の ID プロバイダーが存在してよいプライベートネットワーク（カンマ区切りの CIDR）。そこでは平文の http のみが許可されます。これがない場合、ID プロバイダーは公開された https アドレスである必要があります。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_CRYPT_SHARED_LIB_PATH</code></td>
+              <td></td>
+              <td>
+                クライアント側暗号化に使う crypt_shared ライブラリ（mongo_crypt_v1）の絶対パス。チームモードでは、これだけが読み込まれます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_KMS_PRIVATE_NETWORKS</code></td>
+              <td></td>
+              <td>
+                鍵管理サービス（オンプレミスの KMIP サーバーなど）が存在してよいプライベートネットワーク（カンマ区切りの CIDR）。これがない場合、鍵管理サービスは公開アドレスである必要があります。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_KMS_ALLOWED_HOSTS</code></td>
+              <td></td>
+              <td>
+                接続が、各プロバイダー自身のもの（AWS KMS、Microsoft サインインを使う Azure Key Vault と Managed HSM、Google Cloud KMS）と設定で指定されたエンドポイントに加えて到達できる、鍵管理サービスのホスト（カンマ区切り。<code>host</code> または <code>host:port</code>、ポートの既定は 443）。VPC エンドポイントや KMIP サーバーなどが該当します。これ以外のホストやポートは拒否されます。データキーのマスターキーが、KMS トークンをほかへ送ることはできません。
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h2 id="optional-packages">Kerberos とクライアント側暗号化（npm パッケージ）</h2>
+      <p>
+        Kerberos（GSSAPI）と、クライアント側のフィールドレベル暗号化 / Queryable Encryption にはネイティブパッケージが必要です。Mongo Manager はこれらを自動ではインストールせず、インストール時にパッケージのインストールスクリプトも実行しません。使用するには、npm パッケージと同じ場所にこれらのパッケージをインストールし、再起動してください。
+      </p>
+      <pre><code>npm i -g @mongo-manager/app kerberos mongodb-client-encryption</code></pre>
+      <p>
+        Mongo Manager は、<code>mongo-manager</code> 自体が置かれているグローバルな <code>node_modules</code> フォルダー（実パスで確認し、その上位のフォルダーは対象外）からのみ、接続が最初にそれを必要としたときに限って読み込みます。接続フォームには、どちらが足りないか、どうインストールするかが表示されます。スタンドアロンのバイナリ、Docker イメージ（<code>MM_DISTRIBUTION=docker</code> を設定しています）、Windows サービスが実行元とするコピーにはネイティブモジュールが含まれないため、これらでは、この 2 つの機能はこのパッケージでは利用できないと表示されます。その場合は、npm パッケージをフォアグラウンドで実行してください。Queryable Encryption の自動暗号化には、crypt_shared ライブラリ（<code>MM_CRYPT_SHARED_LIB_PATH</code>）または mongocryptd と、MongoDB Enterprise または Atlas も必要です。MongoDB Community は復号のみ可能です。MONGODB-OIDC にはパッケージは不要です。ただし ID プロバイダー側で、このサーバーの
+        <code>&lt;address&gt;&lt;base path&gt;oidc/callback</code> をリダイレクトアドレス（または接続で指定した別のアドレス）として登録しておく必要があり、それが使えない環境では、コードを使ってサインインできます。
+      </p>
+      <h2 id="install-as-an-app">アプリとしてインストール</h2>
+      <p>
+        Chrome または Edge では、アドレスバーの <em>Mongo Manager をインストール</em>を選ぶと、デスクトップやスタートメニューから専用のウィンドウで開けるようになります。
+      </p>
+      <h2 id="backup-destinations">バックアップ先</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_FOLDER_ROOTS</code>：サーバーフォルダーのバックアップ先が使えるフォルダー。絶対パスをシステムのパス区切り文字（Linux と macOS では <code>:</code>、Windows では <code>;</code>）で区切って指定し、最大 16 件です。既定は指定なしで、この場合はフォルダーのバックアップ先を作成できません。相対パスを指定すると、サーバーは起動時に停止します。各ルートにはサービスアカウントの書き込み権限を付与し、ルートはデータディレクトリの外に置いてください。データディレクトリ内のフォルダーのバックアップ先は拒否されます。起動のたびに、サーバーが書き込めないルートがログに記録されます。Linux サービスの場合：
+          <ul>
+            <li>
+              サンドボックスは、データディレクトリと、インストール時に設定ファイルと env ファイルで指定されたルートにしか書き込めません。これらを変更したあとは、<code>sudo mongo-manager service install</code> をもう一度実行し（データ、設定、キーは保持されます）、存在しなかったルートを作成したあとはサービスを再起動してください。ドロップインの <code>Environment=</code> など、ほかの場所で設定したルートはインストール時に認識されず、そのフォルダーはサービスから読み取り専用のままになります。
+            </li>
+            <li>
+              インストールは、サービスが到達できない <code>/home</code>、<code>/root</code>、<code>/run/user</code>、
+              <code>/tmp</code>、<code>/var/tmp</code>、<code>/dev</code> 配下のルートと、サンドボックスを無効にしてしまうルートを除外します。システムディレクトリ（<code>/</code>、
+              <code>/var</code>、<code>/var/lib</code> など）を含むルートや、<code>/etc</code>、
+              <code>/usr</code>、<code>/run</code> などのシステムディレクトリの内側にあるルートがこれに当たります（<code>/var</code> の下では、<code>/var/backups</code> 内のフォルダーだけが開放されています）。<code>/srv</code>、
+              <code>/opt</code>、または <code>/mnt</code> や <code>/media</code> 配下のマウント内のフォルダーは適していますが、それらのフォルダー自体は適していません。リムーバブルまたはネットワークのファイルシステムでは、ディスクや共有を管理する人がその上のフォルダーも管理できるため、マウントポイント自体をルートにしてください（ユーザーの FUSE マウントは、その所有者やリンクについて任意の内容を返せます）。別のルートの内側にあるルートは、その別のルートによってサンドボックスに含まれます。<code>/srv</code>、<code>/opt</code>、<code>/mnt</code> 自体が、ostree システム（Fedora Silverblue、CoreOS）のように <code>/var</code> へのリンクになっている場合、インストールはルートがどこに通じているかを示し、そこでは拒否されます。<code>/var/backups</code> 内のフォルダーを選んでください。
+            </li>
+            <li>
+              リンクは、それが指す先で判断され、ユニットにはその場所が記録されます。どこにも通じていないリンクは除外されます。まだ作られていないフォルダーへのリンクの場合は、そのフォルダーを作成してから service install をもう一度実行してください。ループになっているリンクやファイルを経由するリンクの場合は、別のフォルダーを選ぶか、リンクを削除してください。ルートより上位の各フォルダーと、途中のリンクが含まれるフォルダー（リンクの指す先にあるリンクも含む）は、所有者を root にし、グループとその他のユーザーに対して閉じておいてください。これにより、誰もそこにあるフォルダーの代わりにリンクを置けなくなります。他のユーザーが書き込める（スティッキーかどうかは問いません）フォルダーでは、その中のフォルダーの所有者を root にし、ルートはそのさらに内側に作成してください。
+            </li>
+            <li>
+              サービスのユーザーが変更できるフォルダー（<code>/</code> までのどこか、およびそのパス上のリンクを辿った先も含む）の下にあるルートは除外されます。具体的には、そのユーザーが所有している場合、グループ、ACL、または誰でも書き込める権限を通じて書き込める場合です。そのユーザーとして動作するプロセスが、フォルダーの代わりに <code>/etc</code> へのリンクを置けてしまうためです。サービスが書き込む別のルート内のリンクも同様です。インストールと、<code>sudo</code> で実行した doctor は、システムにも問い合わせます。<code>setpriv</code> があれば、そのユーザーとして <code>test -w</code> を実行し、カーネルがそのグループ（ユニットが <code>Group=</code> や <code>SupplementaryGroups=</code> でサービスに与えるもので、ドロップインのものも含む）と ACL を適用します。<code>setpriv</code> がない場合や root でない場合は、フォルダーのモードとユーザーのグループだけを読み取り、どちらの場合もその旨が表示されます。モードが許可していれば、ACL がそれを取り消していても許可として扱われるため、そのようなフォルダーもルートから除外されます。
+            </li>
+            <li>
+              インストールは、すべてのドロップインを読み込んだうえで、systemd にサービスの実行ユーザーを問い合わせます。<code>--user</code> 以外のユーザー（または root）としてサービスを実行するドロップイン、<code>DynamicUser=yes</code> で同名のアカウントがない場合、ユーザー自身のものとは異なる <code>Group=</code> がある場合、システムに存在しないグループがある場合（その場合 systemd は起動を拒否します）は、データディレクトリと設定が変更される前にインストールが停止します。理由が表示され、サービスは停止し無効のままになります。グループの検索に失敗した場合や、systemd に問い合わせられない場合は、すべてのルートが除外されます。
+            </li>
+            <li>
+              <code>sudo mongo-manager doctor --config /etc/mongo-manager/config.json</code> は、インストールされたサービスを検査します（単なる <code>mongo-manager doctor</code> は、ご自身のデータディレクトリを検査し、サービスを検査したわけではないと表示します）。各ルートについて、存在すること、サーバーが書き込めるディレクトリであること、サンドボックス内にあること、データディレクトリの内側にないことを確認します。また、サンドボックスがサービスに書き込みを許可しているのに、どのルートにも指定されなくなったフォルダー、あるいは root 以外が変更できるリンクを通じてルートやデータディレクトリに通じているフォルダーを示します。さらに、root として動作しているサービス、誰も所有していない、または検索に失敗するグループ、同名のアカウントがない <code>DynamicUser=yes</code> について警告します。検査するのはサービスの設定ファイルと env ファイルで指定されたルートで、env ファイルは root だけが読め、サービスのシークレットキーもそこにあるため、<code>sudo</code> が必要です。書き込み権限は、サービスの実行ユーザーとして確認します。root として実行した場合は、データディレクトリを所有するユーザーについて、root の所有者とモードを読み取り、そのユーザーが書き込めるかどうかはシステムの判断に従います。ルートより上位のフォルダーは、ユニットがサービスを実行するユーザー（その <code>User=</code>）の立場で判定されます。
+            </li>
+          </ul>
+        </li>
+        <li>
+          <code>MM_BACKUP_PRIVATE_NETWORKS</code>：バックアップ先が到達してよいプライベート範囲。カンマ区切りで最大 64 個の CIDR を指定します（例：<code>10.0.5.0/24</code>）。その範囲内では平文の HTTP が許可されます。既定は指定なしです。ループバック、10/8、172.16/12、192.168/16、CGNAT（100.64.0.0/10）、ユニークローカル（fc00::/7）の範囲を指定できます。パブリックな範囲を指定するとサーバーは起動時に停止し、リンクローカルまたはクラウドメタデータの範囲（169.254.0.0/16、fe80::/10、169.254.169.254、fd00:ec2::254、100.100.100.200）の内側にある範囲も、IPv4 マップや NAT64 を含むどのような形式でも同様に停止します。メッセージにはその範囲が示されます。これらのアドレスには、指定した範囲の内側であっても到達できません。
+        </li>
+        <li>
+          <code>MM_BACKUP_PROXY</code>：バックアップ先に接続するときに経由する HTTP(S) プロキシ。<code>http://proxy.corp:3128</code> や <code>https://user:password@proxy.corp</code> のように指定し、パスやクエリは付けません。既定は指定なしです（環境のプロキシ変数は一切読み込まれません）。Mongo Manager は引き続き各バックアップ先のアドレスを自分で解決して確認し、そのアドレスへ接続するようプロキシに依頼するため、上記のアドレスのルールはプロキシを経由しても適用されます。TLS はバックアップ先までエンドツーエンドで動作し、証明書はプロキシがない場合と同様に検証されます。
+          <code>MM_BACKUP_PRIVATE_NETWORKS</code>
+          内のバックアップ先には直接接続します。リンクローカルまたはメタデータのアドレスにあるプロキシを指定すると、サーバーは起動時に停止します。プロキシのパスワードはアドレスの一部なので、共有のシェル履歴に残さないでください。このプロキシを使うのはバックアップ先だけで、アラートチャンネル（メールと Webhook）、AI プロバイダー、プラグインがプロキシを経由することはありません。プロキシを選ぶ前に知っておくべきこと：<code>http://</code> のプロキシはユーザー名とパスワードを平文で受け取る（Basic）ため、<code>https://</code> または信頼できるネットワーク内のプロキシを推奨します。CONNECT を、一覧にあるホスト名にだけ許可しているプロキシは、IP アドレスを指定されるためこれらの接続を拒否します。<code>https://</code> のプロキシの証明書は、Node.js が信頼する認証局（組み込みの一覧、または <code>NODE_EXTRA_CA_CERTS</code> で追加したもの）によって署名されている必要があり、独自の CA は指定できません。
+        </li>
+        <li><code>MM_BACKUP_DEST_PART_MB</code>：アップロードのパートサイズ。16～512 MiB（既定 64）。</li>
+        <li>
+          <code>MM_BACKUP_DRILL_MAX_MB</code>：リストアドリルが書き込む最大量（MiB）。既定は指定なしで、ドリルは MongoDB が報告する空きディスク容量の半分未満に収まります（mongos 経由では最も使用量の多いシャードの値）。MongoDB が空き容量を報告しない環境（Atlas の共有ティア）では、この設定がある場合にのみドリルが実行されます。
+        </li>
+        <li>
+          <code>MM_BACKUP_DEST_TRANSFERS</code>：各バックアップ先で同時に実行される送信とダウンロードの数。1～8（既定 2）。それ以降は待機し、ジョブ一覧でそのバックアップ先を「待機先」として表示します。
+        </li>
+      </ul>
+      <h2 id="scheduled-backups">スケジュールバックアップ</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_SCHEDULES</code>：スケジューラー。既定でオンです。<code>0</code> でオフになります。スケジュールの設定は保持されますが何も実行されず、スケジュールバックアップタブにスケジュールがオフであることが表示されます。停止したサーバーが未完了のまま残した実行は、起動時に終了処理されます。
+        </li>
+        <li>
+          <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code>：同時に実行されるスケジュール実行の数。1～8（既定 2）。実行時刻を迎えたそれ以外の実行は最大 6 時間待機します。
+        </li>
+      </ul>
+      <h2 id="watch">変更の監視</h2>
+      <ul>
+        <li>
+          <code>MM_WATCH</code>：チェンジストリームのフィード。既定でオンです。<code>0</code> でオフになり、監視セクションに監視がオフであることが表示され、MongoDB 上では何も開かれません。
+        </li>
+        <li>
+          <code>MM_WATCH_MAX_FEEDS</code>：このサーバー上で同時に存在できるライブフィードの数。1～500（既定 50）。1 ユーザーあたり 5 件、ブラウザーウィンドウあたり 3 件までです。各フィードは MongoDB 上で 1 つのチェンジストリームカーソルを保持します。
+        </li>
+        <li>
+          監視にはレプリカセット、シャーディングされたクラスター、またはロードバランサー経由のデプロイメントが必要で、接続のデータベースユーザーには、監視対象に対する <code>changeStream</code> と <code>find</code> が必要です。<a href="watch.html">変更の監視</a>を参照してください。
+        </li>
+      </ul>
+      <h2 id="live-sync">ライブ同期</h2>
+      <ul>
+        <li>
+          <code>MM_LIVE_SYNC</code>：接続間のライブ同期。既定でオンです。<code>0</code> でオフになります。実行中の同期は理由を示して待機し、何も読み書きされず、新規の同期は拒否されます。再びオンにすると、停止した場所から再開します。
+        </li>
+        <li>
+          <code>MM_LIVE_SYNC_MAX</code>：このサーバー上で終了していないライブ同期の数。1～100（既定 10）。1 ユーザーあたり 3 件までです。実行中の各同期は、同期元で 1 つのチェンジストリームを保持し、両方の接続を開いたままにします。
+        </li>
+        <li>
+          同期元は、レプリカセット、シャーディングされたクラスター、またはロードバランサー経由のデプロイメントである必要があります（MongoDB 6.0 以降）。同期元の oplog より長く残る可能性があるコピーでは、確認が求められます。<a href="sync.html">ライブ同期</a>を参照してください。
+        </li>
+      </ul>
+      <h2 id="alerts">アラート</h2>
+      <ul>
+        <li>
+          <code>MM_ALERTS</code>（設定ファイル：<code>alerts.enabled</code>）：アラート。既定でオンです。
+          <code>0</code> でオフになり、何も評価も送信もされず、アラートページにアラートがオフであることが表示されます。
+        </li>
+        <li>
+          <code>MM_ALERTS_PRIVATE_NETWORKS</code>（設定ファイル：<code>alerts.privateNetworks</code>、リスト）：パブリックアドレスに加えて、アラートのメールサーバーと Webhook が到達してよいネットワーク。カンマ区切りで最大 64 個の CIDR を指定します（例：<code>10.0.5.0/24</code>）。既定は指定なしです。Webhook への平文の http は、この範囲内でのみ許可されます。指定できる範囲と拒否される範囲は
+          <code>MM_BACKUP_PRIVATE_NETWORKS</code> と同じで、リンクローカルとクラウドメタデータのアドレスには到達できません。
+        </li>
+        <li>
+          設定ファイルでは：
+          <code>"alerts": { "enabled": true, "privateNetworks": ["10.0.5.0/24"] }</code>。<a href="server-admin.html#alerts">サーバー管理</a>を参照してください。
+        </li>
+      </ul>
+      <h2 id="the-advanced-shell">高度なシェル</h2>
+      <ul>
+        <li>完全に無効にするには、<code>--no-shell</code>（または <code>MM_SHELL_ENABLED=0</code>）を指定します。</li>
+        <li>
+          制限：<code>MM_SHELL_MAX_PER_USER</code>、<code>MM_SHELL_MAX_TOTAL</code>、
+          <code>MM_SHELL_COMMAND_TIMEOUT_MS</code>、<code>MM_SHELL_IDLE_MS</code>、
+          <code>MM_SHELL_LIFETIME_MS</code>。ページが保持しているシェルは、Compass と同様に、使われなくなってもいつまでも開いたままです。どのページも保持していないシェルは、ページが閉じてから 2 分後に閉じられます。アイドル制限は、設定しない限りオフ（0）です（設定する場合は 10000～86400000 ms）。シェルの寿命は、別の値を設定しない限り最長 12 時間です（60000～86400000 ms、または制限なしの 0）。開いたままのシェルは、そのページが閉じるまで <code>MM_SHELL_MAX_TOTAL</code> に数えられます。多くの人が共有するサーバーでは、開いたまま使われていないシェルが解放されるよう、<code>MM_SHELL_IDLE_MS</code> を設定してください。サインインがオンの場合、シェルは、そのユーザーのサインインセッションが終了したとき、ユーザーのロールが変更されたとき、アカウントが無効になったときにも終了します。
+        </li>
+        <li>
+          <code>MM_SHELL_RSS_MB</code>：シェルのプロセスが保持できるメモリ。128～16384 MB（既定 384）。サーバーはオペレーティングシステムから自分で測定し（Windows では <code>tasklist</code>、macOS では <code>ps</code>）、これを超えたシェルを再起動します。シェルの変数は失われます。コマンドが実行されていない間に 15 秒間応答しないシェルも再起動されます。
+          <code>MM_SHELL_OUTPUT_MB</code>：1 つのコマンドの出力。1～64 MB（既定 5）。それを超えた分は切り捨てられます。
+          <code>MM_SHELL_COMMANDS_PER_SECOND</code>：シェルごとの 1 秒あたりのコマンド数。1～1000（既定 20）。
+        </li>
+        <li>
+          root の POSIX サーバーでは、シェルワーカーは <code>MM_SHELL_UID</code>/<code>MM_SHELL_GID</code>（既定 65534）に権限を下げます。サービスを root で実行しないでください。
+        </li>
+      </ul>
+      <h2 id="ai">AI アシスタント</h2>
+      <ul>
+        <li>
+          <code>MM_AI</code>：AI アシスタント。既定でオンですが、管理者がプロバイダーを追加するまで表示されません（設定 → AI アシスタント）。<code>0</code> にすると、あらゆる場所で非表示になり、リクエストは拒否されます。
+        </li>
+        <li>
+          <code>MM_AI_PRIVATE_NETWORKS</code>：パブリックアドレスに加えて、プロバイダーが存在してよいネットワーク（CIDR、カンマ区切り）。たとえば <code>10.0.0.5</code> の Ollama などです。平文の http はそこでのみ許可されます。クラウドメタデータとリンクローカルのアドレスには到達できません。ローカルモードでは、このマシンは常に許可されます。
+        </li>
+        <li>
+          <code>MM_AI_PER_MINUTE</code>（既定 10、1～120）と <code>MM_AI_PER_DAY</code>（既定 200、1～10,000）：1 人あたりのリクエスト数。<code>MM_AI_MAX_CONCURRENT</code>（既定 8、1～64）：サーバー全体での同時リクエスト数。1 人あたり 2 件までです。<code>MM_AI_AGENT_PER_MINUTE</code>（既定 30、1～120）：1 件のメッセージ内でエージェントがプロバイダーに送る追加のリクエストの、1 人あたり 1 分間の上限です（1 日の上限にも数えられます）。
+        </li>
+        <li>
+          <code>MM_AI_CHAT_DAYS</code>（既定 30、0～365）：最後のメッセージからチャットを保持する日数。
+          <code>0</code> にすると、チャットはメモリ上にのみ保持され（12 時間）、以前の設定で保存されたチャットはサーバーの起動時に削除されます。
+        </li>
+      </ul>
+      <h2 id="plugins">プラグイン</h2>
+      <ul>
+        <li>
+          <code>MM_PLUGINS</code>：プラグイン。既定でオンです。各プラグインは、セキュリティスキャンのあとに管理者の承認が必要です。<code>0</code> にすると、プラグインの検索、インストール、実行は一切行われません（<a href="plugins.html">プラグイン</a>を参照）。
+        </li>
+        <li>
+          <code>MM_PLUGINS_GITHUB</code>：公開 GitHub リポジトリのリリースからのプラグインのインストール。既定ではオフです（プラグインはアップロードまたはフォルダーからインストールします）。<code>1</code> で許可されます。その場合、サーバーは自分では何も送信せずに、https で <code>api.github.com</code>、<code>github.com</code>、GitHub のリリースアセットのホストに接続します。オフのままなら、サーバーが GitHub に接続することはありません。サーバーは GitHub に直接接続します。HTTP プロキシの設定は使われないため、プロキシ経由でしか外部に接続できないサーバーでは、プラグインをアップロードでインストールしてください。システムサービスは、<code>config.json</code> の <code>"pluginsGithub": true</code> から読み取ります（Linux は <code>/etc/mongo-manager/config.json</code>、Windows は
+          <code>%ProgramData%\Mongo Manager\config.json</code>、macOS は
+          <code>/Library/Application Support/Mongo Manager/config.json</code>）。変更後はサービスを再起動してください。
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">このページの内容</p>
+      <ol>
+        <li><a href="#as-a-system-service">システムサービスとして</a></li>
+        <li><a href="#docker">Docker</a></li>
+        <li><a href="#docker-mongodb">コンテナーから MongoDB に接続する</a></li>
+        <li><a href="#behind-a-reverse-proxy">リバースプロキシの背後で</a></li>
+        <li><a href="#settings">設定と環境変数</a></li>
+        <li><a href="#optional-packages">Kerberos とクライアント側暗号化（npm パッケージ）</a></li>
+        <li><a href="#install-as-an-app">アプリとしてインストール</a></li>
+        <li><a href="#backup-destinations">バックアップ先</a></li>
+        <li><a href="#scheduled-backups">スケジュールバックアップ</a></li>
+        <li><a href="#watch">変更の監視</a></li>
+        <li><a href="#live-sync">ライブ同期</a></li>
+        <li><a href="#alerts">アラート</a></li>
+        <li><a href="#the-advanced-shell">高度なシェル</a></li>
+        <li><a href="#ai">AI アシスタント</a></li>
+        <li><a href="#plugins">プラグイン</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

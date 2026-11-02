@@ -1,0 +1,66 @@
+{
+  "name": "@mongo-manager/app",
+  "version": "1.0.2",
+  "description": "Mongo Manager: a secure, offline-capable MongoDB manager in your browser.",
+  "license": "CC-BY-NC-SA-4.0",
+  "author": {
+    "name": "Gokhan OZGEZER",
+    "email": "gokhanozgezer@gmail.com",
+    "url": "https://github.com/gokhanozgezer"
+  },
+  "keywords": [
+    "mongodb",
+    "mongodb-gui",
+    "database",
+    "self-hosted",
+    "ai-agent",
+    "replica-set",
+    "sharding",
+    "backup",
+    "offline"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mongo-manager/mongo-manager.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/mongo-manager/mongo-manager#readme",
+  "bugs": {
+    "url": "https://github.com/mongo-manager/mongo-manager/issues"
+  },
+  "type": "module",
+  "bin": {
+    "mongo-manager": "dist/cli.cjs"
+  },
+  "files": [
+    "dist/cli.cjs",
+    "dist/shell-worker.cjs",
+    "dist/THIRD-PARTY-NOTICES.txt",
+    "public",
+    "plugins"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "vitest run",
+    "test:bundle": "node scripts/build.mjs && vitest run --config vitest.bundle.config.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "build:sea": "node scripts/build-sea.mjs",
+    "test:sea": "node scripts/build.mjs && node scripts/build-sea.mjs && vitest run --config vitest.sea.config.ts",
+    "coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@mongo-manager/server": "workspace:*",
+    "@mongo-manager/shared": "workspace:*",
+    "mongodb-memory-server": "^11.3.0",
+    "postject": "1.0.0-alpha.6",
+    "rolldown": "1.2.11",
+    "vitest": "^5.0.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

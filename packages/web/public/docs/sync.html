@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Live sync · Mongo Manager documentation</title>
+    <link rel="stylesheet" href="docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager documentation</a>
+      <details class="lang-menu">
+        <summary>English</summary>
+        <span class="langs" role="group" aria-label="Language">
+          <strong lang="en">English</strong>
+          <a lang="tr" hreflang="tr" href="tr/sync.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="zh/sync.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="ja/sync.html">日本語</a>
+          <a lang="es" hreflang="es" href="es/sync.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="pt/sync.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="ko/sync.html">한국어</a>
+          <a lang="de" hreflang="de" href="de/sync.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="fr/sync.html">Français</a>
+          <a lang="ru" hreflang="ru" href="ru/sync.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Overview</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="security.html">Security</a>
+      <a href="deployment.html">Deployment</a>
+      <a href="import-export.html">Import and export</a>
+      <a href="backup.html">Backup and restore</a>
+      <a href="watch.html">Watching changes</a>
+      <strong>Live sync</strong>
+      <a href="server-admin.html">Server administration</a>
+      <a href="ai.html">AI assistant</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Keyboard shortcuts</a>
+    </nav>
+    <main>
+      <h1>Live sync</h1>
+      <p>
+        A live sync copies a collection or a database from one connection to another, then applies every
+        change made in the source as it happens. It runs on the server, survives restarts, and goes on until
+        you stop it or finish it. Use it two ways:
+      </p>
+      <ul>
+        <li>
+          <strong>As a mirror</strong>: a staging, reporting or standby copy that stays current for months.
+        </li>
+        <li>
+          <strong>To move data</strong>: copy, let it catch up, verify, then finish at a moment you choose
+          (the cutover) and point your applications at the target.
+        </li>
+      </ul>
+      <p>
+        Open <strong>Live syncs</strong> from the account menu or the command palette (Ctrl+K). Start one from
+        a collection's or a database's menu in the tree (<strong>Live sync…</strong>), from the palette while
+        a collection is open ("Keep this collection in sync…"), or from the copy wizard's summary (<strong
+          >Copy and keep in sync…</strong
+        >).
+      </p>
+
+      <h2 id="requirements">What can be synced</h2>
+      <ul>
+        <li>
+          A collection to a collection, or a database to a database (all its collections, or those you tick).
+        </li>
+        <li>
+          The source must be a replica set, a sharded cluster or a load-balanced deployment running MongoDB
+          6.0 or later (MongoDB Atlas always is): a live sync reads MongoDB's change streams. A single-node
+          replica set is enough for development. The target may be any deployment.
+        </li>
+        <li>
+          A database sync of all collections can also follow collections created later: they are created on
+          the target with the source's options, and their documents follow. Views are copied with the initial
+          copy only.
+        </li>
+        <li>
+          A collection sync may carry only the documents a filter matches (<em
+            >Only the documents a filter matches</em
+          >, written as in the shell). A change event alone cannot say that an update moved a document out of
+          the filter, so the source decides: for each batch it is asked which of the changed documents match
+          now; those are written as they are now, and the others are removed from the target. The initial copy
+          takes the matching documents only. A masked or anonymous sync refuses a filter that reads a hidden
+          field, a field above one, or uses an expression. A filter that runs JavaScript on the MongoDB server
+          (<code>$where</code>, <code>$function</code>) is accepted only while the server allows it; it is
+          judged again at every start and before every batch, and the sync waits ("Its filter runs
+          JavaScript…") once the setting is turned off. A database sync carries whole collections.
+        </li>
+        <li>
+          Refused, with the reason: <code>admin</code>, <code>local</code>, <code>config</code> and
+          <code>system.*</code> as a source or a target; a time series source; a view as a source (it has no
+          change stream of its own: sync the collection behind it); a capped target (it cannot take deletes);
+          a target that is, or may be, the source itself; and a sync that would close a loop (A to B while B
+          goes to A, or a longer chain). A deployment that cannot be told apart from another counts as the
+          same one for these checks.
+        </li>
+      </ul>
+
+      <h2 id="start">Starting</h2>
+      <p>The wizard asks how the sync starts:</p>
+      <ul>
+        <li>
+          <strong>Copy first</strong> (default): the target must be missing or empty; everything is copied,
+          then changes follow.
+        </li>
+        <li>
+          <strong>Replace the target</strong>: the target is rebuilt aside and swapped in (you type its name
+          to confirm). It needs the right to create and drop collections, and is refused for a sharded target.
+        </li>
+        <li>
+          <strong>Merge into the target</strong>: documents are upserted by <code>_id</code> onto what is
+          there.
+        </li>
+        <li>
+          <strong>From now</strong>: the target already has the data; only changes from now on are applied.
+        </li>
+      </ul>
+      <p>
+        The initial copy runs as a copy job (it shows in the jobs tray). Nothing is lost between the copy and
+        the changes: before the copy starts, the sync notes the source's cluster time, and once the copy is
+        done it applies every change made since then. Applying is idempotent, so a document copied after it
+        changed, or changed again later, ends equal to the source.
+      </p>
+      <h3 id="scheduled">Starting later</h3>
+      <p>
+        <em>Start at a time of my choosing</em> schedules the start a minute to 30 days ahead (a quiet night,
+        say). The sync is created at once, with the summary you confirmed, and waits as
+        <strong>Paused</strong> — <em>Starts …; nothing is copied or read until then</em>. At its time it is
+        planned again as its owner (rights, rules, loops, the target, masking, with the confirmations you
+        gave), its cluster time is read and its copy starts. If the plan no longer holds — the target was
+        filled meanwhile, a right was lost — it waits in <strong>Needs attention</strong> with the reasons,
+        and <em>Start again</em> plans it anew. Its owner may <em>Start now</em> earlier; an administrator may
+        stop it but not start it (it starts as its owner). A restart keeps it waiting.
+      </p>
+      <p>
+        At its time, and on <em>Start now</em>, everything a running sync checks before each batch is
+        checked first: its owner must still be able to read and export from the source, the connections
+        must be unchanged, and the personal-data rules must be those it was scheduled under. Rules added
+        since then stop it for a review (<em>Review…</em>): it starts once its owner has confirmed them. A
+        sync that has to copy also waits for room among its owner's running transfers: at its time it tries
+        again a little later; <em>Start now</em> says so. Once the cause is fixed, <em>Try again</em> starts
+        a scheduled sync that never started (it is planned then).
+      </p>
+      <h3 id="oplog">The oplog window</h3>
+      <p>
+        Changes made during the copy wait in the source's history of changes (its oplog). The summary
+        estimates how long the copy takes and, where the connection's user may read it, how long the source
+        keeps its changes. A copy expected to take more than half of that window must be confirmed: if the
+        history runs out before the copy ends, the sync cannot catch up and ends <em>Failed</em> with "Start
+        again". When the window cannot be read, the summary says so.
+      </p>
+
+      <h2 id="applying">How changes are applied</h2>
+      <ul>
+        <li>
+          An insert, update or replace writes the document as it is now in the source (by <code>_id</code>,
+          creating it if needed); a delete deletes by <code>_id</code>. Within a batch (at most 1,000 changes
+          or 8 MB) only the last change of each document is written.
+        </li>
+        <li>
+          After every batch the target accepted, the sync saves its place. A restart resumes right after it;
+          at most the last batch is applied again, which changes nothing.
+        </li>
+        <li>
+          <strong>A live sync is one-way.</strong> Writes made on the target by anyone else are not detected:
+          the next change of that document in the source overwrites it. The wizard asks you to confirm this.
+        </li>
+        <li>
+          New and dropped indexes follow. New collection options or validators do not: the sync waits with
+          "The source collection's options or validator changed", and you choose
+          <strong>Apply the source's options</strong> (its validator and validation settings are set on the
+          target) or <strong>Ignore</strong>.
+        </li>
+        <li>
+          A dropped or renamed source collection never drops the target: the sync waits for you, and you stop
+          it or start it again.
+        </li>
+      </ul>
+
+      <h2 id="verify">Verify</h2>
+      <p>
+        <strong>Verify</strong> compares source and target document by document while the sync keeps running.
+        Documents found different, missing or extra are read again once the sync has applied everything up to
+        the end of the comparison, so changes still on their way are not reported as differences (up to 10,000
+        such documents per collection; beyond that the report says how many were not checked again). The card
+        shows the result, for example "Verified 12:40 — 1,204,331 same, 0 different"; the details list the
+        <code>_id</code>s still different. A masked sync is verified against the masked source.
+      </p>
+      <p>
+        <em>Show what differs</em> in the details opens the comparison as the compare view shows it: for each
+        group (different, only in the source, only in the target) up to 10 documents per collection, and for a
+        different one the fields that changed from the target to the source. The samples are the sync owner's
+        alone (an administrator sees the counts), given only while the owner may read both sides and nothing
+        is hidden from them there since, and not once the personal-field rules changed: verify again then.
+      </p>
+
+      <h2 id="finish">Finishing (the cutover)</h2>
+      <ol>
+        <li>Stop the applications that write to the source. Mongo Manager cannot stop other clients.</li>
+        <li>
+          Choose <strong>Finish…</strong> and confirm. The sync notes the source's cluster time at that moment
+          and applies every change made before it, then ends. A change made after it may still be applied (it
+          can arrive in the same batch), which is why writes stop first.
+        </li>
+        <li>It verifies (on by default; you can untick it).</li>
+        <li>
+          It ends <em>Completed</em> with its final counts. If the verification found differences, the report
+          shows them: the data is yours to judge.
+        </li>
+      </ol>
+
+      <h2 id="two-way">Two-way sync</h2>
+      <p>
+        <em>Two-way</em> (a collection sync) also brings the target's changes back to the source. It is two
+        linked syncs, one each way, shown as two cards (<em>this way</em> and <em>the way back</em>) that
+        pause, resume, stop and are deleted together; it has no cutover. Use it with care: it suits two sites
+        writing to the same collection, not a migration.
+      </p>
+      <ul>
+        <li>
+          It starts from now: both collections must already hold the same documents (copy them, or finish a
+          one-way sync, first). It carries whole collections (no filter), cannot mask (both sides need the
+          same personal-field rules, and nobody restricted on either side), needs unsharded collections, and
+          pauses on a refused document. Two syncs count towards the limits.
+        </li>
+        <li>
+          Both collections need
+          <strong>pre- and post-images</strong> (<code>changeStreamPreAndPostImages</code>, MongoDB 6.0+):
+          <em>Turn on pre- and post-images on both collections</em> does it with <code>collMod</code> when the
+          sync starts. They cost storage on both servers.
+        </li>
+        <li>
+          <strong>Nothing comes back where it came from.</strong> Each side writes the other's changes in
+          transactions of its own session; MongoDB marks the change events of those writes with the session,
+          and the way back skips them. The documents are not touched for this.
+        </li>
+        <li>
+          <strong>Conflicts: the last writer wins.</strong> A change is applied only where the other side
+          still holds what the change found (its pre-image). When both sides changed the same document before
+          either change arrived, the change with the later wall time wins on both sides; the other is lost.
+          Each conflict is listed in the activity (its <code>_id</code> and which side won, never a value),
+          counted on the card, and raised as an app event for alerts. When the other side holds something
+          else and no change of its own arrives, the change is applied and listed as such — written only where
+          the other side still holds what it held when it was read; if it changed again meanwhile, that
+          newer change is waited for and settled as a conflict. Documents are compared and written with
+          their values' types: a Double that holds an integer is not the Int32, and every sync (one-way
+          too) writes a Double, a Long or a Decimal128 as the source stores it.
+        </li>
+        <li>
+          <strong>Clocks.</strong> Whether a change of the other side is still to come is decided on that
+          side's own cluster time: the mismatch is read in a snapshot of what a majority of its members hold,
+          and the change waits until the way back's change stream has read past that moment. The clock of
+          the computer running Mongo Manager plays no part, and neither does a slow majority commit: a change
+          waits instead of overwriting one that has not arrived yet. Which of two conflicting changes wins
+          still compares the two servers' wall clocks: keep both in time (NTP). If they drift apart, the side
+          whose clock runs ahead wins conflicts it should have lost — both sides still end up holding the
+          same document, but it may be the older change. On a quiet server the way back's stream moves on
+          about every 10 seconds, so a change the other side merely differed on can take that long.
+        </li>
+        <li>
+          <strong>When one direction stops, so does the other.</strong> A direction that stops for a person
+          (a refused document, lost rights, a change of options) or fails pauses the other one ("Paused
+          because the other direction stopped"): left alone it would hold its changes waiting for a stream
+          that does not move, while its place, and the oplog it needs, fell behind. Resuming either direction
+          resumes both. A direction also stops ("Too many of its changes are waiting…") when more than
+          10,000 of its changes wait for the other side, or when the source's oplog, nearly full, is about to
+          roll past the place it holds. Resuming it then starts the other direction first; this one waits
+          ("Waiting for the other direction … to catch up") and goes on by itself once that one is live.
+        </li>
+        <li>
+          <strong>A refused document.</strong> When a side refuses a change (a validator, a unique index),
+          the direction stops and names the document's <code>_id</code>. Fix the cause and <em>Try again</em>,
+          or <em>Skip this document</em>: that change is left out for good and remembered as lost, so the two
+          sides may differ on that document until it changes again; check it, and copy it by hand if needed.
+        </li>
+        <li>
+          If pre- and post-images are turned off on either collection, its direction stops ("Pre- and
+          post-images were turned off"): without them every change would overwrite the other side
+          unchecked. Turn them on again (the Watch page offers it), pass over the change of options, then
+          <em>Try again</em>.
+        </li>
+        <li>
+          A restart in the middle reads again from before any change still being settled; changes already
+          applied are recognised and a change that lost does not come back.
+        </li>
+      </ul>
+
+      <h2 id="states">States and what to do</h2>
+      <ul>
+        <li><strong>Copying</strong>: the initial copy runs; the card shows its progress.</li>
+        <li>
+          <strong>Catching up</strong>: applying changes, more than 2 seconds behind; the card says how far.
+        </li>
+        <li>
+          <strong>Live</strong>: less than 2 seconds behind. The card draws how far behind it was over the
+          last 10 minutes; the server keeps that history for a day (the largest lag of every 10 seconds), so
+          it survives a reload and a restart, and the sync's details chart the last hour, 6 hours or 24 hours.
+        </li>
+        <li>
+          <strong>Paused</strong>: by its owner or an administrator. Its place is kept; Resume carries on.
+        </li>
+        <li>
+          <strong>Needs attention</strong>: it stopped for a reason a person must look at — the target refused
+          a document (Skip this document, or Try again after fixing it), new options on the source, a dropped
+          source, changed personal-data rules or an edited connection (Review the summary), lost rights,
+          read-only mode, the switch turned off, or a change stream error that waiting will not fix (a change
+          larger than 16 MB, a right the source's user lost: fix it, then Try again). A target collection
+          dropped behind the sync, or an edit that points a connection at another server, asks to
+          <strong>Start again</strong>. An administrator's pause is lifted by an administrator.
+        </li>
+        <li>
+          <strong>Retrying</strong>: a connection cannot be reached; it tries again after 1 second, then
+          longer, up to 5 minutes.
+        </li>
+        <li><strong>Finishing</strong>, then <strong>Completed</strong>: the cutover.</li>
+        <li>
+          <strong>Failed</strong>: it cannot continue from its place, usually because the source's history no
+          longer reaches it. <strong>Start again</strong> creates a new sync with the same settings that
+          merges into what the target already holds, in place of the old one (which then no longer counts
+          toward the limits).
+        </li>
+        <li><strong>Stopped</strong>: by its owner or an administrator. The target keeps what it has.</li>
+      </ul>
+      <p>
+        When the target refuses a document (a duplicate key on another unique index, validation, size), the
+        wizard's choice applies: <strong>Pause and ask</strong> (default) names the document's
+        <code>_id</code> and the error; <strong>Skip and record</strong> skips it, lists it in the activity
+        log (its <code>_id</code> and the error code, never its content), and pauses after 1,000.
+      </p>
+      <p>
+        Under <strong>Skip and record</strong> the refused documents themselves are kept in a file, one per
+        line in Extended JSON, exactly as the sync tried to write them (masked when the sync masks); the
+        sync's details offer it to its owner as <em>Download the refused documents</em>. A server restart
+        keeps it, and it goes on growing when the sync runs again. The file counts
+        against the owner's transfer space; once that is full, documents are still skipped and logged but no
+        longer kept, and the activity log says so. It is given only while the owner may still read and export
+        from the source: not once personal values are hidden from them there (for a sync that did not mask),
+        nor after the source's rules changed (for one that did). Deleting the sync deletes it.
+      </p>
+
+      <h2 id="personal-data">Personal data</h2>
+      <ul>
+        <li>
+          If you may not see personal data on the source, or you tick <strong>Mask personal data</strong>,
+          every document the sync writes — the copy and every change — is masked with the source's rules
+          (<code>***</code>). Unique indexes over masked fields are not built.
+        </li>
+        <li>
+          If you may not see personal data on the target and it has rules, the sync is refused: it writes
+          whole documents, which cannot respect your rules field by field.
+        </li>
+        <li>
+          An unmasked sync to a target without the same rules needs your confirmation, or "Add these rules to
+          the target first" (for administrators of the target connection). Both are recorded in the audit log.
+        </li>
+        <li>
+          If the rules change on either side, the sync waits: values already written may now be personal.
+          Review the summary to carry on, or start again.
+        </li>
+      </ul>
+
+      <h2 id="limits">Rights, limits and settings</h2>
+      <ul>
+        <li>
+          You need the right to export from the source, and to write documents, create collections and indexes
+          and run jobs on the target. These rights are read again before every batch: losing one, or your
+          account, stops the sync at once. Signing out does not.
+        </li>
+        <li>
+          Editing a connection a sync uses stops it until you review the summary (the connection may point to
+          another server now); deleting the connection stops it for good.
+        </li>
+        <li>
+          Each user may have 3 live syncs that have not ended; a server runs at most
+          <code>MM_LIVE_SYNC_MAX</code> (default 10). <code>MM_LIVE_SYNC=0</code> turns the feature off:
+          running syncs wait, and carry on when it is turned on again. See
+          <a href="deployment.html#live-sync">Deployment</a>.
+        </li>
+        <li>
+          Administrators see every sync and may pause, resume, verify, stop and delete it; only the owner
+          finishes it or confirms a review.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">On this page</p>
+      <ol>
+        <li><a href="#requirements">What can be synced</a></li>
+        <li><a href="#start">Starting</a></li>
+        <li><a href="#applying">How changes are applied</a></li>
+        <li><a href="#verify">Verify</a></li>
+        <li><a href="#finish">Finishing (the cutover)</a></li>
+        <li><a href="#two-way">Two-way sync</a></li>
+        <li><a href="#states">States and what to do</a></li>
+        <li><a href="#personal-data">Personal data</a></li>
+        <li><a href="#limits">Rights, limits and settings</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

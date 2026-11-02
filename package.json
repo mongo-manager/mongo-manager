@@ -1,0 +1,42 @@
+{
+  "name": "mongo-manager-monorepo",
+  "private": true,
+  "author": {
+    "name": "Gokhan OZGEZER",
+    "email": "gokhanozgezer@gmail.com",
+    "url": "https://github.com/gokhanozgezer"
+  },
+  "type": "module",
+  "packageManager": "pnpm@12.6.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "lint": "node --max-old-space-size=4096 node_modules/eslint/bin/eslint.js .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test && node --test scripts/*.test.mjs",
+    "check:forbidden": "node scripts/check-forbidden.mjs",
+    "format": "prettier --write .",
+    "dev:web": "pnpm --filter @mongo-manager/web dev",
+    "build": "pnpm --filter @mongo-manager/web build && pnpm --filter \"./packages/plugins/*\" run --if-present build && pnpm --filter @mongo-manager/app build",
+    "test:e2e": "pnpm build && pnpm --filter @mongo-manager/e2e e2e",
+    "verify:pack": "node scripts/verify-pack.mjs",
+    "check:workflows": "node scripts/check-workflows.mjs",
+    "check:web-offline": "node scripts/check-web-offline.mjs",
+    "coverage": "pnpm -r --if-present coverage"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@intlify/eslint-plugin-vue-i18n": "^4.5.1",
+    "@types/node": "~26.6.2",
+    "@vitest/coverage-v8": "5.0.2",
+    "eslint": "^10.11.0",
+    "eslint-plugin-vue": "^10.11.1",
+    "globals": "^17.12.0",
+    "prettier": "^3.9.9",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.70.1",
+    "vue-eslint-parser": "^10.4.1",
+    "yaml": "2.9.1"
+  }
+}

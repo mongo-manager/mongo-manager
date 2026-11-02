@@ -1,0 +1,103 @@
+{
+  "id": "data-dictionary",
+  "name": {
+    "en": "Data dictionary",
+    "tr": "Veri sözlüğü",
+    "zh": "数据字典",
+    "ja": "データ辞書",
+    "es": "Diccionario de datos",
+    "pt": "Dicionário de dados",
+    "ko": "데이터 사전",
+    "de": "Datenwörterbuch",
+    "fr": "Dictionnaire de données",
+    "ru": "Словарь данных"
+  },
+  "version": "1.2.0",
+  "description": {
+    "en": "Documents a database: every collection's fields with their types and presence, what its validation rules say of them, the references between collections, the indexes and the rules — shown in a tab and saved as Markdown or HTML.",
+    "tr": "Bir veritabanını belgeler: her koleksiyonun alanları türleri ve bulunma oranlarıyla, doğrulama kurallarının onlar hakkında söyledikleri, koleksiyonlar arasındaki referanslar, dizinler ve kurallar — bir sekmede gösterilir, Markdown ya da HTML olarak kaydedilir.",
+    "zh": "为数据库生成文档：每个集合的字段及其类型和出现率、验证规则对字段的约束、集合之间的引用、索引和规则——在标签页中显示，可保存为 Markdown 或 HTML。",
+    "ja": "データベースをドキュメント化します。各コレクションのフィールドの型と出現率、検証ルールの内容、コレクション間の参照、インデックスとルールをタブに表示し、Markdown または HTML として保存できます。",
+    "es": "Documenta una base de datos: los campos de cada colección con sus tipos y presencia, lo que dicen sus reglas de validación, las referencias entre colecciones, los índices y las reglas. Se muestra en una pestaña y se guarda como Markdown o HTML.",
+    "pt": "Documenta um banco de dados: os campos de cada coleção com seus tipos e presença, o que suas regras de validação dizem sobre eles, as referências entre coleções, os índices e as regras. Aparece em uma aba e pode ser salvo como Markdown ou HTML.",
+    "ko": "데이터베이스를 문서화합니다. 각 컬렉션의 필드와 유형·존재율, 유효성 검사 규칙이 필드에 대해 정의한 내용, 컬렉션 간 참조, 인덱스와 규칙을 탭에 표시하고 Markdown 또는 HTML로 저장합니다.",
+    "de": "Dokumentiert eine Datenbank: die Felder jeder Collection mit Typen und Vorkommen, was ihre Validierungsregeln dazu sagen, die Verweise zwischen Collections, die Indizes und die Regeln. Wird in einem Tab angezeigt und als Markdown oder HTML gespeichert.",
+    "fr": "Documente une base de données : les champs de chaque collection avec leurs types et leur présence, ce qu’en disent ses règles de validation, les références entre collections, les index et les règles. S’affiche dans un onglet et s’enregistre en Markdown ou en HTML.",
+    "ru": "Документирует базу данных: поля каждой коллекции с их типами и наличием, что о них говорят правила валидации, ссылки между коллекциями, индексы и правила. Отображается во вкладке и сохраняется как Markdown или HTML."
+  },
+  "entry": "index.html",
+  "permissions": ["database:read", "collection:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "dictionary",
+        "title": {
+          "en": "Data dictionary",
+          "tr": "Veri sözlüğü",
+          "zh": "数据字典",
+          "ja": "データ辞書",
+          "es": "Diccionario de datos",
+          "pt": "Dicionário de dados",
+          "ko": "데이터 사전",
+          "de": "Datenwörterbuch",
+          "fr": "Dictionnaire de données",
+          "ru": "Словарь данных"
+        },
+        "icon": "book"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "CC-BY-NC-SA-4.0",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Some wording and counts also read better in several languages.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Bazı ifadeler ve sayılar da birçok dilde daha doğru okunuyor.",
+        "zh": "现在与应用一样也支持韩语、德语、法语和俄语。部分措辞和计数在多种语言中也更加准确。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。いくつかの言語で、一部の文言と件数の表記もより正確になりました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Además, algunos textos y recuentos se leen mejor en varios idiomas.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o app. Além disso, alguns textos e contagens ficaram mais corretos em vários idiomas.",
+        "ko": "이제 앱과 같이 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 또한 여러 언어에서 일부 문구와 개수 표기가 더 정확해졌습니다.",
+        "de": "Jetzt wie die App auch auf Koreanisch, Deutsch, Französisch und Russisch. Außerdem lesen sich einige Formulierungen und Zählungen in mehreren Sprachen besser.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Certaines formulations et certains décomptes se lisent aussi mieux dans plusieurs langues.",
+        "ru": "Теперь, как и приложение, на корейском, немецком, французском и русском языках. Кроме того, некоторые формулировки и счетчики теперь точнее на нескольких языках."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルポルトガル語に対応しました。ほかの変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o app. Nada mais muda.",
+        "ko": "이제 앱과 같이 중국어, 일본어, 스페인어, 브라질 포르투갈어도 지원합니다. 그 외 변경 사항은 없습니다.",
+        "de": "Jetzt wie die App auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь, как и приложение, на китайском, японском, испанском и бразильском португальском языках. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-26",
+      "notes": {
+        "en": "First release. A Data dictionary tab on any collection documents its whole database from the app's data model: each collection's fields (types, how often present, required, the description and allowed values its $jsonSchema gives, hidden fields by name only), references to and from it, its indexes (keys, unique, expiring, partial — never a partial filter's values) and its validation level and action. Saved as Markdown or HTML, or copied as Markdown.",
+        "tr": "İlk sürüm. Herhangi bir koleksiyondaki Veri sözlüğü sekmesi, uygulamanın veri modelinden tüm veritabanını belgeler: her koleksiyonun alanları (türleri, ne sıklıkta bulundukları, zorunlu olup olmadıkları, $jsonSchema'nın verdiği açıklama ve izin verilen değerler, gizli alanlar yalnızca adlarıyla), ondan çıkan ve ona gelen referanslar, dizinleri (anahtarlar, benzersiz, süreli, kısmi — kısmi bir filtrenin değerleri asla) ve doğrulama düzeyi ile eylemi. Markdown ya da HTML olarak kaydedilir veya Markdown olarak kopyalanır.",
+        "zh": "首个版本。任意集合上的“数据字典”标签页会根据应用的数据模型为其整个数据库生成文档：每个集合的字段（类型、出现频率、是否必填、其 $jsonSchema 给出的描述和允许的值，已隐藏的字段仅显示名称）、与其相关的引用（指向它和由它指出的）、索引（键、唯一、过期、部分——绝不显示部分索引过滤条件中的值）以及验证级别和验证动作。可保存为 Markdown 或 HTML，也可复制为 Markdown。",
+        "ja": "初回リリース。任意のコレクションの「データ辞書」タブが、アプリのデータモデルをもとにデータベース全体をドキュメント化します。各コレクションのフィールド（型、出現頻度、必須かどうか、$jsonSchema が示す説明と許可される値。非表示のフィールドは名前のみ）、そのコレクションへの参照と、そこからの参照、インデックス（キー、一意、有効期限付き、部分。部分インデックスのフィルターの値は表示しません）、検証レベルとアクションを含みます。Markdown または HTML として保存するか、Markdown としてコピーできます。",
+        "es": "Primera versión. Una pestaña Diccionario de datos en cualquier colección documenta toda su base de datos a partir del modelo de datos de la aplicación: los campos de cada colección (tipos, con qué frecuencia están presentes, si son obligatorios, la descripción y los valores permitidos que da su $jsonSchema; los campos ocultos, solo por su nombre), las referencias hacia ella y desde ella, sus índices (claves, únicos, con caducidad, parciales; nunca los valores del filtro de un índice parcial) y su nivel y acción de validación. Se guarda como Markdown o HTML, o se copia como Markdown.",
+        "pt": "Primeira versão. Uma aba Dicionário de dados em qualquer coleção documenta todo o banco de dados dela a partir do modelo de dados do app: os campos de cada coleção (tipos, com que frequência estão presentes, se são obrigatórios, a descrição e os valores permitidos que o $jsonSchema informa; campos ocultos apenas pelo nome), as referências para ela e a partir dela, seus índices (chaves, únicos, com expiração, parciais; nunca os valores do filtro de um índice parcial) e o nível e a ação de validação. Pode ser salvo como Markdown ou HTML, ou copiado como Markdown.",
+        "ko": "첫 릴리스. 모든 컬렉션의 데이터 사전 탭이 앱의 데이터 모델을 바탕으로 해당 데이터베이스 전체를 문서화합니다. 각 컬렉션의 필드(유형, 존재 빈도, 필수 여부, $jsonSchema가 제공하는 설명과 허용 값이며, 숨김 필드는 이름만 표시), 해당 컬렉션으로 들어오고 나가는 참조, 인덱스(키, 고유, 만료, 부분이며 부분 인덱스 필터의 값은 절대 표시하지 않음), 유효성 검사 수준과 동작을 포함합니다. Markdown 또는 HTML로 저장하거나 Markdown으로 복사할 수 있습니다.",
+        "de": "Erste Version. Ein Tab „Datenwörterbuch“ an jeder Collection dokumentiert ihre gesamte Datenbank anhand des Datenmodells der App: die Felder jeder Collection (Typen, wie oft sie vorkommen, ob sie Pflicht sind, die Beschreibung und die erlaubten Werte aus dem $jsonSchema; verborgene Felder nur mit Namen), Verweise auf die Collection und von ihr, ihre Indizes (Schlüssel, eindeutig, ablaufend, partiell – nie die Werte eines Partial-Filters) sowie Validierungsstufe und -aktion. Wird als Markdown oder HTML gespeichert oder als Markdown kopiert.",
+        "fr": "Première version. Un onglet Dictionnaire de données sur n’importe quelle collection documente toute sa base de données à partir du modèle de données de l’application : les champs de chaque collection (types, fréquence de présence, caractère obligatoire, description et valeurs autorisées issues de son $jsonSchema ; champs masqués par leur nom uniquement), les références vers elle et depuis elle, ses index (clés, uniques, expirants, partiels – jamais les valeurs du filtre d’un index partiel) ainsi que son niveau et son action de validation. Enregistré en Markdown ou en HTML, ou copié en Markdown.",
+        "ru": "Первый выпуск. Вкладка «Словарь данных» в любой коллекции документирует всю ее базу данных на основе модели данных приложения: поля каждой коллекции (типы, частота наличия, обязательность, описание и допустимые значения из ее $jsonSchema; скрытые поля — только по имени), ссылки на коллекцию и из нее, ее индексы (ключи, уникальные, с истечением срока, частичные — значения фильтра частичного индекса никогда не показываются), а также уровень и действие валидации. Сохраняется как Markdown или HTML либо копируется как Markdown."
+      }
+    }
+  ]
+}

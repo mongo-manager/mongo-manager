@@ -1,0 +1,44 @@
+{
+  "name": "@mongo-manager/server",
+  "version": "1.0.2",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json",
+    "coverage": "vitest run --coverage",
+    "build:shell": "node scripts/build-shell-worker.mjs",
+    "gen:catalogue": "node scripts/gen-shell-catalogue.mjs"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.1.2",
+    "@fastify/helmet": "^13.1.1",
+    "@fastify/rate-limit": "^11.2.0",
+    "@fastify/static": "~10.1.4",
+    "@fastify/websocket": "11.3.1",
+    "@mongo-manager/shared": "workspace:*",
+    "@mongosh/async-rewriter2": "2.6.0",
+    "@mongosh/browser-runtime-core": "5.11.0",
+    "@mongosh/service-provider-node-driver": "5.6.0",
+    "@simplewebauthn/server": "~14.0.2",
+    "acorn": "8.18.0",
+    "bson": "^7.3.3",
+    "fastify": "^5.12.5",
+    "mongodb": "^7.6.0",
+    "socks": "^2.8.10",
+    "ssh2": "^1.17.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/ssh2": "^1.15.6",
+    "@types/ws": "8.18.1",
+    "fast-check": "^4.10.2",
+    "mongodb-memory-server": "^11.3.0",
+    "rolldown": "1.2.11",
+    "selfsigned": "^5.5.0",
+    "vitest": "^5.0.2"
+  }
+}
