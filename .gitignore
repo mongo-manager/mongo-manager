@@ -1,0 +1,81 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+*.local
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Testing
+coverage/
+# mongod fetched for the offline e2e run's replica set (CI)
+.mongodb-binaries/
+.nyc_output/
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+.prettiercache
+
+# Vite
+*.local
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Archives
+*.tar.gz
+*.zip
+# A test fixture, not an artifact: the backup tests read it (a fresh clone lacked it, 2026-10-16).
+!packages/server/test/fixtures/backup/shop-dir.zip
+*-lock.json
+# Build output
+packages/*/dist/
+*.tgz
+.mongo-manager/
+packages/e2e/test-results/
+packages/e2e/playwright-report/
+packages/cli/dist/
+packages/cli/public/
+# Phase 4b §4: the bundled plugins, copied in by the CLI build.
+packages/cli/plugins/
+packages/cli/LICENSE
+
+# Phase 3a-1: generated shell worker artifacts (rebuilt by scripts/build-shell-worker.mjs)
+packages/server/src/shell/worker/contextless-eval.generated.cjs
+packages/server/dist/

@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>サーバー管理 · Mongo Manager ドキュメント</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager ドキュメント</a>
+      <details class="lang-menu">
+        <summary>日本語</summary>
+        <span class="langs" role="group" aria-label="言語">
+          <a lang="en" hreflang="en" href="../server-admin.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/server-admin.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/server-admin.html">简体中文</a>
+          <strong lang="ja">日本語</strong>
+          <a lang="es" hreflang="es" href="../es/server-admin.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/server-admin.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/server-admin.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/server-admin.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/server-admin.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/server-admin.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">概要</a>
+      <a href="getting-started.html">はじめに</a>
+      <a href="security.html">セキュリティ</a>
+      <a href="deployment.html">デプロイメント</a>
+      <a href="import-export.html">インポートとエクスポート</a>
+      <a href="backup.html">バックアップとリストア</a>
+      <a href="watch.html">変更の監視</a>
+      <a href="sync.html">ライブ同期</a>
+      <strong>サーバー管理</strong>
+      <a href="ai.html">AI アシスタント</a>
+      <a href="plugins.html">プラグイン</a>
+      <a href="shortcuts.html">キーボードショートカット</a>
+    </nav>
+    <main>
+      <h1>サーバー管理</h1>
+      <p>
+        Mongo Manager は、データだけでなく MongoDB サーバー自体も管理します。データベースユーザーとロール、クラスターのシャーディング、問題が起きたときのアラート、各接続の状態を一目で確認できるヘルス表示です。
+      </p>
+
+      <h2 id="users-roles">ユーザーとロール</h2>
+      <p>
+        接続のページ → <strong>ユーザーとロール</strong> では、Atlas の <em>Database Access</em> のように、MongoDB 自体のアカウントを管理します。これらはアプリケーションやユーザーが MongoDB にサインインするためのアカウントであり、Mongo Manager のユーザーではありません。
+      </p>
+      <h3>使用できるユーザー</h3>
+      <ul>
+        <li>
+          その接続に対してアプリの権限 <code>databases:admin</code> を持つユーザー: アプリの管理者、またはその接続の管理権限を付与されたユーザーです。管理者によって個人データを非表示にされているユーザーには、このセクションは表示されません。自分で非表示にしているユーザーには表示されます。
+        </li>
+        <li>
+          MongoDB 自体の権限も適用されます。接続がサインインに使うアカウントには、データベースに対する <code>userAdmin</code>、または <code>userAdminAnyDatabase</code> が必要です (一覧表示には <code>viewUser</code> と <code>viewRole</code> で足ります)。MongoDB が拒否した場合、ページには、アプリではなく MongoDB が拒否したこと、およびどのコマンドかが表示されます。
+        </li>
+        <li>読み取り専用の接続では、ユーザーとロールは一覧表示されますが、変更はできません。</li>
+      </ul>
+      <h3>一覧</h3>
+      <p>
+        すべてのデータベース、または 1 つのデータベース (データベースフィルター) のユーザーを、検索付きで表示します。各ユーザーのロールはチップで表示されます (たとえば「readWrite on shop」)。接続自体がサインインに使っているアカウントには <strong>この接続</strong> と表示されます。
+      </p>
+      <h3>ユーザーを追加する</h3>
+      <ul>
+        <li>
+          <strong>認証データベース</strong>: ユーザーがサインインする場所です。<code>admin</code> を推奨します (そこのユーザーは任意のデータベースのロールを持てます) が、どのデータベースでも使えます。<code>$external</code> は x.509、LDAP、Kerberos、AWS IAM のユーザー用で、これらにはパスワードがありません。名前は、その認証元が送信する内容と完全に一致している必要があります。
+        </li>
+        <li><strong>ユーザー名</strong>。</li>
+        <li>
+          <strong>パスワード</strong>: 入力するか、<strong>生成</strong> を押して 24 文字のランダムな文字列を作成します。この文字列はブラウザー内でシステムの乱数源から作られ、接続文字列でも安全に使え、コピーできるよう表示されます。
+        </li>
+        <li>
+          <strong>ロール</strong>: 許可内容が併記された組み込みロール、またはデータベースごとのカスタムロールです。<code>admin</code> にのみ存在するロール (<code>clusterMonitor</code>、<code>backup</code>、<code>root</code> など) は、そこに固定されます。
+        </li>
+      </ul>
+      <p>
+        パスワードには SCRAM-SHA-256 が使われ、12 文字以上が必要です。パスワードは MongoDB に一度だけ送信され、Mongo Manager が保存、ログ出力、監査ログへの書き込みを行うことは一切ありません。生成されたパスワードは、フォームを閉じる前にコピーしてください。広範な権限を付与するときは事前に確認が求められ、確認なしの場合はサーバーが拒否します。対象は次のとおりです。組み込みロールの <code>root</code>、<code>userAdminAnyDatabase</code>、<code>userAdmin</code>、<code>dbOwner</code>、<code>clusterAdmin</code>、<code>clusterManager</code>、<code>hostManager</code>、<code>backup</code>、<code>restore</code>、<code>readWriteAnyDatabase</code>、<code>dbAdminAnyDatabase</code>。admin データベースのその他すべての組み込みロール (<code>readAnyDatabase</code>、<code>clusterMonitor</code>、<code>enableSharding</code>)。<code>local</code> (oplog、つまりすべての書き込みを保持) または <code>config</code> (シャーディングのメタデータ) の任意のロール。そして、これらのいずれかを継承するカスタムロール、クラスター、任意のリソース、すべてのデータベース全体、または <code>local</code> や <code>config</code> に対する権限を持つカスタムロール、あるいはユーザーやロールを作成するカスタムロール (<code>createUser</code>、<code>grantRole</code>、<code>changePassword</code> など) です。このようなカスタムロールには「広範」というマークが付き、作成時にも確認が求められます。
+      </p>
+      <h3>ユーザーの変更と削除</h3>
+      <ul>
+        <li>
+          <strong>編集</strong> では、新しいパスワード、新しいロール、またはその両方を設定します。保存したロールは、ユーザーのロール一覧を置き換えます。
+        </li>
+        <li>
+          接続自身のアカウントを変更または削除すると、接続からロックアウトされる可能性があるという警告が表示され、確認が必要です。そのアカウントが持つカスタムロールを変更または削除する場合も同様です。どのアカウントがそれにあたるかは、(SRV レコードや証明書によって変わりうる接続の設定ではなく) MongoDB 自体が判断します。新しいパスワードを設定したら、接続も編集してください。
+        </li>
+        <li>ユーザーまたはロールを削除するときは、その名前の入力が求められます。</li>
+      </ul>
+      <h3>カスタムロール</h3>
+      <p>
+        <strong>カスタムロール</strong> を使うと、チームに必要なアクションだけを正確に与えることができます。ロールには、データベース、名前、権限、継承するロールがあります。
+      </p>
+      <ul>
+        <li>
+          各権限は、データベースとコレクション (空にすると任意のデータベースまたは任意のコレクション)、クラスター、または任意のリソースに適用されます。
+        </li>
+        <li>
+          アクションは MongoDB の一覧から選択します。クエリと書き込み、データベース管理、ユーザーとロール、デプロイメント、レプリケーション、シャーディングに分類されています。
+        </li>
+        <li>
+          <code>admin</code> 以外のロールは、自身のデータベースのロールのみを継承できます (MongoDB の規則)。<code>admin</code> のロールは、任意のデータベースのロールを継承できます。
+        </li>
+      </ul>
+      <p>
+        すべての変更は、<code>mongo.users.create</code>、<code>mongo.users.update</code>、<code>mongo.users.grant</code>、<code>mongo.users.revoke</code>、<code>mongo.users.drop</code>、<code>mongo.roles.create</code>、<code>mongo.roles.update</code>、<code>mongo.roles.drop</code> として監査ログに記録されます。名前とロールの一覧は記録されますが、パスワードは記録されません。
+      </p>
+
+      <h2 id="sharding">シャーディング</h2>
+      <p>
+        接続のページ → <strong>シャーディング</strong> は、接続先が <code>mongos</code> の場合に表示されます。サーバーを監視できるユーザーなら誰でも、バランサーの状態、チャンクの分布、クラスターの概要を確認できます。変更には <code>databases:admin</code> と、読み取り専用ではない接続が必要です。
+      </p>
+      <h3>チャンクの分布</h3>
+      <p>
+        シャーディングされたコレクションごとに 1 本のバーを表示し、シャードごとに色分けします。件数は、スクリーンリーダー向けに文字でも提供されます。
+      </p>
+      <h3>バランサー</h3>
+      <ul>
+        <li>
+          開始と停止ができ、停止する前に確認が求められます。停止中は、シャード間でチャンクが移動しません。進行中の移行は先に完了します。バックアップやメンテナンスの際は停止し、その後に再び開始してください。
+        </li>
+        <li>
+          <strong>アクティブな時間帯</strong>: 開始から終了まで、config サーバーの時計を基準にします。チャンクはその時間内にのみ移動します。<strong>常時</strong> を選ぶと解除されます。
+        </li>
+      </ul>
+      <h3>コレクションをシャーディングする</h3>
+      <ol>
+        <li>データベースとコレクションを選びます。</li>
+        <li>
+          シャードキーをフィールドごとに組み立てます。各フィールドは範囲またはハッシュで、ハッシュのフィールドは最大 1 つです。順序が重要です。フィールドを上下に移動して調整します。
+        </li>
+        <li>
+          <strong>このキーを確認</strong>: サーバーが 1000 件のドキュメントをサンプリングし、件数のみを返すため、MongoDB から値が外に出ることはありません。各フィールドを持つドキュメントの割合、異なる値の数、最も多い値の割合、値が時間とともに増加するか (ObjectId、日付)、キーのフィールドで始まるインデックスがあるか、が分かります。判定は良好、普通、不良のいずれかです。
+        </li>
+        <li>
+          オプション: <strong>一意</strong> (範囲キーのみ)、<strong>チャンクを事前に作成</strong> (空のコレクション上のハッシュキー、MongoDB 6.0 以前、1 から 8192 個のチャンク)、<strong>ゾーンごとにチャンクを作成</strong> (ハッシュキー。ゾーンが定義済みの場合)。
+        </li>
+        <li>シャーディングは元に戻せません。名前空間を入力して確認します。</li>
+      </ol>
+      <p>
+        時間とともに増加するフィールドを範囲キーとして使うと、新しいドキュメントがすべて 1 つのシャードに送られます。そのフィールドをハッシュにするか、別のフィールドを先頭にしてください。データのあるコレクションは、シャーディングする前に、キーのフィールドで始まるインデックスが必要です。MongoDB 自体の名前空間とシステムの名前空間 (<code>admin</code>、<code>config</code>、<code>local</code>、<code>system.*</code>) は拒否されます。
+      </p>
+      <h3>ゾーン</h3>
+      <ul>
+        <li>各シャードにそのゾーンが一覧表示されます。シャードにゾーンを追加したり、削除したりできます。</li>
+        <li>
+          コレクションごとのキー範囲: 境界は、シャードキーのフィールドの Extended JSON で指定し、開いた端には <code>{"$minKey":1}</code> と <code>{"$maxKey":1}</code> を使います。たとえば <code>{"region": "eu"}</code> から <code>{"region": "us"}</code> です。演算子は拒否されます。開始は含まれ、終了は含まれません。
+        </li>
+        <li>範囲を削除すると、そのドキュメントは再び任意のシャードに置けるようになります。</li>
+      </ul>
+      <p>
+        監査ログには、<code>sharding.collection.shard</code>、<code>sharding.zone.shard</code>、<code>sharding.zone.range</code> (名前空間とゾーンのみで、境界の値は記録されません)、<code>sharding.balancer</code>、<code>sharding.balancer.window</code> が記録されます。Mongo Manager のテストでは、これらの画面を記録済みの <code>mongos</code> の応答に対して実行しています。
+      </p>
+
+      <h2 id="alerts">アラート</h2>
+      <p>
+        アラートは、サーバーがしきい値を超えたとき、またはアプリ自体のジョブが失敗したときに、ベルアイコン、メール、または Webhook で通知します。
+      </p>
+      <h3>しきい値</h3>
+      <p>
+        接続のページ → <strong>アラート</strong>。アプリの管理者 (<code>settings:manage</code>) が使用できます。しきい値は 1 つのメトリクスを監視します。
+      </p>
+      <ul>
+        <li><strong>接続</strong>: 開いているクライアント接続 (件数)。</li>
+        <li><strong>操作数</strong>: 1 秒あたりの操作数 (すべての種類の合計)。</li>
+        <li><strong>レプリケーションラグ</strong>: 最も遅れているセカンダリの遅延秒数 (レプリカセット)。</li>
+        <li><strong>WiredTiger キャッシュ</strong>: キャッシュの使用率 (パーセント)。</li>
+        <li><strong>ディスク使用率</strong>: データファイルのディスクの使用率 (パーセント。MongoDB 4.4 以降)。</li>
+        <li>
+          <strong>低速な操作</strong>: 指定した秒数より長く実行されている操作の件数 (<code>clusterMonitor</code> が必要)。
+        </li>
+      </ul>
+      <p>
+        サーバーは、メトリクス履歴と同じ <code>serverStatus</code> のサンプリングを使って、これらを 1 分に 1 回評価します。アラートは、履歴がオフの接続でもサンプリングします。サンプルが保存されるのは、履歴がオンのときだけです。サンプリングされる接続は、履歴とアラートを合わせて最大 50 件です。
+      </p>
+      <p>
+        フラッピングは起こりません。値が指定した分数 (1 から 60、既定は 2) の間しきい値を超え続けた場合にアラートが発生し、同じ時間だけしきい値の 90% 以下にとどまった後でのみ解決されます。キャッシュ使用率のしきい値が 80% の場合、72% 以下で解決されます。
+      </p>
+      <h3>イベントアラート</h3>
+      <p>アラートページで、すべての接続または 1 つの接続に対して、あるいは接続のセクションで設定します。</p>
+      <ul>
+        <li><strong>バックアップの失敗</strong>: バックアップ、送信、取得のジョブが失敗しました。</li>
+        <li>
+          <strong>スケジュールバックアップの失敗</strong>: 実行が失敗したか、一部のバックアップ先にしか届きませんでした。
+        </li>
+        <li>
+          <strong>ライブ同期の停止</strong>: 同期が失敗した、停止した、または自身で対応が必要になった場合です。ユーザーが停止した場合は対象外です。
+        </li>
+        <li><strong>ジョブの失敗</strong>: その他のジョブ (リストアドリルには専用のイベントがあります)。</li>
+        <li>
+          <strong>リストアドリルの失敗</strong>: スケジュールされたリストアドリルが、バックアップをリストアできなかった、差異のあるデータを検出した、またはスクラッチデータベースをドロップできなかった場合です (最後は警告で、データは一致していました)。成功したドリルはアラートではなく、スケジュールの履歴に記録されます。
+        </li>
+        <li>
+          <strong>双方向同期で競合を解決</strong>: 双方向ライブ同期の両側が同じドキュメントを変更しました。最後に書き込んだ側が優先されました (<code>_id</code> は同期のアクティビティに記録されます)。
+        </li>
+        <li>
+          <strong>ウォッチがアラートフィルターに一致</strong>: 所有者がアラートを要求した監視フィードで、変更がそのフィルターを通過しました (フィードの実行中、最大で 10 秒に 1 回)。
+        </li>
+      </ul>
+      <p>
+        通知に含まれるのは名前と数値のみです。ドキュメントの値、エラーのテキスト、接続文字列、ホストが含まれることはありません。
+      </p>
+      <h3>スケジュールレポート</h3>
+      <p>
+        アラートページ (アプリの管理者向け): レポートは、1 つの接続のいくつかの件数を、毎朝、毎週月曜日、最短で 1 時間ごとなどのスケジュールで知らせます。アラートと同様に、ベルアイコン、メール、または Webhook で送信されます。各件数には、ラベル、コレクション、任意のフィルター (JSON。指定しない場合はすべてのドキュメント、つまりコレクションの推定値を数えます) があります。100 万件を超える件数は「少なくとも」と表示されます。行から、今すぐ実行、変更、オフにする、削除ができ、直近の実行の件数がそこに表示されます。
+      </p>
+      <p>
+        数値のみで、値は一切含まれません。個人フィールドを指定するフィルター (または、個人データのルールによって別の解釈になるフィルター) は、レポートの保存時に拒否されます。ルールがその後に変更された場合は、フィルターが除外され、その理由が表示されます。MongoDB 自体の名前空間、サーバーの JavaScript、ビュー、時系列コレクションも同様です (ビューのパイプラインは個人フィールドで選択できてしまうため)。レポートは接続自身の認証情報として扱われます。ユーザーごとにサインインする接続では拒否されます。また、接続がクライアント側でフィールドを暗号化している場合のフィルターも拒否されます (読み取れるものに一致しないため)。ベルアイコンと履歴では、管理者には実行の件数がラベルとともに表示されます。それ以外のユーザーには、レポートが実行されたことだけが表示され、件数は表示されません。各レポートの直近 30 回の実行が履歴に保持されます。スケジュールを算出できなくなったレポートはオフになり、その理由が表示されます。
+      </p>
+      <h3>通知チャネル</h3>
+      <ul>
+        <li>
+          <strong>ベルアイコン。</strong> 各ユーザーが、環境設定またはアラートページで、自分用に <em>ベルアイコンにアラートを表示</em> をオンにします。表示されるのは、サーバーを監視できる接続 (<code>server:monitor</code>) のアラートだけです。
+        </li>
+        <li>
+          <strong>メール。</strong> SMTP サーバー、ポート、そして最初から TLS (通常は 465) または STARTTLS (通常は 587) を指定します。どちらも提供しないサーバーは拒否され、メールが平文で送信されることはありません。ユーザー名とパスワード (暗号化して保存)、送信元アドレス、最大 20 件の宛先を設定します。サーバー、ポート、暗号化、ユーザー名のいずれかを新しくする場合は、パスワードを再入力する必要があります。保存済みのパスワードが別のサーバーに送られることはありません。<em>テストメッセージを送信</em> は、保存済みの設定で送信します。TLS ハンドシェイクややり取りが時間内に完了しないセッションは破棄されます。メールは Mongo Manager 自身のクライアントとそのエグレスガードを経由して送信されます。パブリックアドレスは許可され、プライベートアドレスは <code>MM_ALERTS_PRIVATE_NETWORKS</code> の範囲内のみ許可されます。
+        </li>
+        <li>
+          <strong>Webhook。</strong> https のアドレスです。プレーンな http は <code>MM_ALERTS_PRIVATE_NETWORKS</code> 内のアドレスにのみ使えます。アドレスに認証情報を含めることはできず、クラウドのメタデータアドレスとリンクローカルアドレスは常に拒否され、リダイレクトにも従いません。各 Webhook の署名シークレットはサーバーが作成し、一度だけ表示します。<em>新しいシークレットを作成</em> で置き換えると、古いシークレットはすぐに使えなくなります。
+        </li>
+      </ul>
+      <p>各ルールで送信先を選びます。チャネルのないルールは記録されるだけです。</p>
+
+      <h3 id="webhook-delivery">Webhook の配信</h3>
+      <p>各配信は、JSON 本文を持つ POST です。</p>
+      <pre><code>{
+  "type": "alert.firing",
+  "id": "…",
+  "at": "2026-10-16T09:30:00.000Z",
+  "alert": {
+    "metric": "cacheFill",
+    "event": null,
+    "state": "firing",
+    "value": 91,
+    "threshold": 80,
+    "unit": "percent",
+    "startedAt": "2026-10-16T09:28:00.000Z",
+    "resolvedAt": null,
+    "connection": { "id": "…", "name": "Production" },
+    "detail": {}
+  }
+}</code></pre>
+      <p>
+        <code>type</code> は <code>alert.firing</code>、<code>alert.resolved</code>、<code>alert.event</code>、<code>alert.test</code> のいずれかです (テストには <code>type</code> と <code>at</code> のみが含まれます)。イベントアラートでは、<code>metric</code> の代わりに <code>event</code> (<code>backup.failed</code>、<code>schedule.failed</code>、<code>liveSync.stopped</code>、<code>job.failed</code>) が設定されます。ヘッダーは次のとおりです。
+      </p>
+      <ul>
+        <li><code>x-mm-event</code>: type と同じ値。</li>
+        <li><code>x-mm-delivery</code>: 配信の一意な ID。再試行しても同じ値です。</li>
+        <li><code>x-mm-timestamp</code>: この試行に署名した時刻 (Unix 秒)。</li>
+        <li>
+          <code>x-mm-signature</code>: <code>sha256=</code> に続けて、Webhook のシークレットを使い、タイムスタンプ、ドット、本文を対象にした HMAC-SHA256 の 16 進文字列。
+        </li>
+      </ul>
+      <p>
+        署名は、本文をパースする前に生の本文に対して検証し、5 分より古いタイムスタンプは拒否してください。Node.js の例:
+      </p>
+      <pre><code>const crypto = require('node:crypto')
+
+function verify(secret, headers, rawBody) {
+  const timestamp = headers['x-mm-timestamp']
+  const signature = headers['x-mm-signature'] ?? ''
+  if (!/^\d+$/.test(timestamp ?? '')) return false
+  if (Math.abs(Date.now() / 1000 - Number(timestamp)) &gt; 300) return false
+  const expected =
+    'sha256=' + crypto.createHmac('sha256', secret).update(timestamp + '.' + rawBody).digest('hex')
+  const a = Buffer.from(signature)
+  const b = Buffer.from(expected)
+  return a.length === b.length &amp;&amp; crypto.timingSafeEqual(a, b)
+}</code></pre>
+      <p>Python の例:</p>
+      <pre><code>import hashlib, hmac, time
+
+def verify(secret: bytes, headers, raw_body: bytes) -&gt; bool:
+    timestamp = headers.get("x-mm-timestamp", "")
+    if not timestamp.isdigit() or abs(time.time() - int(timestamp)) &gt; 300:
+        return False
+    mac = hmac.new(secret, timestamp.encode() + b"." + raw_body, hashlib.sha256)
+    expected = "sha256=" + mac.hexdigest()
+    return hmac.compare_digest(headers.get("x-mm-signature", ""), expected)</code></pre>
+      <p>
+        配信は、ネットワークエラー、5xx 応答、408、429 の場合に、2 秒後、10 秒後、60 秒後の最大 3 回まで再試行されます。それ以外の 4xx や、ガードが拒否したアドレスへの配信では再試行されません。各試行は、新しいタイムスタンプで改めて署名されます。すでに処理した配信を無視するには、<code>x-mm-delivery</code> を使用してください。
+      </p>
+
+      <h3>スヌーズ、一時停止、確認済み</h3>
+      <ul>
+        <li>
+          ルールを 1 時間、8 時間、または 1 日 <strong>スヌーズ</strong> できます。アラートは記録されますが、何も送信されません。<strong>今すぐ解除</strong> で早めに終了できます。
+        </li>
+        <li>ルールのスイッチで、一時停止と再開ができます。</li>
+        <li>
+          管理者はアラートを全員に対して <strong>確認済みにする</strong> ことができ、他のユーザーには誰が確認したかが表示されます。それ以外のユーザーは、自分のベルアイコンからアラートを <strong>閉じる</strong> ことができます。管理者以外のベルアイコンには、何が起きたか (そのコード) は表示されますが、どの同期、ジョブ、スケジュール、名前空間かは表示されません。
+        </li>
+        <li>配信は、同時に発生するチャネルやアラートの数にかかわらず、1 つのキューから少しずつ行われます。</li>
+        <li>
+          <strong>履歴</strong> は、アラートページと各接続のセクションにあり、90 日間 (最大 20,000 件) を保持し、各配信の結果と試行回数も記録します。
+        </li>
+      </ul>
+      <p>
+        <code>MM_ALERTS=0</code> を設定すると、サーバーでアラートが無効になり、評価も送信も行われません (<a href="deployment.html#alerts">デプロイ</a>を参照)。監査ログには、<code>alerts.rule.create</code>、<code>alerts.rule.update</code>、<code>alerts.rule.delete</code>、<code>alerts.rule.snooze</code>、<code>alerts.email.update</code>、<code>alerts.email.test</code>、<code>alerts.webhook.create</code>、<code>alerts.webhook.update</code>、<code>alerts.webhook.delete</code>、<code>alerts.webhook.test</code>、<code>alerts.acknowledge</code> が記録されます。SMTP パスワードや Webhook のシークレットは記録されません。
+      </p>
+
+      <h2 id="health">ライブヘルス</h2>
+      <p>
+        概要の接続カードには、各接続の ping レイテンシ、MongoDB のバージョン、トポロジー、発生中のアラートが表示されます。接続のページでは、同じ内容がステータスドット付きでヘッダーに表示されます。
+      </p>
+      <ul>
+        <li>サーバーは、各応答を 30 秒間保持します。</li>
+        <li>
+          一覧が自動的に接続することはありません。開いていない接続には <strong>未接続</strong> と表示されます。接続のページを開くと、データベースの一覧を取得するときと同様に、その接続が確認されます。
+        </li>
+        <li>アラートの件数は、サーバーを監視できる接続についてのみ表示されます。</li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">このページの内容</p>
+      <ol>
+        <li><a href="#users-roles">ユーザーとロール</a></li>
+        <li><a href="#sharding">シャーディング</a></li>
+        <li><a href="#alerts">アラート</a></li>
+        <li><a href="#health">ライブヘルス</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

@@ -1,0 +1,136 @@
+{
+  "id": "document-diff",
+  "name": {
+    "en": "Document diff",
+    "tr": "Belge karşılaştırma",
+    "zh": "文档比较",
+    "ja": "ドキュメント比較",
+    "es": "Comparación de documentos",
+    "pt": "Comparação de documentos",
+    "ko": "도큐먼트 비교",
+    "de": "Dokumentvergleich",
+    "fr": "Comparaison de documents",
+    "ru": "Сравнение документов"
+  },
+  "version": "1.3.0",
+  "description": {
+    "en": "Compares a document with another of its collection, field by field: what was added, removed or changed, nested values and arrays included.",
+    "tr": "Bir belgeyi koleksiyonundaki başka bir belgeyle alan alan karşılaştırır: eklenen, kaldırılan ya da değişen, iç içe değerler ve diziler dahil.",
+    "zh": "将一个文档与同一集合中的另一个文档逐字段比较：新增、删除或更改了什么，包括嵌套值和数组。",
+    "ja": "ドキュメントを同じコレクションの別のドキュメントとフィールドごとに比較します。追加・削除・変更された内容を、ネストされた値や配列も含めて確認できます。",
+    "es": "Compara un documento con otro de su colección, campo por campo: qué se añadió, quitó o cambió, con valores anidados y arreglos incluidos.",
+    "pt": "Compara um documento com outro da sua coleção, campo a campo: o que foi adicionado, removido ou alterado, incluindo valores aninhados e arrays.",
+    "ko": "도큐먼트를 같은 컬렉션의 다른 도큐먼트와 필드 단위로 비교합니다. 추가, 삭제, 변경된 내용을 중첩 값과 배열까지 포함해 보여 줍니다.",
+    "de": "Vergleicht ein Dokument Feld für Feld mit einem anderen aus derselben Collection: was hinzugefügt, entfernt oder geändert wurde, einschließlich verschachtelter Werte und Arrays.",
+    "fr": "Compare un document à un autre de sa collection, champ par champ : ce qui a été ajouté, supprimé ou modifié, valeurs imbriquées et tableaux compris.",
+    "ru": "Сравнивает документ с другим документом его коллекции поле за полем: что добавлено, удалено или изменено, включая вложенные значения и массивы."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "documentActions": [
+      {
+        "id": "compare",
+        "title": {
+          "en": "Compare with…",
+          "tr": "Şununla karşılaştır…",
+          "zh": "与…比较",
+          "ja": "…と比較",
+          "es": "Comparar con…",
+          "pt": "Comparar com…",
+          "ko": "다음과 비교…",
+          "de": "Vergleichen mit …",
+          "fr": "Comparer avec…",
+          "ru": "Сравнить с…"
+        }
+      }
+    ]
+  },
+  "author": {
+    "name": "Gokhan OZGEZER"
+  },
+  "license": "CC-BY-NC-SA-4.0",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.3.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Some wording and counts also read better in several languages.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Bazı ifadeler ve sayılar da birçok dilde daha doğru okunuyor.",
+        "zh": "现在和应用一样，也支持韩语、德语、法语和俄语。部分措辞和计数在多种语言中也更加准确。",
+        "ja": "アプリと同じく、韓国語・ドイツ語・フランス語・ロシア語にも対応しました。いくつかの言語で、一部の文言と件数の表記もより正確になりました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Además, algunos textos y recuentos se leen mejor en varios idiomas.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o aplicativo. Além disso, alguns textos e contagens ficaram mais corretos em vários idiomas.",
+        "ko": "앱과 같이 한국어, 독일어, 프랑스어, 러시아어로도 사용할 수 있습니다. 또한 여러 언어에서 일부 문구와 개수 표기가 더 정확해졌습니다.",
+        "de": "Jetzt auch auf Koreanisch, Deutsch, Französisch und Russisch, wie die App. Außerdem lesen sich einige Formulierungen und Zählungen in mehreren Sprachen besser.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Certaines formulations et certains décomptes se lisent aussi mieux dans plusieurs langues.",
+        "ru": "Теперь также на корейском, немецком, французском и русском, как и приложение. Кроме того, некоторые формулировки и счетчики теперь точнее на нескольких языках."
+      }
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在和应用一样，支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同じく、中国語・日本語・スペイン語・ブラジルポルトガル語に対応しました。その他の変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o aplicativo. Nada mais muda.",
+        "ko": "앱과 같이 중국어, 일본어, 스페인어, 브라질 포르투갈어로도 사용할 수 있습니다. 다른 변경 사항은 없습니다.",
+        "de": "Jetzt auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь также на китайском, японском, испанском и бразильском португальском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.1.1",
+      "date": "2026-10-16",
+      "notes": {
+        "en": "Security update of the shared kit: an address that hides a script behind a tab or a line break is refused like any other script address. Nothing else changes.",
+        "tr": "Ortak kitin güvenlik güncellemesi: bir betiği sekme ya da satır sonu arkasına gizleyen adres, diğer betik adresleri gibi reddedilir. Başka bir şey değişmez.",
+        "zh": "共享工具包的安全更新：将脚本隐藏在制表符或换行符之后的地址，会像其他脚本地址一样被拒绝。其他内容不变。",
+        "ja": "共有キットのセキュリティ更新: タブや改行の後ろにスクリプトを隠したアドレスも、他のスクリプトアドレスと同様に拒否されます。その他の変更はありません。",
+        "es": "Actualización de seguridad del kit compartido: una dirección que esconde un script tras una tabulación o un salto de línea se rechaza como cualquier otra dirección de script. Nada más cambia.",
+        "pt": "Atualização de segurança do kit compartilhado: um endereço que esconde um script atrás de uma tabulação ou quebra de linha é recusado como qualquer outro endereço de script. Nada mais muda.",
+        "ko": "공유 키트 보안 업데이트: 탭이나 줄 바꿈 뒤에 스크립트를 숨긴 주소도 다른 스크립트 주소와 마찬가지로 거부됩니다. 다른 변경 사항은 없습니다.",
+        "de": "Sicherheitsupdate des gemeinsamen Kits: Eine Adresse, die ein Skript hinter einem Tabulator oder Zeilenumbruch versteckt, wird wie jede andere Skriptadresse abgelehnt. Sonst ändert sich nichts.",
+        "fr": "Mise à jour de sécurité du kit partagé : une adresse qui cache un script derrière une tabulation ou un saut de ligne est refusée comme toute autre adresse de script. Rien d’autre ne change.",
+        "ru": "Обновление безопасности общего набора: адрес, скрывающий скрипт за табуляцией или переводом строки, отклоняется так же, как любой другой адрес скрипта. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "Redesigned in the app's look: a summary of what changed, a Changes only view, and rows marked by kind. Compare no longer stays busy after a failure, and errors are shown in the current language.",
+        "tr": "Uygulamanın görünümüyle yeniden tasarlandı: neyin değiştiğine dair bir özet, “Yalnız farklar” görünümü ve türüne göre işaretlenen satırlar. Karşılaştır düğmesi bir hatadan sonra artık meşgul kalmaz; hatalar geçerli dilde gösterilir.",
+        "zh": "按应用的外观重新设计：变更摘要、“仅差异”视图，以及按类型标记的行。比较按钮在失败后不再一直处于忙碌状态，错误会以当前语言显示。",
+        "ja": "アプリの見た目に合わせて再設計しました。変更内容の概要、「差分のみ」表示、種類ごとに印の付く行を追加。比較ボタンは失敗後に処理中のままにならず、エラーは現在の言語で表示されます。",
+        "es": "Rediseñado con el aspecto de la aplicación: un resumen de lo que cambió, una vista «Solo cambios» y filas marcadas por tipo. Comparar ya no se queda ocupado tras un fallo, y los errores se muestran en el idioma actual.",
+        "pt": "Redesenhado com o visual do aplicativo: um resumo do que mudou, uma visualização «Somente diferenças» e linhas marcadas por tipo. Comparar não fica mais ocupado após uma falha, e os erros são exibidos no idioma atual.",
+        "ko": "앱의 디자인에 맞게 새로 설계했습니다. 변경 내용 요약, “변경 사항만” 보기, 종류별로 표시되는 행이 추가되었습니다. 비교 버튼은 실패 후에도 더 이상 대기 상태로 남지 않으며, 오류는 현재 언어로 표시됩니다.",
+        "de": "Neu gestaltet im Look der App: eine Zusammenfassung der Änderungen, eine Ansicht „Nur Änderungen“ und nach Art markierte Zeilen. Vergleichen bleibt nach einem Fehler nicht mehr beschäftigt, und Fehler erscheinen in der aktuellen Sprache.",
+        "fr": "Repensé dans le style de l’application : un résumé de ce qui a changé, une vue « Changements seuls » et des lignes marquées par type. Comparer ne reste plus occupé après un échec, et les erreurs s’affichent dans la langue actuelle.",
+        "ru": "Переработано в стиле приложения: сводка изменений, режим «Только изменения» и строки, отмеченные по типу. Кнопка «Сравнить» больше не остается занятой после сбоя, а ошибки показываются на текущем языке."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "First release. “Compare with…” in a document's menu in Documents puts that document beside another of its collection, given by its _id or picked from a list, and compares them field by field: nested objects by field, arrays by position, and a change of type counts as a change. The sides can be swapped and the changes copied as JSON. Each change is named in words, not only by colour.",
+        "tr": "İlk sürüm. Belgeler'de bir belgenin menüsündeki “Şununla karşılaştır…”, o belgeyi koleksiyonundaki başka bir belgenin yanına koyar (_id'si yazılarak ya da listeden seçilerek) ve ikisini alan alan karşılaştırır: iç içe nesneler alan alan, diziler sıra sıra; tip değişikliği de bir değişiklik sayılır. Taraflar yer değiştirebilir, farklar JSON olarak kopyalanabilir. Her değişiklik yalnız renkle değil, sözle de belirtilir.",
+        "zh": "首个版本。在“文档”中，文档菜单里的“与…比较”会把该文档与同一集合中的另一个文档并排放置（输入其 _id 或从列表中选择），并逐字段比较：嵌套对象按字段，数组按位置，类型变化也算一处变更。可以交换两侧，并将差异复制为 JSON。每处变更不仅用颜色，也用文字标明。",
+        "ja": "初回リリース。「ドキュメント」でドキュメントのメニューにある「…と比較」を使うと、そのドキュメントを同じコレクションの別のドキュメント（_id を入力するか一覧から選択）と並べ、フィールドごとに比較します。ネストされたオブジェクトはフィールド単位、配列は位置単位で比較し、型の変更も変更として扱います。左右の入れ替えや、差分の JSON コピーも可能です。各変更は色だけでなく文字でも示されます。",
+        "es": "Primera versión. «Comparar con…» en el menú de un documento de Documentos coloca ese documento junto a otro de su colección, indicado por su _id o elegido de una lista, y los compara campo por campo: los objetos anidados por campo, los arreglos por posición, y un cambio de tipo cuenta como cambio. Los lados se pueden intercambiar y los cambios copiar como JSON. Cada cambio se indica con palabras, no solo con color.",
+        "pt": "Primeira versão. «Comparar com…» no menu de um documento em Documentos coloca esse documento ao lado de outro da sua coleção, indicado pelo _id ou escolhido em uma lista, e os compara campo a campo: objetos aninhados por campo, arrays por posição, e uma mudança de tipo conta como mudança. Os lados podem ser trocados e as diferenças copiadas como JSON. Cada mudança é indicada com palavras, não só por cor.",
+        "ko": "첫 릴리스. 도큐먼트 목록에서 도큐먼트 메뉴의 “다음과 비교…”를 선택하면 해당 도큐먼트를 같은 컬렉션의 다른 도큐먼트(_id를 입력하거나 목록에서 선택)와 나란히 놓고 필드 단위로 비교합니다. 중첩 객체는 필드별로, 배열은 위치별로 비교하며, 유형 변경도 변경으로 간주합니다. 좌우를 바꿀 수 있고 변경 사항을 JSON으로 복사할 수 있습니다. 각 변경은 색상뿐 아니라 글자로도 표시됩니다.",
+        "de": "Erste Version. „Vergleichen mit …“ im Menü eines Dokuments in Dokumente stellt dieses Dokument neben ein anderes seiner Collection, angegeben über die _id oder aus einer Liste gewählt, und vergleicht beide Feld für Feld: verschachtelte Objekte nach Feld, Arrays nach Position, und ein Typwechsel gilt als Änderung. Die Seiten lassen sich tauschen, die Änderungen als JSON kopieren. Jede Änderung wird in Worten benannt, nicht nur durch Farbe.",
+        "fr": "Première version. « Comparer avec… » dans le menu d’un document de Documents place ce document à côté d’un autre de sa collection, donné par son _id ou choisi dans une liste, et les compare champ par champ : objets imbriqués par champ, tableaux par position, et un changement de type compte comme un changement. Les côtés peuvent être inversés et les changements copiés en JSON. Chaque changement est nommé par des mots, pas seulement par la couleur.",
+        "ru": "Первый выпуск. Пункт «Сравнить с…» в меню документа в разделе «Документы» ставит этот документ рядом с другим документом его коллекции (по _id или из списка) и сравнивает их поле за полем: вложенные объекты по полям, массивы по позициям, а смена типа считается изменением. Стороны можно поменять местами, а изменения скопировать как JSON. Каждое изменение обозначено словами, а не только цветом."
+      }
+    }
+  ]
+}

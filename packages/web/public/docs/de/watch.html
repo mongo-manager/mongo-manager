@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Änderungen beobachten · Mongo-Manager-Dokumentation</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo-Manager-Dokumentation</a>
+      <details class="lang-menu">
+        <summary>Deutsch</summary>
+        <span class="langs" role="group" aria-label="Sprache">
+          <a lang="en" hreflang="en" href="../watch.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/watch.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/watch.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/watch.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/watch.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/watch.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/watch.html">한국어</a>
+          <strong lang="de">Deutsch</strong>
+          <a lang="fr" hreflang="fr" href="../fr/watch.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/watch.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Überblick</a>
+      <a href="getting-started.html">Erste Schritte</a>
+      <a href="security.html">Sicherheit</a>
+      <a href="deployment.html">Bereitstellung</a>
+      <a href="import-export.html">Import und Export</a>
+      <a href="backup.html">Sicherung und Wiederherstellung</a>
+      <strong>Änderungen beobachten</strong>
+      <a href="sync.html">Live-Synchronisierung</a>
+      <a href="server-admin.html">Serververwaltung</a>
+      <a href="ai.html">KI-Assistent</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Tastenkombinationen</a>
+    </nav>
+    <main>
+      <h1>Änderungen beobachten</h1>
+      <p>
+        Der Bereich „Beobachten“ zeigt die Änderungen, die MongoDB an Ihren Daten vornimmt, während sie
+        geschehen: jedes Einfügen, Aktualisieren, Ersetzen und Löschen sowie auf Wunsch Schemaänderungen wie
+        neue Indizes. Er nutzt die Change Streams von MongoDB. Es wird nichts gespeichert: Ein Feed beginnt,
+        wenn Sie ihn öffnen, und zeigt, was ab diesem Zeitpunkt geschieht.
+      </p>
+
+      <h2 id="requirements">Wo Sie ihn finden</h2>
+      <ul>
+        <li>Ein Collection-Tab → <strong>Beobachten</strong>: die Änderungen dieser Collection.</li>
+        <li>Ein Datenbank-Tab → <strong>Beobachten</strong>: die Änderungen aller Collections der Datenbank.</li>
+        <li>Ein Verbindungs-Tab → <strong>Beobachten</strong>: die Änderungen aller Datenbanken der Verbindung.</li>
+        <li>
+          Die Befehlspalette (Ctrl+K): „Änderungen beobachten…“ öffnet den Bereich „Beobachten“ des aktuellen
+          Tabs.
+        </li>
+      </ul>
+      <p>
+        Change Streams erfordern ein Replica Set, einen Sharded Cluster oder ein Deployment mit Lastverteilung
+        (MongoDB Atlas ist immer eines davon). Ein eigenständiger Server (Standalone) kann nicht beobachtet
+        werden; der Bereich weist darauf hin. Für die Entwicklung genügt ein Replica Set mit einem einzigen
+        Knoten: Starten Sie <code>mongod --replSet rs0</code> und führen Sie einmalig
+        <code>rs.initiate()</code> aus. Views können nicht beobachtet werden: Der Bereich „Beobachten“ einer View
+        bietet stattdessen die Collection an, aus der die View liest. Eine Collection, die noch nicht
+        existiert, kann beobachtet werden; ihre Änderungen erscheinen, sobald sie erstellt wird.
+      </p>
+
+      <h2 id="who-may-watch">Wer beobachten darf</h2>
+      <p>
+        Wer auf der Verbindung Dokumente lesen darf, darf sie beobachten, in jedem Geltungsbereich. Der
+        Datenbankbenutzer der Verbindung benötigt die Berechtigungen <code>changeStream</code> und
+        <code>find</code> für das Beobachtete (die integrierte Rolle <code>read</code> enthält beide).
+        Collections mit Anmeldedaten wie <code>system.users</code> werden nur den Administratoren der
+        Verbindung angezeigt.
+      </p>
+
+      <h2 id="the-feed">Der Feed</h2>
+      <p>
+        Die Leiste über dem Feed zeigt seinen Zustand: Live, Pausiert, Im Rückstand (mehr als zwei Sekunden,
+        mit Angabe des Rückstands), Verbindung wird wiederhergestellt oder Beendet, dazu die Anzahl der
+        eingegangenen Änderungen und deren Geschwindigkeit. Die neuesten Änderungen stehen oben. Jede Zeile
+        zeigt die Art der Änderung (in Worten und Farbe), in Datenbank- und Verbindungs-Feeds die Collection,
+        die <code>_id</code> des Dokuments, bei Aktualisierungen die Namen der geänderten Felder und wie lange
+        die Änderung her ist (die genaue Uhrzeit beim Darüberfahren mit der Maus). Wenn Sie nach unten
+        gescrollt haben, warten neue Änderungen hinter einer Schaltfläche „neue Ereignisse“, statt das
+        Gelesene zu verschieben. Die letzten 2.000 Änderungen werden behalten; ältere verschwinden aus der
+        Liste.
+      </p>
+      <p>
+        Wählen Sie eine Änderung aus, um sie rechts zu sehen: die geänderten Felder, bei Einfügungen und
+        Ersetzungen das gesamte Dokument oder das Ereignis als JSON. „Dokument öffnen“ öffnet den Bereich
+        „Dokumente“ der Collection, gefiltert nach der <code>_id</code> dieses Dokuments. „Als EJSON kopieren“
+        kopiert die Änderung als Extended JSON.
+      </p>
+
+      <h2 id="pause-resume-and-reconnects">Pausieren, Fortsetzen und erneutes Verbinden</h2>
+      <p>
+        Beim Pausieren hält die Liste an, ohne dass Ihre Position verloren geht: MongoDB bewahrt die
+        Änderungen auf der Serverseite auf. Setzen Sie mit „Aufholen“ fort, um zu sehen, was während der Pause
+        geschehen ist, oder mit „Ab jetzt“, um es zu überspringen. Die Leertaste in der Symbolleiste des Feeds
+        pausiert und setzt fort. Ein pausierter Feed bleibt beim Wechsel von Bereichen oder Tabs pausiert, bis
+        Sie seinen Tab schließen; ein laufender Feed hält wenige Sekunden an, nachdem Sie seinen Bereich
+        verlassen haben.
+      </p>
+      <p>
+        Wenn die Verbindung zur App abbricht, verbindet sich der Feed selbstständig neu. Innerhalb von zwei
+        Minuten setzt er unmittelbar nach der letzten Änderung fort, die Ihr Browser empfangen hat, ohne dass
+        etwas fehlt oder doppelt erscheint, und weist darauf hin; ein pausierter Feed kommt pausiert zurück.
+        Kann er von dort nicht mehr fortsetzen (nach einem sehr langen Schub), setzt er an der Stelle fort, an
+        der der Server stand, und weist darauf hin, dass Änderungen fehlen können; nach zwei Minuten beginnt er
+        stattdessen ab jetzt von Neuem und sagt das. Die Stelle, von der ein Feed fortsetzt (der Resume Token
+        von MongoDB), bleibt auf dem Server.
+      </p>
+
+      <h2 id="filters">Filter</h2>
+      <p>
+        Die Chips wählen die Arten von Änderungen: Einfügen, Aktualisieren, Ersetzen und Löschen.
+        „Schemaänderungen einbeziehen“ fügt Änderungen wie erstellte oder verworfene Collections und Indizes
+        sowie geänderte Optionen hinzu. „Nach Updates das gesamte Dokument anzeigen“ liest das Dokument nach
+        jeder Aktualisierung, was pro Aktualisierung einen Lesevorgang kostet.
+      </p>
+      <p>
+        „Filter bearbeiten“ nimmt ein <code>$match</code> auf jedes Änderungsereignis entgegen, geschrieben wie
+        eine Abfrage, zum Beispiel:
+      </p>
+      <ul>
+        <li>
+          <code>{ 'updateDescription.updatedFields.status': 'paid' }</code>: Aktualisierungen, die den Status
+          auf „paid“ setzen.
+        </li>
+        <li>
+          <code>{ 'fullDocument.total': { $gt: 1000 } }</code>: Einfügungen und Ersetzungen großer Bestellungen.
+        </li>
+        <li><code>{ 'documentKey._id': ObjectId('…') }</code>: ein einzelnes Dokument.</li>
+        <li><code>{ 'ns.coll': 'orders' }</code>: eine Collection, in einem Datenbank- oder Verbindungs-Feed.</li>
+      </ul>
+      <p>
+        Ein Filter darf bis zu 12 KB groß und 20 Ebenen tief sein. Operatoren, die JavaScript auf dem Server
+        ausführen (<code>$where</code>, <code>$function</code>, <code>$accumulator</code>), werden nie
+        akzeptiert. Jede Änderung eines Filters startet den Feed ab jetzt neu, und der Feed weist darauf hin.
+      </p>
+
+      <h2 id="pre-images">Die Werte vor einer Änderung sehen</h2>
+      <p>
+        MongoDB meldet, welche Felder eine Aktualisierung geändert hat, und deren neue Werte. Um auch die Werte
+        davor zu sehen, aktivieren Sie Pre-Images für die Collection; der Feed zeigt dann bei Aktualisierungen
+        einen vollständigen Vorher-nachher-Vergleich und bei Löschungen das Dokument, wie es war. Auf der
+        Seite „Beobachten“ einer Collection sieht, wer die Optionen der Collection ändern darf (zum Beispiel
+        Validierungsregeln), solange sie ausgeschaltet sind, <em>Pre- und Post-Images aktivieren</em>; dort
+        steht, was sie kosten, und anschließend wird derselbe Befehl ausgeführt (mit Audit-Protokoll). Oder in
+        der Shell:
+      </p>
+      <pre><code>db.runCommand({ collMod: 'orders', changeStreamPreAndPostImages: { enabled: true } })</code></pre>
+      <p>
+        Pre-Images werden so lange im Speicher des Servers gehalten, wie dessen Change-Stream-Einstellungen es
+        vorgeben, und kosten daher bei stark genutzten Collections Speicherplatz. Ohne sie zeigt der Feed die
+        aktualisierten Werte, die Namen entfernter Felder und wie Arrays verkürzt wurden.
+      </p>
+
+      <h2 id="recordings">Aufzeichnen, Wiedergeben und Warnungen</h2>
+      <p>
+        <em>In Datei aufzeichnen</em> (in den Filtern, für alle, die aus der Verbindung exportieren dürfen)
+        behält die Ereignisse des Feeds auf dem Server, genau so, wie sie Ihnen gesendet wurden — maskiert, wo
+        sie maskiert wurden — ein Ereignis pro Zeile. Eine Aufzeichnung ist Ihre eigene Transferdatei: Sie
+        zählt auf Ihren Transferspeicher, umfasst höchstens 64 MB (danach endet die Aufzeichnung und der Feed
+        läuft weiter, und die Seite „Beobachten“ weist darauf hin) und wird nach dem Ende ihres Feeds so lange
+        aufbewahrt wie Transferdateien. Eine Neuverbindung, die aufzeichnet, beginnt eine neue Datei. Ein
+        Neustart des Servers beendet eine Aufzeichnung: Was auf den Datenträger gelangt ist, bleibt als
+        abgeschlossene Aufzeichnung erhalten. Eine Datei ist als maskiert oder nicht maskiert gekennzeichnet,
+        wie ihre Ereignisse gesendet wurden: Ändert sich Ihre Maskierung während des Feeds (personenbezogene
+        Werte sind jetzt vor Ihnen verborgen oder nicht mehr, oder die Regeln haben sich geändert), endet die
+        Datei dort, und eine neue beginnt mit der neuen Kennzeichnung — die Liste der Aufzeichnungen zeigt
+        beide. <em>Aufzeichnungen</em> in der Symbolleiste listet Ihre eigenen für diese Verbindung auf:
+        <em>Wiedergeben</em> zeigt eine anstelle des Live-Feeds (mit derselben Liste und denselben Details) —
+        die ersten 500 Ereignisse, dann jeweils 500 weitere, wenn Sie <em>Weitere Ereignisse laden</em>
+        wählen, bis zu 5.000 (den Rest enthält die Datei) —, <em>Herunterladen</em> liefert die Datei
+        (NDJSON), und Aufzeichnungen lassen sich löschen. Niemand sonst, auch nicht Administratoren, kann sie
+        lesen. Eine Aufzeichnung wird nicht herausgegeben, sobald personenbezogene Werte auf der Verbindung vor
+        Ihnen verborgen sind (wenn sie unmaskiert aufgezeichnet wurde) oder sobald sich ihre Regeln geändert
+        haben (wenn sie maskiert aufgezeichnet wurde).
+      </p>
+      <p>
+        <em>Bei Treffern eine Warnung auslösen</em> teilt den Warnungen der App (dem Ereignis
+        <code>watch.matched</code>) mit, dass Ereignisse den Filter des Feeds passiert haben: höchstens alle
+        10 Sekunden, mit der Anzahl und der Art des letzten Ereignisses, nie mit einem Wert. Es funktioniert,
+        solange der Feed läuft.
+      </p>
+
+      <h2 id="personal-data">Personenbezogene Daten</h2>
+      <p>
+        Für einen Benutzer, der keine personenbezogenen Daten sehen darf, wird jede Änderung mit
+        personenbezogenen Feldern als <code>***</code> angezeigt: das Dokument, sein Schlüssel, die Werte davor
+        und die aktualisierten Werte, nach Feldpfad, einschließlich Array-Positionen. Ein Filter auf ein
+        verborgenes Feld wird abgelehnt, und in Datenbank- und Verbindungs-Feeds darf ein solcher Benutzer nur
+        nach Art der Änderung, Namespace und Zeit filtern. Exporte des Feeds enthalten das Angezeigte,
+        verborgene Werte als <code>***</code>.
+      </p>
+
+      <h2 id="limits-and-settings">Limits und Einstellungen</h2>
+      <ul>
+        <li>
+          3 Live-Feeds pro Browserfenster, 5 pro Benutzer und 50 auf dem Server
+          (<code>MM_WATCH_MAX_FEEDS</code>).
+        </li>
+        <li>
+          Ein Dokument über 256 KB wird nicht im Feed gesendet; „Dokument öffnen“ zeigt es an.
+        </li>
+        <li>
+          Höchstens 200 Änderungen pro Sekunde erreichen den Browser pro Feed; geschieht mehr, zeigt der Feed,
+          wie weit er im Rückstand ist, und holt auf.
+        </li>
+        <li><code>MM_WATCH=0</code> schaltet das Beobachten auf dem Server aus.</li>
+        <li>
+          Das Starten und Beenden eines Feeds wird im Audit-Protokoll festgehalten, mit dem Fingerabdruck des
+          Filters, aber nie mit dessen Werten.
+        </li>
+      </ul>
+
+      <h2 id="when-a-feed-ends">Wenn ein Feed endet</h2>
+      <ul>
+        <li>
+          Die Collection wurde verworfen oder umbenannt: Der Feed endet; „Ab jetzt neu starten“ beobachtet die
+          Collection unter diesem Namen erneut.
+        </li>
+        <li>
+          Die Historie des Servers (Oplog) reicht nicht mehr bis zur Position des Feeds, zum Beispiel nach
+          langer Abwesenheit: Starten Sie ab jetzt neu.
+        </li>
+        <li>
+          Ihr Zugriff, die Verbindung oder deren Einstellungen haben sich geändert: Der Feed endet und nennt den
+          Grund.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Auf dieser Seite</p>
+      <ol>
+        <li><a href="#requirements">Wo Sie ihn finden</a></li>
+        <li><a href="#who-may-watch">Wer beobachten darf</a></li>
+        <li><a href="#the-feed">Der Feed</a></li>
+        <li><a href="#pause-resume-and-reconnects">Pausieren, Fortsetzen und erneutes Verbinden</a></li>
+        <li><a href="#filters">Filter</a></li>
+        <li><a href="#pre-images">Die Werte vor einer Änderung sehen</a></li>
+        <li><a href="#recordings">Aufzeichnen, Wiedergeben und Warnungen</a></li>
+        <li><a href="#personal-data">Personenbezogene Daten</a></li>
+        <li><a href="#limits-and-settings">Limits und Einstellungen</a></li>
+        <li><a href="#when-a-feed-ends">Wenn ein Feed endet</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

@@ -1,0 +1,81 @@
+/* Shard key analyzer (plugins wave 4): what the kit (kit/src/ui.css) does not already give. */
+.sk-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sk-muted {
+  color: var(--ds-fg-muted);
+}
+.sk-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--ds-line);
+  border-radius: 12px;
+}
+.sk-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+.sk-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ds-fg-muted);
+}
+.sk-draft {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 28px;
+  align-items: center;
+}
+.sk-error {
+  margin: 0;
+  color: var(--ds-danger);
+}
+.sk-table {
+  overflow-x: auto;
+}
+.sk-results th[scope='row'] {
+  white-space: nowrap;
+  color: var(--ds-fg-muted);
+  font-weight: 500;
+}
+.sk-results thead th {
+  white-space: nowrap;
+}
+.sk-results td {
+  vertical-align: top;
+  min-width: 180px;
+}
+.sk-cell {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.sk-common {
+  margin: 0;
+  padding-left: 18px;
+}
+.sk-reason {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.sk-reason p {
+  margin: 0;
+}
+.sk-code {
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: var(--ds-subtle);
+  word-break: break-all;
+}

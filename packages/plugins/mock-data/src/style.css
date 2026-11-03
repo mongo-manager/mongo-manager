@@ -1,0 +1,52 @@
+/* Test data (plugins wave 3): what the kit (kit/src/ui.css) does not already give. */
+.md-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.md-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+.md-number {
+  width: 8rem;
+}
+.md-template {
+  max-width: 18rem;
+}
+.md-template-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.md-constant {
+  width: 12rem;
+}
+.md-add {
+  display: flex;
+  gap: 8px;
+  max-width: 32rem;
+}
+.md-field-note:not(:empty) {
+  margin-top: 6px;
+  color: var(--ds-danger);
+}
+.md-preview {
+  margin: 0;
+  max-height: 22rem;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--ds-line);
+  border-radius: 8px;
+  background: var(--ds-subtle);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre;
+}
+.md-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

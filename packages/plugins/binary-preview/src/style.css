@@ -1,0 +1,86 @@
+/* Binary preview (plugins wave 3): what the kit (kit/src/ui.css) does not already give. */
+.bp-body {
+  position: relative;
+}
+.bp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+.bp-figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  min-width: 0;
+}
+.bp-thumb {
+  display: grid;
+  place-items: center;
+  height: 140px;
+  padding: 0;
+  border: 1px solid var(--ds-line);
+  border-radius: 8px;
+  background: repeating-conic-gradient(var(--ds-subtle) 0 25%, var(--ds-surface) 0 50%) 0 0 / 16px 16px;
+  cursor: zoom-in;
+  overflow: hidden;
+}
+.bp-thumb:focus-visible {
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 2px;
+}
+.bp-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: scale-down;
+}
+.bp-small img {
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.bp-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 12px;
+}
+.bp-path,
+.bp-id {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bp-caption .mm-btn {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+.bp-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+.bp-large {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: color-mix(in srgb, var(--ds-canvas) 94%, transparent);
+}
+.bp-large img {
+  flex: 1;
+  min-height: 0;
+  object-fit: contain;
+  background: repeating-conic-gradient(var(--ds-subtle) 0 25%, var(--ds-surface) 0 50%) 0 0 / 16px 16px;
+  border-radius: 8px;
+}
+.bp-large-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}

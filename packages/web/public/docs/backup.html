@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Backup and restore · Mongo Manager documentation</title>
+    <link rel="stylesheet" href="docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager documentation</a>
+      <details class="lang-menu">
+        <summary>English</summary>
+        <span class="langs" role="group" aria-label="Language">
+          <strong lang="en">English</strong>
+          <a lang="tr" hreflang="tr" href="tr/backup.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="zh/backup.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="ja/backup.html">日本語</a>
+          <a lang="es" hreflang="es" href="es/backup.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="pt/backup.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="ko/backup.html">한국어</a>
+          <a lang="de" hreflang="de" href="de/backup.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="fr/backup.html">Français</a>
+          <a lang="ru" hreflang="ru" href="ru/backup.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Overview</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="security.html">Security</a>
+      <a href="deployment.html">Deployment</a>
+      <a href="import-export.html">Import and export</a>
+      <strong>Backup and restore</strong>
+      <a href="watch.html">Watching changes</a>
+      <a href="sync.html">Live sync</a>
+      <a href="server-admin.html">Server administration</a>
+      <a href="ai.html">AI assistant</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Keyboard shortcuts</a>
+    </nav>
+    <main>
+      <h1>Backup and restore</h1>
+      <p>
+        Back up a collection, a database or the whole server, then download the file or keep it on the server
+        for a while. Restore any of your backups, a mongodump archive or a zip of a mongodump folder into the
+        namespaces you choose. Both run as background jobs you can follow in the jobs list.
+      </p>
+      <p>
+        Start from a collection's or database's menu in the sidebar, the connection's menu, a connection's
+        Backups tab, a database's or a collection's Backups section, or the command palette ("Back up…",
+        "Restore a backup…").
+      </p>
+
+      <h2 id="taking-a-backup">Taking a backup</h2>
+      <p>
+        The backup opens on one screen with the recommended choice for what you opened it from: an encrypted
+        backup when the data holds personal fields, a compressed archive otherwise. The checks beside it
+        update as you change anything: the expected size and time, your free backup space, personal fields
+        that would be readable in the file, and anything left out. Each check that can be fixed has a button
+        for it. "Customize…" opens the steps: scope, engine, content, protection and a summary.
+      </p>
+      <p>
+        The backup runs in the background: close the dialog when you like. Once it starts, the Backups section
+        of what it backs up opens: the collection's, the database's or the connection's. While it runs, the
+        Backups section and the jobs list show each namespace with its own progress (how many of them are
+        done, the one being read, and the phase). When it finishes, its notice offers "Download" and "Open
+        report".
+      </p>
+      <p>
+        A backup and a restore need the connection's server, and are shown only while Mongo Manager is
+        connected to it (its databases were read). While it connects, or while it cannot (a timeout, a
+        network, DNS or TLS failure, a sign-in refused, a server not available), the connection's page shows
+        only its overview with the error, Retry and Edit: no Performance, Watch, Users and roles, Alerts,
+        Personal data or Backups, no New database or shell; a database's page shows no Model, Watch or
+        Backups. The menus of the tree and of these pages leave out backing up, restoring, live sync, the
+        shell, creating, renaming and dropping, and the command palette's commands for the server say there is
+        no connection. A backup or restore opened another way says so, with Retry, and starts nothing. An
+        answer that is not about reaching the server (all its connections busy for a moment, a query that ran
+        past its time limit) hides nothing. Everything comes back once the databases are read: Retry, Refresh,
+        a connection test that passes, or by itself when the cause passes by itself (the network, a timeout,
+        DNS, a server not available): an open page tries again every 15 seconds while the browser shows it. A
+        sign-in the server refused (a username or password, an SSH sign-in, an SSH host key that changed) is
+        kept for five minutes, or until the connection is edited, its person signs in again (a connection each
+        person signs in to) or a connection test passes: meanwhile nothing in Mongo Manager (pages, widgets,
+        the health check, jobs, the shell) signs in again for it, and while it is kept only the connection's
+        administrators can test it again, so a directory's lockout rules do not lock the account out, and the
+        error says how to try again.
+      </p>
+
+      <h2 id="formats">Formats</h2>
+      <ul>
+        <li>
+          <code>.archive</code>: a mongodump archive; it opens with <code>mongorestore --archive</code>.
+        </li>
+        <li>
+          <code>.archive.gz</code>: the same archive compressed with gzip;
+          <code>mongorestore --archive --gzip</code>.
+        </li>
+        <li>
+          <code>.mmbak</code>: compressed with Zstandard, then sealed with AES-256-GCM in parts that are each
+          verified when read. The password needs at least 12 characters; "Generate a strong password" makes
+          one for you. The password is stored nowhere and cannot be recovered: without it, the backup cannot
+          be opened. Open it in Mongo Manager, or turn it into a plain archive with
+          <code>mongo-manager backup decrypt &lt;file&gt; -o &lt;file.archive&gt;</code>
+          (the password is asked without echo, or read from a pipe with <code>--password-stdin</code>).
+          <code>mongo-manager backup inspect &lt;file&gt;</code> lists what any backup holds.
+        </li>
+      </ul>
+
+      <h2 id="engines">Engines</h2>
+      <ul>
+        <li>
+          Built-in: reads through Mongo Manager, so personal-field rules and masking apply. It works on every
+          installation, and its archives open with mongorestore.
+        </li>
+        <li>
+          mongodump and mongorestore: MongoDB's own tools, which can be faster on very large data. They are
+          offered to administrators of the connection who see personal values, not through SSH tunnels.
+          Install the MongoDB Database Tools 100.9 or later (100.16 or later for MongoDB 8.3 and later, which
+          the Docker image's own tools are not yet: there it uses the built-in engine) and set
+          <code>MM_MONGODB_TOOLS_PATH</code>, or use the Docker image, which includes them. Credentials reach
+          the tools in a private, temporary configuration file that is deleted when they finish, never on the
+          command line.
+        </li>
+      </ul>
+
+      <h2 id="time-series">Time series</h2>
+      <p>
+        A time series is kept as mongodump keeps it for the server's version: from MongoDB 8.3 under its own
+        name, read and written through it with <code>rawData</code>; before 8.3 under
+        <code>system.buckets.&lt;name&gt;</code>. The built-in engine restores either kind, Mongo Manager's or
+        mongodump's, into any supported version, an 8.3 backup into an older server too. mongorestore needs
+        100.16 or later for a backup or a target of 8.3 or later, and finds the time series of an 8.3 backup
+        only when mongodump 100.16 or later, or this version of Mongo Manager, made it: for one made otherwise
+        the plan offers the built-in engine instead. A server that does not say its version is never guessed
+        at: its time series is left out of a backup, with the reason, a restore of one is refused in its plan,
+        and a drill of one stops before writing any of its documents, its scratch database dropped. With
+        sign-in on MongoDB 8.3 and later, the account that backs up or restores a time series also needs the
+        <code>performRawDataOperations</code> privilege (MongoDB's <code>backup</code> role has it; for a
+        restore, grant it alongside <code>restore</code>).
+      </p>
+
+      <h2 id="personal-data">Personal data</h2>
+      <ul>
+        <li>
+          A user who may not see personal values backs up <code>***</code> in their place: such a backup is
+          always anonymous. Anyone can choose an anonymous backup.
+        </li>
+        <li>
+          Time series with personal fields, and views whose definition holds a value that would be masked, are
+          left out of a masked backup. A collection whose validator holds such a value keeps its masked data,
+          without the validator. The report says what was left out and why.
+        </li>
+        <li>A masked backup can no longer be downloaded or restored once the personal-field rules change.</li>
+        <li>
+          Restoring a masked backup over existing documents needs a confirmation, since
+          <code>***</code> replaces the stored values.
+        </li>
+      </ul>
+
+      <h2 id="restoring">Restoring</h2>
+      <ol>
+        <li>
+          Drop a file, choose one, or pick one of your kept backups. Large files go up in parts and resume
+          after a lost connection; what the file holds is shown while it is still uploading. An encrypted
+          backup asks for its password.
+        </li>
+        <li>
+          Choose what to restore and where: rename the database for every namespace at once, add
+          <code>_restored</code> to the names, or "Into a new database" (named after the backed-up database
+          and the date, never one the target already has; a backup of several databases gets one new database
+          for each, so collections of the same name never meet). Targets that already exist are marked with
+          their document count. "Restore here…" on a collection restores into it: a backup of one collection
+          goes into that collection whatever its name was.
+        </li>
+        <li>
+          Choose how to write: add (a document whose <code>_id</code> is already there is refused and listed),
+          upsert by key fields, or replace. A replace restores into a staging collection and puts it in place
+          only when everything arrived, so a failed or cancelled restore leaves the target as it was. With the
+          built-in engine, what a replace does not take from the backup (its indexes, or its options and
+          validator, when those are left out) stays the target's own: if one of its own indexes cannot be
+          rebuilt, or its own cap would keep fewer documents than were written, nothing is replaced.
+          mongorestore cannot keep them. A time series cannot be replaced, in the backup or on the target;
+          restore it into a new collection. A restore run again finds the documents it already wrote as they
+          were, and counts them as already there instead of refusing them, a dry run too.
+        </li>
+        <li>
+          Confirm what needs confirming: the TTL indexes and collection expiry the written collection will
+          have, the backup's or the target's own kept by a replace (the report, and a dry run, count the
+          documents deleted as soon as they are written, their dates already past expiry, the target's own TTL
+          included), personal-field rules the target lacks (an administrator can add them), and the name of
+          each non-empty target a replace overwrites, typed.
+        </li>
+        <li>
+          Run a dry run to see what would happen, then "Restore now with these settings", or start the
+          restore. Every namespace's checksum is verified; a mismatch fails the restore. Its progress is shown
+          per namespace, then the indexes and views it builds; when it finishes, its notice and its row in the
+          jobs list open what it wrote ("Open collection", or "Open database" for several) and its report.
+        </li>
+      </ol>
+
+      <h2 id="kept-backups">Kept backups</h2>
+      <p>
+        The Backups section of a connection, database or collection lists your backups (a collection's, those
+        that hold it) with their protection, size, age and when they expire, and your use of the backup space.
+        A backup's "…" menu downloads, sends or restores it, or deletes it (with five seconds to undo).
+        Backups are yours only; they are withdrawn when you lose access to their connection or when personal
+        values become hidden from you there.
+      </p>
+
+      <h2 id="destinations">Destinations</h2>
+      <p>
+        A backup can also be sent somewhere else: a folder on the server, S3-compatible storage, Google Drive
+        or a WebDAV server. Administrators define destinations under
+        <em>Account menu → Backup destinations</em>
+        and choose who may use each one; everyone else sees only a destination's name, never its address or
+        keys. The keys are stored encrypted and can only be replaced, never read back.
+      </p>
+      <ul>
+        <li>
+          <strong>Server folder:</strong> an absolute path inside one of the folders listed in
+          <code>MM_BACKUP_FOLDER_ROOTS</code>, outside the data directory. Without that setting no folder
+          destination can be made.
+        </li>
+        <li>
+          <strong>S3-compatible storage:</strong> an endpoint, region, bucket, access key id and secret.
+          Presets fill in what they can for Amazon S3, MinIO, Cloudflare R2 (your account id), Backblaze B2,
+          DigitalOcean Spaces, DigitalOcean Spaces Cold Storage, Wasabi, or any other S3 service.
+        </li>
+        <li>
+          <strong>Google Drive:</strong> your own Google Cloud OAuth client, connected with a code shown on
+          screen, or a service account writing into a Shared Drive (see below).
+        </li>
+        <li>
+          <strong>WebDAV:</strong> the server's address, a user name and an app password (Nextcloud, ownCloud
+          or any WebDAV server). Nextcloud and ownCloud take large backups in resumable chunks.
+        </li>
+        <li>
+          <strong>Google Cloud Storage:</strong> a bucket, an optional prefix, the storage class backups are
+          written in (Standard, Nearline, Coldline or Archive — every class is read at once; colder ones bill
+          a minimum time) and the JSON key of a service account with the <em>Storage Object User</em> role
+          (enough: it reads, writes, lists and deletes objects) on the bucket. The key is sealed on the
+          server; only the account's address is shown. Uploads resume after a lost connection, and each copy
+          is checked against Google's MD5.
+        </li>
+        <li>
+          <strong>Azure Blob Storage:</strong> a storage account, a container, an optional prefix and the
+          access tier backups are written in (the account's default, Hot, Cool, Cold or Archive), signed with
+          a SAS token or the account key. A SAS token for the container alone, allowed to read, add, create,
+          write, delete and list, is the narrowest grant; it stops working at its end date. Only the fields a
+          SAS token may hold are accepted, and only the credential the chosen way of signing uses is kept. A
+          small backup is checked whole against its MD5. Large backups go up in blocks, each checked by Azure
+          against its MD5, and the finished blob is compared by its size (Azure keeps no checksum of a blob
+          made of blocks); an interrupted upload resumes from its own blocks only — every upload marks its
+          blocks, so blocks another attempt left are never taken for this one's. A blob in the Archive tier is
+          shown as archived: <em>Thaw…</em> rehydrates it to Cool (it stays there) at standard or high
+          priority. Manifests are never written to Archive. <em>Advanced</em> takes another Azure cloud's
+          endpoint and a CA certificate.
+        </li>
+        <li>
+          <strong>SFTP:</strong> a server, its port, a user name, an optional folder (the login folder when
+          empty; it must exist) and a password or a private key (with its passphrase). The server's host key
+          is pinned by its SHA-256 fingerprint: leave the fingerprint empty, run <em>Test the connection</em>,
+          compare the key it shows with the server's own (for example
+          <code>ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub</code> on the server) and choose
+          <em>Trust this key and test again</em>. Nothing is sent to a server whose key is not the trusted
+          one; a changed key asks for the password or key again. Backups are written as
+          <code>.part</code> files, renamed when whole, and an interrupted upload continues where it stopped —
+          once what the part file holds has been read back and found to be the backup's beginning (even with
+          reading back off); a part file that is not starts again. SFTP keeps no checksum, so each copy is
+          read back whole unless <em>Verify by reading back</em> is turned off. A manifest written again
+          replaces the old one at once where the server offers <code>posix-rename@openssh.com</code>
+          (OpenSSH does). A download that receives nothing for a minute is given up. The connection goes
+          through the same address checks and proxy as the other destinations.
+        </li>
+      </ul>
+      <p>
+        Under <em>Access</em>, choose who else may use the destination: <em>Send</em> lets a user send their
+        own backups there and restore the ones they sent; <em>Browse everything</em> lets them read every
+        backup there, other users' included. Administrators can always use every destination.
+      </p>
+
+      <h3 id="testing">Testing a destination</h3>
+      <p>
+        The last step of the editor, <em>Test and save</em>, runs <em>Test the connection</em> on the real
+        destination and shows each step with its time: <em>Find the address</em>, <em>Connect securely</em>,
+        <em>Sign in</em>, <em>Write a test file</em>, <em>Read it back</em> and <em>Delete it</em>. For a
+        server folder the first two read <em>On this server</em>. A step that fails says why; the steps after
+        it show <em>Not run</em>. A setting changed after the test calls for a new one. <em>Save</em> after a
+        failed test asks <em>Save without a passing test?</em> first; <em>Save anyway</em> keeps the
+        destination as it is, to be fixed later. <em>Test now</em> in a destination's menu tests a saved one
+        again. Its card shows the result: <em>Healthy</em>, <em>Needs attention</em>,
+        <em>Reconnect needed</em> (Google Drive, see below) or <em>Not tested yet</em>.
+      </p>
+
+      <h3 id="google-drive">Google Drive</h3>
+      <p>
+        Mongo Manager signs in to Drive with your own Google Cloud OAuth client, or with a service account in
+        Google Workspace. It asks only for the <code>drive.file</code> scope: it sees the files and folders it
+        created itself and nothing else in that Drive.
+      </p>
+      <p><strong>With your Google account</strong> (<em>My Google account</em> in the editor):</p>
+      <ol>
+        <li>
+          In the Google Cloud console, choose or create a project. Under
+          <em>APIs &amp; Services → Library</em>, enable the <em>Google Drive API</em>.
+        </li>
+        <li>
+          Configure the <em>OAuth consent screen</em> first (in newer consoles it is
+          <em>Google Auth Platform</em>, with <em>Branding</em> and <em>Audience</em>). In Google Workspace,
+          choose the user type <em>Internal</em>: only your organisation's accounts can connect. Otherwise
+          choose <em>External</em> and then <em>Publish app</em> so that its status is <em>In production</em>;
+          <code>drive.file</code> is a non-sensitive scope, so publishing needs no review by Google. Do not
+          leave an External app in <em>Testing</em>: Google lets its sign-ins expire after 7 days, and the
+          destination then shows <em>Reconnect needed</em>.
+        </li>
+        <li>
+          Go to <em>Credentials → Create credentials → OAuth client ID</em> and choose the type
+          <em>TVs and Limited Input devices</em>. No redirect address is needed. Keep the client id and the
+          client secret.
+        </li>
+        <li>
+          In the editor, enter the <em>OAuth client id</em> and the <em>OAuth client secret</em> and choose
+          <em>Connect Google account</em>. Open the address shown (google.com/device) and enter the code with
+          the Google account that should hold the backups, before the countdown ends. The editor then shows
+          <em>Connected as</em> that account. Backups go into a folder the app creates (<em>Folder name</em>,
+          "Mongo Manager backups" unless you change it).
+        </li>
+        <li>
+          When Google no longer accepts the connection (its access was removed in the Google account, it was
+          not used for six months, or the app stayed in Testing), the destination shows
+          <em>Reconnect needed</em>. Open <em>Edit…</em>, choose <em>Reconnect</em>, enter the new code, and
+          save. The stored client secret is used for this: you do not enter it again, and it never comes back
+          to the browser.
+        </li>
+      </ol>
+      <p>
+        <strong>With a service account</strong> (Google Workspace, <em>Service account</em> in the editor):
+      </p>
+      <ol>
+        <li>
+          In the same project, under <em>IAM &amp; Admin → Service accounts</em>, create a service account (it
+          needs no role). Under its <em>Keys</em>, choose <em>Add key → Create new key</em> of type JSON.
+        </li>
+        <li>
+          In Google Drive, open the Shared drive that should hold the backups, choose
+          <em>Manage members</em>, and add the service account's address as <em>Content manager</em> (a
+          service account has no storage of its own). The Shared drive's id is the last part of its address
+          (<code>drive.google.com/drive/folders/&lt;id&gt;</code>).
+        </li>
+        <li>
+          In the editor, paste the key or drop its file on <em>Service account key (JSON)</em>, and enter the
+          <em>Shared Drive id</em>. Only the account's address stays on screen.
+        </li>
+      </ol>
+
+      <h3>Sending a backup</h3>
+      <p>
+        Choose destinations under <em>Where</em> when you take a backup, or use <em>Send…</em> on a kept
+        backup. Each copy shows on the backup's row: <em>Sending to</em> a destination with its progress,
+        <em>On</em> a destination once it is verified, or <em>Not sent to</em> one with the reason.
+      </p>
+      <ul>
+        <li>
+          A destination accepts <strong>encrypted backups only</strong> unless an administrator turns that off
+          (the change is audited).
+        </li>
+        <li>
+          A backup of data with personal-field rules goes to a destination only when it is encrypted or
+          masked, whatever the destination's setting.
+        </li>
+        <li>
+          A copy counts as sent only once it is verified. Every destination compares the size. S3-compatible
+          storage also checks each uploaded part against its SHA-256 as it arrives, and Google Drive compares
+          the checksum it reports. A server folder reads the whole file back and compares its SHA-256; so does
+          WebDAV when <em>Verify each upload by reading it back</em> is on (it doubles the traffic). Without
+          it, WebDAV checks the size only, and the dialog says so. A copy that fails verification is removed
+          from the destination.
+        </li>
+        <li>
+          <em>Delete the local copy after a verified upload</em> relies on that verification: the server's
+          copy is deleted only when every chosen destination verified its copy. If any fails, the local copy
+          is kept for 7 days, the time a send can be retried in, and the job says so; a cancelled send never
+          deletes it.
+        </li>
+        <li>
+          Each destination runs a limited number of transfers at once (<code>MM_BACKUP_DEST_TRANSFERS</code>,
+          2 by default, for sends and downloads together). Further ones wait, and the job shows
+          <em>Waiting for</em> that destination until a slot is free.
+        </li>
+        <li>
+          <em>Retry</em> on a copy that was not sent sends it again and keeps its
+          <em>Delete the local copy</em> choice: once it and the other copies sent with that choice are
+          verified, the local copy goes. <em>Discard</em> drops the failed copy and abandons its unfinished
+          upload.
+        </li>
+        <li>
+          A send cut off by a server restart becomes a copy that was not sent, with the reason "The server
+          restarted while it was being sent."; <em>Retry</em> continues it from the parts already uploaded
+          where the provider keeps them (S3 multipart uploads, Nextcloud chunks).
+        </li>
+      </ul>
+
+      <h3>What is stored there</h3>
+      <p>
+        Files go under <code>mongo-manager/&lt;year&gt;/&lt;month&gt;/</code> in the destination's folder or
+        prefix, named by date, time and a short id, next to a small <code>.json</code> manifest with the size,
+        format and checksum, written last, once the file is verified. Neither the names nor the manifest
+        contain database or collection names.
+      </p>
+
+      <h3>Restoring from a destination</h3>
+      <p>
+        Choose the destination's tab in the Backups card, or <em>From a destination</em> in the restore sheet,
+        and pick a backup. Restoring needs the right to write to the target connection. The file is downloaded
+        to the server and previewed while it arrives; the restore can start once the download is complete and
+        its checksum matches the one recorded when it was sent, or the manifest's. A file whose checksum
+        differs is removed. A file without a manifest (put there by another tool, or by hand) is listed as
+        <em>From another installation</em>: it can be restored, but nothing can verify it first, and the
+        restore sheet says so.
+      </p>
+      <p>
+        A download that fails keeps what it received: choosing the same backup again resumes it. A cancelled
+        download is dropped, and so is one whose received part is of no use (its checksum differs, or the file
+        is gone). The part already received counts against your backup space until it is resumed, discarded,
+        or expires (<code>MM_BACKUP_TTL_HOURS</code>).
+      </p>
+      <p>
+        On a new installation, define the destination again with the same settings: the same folder; the same
+        endpoint, bucket and prefix; the same WebDAV address and folder. For Google Drive, use the same OAuth
+        client (or the same service account and Shared drive) and the same folder name: with
+        <code>drive.file</code>, a client sees only the files it created itself. Administrators then see every
+        backup there, those of the old installation included. Anyone else needs <em>Browse everything</em>:
+        <em>Send</em> shows only the backups that user sent from this installation.
+      </p>
+
+      <h3>Cold Storage and archive storage classes</h3>
+      <p>
+        DigitalOcean Spaces Cold Storage keeps backups cheaply and they stay readable at once, but every
+        object is billed for at least 30 days, and the provider may charge for retrievals beyond an allowance:
+        deleting or restoring soon after sending costs money.
+      </p>
+      <p>
+        An S3 destination's <em>Storage class</em> (under <em>Advanced</em>, <code>STANDARD</code> by default)
+        applies to the backup files; manifests stay in <code>STANDARD</code>. Files in <code>GLACIER</code> or
+        <code>DEEP_ARCHIVE</code> are not readable until they are thawed: the destination's list shows them as
+        archived with a <em>Thaw…</em> action, which asks how long the thawed copy stays readable (1 to 30
+        days) and how fast the provider works (Standard, Bulk — cheapest and slowest — or Expedited, not for
+        Deep Archive). The provider bills the thaw and those days. While it runs the copy shows as thawing;
+        once thawed it can be restored from the list until the days run out. Anyone who may restore from the
+        destination may thaw (a sender, their own copies), at most 10 thaws a minute, each one audited.
+        <code>GLACIER_IR</code>, <code>STANDARD_IA</code>, <code>ONEZONE_IA</code> and
+        <code>INTELLIGENT_TIERING</code> are read at once.
+      </p>
+
+      <h2 id="scheduled">Scheduled backups</h2>
+      <p>
+        A schedule takes the same backup again and again, sends each one to the destinations you choose and
+        keeps as many as its retention rule says. Open <em>Account menu → Scheduled backups</em>, the command
+        palette ("Open scheduled backups") or <em>Schedule…</em> in the Backups section of a connection or
+        database, which starts a schedule for it. The editor has six steps: what, when, protection, where,
+        retention and a summary with the server's checks.
+      </p>
+
+      <h3 id="scheduled-who">Who may schedule</h3>
+      <ul>
+        <li>
+          Anyone who may back up the connection may schedule it (read documents, run jobs and export there).
+          Each run takes the owner's rights as they are at that moment, never as they were when the schedule
+          was saved.
+        </li>
+        <li>
+          A right that is gone pauses the schedule before any data is read, with the reason on its card: the
+          owner's account is disabled, the owner can no longer back up the connection or send to a
+          destination, a destination was deleted, the backup key is not active, the scope now holds personal
+          data for an unencrypted schedule, a destination now takes encrypted backups only, this server cannot
+          read its cadence or time zone (a time zone another build knew), or the copies it keeps on this
+          server fill your backup space. Resume it once the reason is gone.
+        </li>
+        <li>
+          Administrators see every schedule and may pause, resume, run and delete it; they do not edit another
+          user's schedule. A schedule an administrator paused is resumed by an administrator. A user may hold
+          at most 10 schedules.
+        </li>
+      </ul>
+
+      <h3 id="cadence">When it runs</h3>
+      <ul>
+        <li><strong>Every N hours</strong> (1 to 24), at a chosen minute of the hour.</li>
+        <li><strong>Daily</strong>, at up to four times of day.</li>
+        <li><strong>Weekly</strong>, on the days you choose, at a time.</li>
+        <li><strong>Monthly</strong>, on a day from 1 to 28 or on the last day of the month, at a time.</li>
+        <li>
+          <strong>Advanced</strong>: a five-field cron expression (minute, hour, day of month, month, day of
+          week), read back in words as you type. It follows the classic Vixie rules: when both the day of
+          month and the day of week are restricted, either one matching is enough; a field that starts with
+          <code>*</code> counts as unrestricted. There are no <code>@</code> shortcuts, no seconds and no
+          <code>L</code>, <code>W</code> or <code>#</code>.
+        </li>
+      </ul>
+      <p>
+        Runs must be at least an hour apart, and a cadence must run within the next five years; the editor
+        shows the next runs in the schedule's time zone and says when either rule is broken.
+      </p>
+
+      <h3 id="time-zones">Time zones and daylight saving</h3>
+      <p>
+        Each schedule has its own time zone (yours by default); times are wall-clock times there. When the
+        clocks go forward, a time that does not exist that day runs at the first minute after the change. When
+        they go back, a time that happens twice runs once, at its first occurrence. An hourly schedule loses
+        one run in the hour that repeats rather than running twice within an hour.
+      </p>
+
+      <h3 id="missed-runs">Missed runs, overlap and the queue</h3>
+      <ul>
+        <li>
+          When the server was stopped at a due time, the next start runs one catch-up backup if the latest
+          missed time is no older than the schedule's own interval (at most a day). Every other missed time is
+          recorded as missed; there is never more than one catch-up.
+        </li>
+        <li>
+          A run that comes due while the previous one is still running, or still waiting for its turn, is
+          skipped and recorded as skipped, with which of the two it was.
+        </li>
+        <li>
+          At most <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code> scheduled runs work at once (default 2). The
+          others wait in due order for up to six hours; a run that waits longer is skipped.
+        </li>
+        <li>
+          A clock that jumps forward gives at most one catch-up; a clock that goes back runs nothing twice.
+        </li>
+      </ul>
+
+      <h3 id="run-history">Run now and the run history</h3>
+      <p>
+        <em>Run now</em> starts a run at once without moving the next one; a schedule runs one at a time. Each
+        card shows its last runs as a strip: green succeeded, amber partial (a destination failed), red
+        failed, grey skipped, a dashed outline missed, and a pulsing mark for the run in progress. The run
+        history lists each run with its outcome, duration and size, where each copy went, what retention
+        removed and, for a run that did not succeed, why. The last 200 runs of each schedule are kept. A card
+        whose last finished run failed or was partial says so, with the reason. Jobs started by a schedule
+        carry its name in the jobs list, and a paused or failing schedule of yours marks the account menu.
+      </p>
+
+      <h3 id="scheduled-protection">Protection and where it goes</h3>
+      <ul>
+        <li>
+          By default each run is an encrypted <code>.mmbak</code> sealed with your backup key (see
+          <a href="security.html#backup-keys">Backup keys</a>): no password to type, and its recovery kit
+          opens it anywhere. Create a key under <em>Account settings → Backup keys</em> first.
+        </li>
+        <li>
+          A plain format (<code>.archive</code> or <code>.archive.gz</code>) is allowed only when the scope
+          holds no personal data and every chosen destination accepts unencrypted backups; both are checked
+          again before each run.
+        </li>
+        <li>
+          Each run goes to the destinations shared with you that you choose, then the copy on this server is
+          deleted once every destination has a verified copy. <em>Keep on the server too</em> keeps it here as
+          well, under the same retention and in your backup space; the editor says about how much space they
+          will take. Turning it off gives the copies kept so far the normal time to live.
+        </li>
+      </ul>
+
+      <h3 id="restore-drills">Restore drills</h3>
+      <p>
+        A backup is only as good as its restore. "Test that backups restore" (in the retention step) runs a
+        restore drill every so many runs (1 to 30): the run's backup, opened with your backup key, is restored
+        into a new scratch database on the same connection (<code>mm_drill_</code> and 12 random characters),
+        each namespace is read back and compared with the backup — the number of documents, and every document
+        byte for byte — and the scratch database is dropped, whatever the outcome. While it exists it is
+        closed to everyone, administrators included: it is not listed in the tree, the Performance page, the
+        slow queries or the running operations (nor counted in the databases' total size), and no page,
+        request, shell command, assistant, change feed, live sync, copy, compare, backup or restore reads it
+        or writes to it — a request that names it is refused. Two things remain outside the app's reach: the
+        <code>listDatabases</code> answer in a connection admin's shell still shows its name (it cannot be
+        opened), and what the drill writes appears, like every write, in the oplog
+        (<code>local.oplog.rs</code>, admins only) and in a whole-deployment change stream opened in an
+        admin's shell. It also carries the personal-data rules of what it holds (the backup's, and the
+        connection's for those namespaces), so its values are hidden from anyone who may not see them; these
+        rules are not added to the connection's list and go with the database. Collections are restored
+        without their options (a validator or a cap would make it a test of the target), and views are not
+        checked. The run keeps its server copy until the drill is done, then lets it go as usual. The run
+        history says whether each drill passed or failed (and in which namespaces), the drill's report is in
+        the jobs list, and a failed drill raises an alert. A drill needs the right to create databases on the
+        connection; without it (or on a read-only connection) the drill is skipped, never the backup. It
+        writes as much as the backup holds, and writes go to the primary whatever member the connection names:
+        choose a quiet time. Before it writes anything it checks that the connection's MongoDB user may drop
+        databases (a drill that cannot clean up fails at once), picks a scratch name no database has, and
+        keeps what it writes under half the server's free disk space — the fullest shard's through a mongos,
+        and under <code>MM_BACKUP_DRILL_MAX_MB</code> when that is set, which a server that does not report
+        its free space (Atlas shared tiers) needs — a larger backup fails the drill, said as such. A right to
+        drop that cannot be read is not assumed: the drill does not start. If the scratch database cannot be
+        dropped at the end, the drill fails, a warning alert is raised and the report names the database: the
+        connection's administrators see it on the connection's page and drop it there by typing its name (not
+        while any drill runs). It is closed to everyone meanwhile, and a restart drops it.
+      </p>
+
+      <h2 id="retention">Retention</h2>
+      <p>
+        Retention decides which backups a schedule keeps at each location (each destination, and this server
+        when it keeps copies). Four tiers, counted in the schedule's time zone; a backup stays when any tier
+        keeps it:
+      </p>
+      <ul>
+        <li><strong>Newest</strong>: the N most recent backups (1 to 100).</li>
+        <li><strong>Daily</strong>: the newest backup of each calendar day, for that many days (0 to 90).</li>
+        <li>
+          <strong>Weekly</strong>: the newest of each ISO week (Monday to Sunday), for that many weeks (0 to
+          52).
+        </li>
+        <li><strong>Monthly</strong>: the newest of each calendar month, for that many months (0 to 60).</li>
+      </ul>
+      <p>
+        Presets: <em>Daily for 30 days</em> (the 7 newest and one a day for 30 days), <em>Standard</em> (the 7
+        newest, 14 days, 8 weeks and 12 months), <em>Long</em> (the 7 newest, 30 days, 26 weeks and 60 months)
+        and <em>Custom</em>. The editor draws what stays on a timeline.
+      </p>
+      <ul>
+        <li>
+          Only the schedule's own complete and verified copies at a location are ever removed; a copy sent by
+          hand, even of a scheduled backup, never is. Nothing is removed at a destination its owner may no
+          longer use.
+        </li>
+        <li>The newest backup is never removed, and a run that fails removes nothing.</li>
+        <li>
+          Removal at a location happens after this run's copy there is complete, at most 100 removals per
+          location and run; a removal that fails is tried again after the next run. Every removal is in the
+          audit log with the file's name.
+        </li>
+        <li>
+          A change of rule, time zone, destinations or keeping that would remove more than ten backups at once
+          asks you to confirm the number first.
+        </li>
+        <li>
+          DigitalOcean Spaces Cold Storage bills every object for at least 30 days: the editor warns when a
+          rule would keep backups there for less.
+        </li>
+      </ul>
+
+      <h2 id="opening-scheduled">Opening a scheduled backup</h2>
+      <ul>
+        <li>
+          On this server, restore it as any other backup: it opens with your backup key, retired keys
+          included, and the restore says which key opened it.
+        </li>
+        <li>
+          Elsewhere, or when none of your keys opens it, the restore asks for the backup's recovery kit (paste
+          it or choose its file). The kit is used for that restore and not kept, unless you tick
+          <em>Import this key</em>, which adds the key to your backup keys.
+        </li>
+        <li>
+          Without the app:
+          <code
+            >mongo-manager backup decrypt &lt;file.mmbak&gt; --key-file &lt;kit.txt&gt; -o
+            &lt;file.archive&gt;</code
+          >
+          writes the plain archive, which opens with <code>mongorestore --archive</code>. Without
+          <code>--key-file</code>, a file that opens only with its backup key says so before asking anything.
+        </li>
+      </ul>
+
+      <h2 id="limits-and-settings">Limits and settings</h2>
+      <ul>
+        <li><code>MM_BACKUP_QUOTA</code>: backup space per user, in MiB (default 20 480).</li>
+        <li><code>MM_BACKUP_TOTAL_QUOTA</code>: backup space for all users, in MiB (default 102 400).</li>
+        <li><code>MM_BACKUP_MAX_UPLOAD</code>: the largest file to restore, in MiB (default 20 480).</li>
+        <li><code>MM_BACKUP_TTL_HOURS</code>: how long backups and uploads are kept (default 24).</li>
+        <li><code>MM_BACKUP_MAX_JOB_HOURS</code>: the longest a backup or restore may run (default 12).</li>
+        <li><code>MM_BACKUP_CHUNK_MB</code>: the default part size of encrypted backups (default 64).</li>
+        <li><code>MM_MONGODB_TOOLS_PATH</code>: the folder of mongodump and mongorestore.</li>
+        <li>At most 10 000 namespaces in one archive; a zip of a mongodump folder must be under 4 GiB.</li>
+        <li>
+          <code>MM_BACKUP_SCHEDULES</code> and <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code>: scheduling on or
+          off, and scheduled runs at once (see <a href="deployment.html#scheduled-backups">Deployment</a>).
+        </li>
+      </ul>
+
+      <h2 id="not-covered">Not covered</h2>
+      <p>
+        Users and roles, the oplog and point-in-time restore. A backup reads collection after collection, not
+        one moment: documents written meanwhile may be partly in it. For a copy of one moment, back up a
+        replica set member that writes have stopped on, or use MongoDB's own snapshots.
+      </p>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">On this page</p>
+      <ol>
+        <li><a href="#taking-a-backup">Taking a backup</a></li>
+        <li><a href="#formats">Formats</a></li>
+        <li><a href="#engines">Engines</a></li>
+        <li><a href="#time-series">Time series</a></li>
+        <li><a href="#personal-data">Personal data</a></li>
+        <li><a href="#restoring">Restoring</a></li>
+        <li><a href="#kept-backups">Kept backups</a></li>
+        <li><a href="#destinations">Destinations</a></li>
+        <li><a href="#scheduled">Scheduled backups</a></li>
+        <li><a href="#retention">Retention</a></li>
+        <li><a href="#opening-scheduled">Opening a scheduled backup</a></li>
+        <li><a href="#limits-and-settings">Limits and settings</a></li>
+        <li><a href="#not-covered">Not covered</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

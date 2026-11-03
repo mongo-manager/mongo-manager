@@ -1,0 +1,90 @@
+{
+  "id": "hello-documents",
+  "name": {
+    "en": "Hello documents",
+    "tr": "Merhaba belgeler",
+    "zh": "你好，文档",
+    "ja": "こんにちは、ドキュメント",
+    "es": "Hola documentos",
+    "pt": "Olá documentos",
+    "ko": "안녕하세요, 도큐먼트",
+    "de": "Hallo Dokumente",
+    "fr": "Bonjour documents",
+    "ru": "Привет, документы"
+  },
+  "version": "0.1.0",
+  "description": {
+    "en": "A starter plugin: lists the documents of the collection it is opened on.",
+    "tr": "Başlangıç eklentisi: açıldığı koleksiyonun belgelerini listeler.",
+    "zh": "入门插件：列出其所打开集合中的文档。",
+    "ja": "スタータープラグイン：開いたコレクションのドキュメントを一覧表示します。",
+    "es": "Un plugin de inicio: lista los documentos de la colección en la que se abre.",
+    "pt": "Um plugin inicial: lista os documentos da coleção em que é aberto.",
+    "ko": "스타터 플러그인: 열린 컬렉션의 도큐먼트를 나열합니다.",
+    "de": "Ein Starter-Plugin: listet die Dokumente der Collection auf, in der es geöffnet wird.",
+    "fr": "Un plug-in de démarrage : liste les documents de la collection sur laquelle il est ouvert.",
+    "ru": "Стартовый плагин: показывает список документов коллекции, в которой он открыт."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "list",
+        "title": {
+          "en": "Hello",
+          "tr": "Merhaba",
+          "zh": "你好",
+          "ja": "こんにちは",
+          "es": "Hola",
+          "pt": "Olá",
+          "ko": "안녕하세요",
+          "de": "Hallo",
+          "fr": "Bonjour",
+          "ru": "Привет"
+        },
+        "icon": "table"
+      }
+    ],
+    "sidebarPanels": [
+      {
+        "id": "page",
+        "title": {
+          "en": "Hello documents",
+          "tr": "Merhaba belgeler",
+          "zh": "你好，文档",
+          "ja": "こんにちは、ドキュメント",
+          "es": "Hola documentos",
+          "pt": "Olá documentos",
+          "ko": "안녕하세요, 도큐먼트",
+          "de": "Hallo Dokumente",
+          "fr": "Bonjour documents",
+          "ru": "Привет, документы"
+        },
+        "icon": "puzzle"
+      }
+    ]
+  },
+  "author": { "name": "Your Name" },
+  "repository": "https://github.com/your-name/hello-documents",
+  "license": "MIT",
+  "publishedAt": "2026-10-11",
+  "changelog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-10-11",
+      "notes": {
+        "en": "First release. A Hello tab on every collection lists the first 50 documents the Documents filter keeps, and a Hello documents page in the sidebar lists the documents of the collection it was opened from.",
+        "tr": "İlk sürüm. Her koleksiyondaki Merhaba sekmesi, Belgeler filtresinin bıraktığı ilk 50 belgeyi listeler; kenar çubuğundaki Merhaba belgeler sayfası da açıldığı koleksiyonun belgelerini listeler.",
+        "zh": "首个版本。每个集合上的“你好”标签页会列出文档筛选保留的前 50 个文档；侧边栏中的“你好，文档”页面则列出打开它时所在集合的文档。",
+        "ja": "最初のリリースです。各コレクションの「こんにちは」タブには、ドキュメントのフィルターで絞り込んだ先頭 50 件のドキュメントが表示されます。サイドバーの「こんにちは、ドキュメント」ページには、開いた元のコレクションのドキュメントが表示されます。",
+        "es": "Primera versión. Una pestaña Hola en cada colección lista los primeros 50 documentos que conserva el filtro de Documentos, y una página Hola documentos en la barra lateral lista los documentos de la colección desde la que se abrió.",
+        "pt": "Primeira versão. Uma guia Olá em cada coleção lista os primeiros 50 documentos que o filtro de Documentos mantém, e uma página Olá documentos na barra lateral lista os documentos da coleção a partir da qual foi aberta.",
+        "ko": "첫 릴리스입니다. 모든 컬렉션의 안녕하세요 탭에는 도큐먼트 필터로 걸러진 처음 50개의 도큐먼트가 나열되고, 사이드바의 안녕하세요, 도큐먼트 페이지에는 열어 둔 컬렉션의 도큐먼트가 나열됩니다.",
+        "de": "Erste Version. Ein Tab Hallo in jeder Collection listet die ersten 50 Dokumente auf, die der Dokumente-Filter beibehält, und eine Seite Hallo Dokumente in der Seitenleiste listet die Dokumente der Collection auf, von der aus sie geöffnet wurde.",
+        "fr": "Première version. Un onglet Bonjour sur chaque collection liste les 50 premiers documents que conserve le filtre Documents, et une page Bonjour documents dans la barre latérale liste les documents de la collection à partir de laquelle elle a été ouverte.",
+        "ru": "Первый выпуск. Вкладка «Привет» в каждой коллекции показывает первые 50 документов, которые оставляет фильтр документов, а страница «Привет, документы» на боковой панели показывает документы коллекции, из которой она была открыта."
+      }
+    }
+  ]
+}

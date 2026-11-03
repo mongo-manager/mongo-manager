@@ -1,0 +1,257 @@
+/*
+ * The app's look, in short: the colours of Mongo Manager's plugin kit (packages/plugins/kit/src/ui.css).
+ * The theme comes from html.dark, the user's accent from html[data-accent] (main.js applyLook).
+ * The frame's policy allows this plugin's own files only: no inline style, no remote fonts.
+ */
+:root {
+  color-scheme: light;
+  --surface: #ffffff;
+  --subtle: #f3f4f6;
+  --line: rgb(17 24 39 / 0.08);
+  --line-strong: rgb(17 24 39 / 0.16);
+  --fg: #111827;
+  --fg-muted: #4b5563;
+  --danger: #c9241a;
+  --danger-soft: #fdefee;
+  --accent: #047a4d;
+  --accent-hover: #03673f;
+  --on-accent: #ffffff;
+  --accent-soft: #e7f5ee;
+  --accent-fg: #047a4d;
+  --font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+}
+:root.dark {
+  color-scheme: dark;
+  --surface: #111317;
+  --subtle: #1a1d23;
+  --line: rgb(255 255 255 / 0.07);
+  --line-strong: rgb(255 255 255 / 0.13);
+  --fg: #edeef0;
+  --fg-muted: #a1a7b3;
+  --danger: #ff6b5f;
+  --danger-soft: rgb(255 107 95 / 0.12);
+}
+
+/* The user's accent, light then dark. */
+:root[data-accent='indigo'] {
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: #eef0ff;
+  --accent-fg: #4338ca;
+}
+:root[data-accent='violet'] {
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-soft: #f3eeff;
+  --accent-fg: #6d28d9;
+}
+:root[data-accent='ocean'] {
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: #eff5ff;
+  --accent-fg: #1d4ed8;
+}
+:root[data-accent='rose'] {
+  --accent: #db2777;
+  --accent-hover: #be185d;
+  --accent-soft: #fdeef5;
+  --accent-fg: #be185d;
+}
+:root.dark,
+:root.dark[data-accent='emerald'] {
+  --accent: #2fbf7f;
+  --accent-hover: #4fd69a;
+  --on-accent: #04140d;
+  --accent-soft: rgb(47 191 127 / 0.14);
+  --accent-fg: #4fd69a;
+}
+:root.dark[data-accent='indigo'] {
+  --accent: #8b8cff;
+  --accent-hover: #a5a6ff;
+  --on-accent: #0b0b2e;
+  --accent-soft: rgb(139 140 255 / 0.14);
+  --accent-fg: #a5a6ff;
+}
+:root.dark[data-accent='violet'] {
+  --accent: #a78bfa;
+  --accent-hover: #c4b5fd;
+  --on-accent: #1a0b3a;
+  --accent-soft: rgb(167 139 250 / 0.14);
+  --accent-fg: #c4b5fd;
+}
+:root.dark[data-accent='ocean'] {
+  --accent: #60a5fa;
+  --accent-hover: #93c5fd;
+  --on-accent: #071a33;
+  --accent-soft: rgb(96 165 250 / 0.14);
+  --accent-fg: #93c5fd;
+}
+:root.dark[data-accent='rose'] {
+  --accent: #f472b6;
+  --accent-hover: #f9a8d4;
+  --on-accent: #2e0717;
+  --accent-soft: rgb(244 114 182 / 0.14);
+  --accent-fg: #f9a8d4;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--fg);
+  font: 13px/1.5 var(--font);
+}
+h1,
+p {
+  margin: 0;
+}
+button {
+  font: inherit;
+  color: inherit;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.head-text {
+  flex: 1;
+  min-width: 0;
+}
+.head h1 {
+  font-size: 15px;
+  font-weight: 600;
+}
+.muted {
+  color: var(--fg-muted);
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px 20px;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.notice:empty {
+  display: none;
+}
+.notice {
+  color: var(--danger);
+}
+
+.btn {
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent-fg);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-small {
+  height: 24px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+.badge {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent-fg);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.table-wrap {
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+th {
+  position: sticky;
+  top: 0;
+  background: var(--subtle);
+  color: var(--fg-muted);
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+}
+th,
+td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--line);
+}
+td {
+  font-family: var(--mono);
+  font-size: 12px;
+}
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+td.actions {
+  text-align: right;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 40px 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  color: var(--fg-muted);
+  text-align: center;
+}
+.empty-title {
+  color: var(--fg);
+  font-size: 14px;
+  font-weight: 600;
+}
+.callout {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--danger-soft);
+}
+.callout strong {
+  color: var(--danger);
+}
+
+/* Read by a screen reader, not shown. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

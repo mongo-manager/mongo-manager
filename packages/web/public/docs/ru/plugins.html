@@ -1,0 +1,1799 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Плагины · Документация Mongo Manager</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Документация Mongo Manager</a>
+      <details class="lang-menu">
+        <summary>Русский</summary>
+        <span class="langs" role="group" aria-label="Язык">
+          <a lang="en" hreflang="en" href="../plugins.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/plugins.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/plugins.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/plugins.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/plugins.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/plugins.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/plugins.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/plugins.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/plugins.html">Français</a>
+          <strong lang="ru">Русский</strong>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Обзор</a>
+      <a href="getting-started.html">Начало работы</a>
+      <a href="security.html">Безопасность</a>
+      <a href="deployment.html">Развертывание</a>
+      <a href="import-export.html">Импорт и экспорт</a>
+      <a href="backup.html">Резервное копирование и восстановление</a>
+      <a href="watch.html">Отслеживание изменений</a>
+      <a href="sync.html">Живая синхронизация</a>
+      <a href="server-admin.html">Администрирование сервера</a>
+      <a href="ai.html">ИИ-помощник</a>
+      <strong>Плагины</strong>
+      <a href="shortcuts.html">Сочетания клавиш</a>
+    </nav>
+    <main>
+      <h1>Создание плагинов</h1>
+      <p>
+        Плагин добавляет в Mongo Manager представление, действие или страницу: карту мест из коллекции, диаграмму,
+        поиск дубликатов, переводчик из SQL. Это руководство предназначено для тех, кто создает плагины. В нем
+        описаны файлы, из которых состоит плагин, все, что он может запрашивать у приложения, правила, которые
+        приложение применяет, а также упаковка, тестирование и публикация. Администраторы устанавливают и
+        одобряют плагины на странице <strong>Плагины</strong>; модель одобрения описана в разделе
+        <a href="security.html#plugins">Безопасность</a>. На этой странице перечислены все плагины; список можно
+        сузить до включенных, до требующих внимания администратора (ожидающих одобрения, измененных или
+        неисправных) или до отключенных, до одного источника, а также найти плагины по названию, описанию,
+        идентификатору, версии, запрашиваемым разрешениям или тому, что они добавляют.
+      </p>
+      <ul class="toc-inline">
+        <li><a href="#what">Что такое плагин</a></li>
+        <li><a href="#quick-start">Быстрый старт</a></li>
+        <li><a href="#files">Файлы и структура папок</a></li>
+        <li><a href="#manifest">Манифест</a></li>
+        <li><a href="#contributions">Точки расширения</a></li>
+        <li><a href="#context">Контекст</a></li>
+        <li><a href="#bridge">API моста</a></li>
+        <li><a href="#permissions">Разрешения</a></li>
+        <li><a href="#sandbox">Песочница</a></li>
+        <li><a href="#scan">Проверка безопасности</a></li>
+        <li><a href="#ui">Интерфейс и темы</a></li>
+        <li><a href="#localization">Языки</a></li>
+        <li><a href="#readme">README и примечания к выпускам</a></li>
+        <li><a href="#versions">Версии и одобрение</a></li>
+        <li><a href="#packaging">Упаковка</a></li>
+        <li><a href="#github">Публикация на GitHub</a></li>
+        <li><a href="#testing">Тестирование на собственном сервере</a></li>
+        <li><a href="#ai-files">Разработка с ИИ-ассистентом</a></li>
+        <li><a href="#checklist">Контрольный список перед публикацией</a></li>
+      </ul>
+
+      <h2 id="what">Что такое плагин</h2>
+      <p>
+        Плагин — это папка со <strong>статическими файлами</strong>: HTML-страницей, ее скриптами, стилями,
+        изображениями и шрифтами, а также манифестом <code>mongo-manager-plugin.json</code>, в котором указано,
+        что плагин добавляет и что ему разрешено. Приложение показывает страницу в
+        <strong>изолированном фрейме (sandbox)</strong>, и страница общается с приложением только через
+        сообщения: она запрашивает документы, а приложение отвечает от имени вошедшего пользователя, с его
+        правами и со скрытием данных, принятым в приложении.
+      </p>
+      <ul>
+        <li>
+          <strong>Нет серверного кода.</strong> Ничто из плагина не выполняется на сервере. Сервер хранит его
+          файлы, проверяет их и отдает фрейму.
+        </li>
+        <li>
+          <strong>Нет сети.</strong> Страница не может обращаться ни по одному адресу, даже к серверу, с
+          которого она загружена. У нее нет файлов cookie, нет хранилища и нет доступа к странице приложения.
+          Два пути наружу остаются на совести браузера: WebRTC блокируется только теми браузерами, которые
+          применяют директиву политики <code>webrtc</code> — браузеры на основе Chromium (Chrome, Edge) с версии
+          149 ее игнорируют, на Firefox тоже не стоит рассчитывать, — поэтому в них плагин все еще может
+          отправить прочитанные данные наружу через WebRTC; а подсказка предварительной загрузки
+          (<code>dns-prefetch</code>, <code>preconnect</code>) может вызвать разрешение имени. Фрейм просит
+          браузер не выполнять предзагрузку, а проверка помечает оба случая как высокий риск — но проверка
+          ищет в тексте файлов известные шаблоны: код, написанный так, чтобы ее обойти, не будет найден.
+          Одобряйте только те плагины, которым доверяете.
+        </li>
+        <li>
+          <strong>Ничего без одобрения.</strong> Плагин запускается, только если администратор одобрил его
+          точные файлы и запрашиваемые разрешения. Любое изменение файлов требует нового одобрения.
+        </li>
+        <li>
+          <strong>Изменения проходят через пользователя.</strong> Плагин, которому разрешено изменять
+          документы, отправляет запрос; приложение показывает изменение в собственном диалоге, и решает
+          пользователь. Запрос или конвейер, подготовленный плагином, помещается в собственные редакторы
+          пользователя, где ничто не выполняется, пока пользователь сам этого не запустит.
+        </li>
+      </ul>
+      <p>
+        Mongo Manager поставляется с несколькими собственными плагинами (Map, Charts, Schema health, Duplicate
+        finder, Value search, References, Document diff, SQL to MongoDB, Time hints, Binary preview, Data
+        dictionary, Local time, Log analyzer, Test data, Reshape, Anonymiser, Search playground, Shard key
+        analyzer, Storage report, Validation check, Legacy UUIDs, Date filters, Index script, Expiry (TTL),
+        Personal data finder, Document size). Они работают в той же песочнице, общаются через тот же мост и
+        проверяются так же, как ваши; поскольку это код самого приложения, при одобрении такого плагина его
+        идентификатор не запрашивается (см. <a href="#versions">Версии и одобрение</a>). Плагины можно
+        отключить для всего сервера с помощью <code>MM_PLUGINS=0</code> (см.
+        <a href="deployment.html#plugins">Развертывание</a>).
+      </p>
+
+      <h2 id="quick-start">Быстрый старт</h2>
+      <p>
+        Начните с шаблона-заготовки: на странице <strong>Плагины</strong> в разделе
+        <strong>Создайте собственный плагин</strong> выберите <strong>Скачать заготовку (.zip)</strong> (это
+        также папка <code>packages/plugins/starter</code> в исходном коде Mongo Manager). Это готовый плагин на
+        чистом JavaScript, без этапа сборки и без зависимостей: вкладка коллекции и страница боковой панели, на
+        которых выводятся документы коллекции.
+      </p>
+      <ol>
+        <li>Распакуйте ее или скопируйте папку в новый собственный репозиторий.</li>
+        <li>
+          В <code>mongo-manager-plugin.json</code> измените <code>id</code>, <code>name</code>,
+          <code>author</code> и <code>repository</code>. Идентификатор должен быть уникальным: он задает имя
+          папки плагина на каждом сервере.
+        </li>
+        <li>Напишите свою страницу в <code>main.js</code> и <code>style.css</code>.</li>
+        <li>
+          Попробуйте ее на собственном сервере:
+          <code>node scripts/pack.mjs --folder ~/.mongo-manager/plugins</code>, затем
+          <strong>Плагины → Сканировать снова</strong>, изучите результат проверки и одобрите плагин. См.
+          <a href="#testing">Тестирование на собственном сервере</a>.
+        </li>
+        <li>
+          Упакуйте плагин командой <code>node scripts/pack.mjs</code>, которая создает файл
+          <code>&lt;id&gt;-&lt;version&gt;.tgz</code>, и приложите этот файл к выпуску на GitHub. См.
+          <a href="#github">Публикация на GitHub</a>.
+        </li>
+      </ol>
+      <p>
+        В заготовке также есть файлы с инструкциями для ИИ-ассистентов по программированию
+        (<code>CLAUDE.md</code>, <code>AGENTS.md</code>, <code>GEMINI.md</code> и
+        <code>.github/copilot-instructions.md</code>); см.
+        <a href="#ai-files">Разработка с ИИ-ассистентом</a>.
+      </p>
+
+      <h2 id="files">Файлы и структура папок</h2>
+      <pre><code>hello-documents/
+  mongo-manager-plugin.json   the manifest (required, at the top)
+  index.html                  the entry page every contribution opens
+  main.js                     the page's script (an ES module)
+  style.css                   the page's styles
+  README.md                   shown to administrators on the plugin's details page
+  README.tr.md, README.zh.md  the same in another language of the app (optional)
+  scripts/pack.mjs            packaging (not part of the plugin: left out of the archive)
+  CLAUDE.md, AGENTS.md, ...   AI assistant files (left out of the archive)</code></pre>
+      <p>Правила приложения для файлов плагина:</p>
+      <ul>
+        <li>
+          Не более <strong>500 файлов</strong> и <strong>25 МБ</strong> в сумме; манифест — не более 64 КБ.
+        </li>
+        <li>
+          Каждый путь относительный и простой: каждая его часть начинается с буквы, цифры, <code>_</code> или
+          <code>-</code> и содержит только буквы, цифры, <code>.</code>, <code>_</code> и <code>-</code>, не
+          более 100 символов; не более 16 уровней вложенности и 240 символов в сумме. Скрытых файлов и папок
+          (имя, начинающееся с <code>.</code>), пробелов, имен устройств (<code>con</code>, <code>nul</code>,
+          <code>com1</code>...), а также <code>__proto__</code>, <code>constructor</code> и
+          <code>prototype</code> быть не должно.
+        </li>
+        <li>
+          Только файлы и папки: ссылки, точки соединения (junction) и специальные файлы делают плагин
+          непригодным к использованию.
+        </li>
+        <li>Не допускаются два пути, различающиеся только регистром букв.</li>
+        <li>
+          Тип файла при отдаче определяется по расширению: <code>html</code>, <code>js</code>,
+          <code>mjs</code>, <code>css</code>, <code>json</code>, <code>map</code>, <code>txt</code>,
+          <code>svg</code>, <code>png</code>, <code>jpg</code>, <code>jpeg</code>, <code>gif</code>,
+          <code>webp</code>, <code>avif</code>, <code>ico</code>, <code>woff</code>, <code>woff2</code>,
+          <code>ttf</code>, <code>otf</code>. Все остальное отдается как набор байтов и никогда не выполняется.
+        </li>
+      </ul>
+
+      <h2 id="manifest">Манифест</h2>
+      <p>
+        Файл <code>mongo-manager-plugin.json</code> проверяется строго: неизвестное поле, неверный тип или
+        значение вне допустимого диапазона делают плагин непригодным к использованию, а страница «Плагины»
+        указывает, какое поле неверно. Текст, который читает человек (названия, заголовки, примечания), не
+        может содержать управляющие символы и символы, скрывающие или обращающие текст.
+      </p>
+      <pre><code>{
+  "id": "hello-documents",
+  "name": { "en": "Hello documents", "tr": "Merhaba belgeler" },
+  "version": "0.1.0",
+  "description": { "en": "Lists the documents of a collection.", "tr": "Bir koleksiyonun belgelerini listeler." },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [{ "id": "list", "title": { "en": "Hello", "tr": "Merhaba" }, "icon": "table" }],
+    "sidebarPanels": [{ "id": "page", "title": { "en": "Hello documents" }, "icon": "puzzle" }]
+  },
+  "settings": {},
+  "author": { "name": "Your Name", "url": "https://example.com" },
+  "homepage": "https://example.com/hello-documents",
+  "repository": "https://github.com/your-name/hello-documents",
+  "license": "MIT",
+  "publishedAt": "2026-10-11",
+  "changelog": [
+    { "version": "0.1.0", "date": "2026-10-11", "notes": { "en": "First release.", "tr": "İlk sürüm." } }
+  ]
+}</code></pre>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Поле</th>
+              <th>Обязательно</th>
+              <th>Правила</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td>да</td>
+              <td>
+                Строчные буквы и цифры, разделенные дефисами (<code>geojson-map</code>), не более 64 символов.
+                Должен совпадать с именем папки плагина. Нельзя использовать идентификатор плагина, входящего в
+                поставку Mongo Manager, и идентификатор, который читается как зарезервированное приложением имя
+                (см. ниже).
+              </td>
+            </tr>
+            <tr>
+              <td><code>name</code></td>
+              <td>да</td>
+              <td>
+                Локализованный текст, не более 60 символов: <code>{ "en": "...", "tr": "..." }</code>. Без
+                невидимых символов (нулевой ширины, теговых, селекторов вариантов — собственные символы эмодзи
+                допустимы) и никогда не имя, которое читается как собственные сообщения приложения:
+                <em>Mongo Manager</em> (или начинающееся так), <em>MongoDB</em>, <em>System</em>,
+                <em>Session</em>, <em>Security</em>, <em>Admin</em>, <em>Server</em>, <em>Update</em> и
+                подобные, на любом языке приложения; сравнение выполняется так, как имя читается: без учета
+                регистра, пробелов, диакритических знаков и похожих по начертанию букв. В каждом слове все буквы
+                либо латинские, либо ни одной (никогда не смешиваются греческие и кириллические), и в скобках не
+                должно быть того, что читается как идентификатор (<code>(value-search)</code>;
+                <code>(beta)</code> допустимо). Приложение показывает сообщения и вопросы плагина вместе с его
+                идентификатором рядом с названием.
+              </td>
+            </tr>
+            <tr>
+              <td><code>version</code></td>
+              <td>да</td>
+              <td>
+                Семантическое версионирование: <code>major.minor.patch</code>, при необходимости с
+                предварительным выпуском (<code>1.2.0-beta.1</code>), не более 64 символов.
+              </td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td>нет</td>
+              <td>Локализованный текст, не более 300 символов.</td>
+            </tr>
+            <tr>
+              <td><code>entry</code></td>
+              <td>да</td>
+              <td>
+                Страница, которую открывает каждая точка расширения: простой путь к файлу <code>.html</code>
+                плагина.
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions</code></td>
+              <td>нет</td>
+              <td>
+                Любые из <code>documents:read</code>, <code>documents:write</code>, <code>collection:read</code>,
+                <code>database:read</code>, каждое не более одного раза. По умолчанию — ни одного. См.
+                <a href="#permissions">Разрешения</a>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>contributes</code></td>
+              <td>нет</td>
+              <td>
+                <code>collectionTabs</code>, <code>documentActions</code>, <code>sidebarPanels</code> и
+                <code>cellRenderers</code>: списки не более чем по 5 элементов, идентификаторы уникальны в
+                пределах списка. См. <a href="#contributions">Точки расширения</a>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>settings</code></td>
+              <td>нет</td>
+              <td>
+                Не более 10, по ключу (буква, затем буквы и цифры, не более 32 символов):
+                <code>{ "type": "url" | "text" | "boolean", "title": localized text of at most 60 }</code>.
+                Значения задают администраторы; страница читает их из контекста.
+              </td>
+            </tr>
+            <tr>
+              <td><code>author</code></td>
+              <td>нет</td>
+              <td>
+                <code>{ "name": text of at most 80, "url": an https address (optional) }</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>homepage</code>, <code>repository</code></td>
+              <td>нет</td>
+              <td>
+                Адрес <code>https://</code> с указанием хоста, не более 300 символов, без учетных данных,
+                пробелов и обратных косых черт.
+              </td>
+            </tr>
+            <tr>
+              <td><code>license</code></td>
+              <td>нет</td>
+              <td>
+                Выражение SPDX, не более 40 символов: <code>MIT</code>, <code>Apache-2.0 OR MIT</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>publishedAt</code></td>
+              <td>нет</td>
+              <td>Существующая дата в формате <code>YYYY-MM-DD</code> между 1900 и 2100 годами.</td>
+            </tr>
+            <tr>
+              <td><code>changelog</code></td>
+              <td>нет</td>
+              <td>
+                Не более 50 записей
+                <code>{ "version", "date": "YYYY-MM-DD", "notes": localized text of at most 1000 }</code>; каждая
+                версия не более одного раза и ни одна не новее <code>version</code> манифеста.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Локализованный текст — это объект с ключом <code>en</code> (обязательный) и, по желанию, любыми другими
+        языками приложения: <code>tr</code>, <code>zh</code> (упрощенный китайский), <code>ja</code>,
+        <code>es</code>, <code>pt</code> (бразильский португальский), <code>ko</code>, <code>de</code>,
+        <code>fr</code> и <code>ru</code>; если язык читателя отсутствует, показывается английский. Точка
+        расширения — это <code>{ "id", "title": localized text of at most 40, "icon" }</code>: ее идентификатор —
+        строчная буква, затем строчные буквы, цифры и дефисы, не более 32 символов, а значок — один из
+        <code>map</code>, <code>chart</code>, <code>table</code>, <code>file</code>, <code>image</code>,
+        <code>globe</code>, <code>layers</code>, <code>puzzle</code>, <code>book</code>, <code>wand</code>,
+        <code>shapes</code>, <code>scroll</code>, <code>code</code>, <code>calendar</code>,
+        <code>hourglass</code>, <code>shield</code>, <code>fingerprint</code>, <code>ruler</code> (собственные
+        значки приложения: плагин своих не приносит). Рендерер ячеек вместо этого — это
+        <code>{ "id", "match" }</code> с необязательным <code>"display"</code>: <code>inline</code> (по
+        умолчанию) или <code>tooltip</code>.
+      </p>
+      <p>
+        Параметр типа <code>url</code> должен быть адресом https без учетных данных (обычный http — только для
+        этого компьютера: <code>localhost</code>, <code>127.0.0.1</code> или <code>[::1]</code>); его схема,
+        хост и порт добавляются к источникам изображений, которые разрешено загружать фрейму (для тайлов
+        карты: ведущее <code>{s}.</code> означает любой поддомен, и только перед именем из двух или более
+        частей, но не перед адресом). Адрес изображения может нести данные: плагин может отправить прочитанное
+        на этот сервер, и одобрение и параметр сообщают об этом. Параметр типа <code>text</code> содержит не
+        более 500 символов. Каждый пользователь плагина может прочитать его настройки: никогда не запрашивайте
+        секреты. Сервер хранит их в зашифрованном виде своим ключом, как и любое другое сохраненное значение.
+      </p>
+
+      <h2 id="contributions">Точки расширения</h2>
+      <p>
+        Каждая точка расширения открывает одну и ту же страницу входа. Страница узнает, какая именно это точка,
+        из фрагмента адреса <code>#&lt;kind&gt;=&lt;id&gt;</code> (например, <code>#collectionTab=list</code>)
+        и из поля <code>contribution</code> в контексте.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Вид</th>
+              <th>Где появляется и как открывается</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>collectionTabs</code></td>
+              <td>
+                Вкладка каждой коллекции после собственных вкладок приложения, в том числе у представлений. Фрейм
+                заполняет вкладку. Его <code>place</code> — эта коллекция с <code>filter</code> раздела
+                «Документы», заданным пользователем. Страница загружается заново при каждом показе вкладки, если
+                только не запросила остаться через <code>ui.keepOpen</code>: тогда она остается загруженной,
+                пока показывается другой раздел вкладки этой коллекции (вне поля зрения она может читать, но не
+                действовать: <code>not_visible</code>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>documentActions</code></td>
+              <td>
+                Пункт в меню действий документа в разделе «Документы», который показывается только для плагина,
+                одобренного для <code>documents:read</code>. Открывает диалог со страницей;
+                <code>place.documentId</code> — это <code>_id</code> данного документа. Диалог закрывается, как
+                только плагин поместил запрос или конвейер на место (<code>ui.useQuery</code>,
+                <code>ui.useQueryIn</code>,
+                <code>ui.useAggregation</code>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>sidebarPanels</code></td>
+              <td>
+                Пункт на боковой панели, открывающий собственную страницу — вкладку рабочей области по адресу
+                <code>/plugin/&lt;id&gt;/&lt;contribution&gt;</code>. Если щелкнуть, когда активна вкладка
+                коллекции, страница открывается для этой коллекции
+                (<code>/plugin/&lt;id&gt;/&lt;contribution&gt;/&lt;connection&gt;/&lt;db&gt;/&lt;collection&gt;</code>),
+                и <code>place</code> указывает на нее; откуда угодно еще <code>place</code> равен
+                <code>null</code>. Страница, открытая по ссылке, спрашивает пользователя, прежде чем читать эту
+                коллекцию, и пользователь может продолжить без коллекции. Страница остается загруженной, пока
+                показывается другая вкладка; вне поля зрения она по-прежнему может читать, но не действовать
+                (<code>not_visible</code>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>cellRenderers</code></td>
+              <td>
+                Короткий текст о значениях везде, где их показывают «Документы» (таблица, дерево, карточки,
+                инспектор документа, сведения о потоке изменений), например дата создания ObjectId: рядом со
+                значением (<code>"display": "inline"</code>, по умолчанию) или во всплывающей подсказке (<code
+                  >"display": "tooltip"</code
+                >), которую показывает ячейка или строка при наведении или фокусе, под всем значением и с пометкой
+                названия плагина. Текст подсказки простой, ее <code>tone</code> не используется; программа
+                чтения с экрана зачитывает его вместе со значением. Плагин сообщает один текст рядом со значением
+                и один во всплывающей подсказке: берется его первый рендерер, давший ответ для каждого места.
+                Страница работает в скрытом фрейме, по одному на плагин, только для плагина, одобренного для
+                <code>documents:read</code>; сама она никогда не отображается. <code>match</code> — одно из
+                <code>geojson</code>, <code>string</code>, <code>number</code>, <code>date</code>,
+                <code>object</code>, <code>objectId</code>, <code>binary</code> (не UUID). См.
+                <a href="#cells">Рендереры ячеек</a>.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="cells">Рендереры ячеек</h3>
+      <p>
+        Приложение спрашивает скрытый фрейм о показываемых значениях пакетами не более чем по 200 сообщением
+        <code>cells.render</code>. С набором инструментов (kit) отвечайте через <code>client.onCells</code>:
+      </p>
+      <pre><code>client.onCells((renderer, values, locale, paths, place) =&gt;
+  values.map((v) =&gt; (typeof v?.$oid === 'string' ? { text: createdAt(v.$oid, locale), tone: 'info' } : null)),
+)</code></pre>
+      <ul>
+        <li>
+          <code>renderer</code> — идентификатор точки расширения, <code>values</code> — значения в
+          каноническом Extended JSON, <code>locale</code> — язык приложения, <code>paths</code> — путь поля
+          каждого значения (или <code>null</code>), <code>place</code> — коллекция, из которой взяты значения
+          (или <code>null</code>).
+        </li>
+        <li>
+          Значение <code>binary</code> отправляется только своим началом, никогда целиком:
+          <code>{ "$binaryHead": { "base64", "subType", "length" } }</code> с первыми 2048 байтами — этого
+          достаточно, чтобы определить вид и размер изображения.
+        </li>
+        <li>
+          Отвечайте одним элементом на значение, по порядку: <code>{ "text", "tone" }</code>,
+          <code>null</code> — нет текста, или <code>{ "retry": true }</code> — спросить еще раз позже. Список
+          другой длины игнорируется.
+        </li>
+        <li>
+          Текст показывается как простой — не более 80 символов рядом со значением и 200 во всплывающей
+          подсказке — с удалением управляющих и скрытых символов.
+          <code>tone</code> — одно из <code>neutral</code>, <code>info</code>, <code>success</code>,
+          <code>warning</code>, <code>danger</code>.
+        </li>
+        <li>
+          Ответ должен прийти в течение 3 секунд; иначе остается простое значение, а значение запрашивается
+          снова через 30 секунд. Ответы сохраняются отдельно для каждого значения, языка и настроек плагина:
+          изменение его настроек вызывает повторный запрос, а ответ старше минуты запрашивается заново при
+          следующем показе его значения, при этом старый ответ остается, пока не придет новый (и остается, если
+          повторный запрос не удался). Ответ для значения <code>binary</code> хранится по его длине, подтипу и
+          хешу его начала.
+        </li>
+        <li>
+          Рендерер может читать перед ответом (например, ссылки на другие документы): он передает полученное в
+          запросе <code>place</code> в виде <code>{ place, filter, ... }</code> и может читать только там. Его
+          <code>place</code> в контексте равен <code>null</code>.
+        </li>
+      </ul>
+
+      <h2 id="context">Контекст</h2>
+      <p>
+        <code>context.get</code> сообщает, где находится страница и как она должна выглядеть. Вызывайте его
+        первым; когда открыта коллекция, ответ может занять до 3 секунд, пока приложение проверяет, не
+        является ли она представлением.
+      </p>
+      <pre><code>{
+  "plugin": { "id": "hello-documents", "version": "0.1.0" },
+  "contribution": { "kind": "collectionTab", "id": "list" },
+  "locale": "en",
+  "theme": "dark",
+  "accent": "emerald",
+  "place": {
+    "connectionId": "6650...",
+    "connectionName": "Production",
+    "db": "shop",
+    "coll": "orders",
+    "view": false,
+    "documentId": null,
+    "filter": { "status": "open" }
+  },
+  "settings": { "tileUrl": "https://tile.example.org/{z}/{x}/{y}.png" }
+}</code></pre>
+      <ul>
+        <li>
+          <code>kind</code> — это <code>collectionTab</code>, <code>documentAction</code>,
+          <code>sidebarPanel</code> или <code>cellRenderer</code>.
+        </li>
+        <li><code>locale</code> — язык приложения: <code>en</code>, <code>tr</code>, <code>zh</code>, <code>ja</code>, <code>es</code>, <code>pt</code>, <code>ko</code>, <code>de</code>, <code>fr</code>, <code>ru</code>.</li>
+        <li><code>theme</code> — <code>light</code> или <code>dark</code>.</li>
+        <li>
+          <code>accent</code> — акцентный цвет пользователя: <code>emerald</code>, <code>indigo</code>,
+          <code>violet</code>, <code>ocean</code> или <code>rose</code>. Любое другое значение считайте
+          <code>emerald</code>.
+        </li>
+        <li>
+          <code>place</code> равен <code>null</code>, если страница открыта без коллекции (страница боковой
+          панели, рендерер ячеек). <code>connectionName</code> может быть <code>null</code>.
+          <code>view</code> истинно для представления: его можно читать, но нельзя записывать, и у него нет
+          индексов. <code>documentId</code> — документ действия над документом в каноническом Extended JSON,
+          иначе <code>null</code>. <code>filter</code> — фильтр раздела «Документы» для вкладки коллекции,
+          иначе <code>{}</code>. Оба поля являются данными: плагин без <code>documents:read</code> получает
+          <code>null</code> и <code>{}</code>.
+        </li>
+        <li>
+          <code>hidden</code> перечисляет пути полей, которые правила персональных данных скрывают от
+          пользователя в коллекции, как списки ключей (<code>[["contact", "phone"]]</code>; <code>"*"</code> —
+          один ключ, <code>"**"</code> — любое число ключей на любой глубине) — только имена, для плагина с
+          <code>documents:read</code>; иначе <code>[]</code>; <code>null</code>, если приложение не смогло
+          определить вовремя (за 3 секунды). Значения такого поля приходят как <code>"***"</code>: никогда не
+          принимайте это за его тип.
+        </li>
+        <li>
+          <code>settings</code> содержит значения, заданные администратором; не заданная настройка
+          отсутствует.
+        </li>
+      </ul>
+      <p>
+        Когда пользователь меняет язык, тему или акцентный цвет, приложение отправляет
+        <code>context.changed</code> с <code>locale</code>, <code>theme</code> и <code>accent</code>
+        (<code>client.onContext</code> набора kit). Применяйте их сразу: страница никогда не должна показывать
+        другую тему или язык. Плагину, который может читать документы, <code>context.changed</code>
+        отправляется также при изменении фильтра раздела «Документы», пока его страница загружена — вкладка
+        коллекции, вызвавшая <code>ui.keepOpen</code>, узнает о каждом фильтре, заданном пользователем, пока
+        она вне поля зрения. Запросите <code>context.get</code> снова, чтобы получить новый
+        <code>place</code>.
+      </p>
+
+      <h2 id="bridge">API моста</h2>
+      <h3 id="protocol">Протокол</h3>
+      <p>
+        Страница и приложение обмениваются простым JSON через <code>postMessage</code>. Набор kit
+        (<code>packages/plugins/kit/src/client.ts</code>) и <code>main.js</code> заготовки реализуют его;
+        правила на случай, если вы пишете свою реализацию:
+      </p>
+      <ol>
+        <li>
+          Читайте только сообщения, у которых <code>event.source</code> — это <code>window.parent</code>, а
+          <code>mm</code> равно <code>1</code>.
+        </li>
+        <li>
+          Когда страница загрузилась, приложение приветствует ее:
+          <code>{ "mm": 1, "type": "hello", "token": "..." }</code>. Сохраните первый токен. Ничего не
+          отправляйте до него.
+        </li>
+        <li>
+          Запрос выглядит как
+          <code>{ "mm": 1, "id": 1, "method": "documents.find", "params": { ... }, "token": "..." }</code> и
+          отправляется в <code>window.parent</code> с целевым источником <code>'*'</code> (источник фрейма
+          непрозрачный). Идентификатор — число или строка не длиннее 64 символов; приложение игнорирует запрос
+          без токена.
+        </li>
+        <li>
+          Ответ содержит тот же идентификатор: <code>{ "mm": 1, "id": 1, "result": ... }</code> или
+          <code>{ "mm": 1, "id": 1, "error": { "code": "...", "message": "..." } }</code>.
+        </li>
+        <li>
+          Приложение отправляет <code>{ "mm": 1, "type": "context.changed", "locale", "theme", "accent" }</code>
+          по мере того, как пользователь их меняет (а плагину с <code>documents:read</code> — еще и фильтр
+          раздела «Документы»), и запрашивает у рендерера ячеек
+          <code>{ "mm": 1, "id": "h1", "method": "cells.render", "params": { ... } }</code>, на что отвечают
+          <code>{ "mm": 1, "id": "h1", "token", "result": [...] }</code>.
+        </li>
+      </ol>
+      <p>
+        Страница не должна покидать свой адрес. Если она загружает другую страницу (ссылка, форма, изменение
+        <code>location</code>), приложение закрывает мост и удаляет фрейм, и пользователю приходится открывать
+        плагин заново. Держите все на одной странице.
+      </p>
+      <pre><code>import { createClient, askMessage, AskError } from './kit/client'
+
+const client = createClient()                       // requests time out after 15 s ("timeout")
+client.onContext((locale, theme, accent) =&gt; restyle(locale, theme, accent))
+client.onReady(async () =&gt; {
+  const context = await client.ask('context.get')
+  if (!context.place) return showNoCollection()
+  try {
+    const { documents, hasMore } = await client.ask('documents.find', { filter: context.place.filter, limit: 100 })
+    show(documents, hasMore)
+  } catch (e) {
+    showError(askMessage(e, context.locale))         // the app's code, in the user's language
+  }
+})</code></pre>
+
+      <h3 id="methods">Методы</h3>
+      <p>
+        Значения в обе стороны передаются в каноническом Extended JSON: ObjectId — это
+        <code>{ "$oid": "..." }</code>, дата — <code>{ "$date": { "$numberLong": "..." } }</code>, целое —
+        <code>{ "$numberInt": "3" }</code>. Каждое чтение выполняется от имени пользователя, с его правами и
+        со скрытием данных, принятым в приложении. Методы с пометкой «в своей коллекции» работают с коллекцией
+        из <code>place</code> и без нее завершаются ошибкой <code>no_collection</code>.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Метод и разрешение</th>
+              <th>Параметры → результат</th>
+              <th>Правила</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>context.get</code><br />нет</td>
+              <td>нет → контекст</td>
+              <td>См. <a href="#context">Контекст</a>.</td>
+            </tr>
+            <tr>
+              <td><code>documents.find</code><br /><code>documents:read</code></td>
+              <td>
+                <code>{ filter?, projection?, sort?, limit? }</code> →
+                <code>{ documents, hasMore }</code>
+              </td>
+              <td>
+                В своей коллекции. <code>limit</code> от 1 до 1000, по умолчанию 100. Не более 10 секунд.
+                Документ, который пользователь не может видеть, исключается. Не попадает в недавние запросы
+                пользователя.
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.get</code><br /><code>documents:read</code></td>
+              <td><code>{ id }</code> → документ или <code>null</code></td>
+              <td>В своей коллекции. <code>id</code> — значение <code>_id</code>.</td>
+            </tr>
+            <tr>
+              <td><code>documents.aggregate</code><br /><code>documents:read</code></td>
+              <td><code>{ pipeline, limit? }</code> → <code>{ documents, truncated }</code></td>
+              <td>
+                В своей коллекции. Только стадии чтения: <code>$match</code>, <code>$group</code>,
+                <code>$sort</code>, <code>$limit</code>, <code>$skip</code>, <code>$project</code>,
+                <code>$addFields</code>, <code>$set</code>, <code>$unset</code>, <code>$count</code>,
+                <code>$unwind</code>, <code>$sortByCount</code>, <code>$bucket</code>, <code>$bucketAuto</code>,
+                <code>$facet</code> (без вложенного <code>$facet</code>), <code>$replaceRoot</code>,
+                <code>$replaceWith</code>, <code>$sample</code>; не более 50 стадий. С
+                <code>database:read</code> также простой <code>$lookup</code> ровно с полями <code>from</code>,
+                <code>localField</code>, <code>foreignField</code> и <code>as</code> из коллекции той же базы
+                данных. <code>limit</code> от 1 до 1000, по умолчанию 100. Не более 10 секунд, без сброса на диск,
+                один конвейер за раз (<code>busy</code>: <code>serialAsk</code> из kit ставит их в очередь).
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.update</code><br /><code>documents:write</code></td>
+              <td><code>{ id, set?, unset? }</code> → <code>{ modified }</code></td>
+              <td>
+                В своей коллекции, только в поле зрения и только сразу после щелчка на странице плагина.
+                <code>set</code> — объект с полями и значениями, <code>unset</code> — список имен полей; нужно
+                хотя бы одно изменение; имя поля с управляющим символом, переводом строки или символом
+                направления отклоняется (<code>bad_params</code>). Приложение показывает пользователю каждое
+                измененное поле, каждое в кавычках, в первой строке вопроса, затем все изменение целиком, с
+                явным указанием каждого скрытого или невидимого символа, и применяет его, только если
+                пользователь согласен; его кнопка «Подтвердить» принимает щелчок только после паузы без нажатий,
+                когда указатель уже наведен на нее. Отклоняется для представления (<code>read_only</code>), для
+                слишком длинного для показа изменения (свыше 2000 символов: <code>too_large</code>), пока ждет
+                другой вопрос (<code>busy</code>), и после двух отказов пользователя (<code>blocked</code>, пока
+                плагин не будет открыт заново). Отказ — это <code>declined</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>indexes.list</code><br /><code>collection:read</code></td>
+              <td><code>{ coll? }</code> → <code>[{ name, key, options, usage }]</code></td>
+              <td>
+                В своей коллекции или в другой коллекции своей базы данных (<code>coll</code>, названной в
+                <code>collections.list</code>), для чего нужен также <code>database:read</code>. У представления
+                их нет: <code>[]</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>collections.list</code><br /><code>database:read</code></td>
+              <td>нет → <code>[{ name, type }]</code></td>
+              <td>
+                Коллекции и представления своей базы данных, без <code>system.</code>, не более 500, кэшируется
+                на 30 секунд.
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.findIn</code><br /><code>database:read</code></td>
+              <td><code>{ coll, filter?, projection?, limit? }</code> → <code>{ documents }</code></td>
+              <td>
+                Другая коллекция той же базы данных, названная в <code>collections.list</code>.
+                <code>limit</code> от 1 до 200, по умолчанию 50. Не более 10 секунд.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.toast</code><br />нет</td>
+              <td><code>{ message, kind? }</code> → <code>true</code></td>
+              <td>
+                Короткое сообщение в приложении после названия и идентификатора плагина. <code>kind</code>:
+                <code>info</code> (по умолчанию), <code>success</code> или <code>error</code>. Показывается не
+                более 200 символов, без управляющих символов, символов направления и невидимых символов; не
+                более 5 сообщений в минуту, общий лимит с <code>ui.copy</code>. Только в поле зрения.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.openDocument</code><br />нет</td>
+              <td><code>{ id }</code> → <code>true</code></td>
+              <td>
+                В своей коллекции, только в поле зрения. Показывает этот документ в разделе «Документы».
+                <code>id</code> должен быть значением <code>_id</code>, а не запросом. Только сразу после щелчка
+                на странице плагина; не более 30 раз в минуту.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.resize</code><br />нет</td>
+              <td><code>{ height }</code> → <code>true</code></td>
+              <td>Высота фрейма в пикселях, ограничивается диапазоном от 80 до 2000.</td>
+            </tr>
+            <tr>
+              <td><code>ui.keepOpen</code><br />нет</td>
+              <td>– → <code>true</code> / <code>false</code></td>
+              <td>
+                Страница вкладки коллекции остается загруженной, пока показывается другой раздел
+                (<code>false</code> в любом другом месте). Запрашивайте его, только если страница снова читает
+                <code>context.get</code> при <code>context.changed</code>; вне поля зрения она может читать, но
+                не действовать.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.copy</code><br />нет</td>
+              <td><code>{ text }</code> → <code>true</code></td>
+              <td>
+                Копирует текст (не более 100 000 символов) в буфер обмена. Только сразу после щелчка на ее
+                странице; не более 5 раз в минуту, общий лимит с <code>ui.toast</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useQuery</code><br />нет</td>
+              <td><code>{ filter?, projection?, sort? }</code> → <code>true</code></td>
+              <td>
+                В своей коллекции. Помещает запрос в раздел «Документы» вкладки коллекции, как если бы его ввел
+                пользователь. Только сразу после щелчка на ее странице; не более 10 раз в минуту, общий лимит с
+                остальными методами <code>ui.use…</code>
+                и методами SQL.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useQueryIn</code><br /><code>database:read</code></td>
+              <td><code>{ coll, filter?, projection?, sort? }</code> → <code>true</code></td>
+              <td>
+                В другой коллекции своей базы данных, которую выдает <code>collections.list</code>. Помещает
+                запрос в раздел «Документы» вкладки этой коллекции, как <code>ui.useQuery</code> делает в своей
+                (References использует его, чтобы показать документы, ссылающиеся на один); вкладка выполняет
+                его как запрос, введенный пользователем. По одному за раз (<code>busy</code>, пока один
+                помещается на место), пока ее страница в поле зрения, и только сразу после щелчка на ней; не
+                более 10 раз в минуту, общий лимит с остальными методами <code>ui.use…</code> и методами SQL.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.suggestPersonalData</code><br /><code>documents:read</code></td>
+              <td><code>{ fields: string[] }</code> → <code>true</code></td>
+              <td>
+                Поля своей коллекции, предлагаемые как персональные данные: от 1 до 50 путей из простых имен
+                (<code>contact.phone</code>; без <code>*</code> и без <code>$</code> в начале ключа). Ничего не
+                сохраняется: открывается раздел коллекции «Персональные данные» с этим списком и именем плагина;
+                он предлагает только те поля, которые есть в выборке коллекции, и администратор добавляет каждое
+                там (или все сразу одним сохранением). Без скрытых символов и без пробелов вокруг имени; для
+                администраторов подключения, на коллекции (не на представлении и не на <code>system.*</code>),
+                только сразу после щелчка на ее странице; учитывается вместе с методами <code>ui.use…</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useAggregation</code><br />нет</td>
+              <td><code>{ stages }</code> → <code>true</code></td>
+              <td>
+                В своей коллекции. Помещает стадии в раздел «Агрегации» в виде карточек; спрашивает пользователя
+                перед заменой имеющегося там конвейера; ничто не выполняется, пока пользователь сам не запустит.
+                Не более 50 стадий; допускается любая стадия, кроме записывающих или выполняющих код. Только
+                сразу после щелчка на ее странице; <code>declined</code>, <code>busy</code> и
+                <code>blocked</code> — как для <code>documents.update</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.importSql</code><br />нет</td>
+              <td>нет → <code>true</code></td>
+              <td>
+                В своей коллекции. Открывает страницу приложения <a href="import-export.html#sql">SQL ↔ MongoDB</a>
+                на импорте, в базе данных этой коллекции. Плагин ничего не передает и ничего не видит из импорта;
+                файл выбирает и запускает импорт пользователь. Только сразу после щелчка на ее странице;
+                <code>not_permitted</code>, если пользователю нельзя записывать документы и запускать задания
+                там, или для системной базы данных.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.exportSql</code><br />нет</td>
+              <td>нет → <code>true</code></td>
+              <td>
+                В своей коллекции. Открывает страницу приложения <a href="import-export.html#sql">SQL ↔ MongoDB</a>
+                на экспорте, в базе данных этой коллекции, с выбранной коллекцией. Параметры выбирает и
+                запускает пользователь. Только сразу после щелчка на ее странице; <code>not_permitted</code>,
+                если пользователю нельзя экспортировать из подключения.
+              </td>
+            </tr>
+            <tr>
+              <td><code>validation.get</code><br /><code>collection:read</code></td>
+              <td>
+                <code>{ coll? }</code> → <code>{ validator, validationLevel, validationAction }</code> или
+                <code>null</code>
+              </td>
+              <td>
+                Правила валидации коллекции в том виде, как их читает раздел «Валидация» (<code>validator</code>
+                равен <code>null</code>, если правил нет); <code>null</code> для представления. Для другой
+                коллекции базы данных (<code>coll</code>) нужен также <code>database:read</code>. То, что правило
+                говорит о скрытом от пользователя поле (его тип, шаблон или границы), исключается — его схема
+                равна <code>{}</code>, правило запроса или <code>$expr</code>, упоминающие его, отбрасываются, —
+                а его имя сохраняется (например, в <code>required</code>); <code>failed</code>, если определить
+                скрытое не удалось.
+              </td>
+            </tr>
+            <tr>
+              <td><code>database.model</code><br /><code>database:read</code></td>
+              <td>нет → модель данных</td>
+              <td>
+                Модель базы данных в том виде, как ее рисует вкладка «База данных»:
+                <code>{ db, sampleSize, collections, references, skipped, at }</code> — поля каждой коллекции с
+                их типами и долями (скрытое от пользователя поле только названо, <code>masked: true</code>, без
+                типов), найденные ссылки между коллекциями. До 200 документов выборки на коллекцию. Одно чтение
+                на фрейм, кэшируется на 60 секунд; запросы, сделанные во время чтения, делят его результат (в
+                течение 90 секунд: сервер завершает построение модели на 60-й секунде), а неудавшееся чтение не
+                кэшируется.
+              </td>
+            </tr>
+            <tr>
+              <td><code>storage.stats</code><br /><code>database:read</code></td>
+              <td>нет → <code>{ collections, more }</code></td>
+              <td>
+                Хранилище базы данных в том виде, как его читает «Отчет о хранилище»: для каждой коллекции
+                <code
+                  >{ name, type, count, size, storageSize, freeBytes, indexSize, indexFreeBytes, indexes }</code
+                >
+                (для каждого индекса <code>{ name, size, freeBytes }</code>), до 500 по имени (<code>more</code>,
+                если их больше). Показатель, который MongoDB не сообщил, равен <code>null</code>
+                (<code>unread</code>); так же и размеры, скрытые правилами персональных данных
+                (<code>sizesHidden</code>). Одно чтение, кэшируемое на 30 секунд на базу данных, для всех
+                фреймов, сбрасывается после compact в ней.
+              </td>
+            </tr>
+            <tr>
+              <td><code>storage.compactEstimate</code><br /><code>collection:read</code></td>
+              <td>
+                <code>{ coll? }</code> → <code>{ available, estimatedBytes }</code> или
+                <code>{ available: false, reason }</code>
+              </td>
+              <td>
+                Сколько места вернул бы <code>compact</code> (MongoDB 8.0 и новее) для своей коллекции или, с
+                <code>database:read</code>, для другой коллекции своей базы данных. <code>reason</code> —
+                <code>version</code>, <code>mongos</code> или <code>timeseries</code>; <code>read_only</code> для
+                представления.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.compact</code><br /><code>collection:read</code></td>
+              <td><code>{ coll? }</code> → <code>{ bytesFreed }</code></td>
+              <td>
+                Выполняет compact коллекции в собственном диалоге приложения, который называет плагин и
+                коллекцию и запускается, только когда пользователь вводит имя коллекции. Для пользователя,
+                которому разрешено администрировать базы данных, на подключении не в режиме «только чтение», не
+                для коллекции временных рядов, не для представления и не для коллекции, затронутой правилами
+                персональных данных; одновременно выполняется один compact коллекции (<code>busy</code>). Только
+                сразу после щелчка на ее странице; учитывается вместе с методами <code>ui.use…</code>;
+                <code>declined</code> или <code>unanswered</code>, если пользователь не продолжает,
+                <code>blocked</code> после двух отказов.
+              </td>
+            </tr>
+            <tr>
+              <td><code>shardKey.analyze</code><br /><code>documents:read</code></td>
+              <td><code>{ key }</code> → анализ или <code>{ available: false, reason }</code></td>
+              <td>
+                Характеристики предполагаемого ключа шардирования (<code>analyzeShardKey</code>):
+                <code>key</code> — от одного до пяти полей, каждое <code>1</code> или <code>"hashed"</code> (не
+                более одного). Возвращает
+                <code
+                  >{ numDocsTotal, numDocsSampled, numDistinctValues, avgDocSizeBytes, isUnique,
+                  mostCommonValues, monotonicity }</code
+                >
+                — наиболее частые значения являются данными в каноническом Extended JSON; <code>reason</code> —
+                <code>version</code>, <code>standalone</code> или <code>no_index</code>.
+                <code>read_only</code> для представления.
+              </td>
+            </tr>
+            <tr>
+              <td><code>searchIndexes.list</code><br /><code>collection:read</code></td>
+              <td>нет → <code>{ supported, reason?, indexes }</code></td>
+              <td>
+                Поисковые индексы коллекции (Atlas Search, векторный поиск): каждый
+                <code>{ name, type, status, queryable, dynamic, fields }</code>, поле —
+                <code>{ path, type, numDimensions?, similarity? }</code>. Скрытое от пользователя поле
+                исключается, как в <code>validation.get</code>; <code>failed</code>, если определить скрытое не
+                удалось.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.download</code><br />нет</td>
+              <td><code>{ name, type, text? | base64? | html? }</code> → <code>true</code></td>
+              <td>
+                Файл, созданный плагином и сохраняемый приложением (фрейм не может скачивать). <code>type</code> —
+                <code>markdown</code>, <code>mermaid</code>, <code>csv</code>, <code>json</code>,
+                <code>text</code> (с <code>text</code>), <code>png</code> (с <code>base64</code>, который должен
+                быть PNG) или <code>html</code> (с <code>{ title, css, body }</code>): приложение собирает
+                страницу само — сначала политика, не выполняющая скриптов и ничего не загружающая, заголовок как
+                текст (не более 200 символов), стиль, который не может содержать разметку, экранирование
+                (<code>\</code>), <code>@import</code>, <code>@font-face</code>, набор изображений,
+                <code>src()</code>, выражение или адрес, кроме адреса <code>data:</code>, а тело — через список
+                разрешенных структурных элементов (без script, form, frame, изображений, <code>svg</code>,
+                MathML, template, ссылок, кроме <code>#anchor</code>, комментариев и атрибутов
+                <code>on…</code>). Текст, стиль и тело — не более 1 000 000 символов каждый. В CSV ячейка, которая
+                начинается как формула (<code>=</code>, <code>+</code>, <code>-</code>, <code>@</code>,
+                табуляция или возврат каретки и не является числом), записывается с ведущим <code>'</code>. Из
+                имени удаляются любой путь, зарезервированное имя устройства (<code>CON</code>,
+                <code>COM¹</code>, <code>CONIN$</code>…), скрытые или обращающие символы и его точки
+                (<code>_</code>): единственное расширение — это расширение типа. Только сразу после щелчка на ее
+                странице; учитывается вместе с методами <code>ui.use…</code>; при нажатии в другом месте
+                приложения сначала запрашивается подтверждение (см. <a href="#limits">Ограничения</a>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.importDocuments</code><br />нет</td>
+              <td><code>{ ndjson }</code> → <code>true</code></td>
+              <td>
+                В своей коллекции. Открывает мастер импорта приложения с этими документами в качестве файла — по
+                одному JSON-объекту в строке, не более 1 000 000 символов, а все сообщение в виде JSON — не более
+                1 МБ (кавычка или обратная косая черта в нем считаются дважды). Пользователь проверяет их,
+                сопоставляет и запускает импорт со своими правами. Только сразу после щелчка на ее странице;
+                учитывается вместе с методами <code>ui.use…</code>; сначала запрашивается подтверждение после
+                нажатия в другом месте приложения; <code>busy</code>, пока в приложении открыт диалог;
+                <code>not_permitted</code>, если пользователю нельзя записывать документы и запускать задания
+                там, или для системной базы данных; <code>read_only</code> для представления.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        В фильтрах, проекциях и сортировках методов <code>documents.find</code>,
+        <code>documents.findIn</code> и <code>ui.useQuery</code>, а также в <code>documents.aggregate</code>
+        операторы <code>$where</code>, <code>$function</code>, <code>$accumulator</code>,
+        <code>$out</code>, <code>$merge</code>, <code>$lookup</code>, <code>$graphLookup</code> и
+        <code>$unionWith</code> отклоняются на любой глубине (кроме описанного выше простого
+        <code>$lookup</code> верхнего уровня). Стадии <code>ui.useAggregation</code> могут читать другие
+        коллекции, поскольку пользователь выполняет их со своими правами, но никогда не содержат
+        <code>$where</code>, <code>$function</code>, <code>$accumulator</code>, <code>$out</code> или
+        <code>$merge</code>. Чтения выполняются сразу; <code>ui.useQuery</code> и
+        <code>ui.useAggregation</code> лишь передают работу пользователю.
+      </p>
+
+      <h3 id="limits">Ограничения</h3>
+      <ul>
+        <li>
+          Сообщение в любую сторону не превышает 1 МБ; более крупный ответ завершается ошибкой
+          <code>too_large</code>. Запрашивайте меньше документов или проецируйте меньше полей.
+        </li>
+        <li>Одновременно может ждать не более 8 запросов (<code>too_many</code>).</li>
+        <li>
+          Не более 60 чтений в минуту на фрейм (<code>documents.find</code>, <code>.get</code>,
+          <code>.aggregate</code>, <code>.findIn</code>, <code>collections.list</code>,
+          <code>database.model</code>) и отдельно от них 120 чтений определений
+          (<code>indexes.list</code>, <code>validation.get</code>): словарь из 50 коллекций — это одна модель
+          и 100 определений.
+        </li>
+        <li>
+          <strong>Сразу после щелчка на странице плагина.</strong> <code>ui.copy</code>,
+          <code>ui.useQuery</code>, <code>ui.useAggregation</code>, <code>ui.importSql</code>,
+          <code>ui.exportSql</code>, <code>ui.openDocument</code>, <code>ui.download</code>,
+          <code>ui.importDocuments</code> и <code>documents.update</code> принимаются, только пока свежи щелчок
+          или нажатие клавиши пользователя на собственной странице плагина: фокус должен быть у фрейма, поэтому
+          щелчок в другом месте приложения никогда не засчитывается. Вызывайте их прямо в обработчике щелчка,
+          до каких-либо других ожиданий (await); иначе они завершатся ошибкой <code>no_activation</code>.
+          Каждая попытка <code>ui.copy</code>, <code>ui.use…</code>, страницы SQL или
+          <code>ui.openDocument</code> засчитывается в лимит этого метода, отклонена она или нет: плагин,
+          который пробует снова и снова в ожидании щелчка, исчерпывает свою минуту (<code>too_many</code>);
+          <code>documents.update</code> ограничен вместо этого одним вопросом за раз и двумя отказами. Фрейм
+          может получить фокус без щелчка, поэтому <code>ui.copy</code>, <code>ui.download</code> или
+          <code>ui.importDocuments</code>, запрошенные в течение 5 секунд после щелчка или нажатия клавиши в
+          другом месте приложения (столько длится активация в браузере), не выполняются со слов плагина:
+          приложение спрашивает пользователя, называя плагин и то, чего он хочет (сколько символов и как
+          начинается текст, со скрытыми символами, указанными явно; имя и размер файла; сколько документов и
+          для какой коллекции), и выполняет действие по щелчку на собственной кнопке <strong>Копировать</strong>,
+          <strong>Сохранить</strong> или <strong>Открыть</strong>; ответ плагина ждет этого
+          (<code>declined</code>, если пользователь закрывает вопрос, <code>unanswered</code>, если ответа нет,
+          <code>busy</code>, пока ждет один). Каждый вопрос, который приложение задает от имени плагина, — эти,
+          изменение, помещенные на место стадии — заканчивается через 150 секунд, даже если на него наведен
+          указатель; kit ждет ответа на эти запросы 180 секунд, так что страница слышит ответ приложения, а не
+          собственный тайм-аут.
+        </li>
+        <li>
+          <strong>В поле зрения.</strong> <code>documents.update</code>, <code>ui.openDocument</code> и
+          методы выше завершаются ошибкой <code>not_visible</code> у рендерера ячеек или у страницы, которая
+          остается загруженной, пока показывается другая вкладка.
+        </li>
+      </ul>
+
+      <h3 id="errors">Ошибки</h3>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Код</th>
+              <th>Значение</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>bad_params</code></td>
+              <td>Параметр отсутствует, имеет неверный тип, вне диапазона или содержит отклоненный оператор.</td>
+            </tr>
+            <tr>
+              <td><code>not_permitted</code></td>
+              <td>Плагин не одобрен для этого разрешения, либо пользователю это делать нельзя.</td>
+            </tr>
+            <tr>
+              <td><code>unknown_method</code></td>
+              <td>Такого метода нет.</td>
+            </tr>
+            <tr>
+              <td><code>unavailable</code></td>
+              <td>Метод в этом месте не предлагается.</td>
+            </tr>
+            <tr>
+              <td><code>no_collection</code></td>
+              <td>Страница открыта без коллекции.</td>
+            </tr>
+            <tr>
+              <td><code>not_visible</code></td>
+              <td>Фрейм вне поля зрения (рендерер ячеек, страница в фоне).</td>
+            </tr>
+            <tr>
+              <td><code>no_activation</code></td>
+              <td>Не сразу после щелчка или нажатия клавиши на странице плагина.</td>
+            </tr>
+            <tr>
+              <td><code>too_many</code></td>
+              <td>Слишком много ожидающих запросов или запросов за последнюю минуту.</td>
+            </tr>
+            <tr>
+              <td><code>too_large</code></td>
+              <td>Сообщение больше 1 МБ или изменение слишком длинное, чтобы показать его пользователю.</td>
+            </tr>
+            <tr>
+              <td><code>busy</code></td>
+              <td>Конвейер этого фрейма еще выполняется или ждет вопрос к пользователю.</td>
+            </tr>
+            <tr>
+              <td><code>declined</code></td>
+              <td>Пользователь отказал.</td>
+            </tr>
+            <tr>
+              <td><code>unanswered</code></td>
+              <td>
+                Пользователь не ответил на вопрос приложения вовремя; ничего не сделано. Никогда не считается
+                отказом.
+              </td>
+            </tr>
+            <tr>
+              <td><code>blocked</code></td>
+              <td>Пользователь отказал дважды; плагин нужно открыть заново.</td>
+            </tr>
+            <tr>
+              <td><code>read_only</code></td>
+              <td>Представление или приложение работает в режиме «только чтение».</td>
+            </tr>
+            <tr>
+              <td><code>not_found</code></td>
+              <td>Такого документа нет.</td>
+            </tr>
+            <tr>
+              <td><code>timeout</code></td>
+              <td>Ответ не пришел вовремя (устанавливается клиентом kit через 15 секунд).</td>
+            </tr>
+            <tr>
+              <td><code>failed</code></td>
+              <td>Все остальное; приложение никогда не передает свои внутренние ошибки.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Собственные отказы сервера тоже приходят в нижнем регистре, например <code>forbidden</code>,
+        <code>conflict</code> (документ тем временем изменился) или <code>validation_error</code>. Функция
+        <code>askMessage(error, locale)</code> из kit превращает распространенные коды в предложение на языке
+        читателя.
+      </p>
+
+      <h2 id="permissions">Разрешения</h2>
+      <p>
+        Администратор одобряет плагин для тех разрешений, которые он перечисляет, в формулировках страницы
+        «Плагины». Запрашивайте как можно меньше: каждое из них — повод для администратора отказать.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Разрешение</th>
+              <th>Что читает администратор</th>
+              <th>Что оно позволяет</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>documents:read</code></td>
+              <td>чтение документов</td>
+              <td>
+                <code>documents.find</code>, <code>.get</code>, <code>.aggregate</code>; действия над документами
+                и рендереры ячеек предлагаются только с ним.
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents:write</code></td>
+              <td>изменение документов (каждое изменение подтверждается)</td>
+              <td>
+                <code>documents.update</code>, каждое изменение подтверждается пользователем. Запрос этого
+                разрешения всегда отдельная находка проверки среднего уровня.
+              </td>
+            </tr>
+            <tr>
+              <td><code>collection:read</code></td>
+              <td>чтение индексов этой коллекции</td>
+              <td><code>indexes.list</code>.</td>
+            </tr>
+            <tr>
+              <td><code>database:read</code></td>
+              <td>чтение других коллекций той же базы данных (имена и документы)</td>
+              <td>
+                <code>collections.list</code>, <code>documents.findIn</code>, простой <code>$lookup</code>.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Плагин без разрешений все равно может показывать страницу, читать свой контекст и настройки и
+        использовать методы <code>ui.*</code>. Разрешение никогда не превышает собственных прав пользователя:
+        пользователь, которому нельзя читать коллекцию, не сможет прочитать ее и через плагин.
+      </p>
+
+      <h2 id="sandbox">Песочница</h2>
+      <p>
+        Страница загружается в <code>iframe</code> с <code>sandbox="allow-scripts"</code> по подписанному
+        адресу, который называет плагин, его версию, его одобренные файлы и сеанс пользователя и защищен
+        печатью (билет: страница должна загрузиться в течение 10 минут, ее остальные файлы — пока длится этот
+        сеанс, но не более 12 часов; сеанс, обновленный на месте входом в другой вкладке или сменой пароля,
+        отслеживается; после выхода адрес больше ничего не отдает, а браузер не хранит ни одного его файла).
+        Каждый отдаваемый файл сверяется с его одобренным SHA-256. Его политика (Content-Security-Policy) с
+        <code>X-DNS-Prefetch-Control: off</code>:
+      </p>
+      <pre><code>default-src 'none'; script-src &lt;its files&gt;; style-src &lt;its files&gt;;
+img-src &lt;its files&gt; data: blob: &lt;the origins of its url settings&gt;; font-src &lt;its files&gt;;
+connect-src 'none'; webrtc 'block'; frame-ancestors 'self'; base-uri 'none'; form-action 'none';
+sandbox allow-scripts</code></pre>
+      <p>Что это означает для вашего кода:</p>
+      <ul>
+        <li>
+          <strong>Сети нет совсем.</strong> Никаких запросов ни по одному адресу, включая собственные файлы
+          плагина: размещайте данные в модуле скрипта (<code>data.js</code>), а не в файле
+          <code>.json</code>, который пришлось бы загружать. Не используйте также WebRTC и подсказки
+          предзагрузки: не каждый браузер их блокирует, а проверка помечает их как высокий риск.
+        </li>
+        <li>
+          <strong>Нет встроенного кода и стилей.</strong> Скрипты и стили берутся только из файлов плагина. Ни
+          встроенного <code>&lt;script&gt;</code>, ни элемента <code>&lt;style&gt;</code>, ни атрибута style,
+          ни встроенных обработчиков событий, ни <code>eval</code>. Установка свойства в скрипте (<code
+            >el.style.width = '40px'</code
+          >) работает.
+        </li>
+        <li>
+          <strong>Непрозрачный источник (origin).</strong> Нет cookie, нет <code>localStorage</code>, нет
+          IndexedDB: они не работают. Храните состояние в памяти; настройки, которые выбирает администратор,
+          берутся из <code>settings</code> манифеста.
+        </li>
+        <li>
+          <strong>Нет всплывающих окон, диалогов, форм и загрузок.</strong> <code>window.open</code>,
+          <code>alert</code>, <code>confirm</code> и отправка форм ничего не делают. Копируйте через
+          <code>ui.copy</code>; передавайте файлы пользователю через собственные импорт и экспорт приложения.
+        </li>
+        <li>
+          <strong>Нет доступа к приложению.</strong> Страница не может читать страницу приложения, его сеанс
+          или его хранилище. Она только обменивается с ним сообщениями.
+        </li>
+        <li>
+          <strong>Шрифты и изображения — собственные файлы</strong> (или изображения <code>data:</code> и
+          <code>blob:</code>).
+        </li>
+      </ul>
+
+      <h2 id="scan">Проверка безопасности</h2>
+      <p>
+        Файлы каждого плагина проверяются при обнаружении или установке, до того как администратор их
+        одобрит. Проверка построчно читает файлы скриптов (<code>.js</code>, <code>.mjs</code>,
+        <code>.cjs</code>), разметки (<code>.html</code>, <code>.htm</code>, <code>.svg</code>) и стилей
+        (<code>.css</code>), включая комментарии, и перечисляет каждую находку с уровнем серьезности, правилом,
+        файлом, строкой и фрагментом. Файлы разметки читаются также целиком, поэтому тег
+        <code>&lt;script&gt;</code> или встроенный обработчик, растянутые на несколько строк, тоже находятся.
+        Библиотеки, включенные в плагин, проверяются так же, как ваш собственный код. Проверка эвристическая: она
+        ищет в тексте известные шаблоны, поэтому код, написанный так, чтобы скрыться от нее (например, имя,
+        собранное из частей), не находится — чистый результат не является доказательством. Плагин с находкой
+        <strong>высокого</strong> уровня можно одобрить, только если администратор введет его идентификатор,
+        принимая риск; это обеспечивает сервер, а журнал аудита записывает число находок и то, был ли принят
+        риск. Избегайте любых находок высокого уровня, а находки среднего уровня сводите к тем, которые можете
+        объяснить.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Серьезность</th>
+              <th>Правило</th>
+              <th>Что отмечается</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>высокая</td>
+              <td><code>code-from-text</code></td>
+              <td>
+                <code>eval(</code> (также <code>eval?.(</code>), <code>eval</code>, достигаемый косвенно (<code
+                  >(0, eval)(…)</code
+                >, <code>['eval']</code>), <code>Function(</code>, вызванный напрямую или с <code>new</code>
+                (также <code>window.Function(</code>, <code>self.</code>, <code>globalThis.</code> или <code>global.Function(</code>, <code>['Function']</code>, <code>Function.call(</code>, <code>.apply(</code> или <code>.bind(</code>, <code>Reflect.apply(Function</code> или <code>Reflect.construct(Function</code>; <code>.Function(</code> другого объекта не отмечается), а также <code>setTimeout</code> или
+                <code>setInterval</code> со строкой.
+              </td>
+            </tr>
+            <tr>
+              <td>высокая</td>
+              <td><code>html-injection</code></td>
+              <td>
+                <code>.innerHTML</code> и <code>.outerHTML</code>, которым присваивают (<code>=</code>) или к
+                которым добавляют (<code>+=</code>), в том числе в квадратных скобках
+                (<code>['innerHTML'] =</code>); <code>insertAdjacentHTML(</code>, <code>document.write(</code> и
+                <code>document.writeln(</code> (в том числе вызванные как <code>?.(</code>);
+                <code>createContextualFragment(</code>; <code>setHTMLUnsafe(</code>. Сравнение вроде
+                <code>innerHTML ===</code> не отмечается.
+              </td>
+            </tr>
+            <tr>
+              <td>высокая</td>
+              <td><code>remote-code</code></td>
+              <td>
+                <code>&lt;script&gt;</code>, у которого <code>src</code> начинается с <code>http</code> или
+                <code>//</code>, в том числе когда тег занимает несколько строк; <code>import("http…")</code>;
+                статический <code>import … from "https://…"</code> или <code>import "//…"</code>;
+                <code>export … from "https://…"</code>; <code>importScripts(</code>; а также CSS-<code>@import</code>
+                такого адреса.
+              </td>
+            </tr>
+            <tr>
+              <td>высокая</td>
+              <td><code>escape-attempt</code></td>
+              <td>
+                <code>parent.document</code>, <code>parent.location</code>, <code>top.document</code>,
+                <code>top.location</code>, <code>window.opener</code>, <code>self.opener</code>,
+                <code>globalThis.opener</code>, <code>opener.document</code>, <code>opener.location</code>,
+                <code>opener.postMessage</code>, <code>frameElement</code>. Переменная с именем
+                <code>opener</code> не отмечается.
+              </td>
+            </tr>
+            <tr>
+              <td>высокая</td>
+              <td><code>packed-code</code></td>
+              <td><code>eval(atob(</code> или <code>Function(atob(</code>.</td>
+            </tr>
+            <tr>
+              <td>высокая</td>
+              <td><code>webrtc</code></td>
+              <td>
+                Слова <code>RTCPeerConnection</code> (также <code>webkitRTCPeerConnection</code>,
+                <code>mozRTCPeerConnection</code>) и <code>RTCDataChannel</code>. Одноранговое соединение
+                выходит за пределы <code>connect-src 'none'</code>; директива фрейма <code>webrtc 'block'</code>
+                останавливает его только в браузерах, которые ее знают.
+              </td>
+            </tr>
+            <tr>
+              <td>высокая</td>
+              <td><code>prefetch-hint</code></td>
+              <td>
+                <code>dns-prefetch</code> где угодно, а также <code>preconnect</code>, <code>prefetch</code> или
+                <code>prerender</code>, заданные как <code>rel</code> ссылки (в разметке, как <code>.rel =</code>,
+                <code>setAttribute('rel', …)</code> или <code>relList.add(…)</code>). Имя, разрешаемое заранее, —
+                это запрос, которого не видит ни одна политика: данные могут ехать в самом имени.
+              </td>
+            </tr>
+            <tr>
+              <td>средняя</td>
+              <td><code>network</code></td>
+              <td>
+                Глобальный <code>fetch(</code> (также как <code>window.fetch(</code>, <code>self.fetch(</code>
+                или <code>globalThis.fetch(</code>; <code>.fetch(</code> другого объекта не отмечается) и слова
+                <code>XMLHttpRequest</code>, <code>WebSocket</code>, <code>EventSource</code>,
+                <code>sendBeacon</code>. Песочница блокирует все это; находка показывает намерение.
+              </td>
+            </tr>
+            <tr>
+              <td>средняя</td>
+              <td><code>inline-handler</code></td>
+              <td>
+                В разметке: атрибут <code>on…=</code> внутри тега (в том числе когда тег занимает несколько
+                строк) и <code>javascript:</code> где угодно.
+              </td>
+            </tr>
+            <tr>
+              <td>средняя</td>
+              <td><code>workers</code></td>
+              <td><code>new Worker(</code>, <code>new SharedWorker(</code>, <code>WebAssembly.</code>.</td>
+            </tr>
+            <tr>
+              <td>средняя</td>
+              <td><code>unusual-encoding</code></td>
+              <td>
+                Проверяемый файл, сохраненный в UTF-16 (начинается с метки порядка байтов; проверка читает его
+                так, как это сделал бы браузер), или содержащий байты NUL.
+              </td>
+            </tr>
+            <tr>
+              <td>средняя</td>
+              <td><code>write-permission</code></td>
+              <td>Манифест запрашивает <code>documents:write</code>.</td>
+            </tr>
+            <tr>
+              <td>низкая</td>
+              <td><code>storage</code></td>
+              <td>
+                <code>localStorage</code>, <code>sessionStorage</code>, <code>indexedDB</code>,
+                <code>document.cookie</code> (в песочнице они не работают).
+              </td>
+            </tr>
+            <tr>
+              <td>информационная</td>
+              <td><code>minified</code></td>
+              <td>
+                Строка скрипта длиннее 2000 символов (минифицированный или сгенерированный код), один раз на
+                файл.
+              </td>
+            </tr>
+            <tr>
+              <td>информационная</td>
+              <td><code>data-blob</code></td>
+              <td>Последовательность base64 около 10 КБ и более.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Как ее пройти:</p>
+      <ul>
+        <li>
+          Записывайте текст через <code>textContent</code>, <code>append('text')</code> или вспомогательную
+          функцию <code>h()</code> из kit; создавайте элементы через <code>document.createElement</code>.
+          Чтобы очистить элемент, используйте <code>replaceChildren()</code>. Ничто из этого никогда не
+          отмечается; присваивание или добавление разметки (<code>innerHTML =</code> или
+          <code>innerHTML +=</code>) отмечается всегда.
+        </li>
+        <li>Подключайте обработчики через <code>addEventListener</code>, а не в разметке.</li>
+        <li>
+          Передавайте в <code>setTimeout</code> и <code>setInterval</code> функции. Обращайтесь к приложению
+          только через <code>window.parent.postMessage</code>.
+        </li>
+        <li>Сохраняйте каждый файл в UTF-8, без байтов NUL (никогда в UTF-16).</li>
+        <li>
+          Не поставляйте код, который обращается наружу, даже неиспользуемый: проверяйте, что приносит
+          библиотека. Предпочитайте сборку без минификации или объясните находку <code>minified</code> в своем
+          README, и не храните большие данные в строках base64.
+        </li>
+        <li>
+          Помните, что комментарии тоже проверяются: комментарий, в котором упомянуто <code>eval(</code> или
+          <code>innerHTML =</code>, — это находка.
+        </li>
+        <li>
+          Объясните в README, почему безопасна каждая оставшаяся находка: какая библиотека, какая строка,
+          почему она никогда не выполняется или почему ее останавливает песочница.
+        </li>
+      </ul>
+      <p>
+        Проверяются только файлы скриптов, разметки и стилей; манифест читается на предмет
+        <code>documents:write</code> (всегда находка среднего уровня: запрашивайте его, только если плагин
+        изменяет документы). Перечисляется не более 10 находок одного правила в одном файле и не более 200
+        находок в целом (самые серьезные первыми); счетчики всегда охватывают все находки. Каждый шаблон
+        выполняется за линейное время, поэтому проверка быстро завершается на любом файле. Если сама проверка
+        не удалась, плагин не помечается как неисправный: у него нет результата проверки, и (если он не
+        поставляется с Mongo Manager) его можно одобрить, только введя его идентификатор, как при находке
+        высокого уровня. Результат проверки плагина, поставляемого с Mongo Manager, тоже показывается, но
+        при его одобрении идентификатор не запрашивается.
+      </p>
+
+      <h2 id="ui">Интерфейс и темы</h2>
+      <p>
+        Плагин должен выглядеть как часть приложения: его цвета, шрифты, отступы — в теме и акцентном цвете
+        пользователя. Собственные плагины Mongo Manager используют набор инструментов для плагинов в
+        <code>packages/plugins/kit</code>:
+      </p>
+      <ul>
+        <li>
+          <code>kit/src/ui.css</code>: токены дизайна приложения (<code>--ds-surface</code>,
+          <code>--ds-fg</code>, <code>--ds-accent</code>...) для светлой и темной тем и каждого акцентного
+          цвета, а также компоненты (<code>mm-btn</code>, <code>mm-table</code>, <code>mm-empty</code>,
+          <code>mm-callout</code>...). Его шрифты — файлы пакетов <code>@fontsource</code>: включите их в
+          плагин или удалите правила <code>@font-face</code>, чтобы использовать системный шрифт.
+        </li>
+        <li>
+          <code>kit/src/ui.ts</code>: <code>applyLook(theme, accent)</code> устанавливает
+          <code>html.dark</code> и <code>html[data-accent]</code>; <code>h(tag, props, ...children)</code>
+          создает элементы, в которых текст всегда остается текстом; а также <code>icon</code>,
+          <code>button</code>, <code>segmented</code>, <code>switchControl</code>, <code>chip</code>,
+          <code>badge</code>, <code>pageHeader</code>, <code>emptyState</code>, <code>skeleton</code>,
+          <code>callout</code>, <code>table</code>, <code>valueView</code>, <code>describeValue</code>,
+          <code>formatNumber</code>, <code>statusLine</code>, <code>setBusy</code>, <code>serialAsk</code>.
+        </li>
+        <li>
+          <code>kit/src/client.ts</code>: <code>createClient</code>, <code>AskError</code>,
+          <code>askMessage</code>.
+        </li>
+      </ul>
+      <p>
+        Kit написан на TypeScript и предназначен для сборки: скопируйте <code>kit/src</code> в свой проект и
+        соберите с помощью Vite (или другого сборщика) с относительными путями и без встроенных скриптов, как
+        в <code>vite.config.ts</code> собственных плагинов: <code>base: './'</code>,
+        <code>modulePreload: { polyfill: false }</code>, <code>assetsInlineLimit: 0</code>. Упаковывайте
+        результат сборки, а не исходники. Заготовка вместо этого содержит краткую копию клиента и цветов на
+        чистом JavaScript и CSS.
+      </p>
+      <pre><code>import './kit/ui.css'
+import { createClient } from './kit/client'
+import { applyLook, h, pageHeader, emptyState, button } from './kit/ui'
+
+const client = createClient()
+client.onContext((locale, theme, accent) =&gt; applyLook(theme, accent))
+client.onReady(async () =&gt; {
+  const context = await client.ask('context.get')
+  applyLook(context.theme, context.accent)
+  document.body.append(
+    h('div', { class: 'mm-page' },
+      pageHeader({ icon: 'table', title: 'Hello', description: context.place?.coll ?? '' }),
+      emptyState({ icon: 'search', title: 'Nothing yet', action: button({ label: 'Load', variant: 'primary' }) }),
+    ),
+  )
+})</code></pre>
+      <p>
+        Проектируйте для места, где появляется страница: вкладка коллекции широкая, действие над документом —
+        это диалог, страница боковой панели занимает всю рабочую область. Показывайте пустое состояние, когда
+        нечего показывать и <code>place</code> равен <code>null</code>, заглушку-скелетон во время чтения и
+        слова приложения для отказа. Используйте кнопки и настоящие элементы управления, чтобы страница
+        работала с клавиатуры.
+      </p>
+
+      <h2 id="localization">Языки</h2>
+      <p>
+        Приложение говорит на английском, турецком, упрощенном китайском, японском, испанском, бразильском
+        португальском, корейском, немецком, французском и русском: <code>context.locale</code> — одно из
+        <code>en</code>, <code>tr</code>, <code>zh</code>, <code>ja</code>, <code>es</code>, <code>pt</code>,
+        <code>ko</code>, <code>de</code>, <code>fr</code> и <code>ru</code>. Плагин должен поддерживать как
+        можно больше из них и всегда английский:
+      </p>
+      <ul>
+        <li>
+          В манифесте в каждом локализованном тексте указывайте все имеющиеся у вас языки рядом с
+          <code>en</code>.
+        </li>
+        <li>
+          На странице держите свои слова в таблице по языкам, выбирайте по <code>context.locale</code>
+          (английский для языка, которого у вас нет), задавайте <code>document.documentElement.lang</code>
+          равным языку, на котором на самом деле написаны ваши тексты (<code>en</code>, если вы перешли на
+          английский; <code>zh-CN</code> и <code>pt-BR</code> для китайского и португальского, чтобы
+          отображались нужные начертания), форматируйте числа на том же языке и выполняйте повторную отрисовку при <code>context.changed</code>.
+        </li>
+        <li>Рендерер ячеек отвечает на том <code>locale</code>, на котором запрошен каждый пакет.</li>
+        <li>
+          Форматируйте числа и даты для языка (<code>Intl.NumberFormat</code>,
+          <code>Intl.DateTimeFormat</code>).
+        </li>
+        <li>
+          Добавляйте <code>README.&lt;language&gt;.md</code> рядом с <code>README.md</code> для каждого языка
+          (<code>README.tr.md</code>, <code>README.zh.md</code>, …) и примечания к выпускам на каждом из них.
+        </li>
+      </ul>
+
+      <h2 id="readme">README и примечания к выпускам</h2>
+      <p>
+        <code>README.md</code> в корне плагина показывается на странице его сведений, где администраторы
+        читают его перед одобрением плагина; <code>README.&lt;language&gt;.md</code>
+        (<code>README.tr.md</code>, <code>README.ja.md</code>, …) показывается вместо него тому, кто
+        пользуется приложением на этом языке. Локализованный README показывается, только если существует и
+        <code>README.md</code>. Он отображается как безопасный Markdown: заголовки, абзацы, списки (один
+        уровень), полужирный шрифт, курсив, встроенный код и блоки кода. Ссылки, изображения, таблицы и HTML
+        показываются как простой текст. Показывается не более 64 КБ.
+      </p>
+      <p>Хороший README сообщает в таком порядке:</p>
+      <ol>
+        <li>Что делает плагин, в двух-трех предложениях.</li>
+        <li>Где он появляется: какая вкладка, действие, страница или текст в ячейке.</li>
+        <li>Как им пользоваться, шаг за шагом, с примером.</li>
+        <li>Каждое разрешение и зачем оно нужно.</li>
+        <li>Его настройки, если они есть.</li>
+        <li>Его ограничения: сколько документов он читает, что не обрабатывает.</li>
+        <li>Каждую оставшуюся находку проверки и почему она безопасна.</li>
+      </ol>
+      <p>
+        Примечания к выпускам помещаются в <code>changelog</code> манифеста, сначала новейшие, по одной записи
+        на версию с датой и примечаниями на английском и на каждом из ваших языков. Страница сведений
+        показывает их; после обновления версии, появившиеся с прошлого раза, помечаются как новые.
+      </p>
+
+      <h2 id="versions">Версии и одобрение</h2>
+      <ul>
+        <li>
+          Одобрение относится к точным файлам: к их дайджесту, SHA-256 от пути и SHA-256 каждого файла.
+          Администратор видит его перед одобрением.
+        </li>
+        <li>
+          <strong>Любое изменение любого файла</strong> загруженного плагина или папки плагина (новая версия,
+          исправленная опечатка в README) отключает его до повторного одобрения администратором. Увеличивайте
+          <code>version</code> и добавляйте запись в changelog для каждого выпуска, чтобы администраторы
+          знали, что они одобряют.
+        </li>
+        <li>
+          Загрузка плагина, идентификатор которого уже установлен, заменяет его; он остается включенным, только
+          если файлы — те самые, что были одобрены. Его настройки сохраняются, пока новый манифест по-прежнему
+          объявляет их с тем же типом.
+        </li>
+        <li>
+          Папка плагина, помещенная вручную, управляется вручную: загрузка плагина с тем же идентификатором
+          отклоняется, а удаление его в приложении лишь забывает его, не удаляя папку.
+        </li>
+        <li>
+          Только плагины, поставляемые с Mongo Manager, сохраняют одобрение при обновлении, и только пока они
+          включены и обновление не запрашивает нового разрешения; тогда от администратора ничего не
+          требуется, а страница сведений плагина сообщает, что он сохранил одобрение. Обновление, одобренное
+          администратором вручную, сообщает, что оно одобрено администратором.
+        </li>
+      </ul>
+
+      <h2 id="packaging">Упаковка</h2>
+      <p>
+        Плагин распространяется как архив tar со сжатием gzip (<code>.tgz</code>), файлы которого лежат в
+        корне архива, включая <code>mongo-manager-plugin.json</code>. Одна верхняя папка, содержащая все
+        (как <code>package/</code> в <code>npm pack</code>), допускается и снимается. Архив должен содержать
+        только обычные файлы (папки подразумеваются); ссылки, устройства, специальные записи, непростые пути
+        и пути, указанные дважды, отклоняются; не более 500 файлов и 25 МБ после распаковки и не более 30 МБ
+        при загрузке.
+      </p>
+      <p>Скрипт <code>scripts/pack.mjs</code> из заготовки делает это только средствами Node.js:</p>
+      <pre><code>node scripts/pack.mjs
+Packed 14 files (64.6 KB):
+  README.de.md
+  README.es.md
+  README.fr.md
+  README.ja.md
+  README.ko.md
+  README.md
+  README.pt.md
+  README.ru.md
+  README.tr.md
+  README.zh.md
+  index.html
+  main.js
+  mongo-manager-plugin.json
+  style.css
+
+hello-documents-0.1.0.tgz
+digest (sha256): 9ac77c4a...</code></pre>
+      <p>
+        Он проверяет пути и ограничения так же, как приложение, исключает то, что не является частью плагина
+        (скрытые файлы, <code>scripts/</code>, <code>node_modules/</code>, файлы ИИ-ассистентов, файлы
+        пакетов и архивы; отредактируйте его список <code>SKIP</code> под себя), записывает
+        <code>&lt;id&gt;-&lt;version&gt;.tgz</code> и выводит дайджест, который увидит администратор. Если вы
+        собираете сборщиком, упаковывайте папку с результатом сборки, с манифестом в корне.
+      </p>
+
+      <h2 id="github">Публикация на GitHub</h2>
+      <p>
+        Администраторы могут установить плагин прямо из публичного репозитория GitHub на сервере, где это
+        разрешено (<code>MM_PLUGINS_GITHUB=1</code>; по умолчанию отключено). На странице «Плагины» они
+        вставляют один из таких адресов:
+      </p>
+      <ul>
+        <li>
+          <code>https://github.com/&lt;owner&gt;/&lt;repo&gt;</code>, <code>…/releases</code> или
+          <code>…/releases/latest</code> для его <strong>последнего выпуска</strong>;
+        </li>
+        <li>
+          <code>https://github.com/&lt;owner&gt;/&lt;repo&gt;/releases/tag/&lt;tag&gt;</code> для
+          конкретного выпуска. Тег может содержать косые черты (не более 4 частей).
+        </li>
+      </ul>
+      <p>
+        В адресе нет ничего другого: ни запроса, ни фрагмента, ни порта, ни учетных данных. Переименованный
+        репозиторий отслеживается: адрес страницы самого выпуска называет его репозиторий. Приложение
+        скачивает архив плагина этого выпуска — его единственный файл, имя которого заканчивается на
+        <code>.tgz</code> или <code>.tar.gz</code>. Выпуск без такого файла или с несколькими отклоняется.
+        Имена тега и файла должны состоять из печатаемых символов ASCII. Файл должен относиться к выпускам
+        этого репозитория и не может быть больше загрузки (30 МБ), как по заявленному, так и по прочитанному
+        размеру.
+      </p>
+      <p>
+        Приложение обращается только к <code>github.com</code>, <code>api.github.com</code>,
+        <code>objects.githubusercontent.com</code> и <code>release-assets.githubusercontent.com</code> по
+        https, только по публичным адресам, и не отправляет ничего от сервера (ни cookie, ни токена, ни
+        учетных данных). Оно следует не более чем за 4 перенаправлениями, только между этими хостами, читает
+        описание выпуска до 5 МБ и отводит на всю установку 4 минуты. Плагин устанавливается отключенным,
+        с результатом проверки, и ждет одобрения, как при загрузке. Он запоминает, откуда пришел
+        (репозиторий, выпуск и архив), и это показывается на странице его сведений.
+      </p>
+      <p>
+        Если установка не удалась, страница «Плагины» сообщает почему: в репозитории нет опубликованного
+        выпуска, достигнут лимит запросов GitHub, GitHub отказал (репозиторий не публичный), с сервера нет
+        доступа к GitHub, перенаправление привело на недопустимый хост, перенаправлений слишком много, у
+        выпуска нет архива или их несколько, либо архива нет среди выпусков этого репозитория.
+      </p>
+      <ol>
+        <li>
+          Увеличьте <code>version</code>, добавьте запись в <code>changelog</code> и задайте
+          <code>publishedAt</code>.
+        </li>
+        <li>Выполните <code>node scripts/pack.mjs</code>.</li>
+        <li>
+          Создайте выпуск на GitHub (например, с тегом <code>v0.1.0</code>) и приложите
+          <code>hello-documents-0.1.0.tgz</code> как его файл. Не прикладывайте других файлов
+          <code>.tgz</code> или <code>.tar.gz</code>.
+        </li>
+        <li>
+          Отметьте его как последний выпуск. Поместите дайджест, выведенный <code>pack.mjs</code>, в описание
+          выпуска, чтобы администраторы могли сравнить его с тем, что показывает приложение.
+        </li>
+      </ol>
+      <p>
+        Установка из GitHub отключена, пока не задано <code>MM_PLUGINS_GITHUB=1</code>; сервер также может не
+        иметь доступа к GitHub или выходить наружу только через прокси (установка подключается к GitHub
+        напрямую и не использует настройки HTTP-прокси); тогда его администраторы скачивают
+        <code>.tgz</code> и загружают его с помощью <strong>Загрузить плагин</strong>.
+      </p>
+
+      <h2 id="testing">Тестирование на собственном сервере</h2>
+      <ol>
+        <li>
+          Запустите Mongo Manager с включенными плагинами (по умолчанию) и войдите как администратор. Найдите
+          его каталог данных: <code>~/.mongo-manager</code>, если <code>MM_DATA_DIR</code> не указывает
+          иное.
+        </li>
+        <li>
+          Скопируйте плагин в <code>&lt;data-dir&gt;/plugins/&lt;id&gt;</code>:
+          <code>node scripts/pack.mjs --folder ~/.mongo-manager/plugins</code>. Имя папки должно быть
+          идентификатором, и в ней не должно быть скрытых файлов (поэтому скрипт копирует только файлы
+          плагина). <code>~/</code> — это ваша домашняя папка в любой оболочке; <code>~\</code> — в cmd и
+          PowerShell или в кавычках (bash и zsh отбрасывают обратную косую черту без кавычек, и тогда скрипт
+          отклоняет то, что осталось). Скрипт заменяет только папку этого плагина, в которой есть лишь файлы и
+          папки, которые он мог бы скопировать (без скриптов, скрытых файлов, ссылок, каналов и сокетов) и в
+          которой и поверх которой не смонтирована файловая система, подменяя ее новой копией так, что при
+          остановке копирования папка остается прежней. Он отклоняет целевой путь, который является папкой
+          самого плагина, находится внутри нее или содержит ее, как бы путь ее ни называл (символическая
+          ссылка, точка соединения или общий ресурс); тогда ничего не записывается.
+        </li>
+        <li>
+          Откройте <strong>Плагины</strong> и нажмите <strong>Сканировать снова</strong>. Непригодный к
+          использованию плагин сообщает почему (поле манифеста, путь). Откройте его сведения: прочитайте
+          находки проверки, разрешения и README так, как это сделал бы администратор.
+        </li>
+        <li>
+          Нажмите <strong>Одобрить и включить</strong>, затем откройте коллекцию и попробуйте каждую точку
+          расширения.
+        </li>
+        <li>
+          После каждого изменения скопируйте снова, нажмите <strong>Сканировать снова</strong> и одобрите
+          снова (файлы изменились), затем заново откройте вкладку, страницу или диалог. Попробуйте несколько
+          языков, обе темы, представление, коллекцию без документов и страницу боковой панели, открытую без
+          коллекции.
+        </li>
+        <li>
+          Наконец, загрузите сам файл <code>.tgz</code> с помощью <strong>Загрузить плагин</strong> на чистом
+          сервере, как это сделают ваши пользователи.
+        </li>
+      </ol>
+      <p>
+        Инструменты разработчика браузера работают внутри фрейма: выберите фрейм плагина в консоли, чтобы
+        увидеть его ошибки и сообщения. Нарушение политики в консоли означает, что страница попыталась
+        сделать то, что запрещает песочница.
+      </p>
+
+      <h2 id="ai-files">Разработка с ИИ-ассистентом</h2>
+      <p>
+        В заготовке есть файлы с инструкциями, которые учат ИИ-ассистента по программированию всему, что
+        описано на этой странице: правилам манифеста, методам моста и разрешениям, песочнице, проверке,
+        языкам, README, упаковке и публикации. Держите их в корне репозитория вашего плагина;
+        <code>pack.mjs</code> исключает их из архива. Страница <strong>Плагины</strong> сохраняет заготовку
+        как <code>.zip</code>, а каждый файл отдельно — в разделе
+        <strong>Инструкции для вашего ИИ-ассистента</strong>, чтобы добавить его в уже имеющийся плагин;
+        файл для Copilot сохраняется как <code>copilot-instructions.md</code>, для папки
+        <code>.github</code> вашего репозитория.
+      </p>
+      <ul>
+        <li><code>CLAUDE.md</code>: Claude Code.</li>
+        <li><code>AGENTS.md</code>: OpenAI Codex и другие агенты, читающие <code>AGENTS.md</code>.</li>
+        <li><code>GEMINI.md</code>: Gemini CLI.</li>
+        <li><code>.github/copilot-instructions.md</code>: GitHub Copilot.</li>
+      </ul>
+      <p>
+        Попросите ассистента сделать то, что должен делать ваш плагин; он должен ответить кодом, проходящим
+        проверку и контрольный список ниже. Прочитайте то, что он пишет, прежде чем публиковать: администраторы
+        доверяют именно вам.
+      </p>
+
+      <h2 id="checklist">Контрольный список перед публикацией</h2>
+      <ul>
+        <li>
+          Идентификатор уникален и совпадает с именем папки; версия увеличена и имеет запись в changelog с
+          сегодняшней датой.
+        </li>
+        <li>
+          В каждом локализованном тексте есть <code>en</code> и <code>tr</code>; страница следует за
+          <code>locale</code> и <code>context.changed</code>.
+        </li>
+        <li>Разрешения минимально необходимые, а README объясняет, зачем нужно каждое.</li>
+        <li>Проверка не показывает находок высокого уровня, а README объясняет все остальные.</li>
+        <li>
+          Текст записывается через <code>textContent</code> или <code>h()</code>; разметка из текста не
+          строится.
+        </li>
+        <li>
+          Ничто не обращается к сети (ни <code>fetch</code>, ни WebRTC, ни подсказок предзагрузки), не
+          использует хранилище, не открывает всплывающие окна и не покидает страницу.
+        </li>
+        <li>
+          Нет встроенных скриптов, стилей и обработчиков событий; все пути относительные
+          (<code>./main.js</code>).
+        </li>
+        <li>Каждый файл сохранен в UTF-8, без байтов NUL.</li>
+        <li>Страница следует теме и акцентному цвету и работает с клавиатуры.</li>
+        <li>
+          Она обрабатывает <code>place</code>, равный <code>null</code>, представление, пустую коллекцию и
+          каждый код ошибки, с которым может столкнуться.
+        </li>
+        <li>Вызовы, которым нужен щелчок, выполняются прямо в обработчике щелчка.</li>
+        <li>
+          Большие чтения ограничены: <code>limit</code>, проекция, один конвейер за раз.
+        </li>
+        <li>
+          <code>README.md</code> и его переводы описывают плагин; заданы <code>license</code>,
+          <code>author</code> и <code>repository</code>.
+        </li>
+        <li>Файл <code>.tgz</code> загружен на чистый сервер, проверен, одобрен и опробован там.</li>
+        <li>
+          В выпуске GitHub ровно один архив плагина с именем
+          <code>&lt;id&gt;-&lt;version&gt;.tgz</code>.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">На этой странице</p>
+      <ol>
+        <li><a href="#what">Что такое плагин</a></li>
+        <li><a href="#quick-start">Быстрый старт</a></li>
+        <li><a href="#files">Файлы и структура папок</a></li>
+        <li><a href="#manifest">Манифест</a></li>
+        <li><a href="#contributions">Точки расширения</a></li>
+        <li><a href="#context">Контекст</a></li>
+        <li><a href="#bridge">API моста</a></li>
+        <li><a href="#permissions">Разрешения</a></li>
+        <li><a href="#sandbox">Песочница</a></li>
+        <li><a href="#scan">Проверка безопасности</a></li>
+        <li><a href="#ui">Интерфейс и темы</a></li>
+        <li><a href="#localization">Языки</a></li>
+        <li><a href="#readme">README и примечания к выпускам</a></li>
+        <li><a href="#versions">Версии и одобрение</a></li>
+        <li><a href="#packaging">Упаковка</a></li>
+        <li><a href="#github">Публикация на GitHub</a></li>
+        <li><a href="#testing">Тестирование на собственном сервере</a></li>
+        <li><a href="#ai-files">Разработка с ИИ-ассистентом</a></li>
+        <li><a href="#checklist">Контрольный список перед публикацией</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

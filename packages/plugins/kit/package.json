@@ -1,0 +1,17 @@
+{
+  "name": "@mongo-manager/plugin-kit",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "The frame side of the plugin bridge, shared by first-party plugins (bundled into each).",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "happy-dom": "^21.0.4",
+    "vitest": "^5.0.2"
+  }
+}

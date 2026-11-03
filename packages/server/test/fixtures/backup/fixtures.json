@@ -1,0 +1,9 @@
+{
+  "tools": "100.19.1",
+  "counts": {
+    "shop.orders": 2,
+    "shop.empty": 0,
+    "shop.capped": 0,
+    "shop.ts": 2
+  }
+}

@@ -1,0 +1,1721 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Plugins · Mongo Manager documentation</title>
+    <link rel="stylesheet" href="docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager documentation</a>
+      <details class="lang-menu">
+        <summary>English</summary>
+        <span class="langs" role="group" aria-label="Language">
+          <strong lang="en">English</strong>
+          <a lang="tr" hreflang="tr" href="tr/plugins.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="zh/plugins.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="ja/plugins.html">日本語</a>
+          <a lang="es" hreflang="es" href="es/plugins.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="pt/plugins.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="ko/plugins.html">한국어</a>
+          <a lang="de" hreflang="de" href="de/plugins.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="fr/plugins.html">Français</a>
+          <a lang="ru" hreflang="ru" href="ru/plugins.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Overview</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="security.html">Security</a>
+      <a href="deployment.html">Deployment</a>
+      <a href="import-export.html">Import and export</a>
+      <a href="backup.html">Backup and restore</a>
+      <a href="watch.html">Watching changes</a>
+      <a href="sync.html">Live sync</a>
+      <a href="server-admin.html">Server administration</a>
+      <a href="ai.html">AI assistant</a>
+      <strong>Plugins</strong>
+      <a href="shortcuts.html">Keyboard shortcuts</a>
+    </nav>
+    <main>
+      <h1>Building plugins</h1>
+      <p>
+        A plugin adds a view, an action or a page to Mongo Manager: a map of a collection's places, a chart, a
+        duplicate finder, a translator from SQL. This guide is for people who build one. It covers the files a
+        plugin is made of, everything it may ask the app, the rules the app enforces, and how to package, test
+        and publish it. Administrators install and approve plugins on the
+        <strong>Plugins</strong> page; see <a href="security.html#plugins">Security</a> for the approval
+        model. That page lists them all, and narrows the list to the enabled ones, those that need an
+        administrator (waiting for an approval, changed or broken) or the disabled ones, to one source, and to
+        those a search finds by name, description, id, version, the permissions they ask for or what they add.
+      </p>
+      <ul class="toc-inline">
+        <li><a href="#what">What a plugin is</a></li>
+        <li><a href="#quick-start">Quick start</a></li>
+        <li><a href="#files">Files and folder layout</a></li>
+        <li><a href="#manifest">The manifest</a></li>
+        <li><a href="#contributions">Contribution points</a></li>
+        <li><a href="#context">The context</a></li>
+        <li><a href="#bridge">The bridge API</a></li>
+        <li><a href="#permissions">Permissions</a></li>
+        <li><a href="#sandbox">The sandbox</a></li>
+        <li><a href="#scan">The security scan</a></li>
+        <li><a href="#ui">UI and theming</a></li>
+        <li><a href="#localization">Languages</a></li>
+        <li><a href="#readme">README and release notes</a></li>
+        <li><a href="#versions">Versions and approval</a></li>
+        <li><a href="#packaging">Packaging</a></li>
+        <li><a href="#github">Publishing on GitHub</a></li>
+        <li><a href="#testing">Testing on your own server</a></li>
+        <li><a href="#ai-files">Building with an AI assistant</a></li>
+        <li><a href="#checklist">Checklist before publishing</a></li>
+      </ul>
+
+      <h2 id="what">What a plugin is</h2>
+      <p>
+        A plugin is a folder of <strong>static files</strong>: an HTML page, its scripts, styles, images and
+        fonts, and a manifest named <code>mongo-manager-plugin.json</code> that says what it adds and what it
+        may do. The app shows the page in a <strong>sandboxed frame</strong> and the page talks to the app
+        only by messages: it asks for documents, the app answers as the signed-in user, with that user's
+        rights and the app's masking.
+      </p>
+      <ul>
+        <li>
+          <strong>No server code.</strong> Nothing of a plugin runs on the server. The server stores its
+          files, checks them, and serves them to the frame.
+        </li>
+        <li>
+          <strong>No network.</strong> The page cannot fetch from any address, not even the server it came
+          from. It has no cookies, no storage and no access to the app's page. Two ways out are left to the
+          browser: WebRTC is blocked only by browsers that enforce the policy's <code>webrtc</code> directive
+          — Chromium-based browsers (Chrome, Edge) ignore it as of version 149, and do not count on Firefox
+          either — so on those a plugin can still send what it reads out over WebRTC; and a prefetch hint
+          (<code>dns-prefetch</code>, <code>preconnect</code>) can have a name looked up. The frame asks the
+          browser not to prefetch, and the scan flags both as high risks — but the scan reads the files' text
+          for known patterns: code written to slip past it is not found. Approve only plugins you trust.
+        </li>
+        <li>
+          <strong>Nothing without approval.</strong> A plugin runs only after an administrator approved its
+          exact files and the permissions it asks for. Every change to its files needs a new approval.
+        </li>
+        <li>
+          <strong>Changes go through the user.</strong> A plugin that may change documents asks; the app shows
+          the change in its own dialog and the user decides. A query or a pipeline a plugin prepares is put in
+          the user's own editors, where nothing runs until the user runs it.
+        </li>
+      </ul>
+      <p>
+        Mongo Manager ships several plugins of its own (Map, Charts, Schema health, Duplicate finder, Value
+        search, References, Document diff, SQL to MongoDB, Time hints, Binary preview, Data dictionary, Local
+        time, Log analyzer, Test data, Reshape, Anonymiser, Search playground, Shard key analyzer, Storage
+        report, Validation check, Legacy UUIDs, Date filters, Index script, Expiry (TTL), Personal data
+        finder, Document size). They run in the same sandbox, talk through the same bridge and are scanned the
+        same way as yours; being the app's own code, approving one never asks for its id (see
+        <a href="#versions">Versions and approval</a>). Plugins can be turned off for a whole server with
+        <code>MM_PLUGINS=0</code> (see <a href="deployment.html#plugins">Deployment</a>).
+      </p>
+
+      <h2 id="quick-start">Quick start</h2>
+      <p>
+        Start from the starter template: on the <strong>Plugins</strong> page, under
+        <strong>Build your own plugin</strong>, choose <strong>Download the starter (.zip)</strong> (it is
+        also the <code>packages/plugins/starter</code> folder of the Mongo Manager source code). It is a
+        complete plugin in plain JavaScript, with no build step and no dependencies: a collection tab and a
+        sidebar page that list the documents of a collection.
+      </p>
+      <ol>
+        <li>Unpack it, or copy the folder, into a new repository of your own.</li>
+        <li>
+          In <code>mongo-manager-plugin.json</code>, change <code>id</code>, <code>name</code>,
+          <code>author</code> and <code>repository</code>. The id must be unique: it names the plugin's folder
+          on every server.
+        </li>
+        <li>Write your page in <code>main.js</code> and <code>style.css</code>.</li>
+        <li>
+          Try it on your own server:
+          <code>node scripts/pack.mjs --folder ~/.mongo-manager/plugins</code>, then
+          <strong>Plugins → Scan again</strong>, look at the scan, and approve it. See
+          <a href="#testing">Testing on your own server</a>.
+        </li>
+        <li>
+          Package it with <code>node scripts/pack.mjs</code>, which writes
+          <code>&lt;id&gt;-&lt;version&gt;.tgz</code>, and attach that file to a GitHub release. See
+          <a href="#github">Publishing on GitHub</a>.
+        </li>
+      </ol>
+      <p>
+        The starter also holds instruction files for AI coding assistants (<code>CLAUDE.md</code>,
+        <code>AGENTS.md</code>, <code>GEMINI.md</code> and <code>.github/copilot-instructions.md</code>); see
+        <a href="#ai-files">Building with an AI assistant</a>.
+      </p>
+
+      <h2 id="files">Files and folder layout</h2>
+      <pre><code>hello-documents/
+  mongo-manager-plugin.json   the manifest (required, at the top)
+  index.html                  the entry page every contribution opens
+  main.js                     the page's script (an ES module)
+  style.css                   the page's styles
+  README.md                   shown to administrators on the plugin's details page
+  README.tr.md, README.zh.md  the same in another language of the app (optional)
+  scripts/pack.mjs            packaging (not part of the plugin: left out of the archive)
+  CLAUDE.md, AGENTS.md, ...   AI assistant files (left out of the archive)</code></pre>
+      <p>The app's rules for the files a plugin holds:</p>
+      <ul>
+        <li>
+          At most <strong>500 files</strong> and <strong>25 MB</strong> in all; the manifest at most 64 KB.
+        </li>
+        <li>
+          Every path is relative and plain: each part starts with a letter, a digit, <code>_</code> or
+          <code>-</code> and holds only letters, digits, <code>.</code>, <code>_</code> and <code>-</code>, at
+          most 100 characters; at most 16 levels deep and 240 characters in all. No hidden files or folders (a
+          name starting with <code>.</code>), no spaces, no device names (<code>con</code>, <code>nul</code>,
+          <code>com1</code>...), no <code>__proto__</code>, <code>constructor</code> or
+          <code>prototype</code>.
+        </li>
+        <li>Files and folders only: links, junctions and special files make the plugin unusable.</li>
+        <li>No two paths that differ only in letter case.</li>
+        <li>
+          Files are served with a type taken from their extension: <code>html</code>, <code>js</code>,
+          <code>mjs</code>, <code>css</code>, <code>json</code>, <code>map</code>, <code>txt</code>,
+          <code>svg</code>, <code>png</code>, <code>jpg</code>, <code>jpeg</code>, <code>gif</code>,
+          <code>webp</code>, <code>avif</code>, <code>ico</code>, <code>woff</code>, <code>woff2</code>,
+          <code>ttf</code>, <code>otf</code>. Anything else is served as bytes and never runs.
+        </li>
+      </ul>
+
+      <h2 id="manifest">The manifest</h2>
+      <p>
+        <code>mongo-manager-plugin.json</code> is checked strictly: an unknown field, a wrong type or a value
+        out of range makes the plugin unusable, and the Plugins page says which field is wrong. Text a person
+        reads (names, titles, notes) may not hold control characters or characters that hide or reverse text.
+      </p>
+      <pre><code>{
+  "id": "hello-documents",
+  "name": { "en": "Hello documents", "tr": "Merhaba belgeler" },
+  "version": "0.1.0",
+  "description": { "en": "Lists the documents of a collection.", "tr": "Bir koleksiyonun belgelerini listeler." },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [{ "id": "list", "title": { "en": "Hello", "tr": "Merhaba" }, "icon": "table" }],
+    "sidebarPanels": [{ "id": "page", "title": { "en": "Hello documents" }, "icon": "puzzle" }]
+  },
+  "settings": {},
+  "author": { "name": "Your Name", "url": "https://example.com" },
+  "homepage": "https://example.com/hello-documents",
+  "repository": "https://github.com/your-name/hello-documents",
+  "license": "MIT",
+  "publishedAt": "2026-10-11",
+  "changelog": [
+    { "version": "0.1.0", "date": "2026-10-11", "notes": { "en": "First release.", "tr": "İlk sürüm." } }
+  ]
+}</code></pre>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Required</th>
+              <th>Rules</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td>yes</td>
+              <td>
+                Lowercase letters and digits, dash-separated (<code>geojson-map</code>), at most 64 characters.
+                It must equal the plugin's folder name. The id of a plugin shipped with Mongo Manager cannot be
+                used, nor one that reads as a name the app keeps (below).
+              </td>
+            </tr>
+            <tr>
+              <td><code>name</code></td>
+              <td>yes</td>
+              <td>
+                Localized text, at most 60 characters: <code>{ "en": "...", "tr": "..." }</code>. No invisible
+                character (zero-width, tag, variation selector — an emoji's own are fine), and never a name that
+                reads as the app's own messages: <em>Mongo Manager</em> (or one starting so), <em>MongoDB</em>,
+                <em>System</em>, <em>Session</em>, <em>Security</em>, <em>Admin</em>, <em>Server</em>,
+                <em>Update</em> and the like, in any language of the app, compared as read: case, spaces, accents and
+                lookalike letters aside. In each word, the letters are all Latin or none of them (never Greek
+                and Cyrillic together), and no bracket holds what reads as an id (<code>(value-search)</code>;
+                <code>(beta)</code> is fine). The app shows a plugin's messages and questions with its id beside
+                its name.
+              </td>
+            </tr>
+            <tr>
+              <td><code>version</code></td>
+              <td>yes</td>
+              <td>
+                Semantic versioning: <code>major.minor.patch</code>, optionally a pre-release
+                (<code>1.2.0-beta.1</code>), at most 64 characters.
+              </td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td>no</td>
+              <td>Localized text, at most 300 characters.</td>
+            </tr>
+            <tr>
+              <td><code>entry</code></td>
+              <td>yes</td>
+              <td>
+                The page every contribution opens: a plain path to an <code>.html</code> file of the plugin.
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions</code></td>
+              <td>no</td>
+              <td>
+                Any of <code>documents:read</code>, <code>documents:write</code>, <code>collection:read</code>,
+                <code>database:read</code>, each at most once. Default: none. See
+                <a href="#permissions">Permissions</a>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>contributes</code></td>
+              <td>no</td>
+              <td>
+                <code>collectionTabs</code>, <code>documentActions</code>, <code>sidebarPanels</code> and
+                <code>cellRenderers</code>: lists of at most 5 each, ids unique within a list. See
+                <a href="#contributions">Contribution points</a>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>settings</code></td>
+              <td>no</td>
+              <td>
+                At most 10, by key (a letter, then letters and digits, at most 32 characters):
+                <code>{ "type": "url" | "text" | "boolean", "title": localized text of at most 60 }</code>.
+                Administrators set the values; the page reads them in the context.
+              </td>
+            </tr>
+            <tr>
+              <td><code>author</code></td>
+              <td>no</td>
+              <td><code>{ "name": text of at most 80, "url": an https address (optional) }</code>.</td>
+            </tr>
+            <tr>
+              <td><code>homepage</code>, <code>repository</code></td>
+              <td>no</td>
+              <td>
+                An <code>https://</code> address with a host, at most 300 characters, with no credentials,
+                spaces or backslashes.
+              </td>
+            </tr>
+            <tr>
+              <td><code>license</code></td>
+              <td>no</td>
+              <td>
+                An SPDX expression, at most 40 characters: <code>MIT</code>, <code>Apache-2.0 OR MIT</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>publishedAt</code></td>
+              <td>no</td>
+              <td>A day that exists, <code>YYYY-MM-DD</code>, between 1900 and 2100.</td>
+            </tr>
+            <tr>
+              <td><code>changelog</code></td>
+              <td>no</td>
+              <td>
+                At most 50 entries
+                <code>{ "version", "date": "YYYY-MM-DD", "notes": localized text of at most 1000 }</code>; each
+                version at most once and none after the manifest's <code>version</code>.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Localized text is an object with <code>en</code> (required) and, optionally, any of the app's other
+        languages: <code>tr</code>, <code>zh</code> (Simplified Chinese), <code>ja</code>, <code>es</code>,
+        <code>pt</code> (Brazilian Portuguese), <code>ko</code>, <code>de</code>, <code>fr</code> and
+        <code>ru</code>; English is shown where the reader's language is missing. A contribution is
+        <code>{ "id", "title": localized text of at most 40, "icon" }</code>: its id is a lowercase letter,
+        then lowercase letters, digits and dashes, at most 32 characters, and its icon one of
+        <code>map</code>, <code>chart</code>, <code>table</code>, <code>file</code>, <code>image</code>,
+        <code>globe</code>, <code>layers</code>, <code>puzzle</code>, <code>book</code>, <code>wand</code>,
+        <code>shapes</code>, <code>scroll</code>, <code>code</code>, <code>calendar</code>,
+        <code>hourglass</code>, <code>shield</code>, <code>fingerprint</code>, <code>ruler</code> (the app's
+        own icons: a plugin brings none). A cell renderer is <code>{ "id", "match" }</code> instead, with an
+        optional <code>"display"</code>: <code>inline</code> (the default) or <code>tooltip</code>.
+      </p>
+      <p>
+        A <code>url</code> setting must be an https address with no credentials (plain http only for this
+        computer: <code>localhost</code>, <code>127.0.0.1</code> or <code>[::1]</code>); its scheme, host and
+        port are added to the images the frame may load (for map tiles: a leading <code>{s}.</code> becomes
+        any subdomain, only before a name of two parts or more, never an address). An image's address can
+        carry data: the plugin may send what it reads to that server, and the approval and the setting say so.
+        A <code>text</code> setting holds at most 500 characters. Every user of the plugin can read its
+        settings: never ask for a secret. The server stores them encrypted with its key, like every other
+        saved value.
+      </p>
+
+      <h2 id="contributions">Contribution points</h2>
+      <p>
+        Every contribution opens the same entry page. The page learns which one it is from the address's
+        fragment, <code>#&lt;kind&gt;=&lt;id&gt;</code> (for example <code>#collectionTab=list</code>), and
+        from <code>contribution</code> in the context.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Kind</th>
+              <th>Where it appears and how it opens</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>collectionTabs</code></td>
+              <td>
+                A tab of every collection, after the app's own tabs, on views too. The frame fills the tab. Its
+                <code>place</code> is that collection, with the Documents <code>filter</code> the user has set.
+                The page loads again each time the tab is shown, unless it asked to stay with
+                <code>ui.keepOpen</code>: then it stays loaded while another section of that collection's tab
+                shows (out of sight, it may read but not act: <code>not_visible</code>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>documentActions</code></td>
+              <td>
+                An entry in a document's actions menu in Documents, shown only for a plugin approved for
+                <code>documents:read</code>. It opens a dialog with the page; <code>place.documentId</code> is
+                that document's <code>_id</code>. The dialog closes once the plugin put a query or a pipeline in
+                place (<code>ui.useQuery</code>, <code>ui.useQueryIn</code>, <code>ui.useAggregation</code>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>sidebarPanels</code></td>
+              <td>
+                An entry in the sidebar that opens a page of its own, a workspace tab at
+                <code>/plugin/&lt;id&gt;/&lt;contribution&gt;</code>. Clicked while a collection's tab is
+                active, the page opens on that collection
+                (<code>/plugin/&lt;id&gt;/&lt;contribution&gt;/&lt;connection&gt;/&lt;db&gt;/&lt;collection&gt;</code>)
+                and <code>place</code> names it; from anywhere else <code>place</code> is <code>null</code>. A
+                page opened from a link asks the user before it reads that collection, and the user may go on
+                without one. The page stays loaded while another tab shows; out of sight, it may still read but
+                not act (<code>not_visible</code>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>cellRenderers</code></td>
+              <td>
+                A short text about values wherever Documents shows them (table, tree, cards, the document
+                inspector, change stream details), such as the date an ObjectId was made: beside the value
+                (<code>"display": "inline"</code>, the default) or in a tooltip (<code
+                  >"display": "tooltip"</code
+                >) that its cell or row shows when hovered or focused, under the whole value and marked with the
+                plugin's name. A tooltip's text is plain, its <code>tone</code> unused; a screen reader reads it
+                with the value. A plugin says one text beside a value and one in its tooltip: its first renderer
+                for each place that answers. The page runs in a hidden frame, one per plugin, only for a plugin
+                approved for <code>documents:read</code>; it never shows itself. <code>match</code> is one of
+                <code>geojson</code>, <code>string</code>, <code>number</code>, <code>date</code>,
+                <code>object</code>, <code>objectId</code>, <code>binary</code> (not a UUID). See
+                <a href="#cells">Cell renderers</a>.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="cells">Cell renderers</h3>
+      <p>
+        The app asks the hidden frame about the values it shows, in batches of at most 200, with a
+        <code>cells.render</code> message. With the kit, answer through <code>client.onCells</code>:
+      </p>
+      <pre><code>client.onCells((renderer, values, locale, paths, place) =&gt;
+  values.map((v) =&gt; (typeof v?.$oid === 'string' ? { text: createdAt(v.$oid, locale), tone: 'info' } : null)),
+)</code></pre>
+      <ul>
+        <li>
+          <code>renderer</code> is the contribution's id, <code>values</code> the values as canonical Extended
+          JSON, <code>locale</code> the app's language, <code>paths</code> each value's field path (or
+          <code>null</code>), <code>place</code> the collection the values come from (or <code>null</code>).
+        </li>
+        <li>
+          A <code>binary</code> value is sent as its head only, never whole:
+          <code>{ "$binaryHead": { "base64", "subType", "length" } }</code> with its first 2,048 bytes —
+          enough to tell an image's kind and size.
+        </li>
+        <li>
+          Answer one item per value, in order: <code>{ "text", "tone" }</code>, <code>null</code> for no text,
+          or <code>{ "retry": true }</code> to be asked again later. A list of another length is ignored.
+        </li>
+        <li>
+          Text is shown as plain text — at most 80 characters beside the value, 200 in a tooltip — with
+          control and hidden characters removed.
+          <code>tone</code> is one of <code>neutral</code>, <code>info</code>, <code>success</code>,
+          <code>warning</code>, <code>danger</code>.
+        </li>
+        <li>
+          An answer must come within 3 seconds; otherwise the plain value stays and the value is asked again
+          after 30 seconds. Answers are kept per value, language and the plugin's settings: a change of its
+          settings asks again, and an answer over a minute old is asked for again the next time its value is
+          shown, the old answer staying until the new one comes (and staying when asking again fails). A
+          <code>binary</code> value's answer is kept under its length, subtype and a hash of its head.
+        </li>
+        <li>
+          A renderer may read before it answers (references to other documents, for example): it passes the
+          <code>place</code> it was given in its request, <code>{ place, filter, ... }</code>, and may read
+          only there. Its context's <code>place</code> is <code>null</code>.
+        </li>
+      </ul>
+
+      <h2 id="context">The context</h2>
+      <p>
+        <code>context.get</code> answers where the page is and how it should look. Call it first; when a
+        collection is open, the answer may take up to 3 seconds while the app checks whether it is a view.
+      </p>
+      <pre><code>{
+  "plugin": { "id": "hello-documents", "version": "0.1.0" },
+  "contribution": { "kind": "collectionTab", "id": "list" },
+  "locale": "en",
+  "theme": "dark",
+  "accent": "emerald",
+  "place": {
+    "connectionId": "6650...",
+    "connectionName": "Production",
+    "db": "shop",
+    "coll": "orders",
+    "view": false,
+    "documentId": null,
+    "filter": { "status": "open" }
+  },
+  "settings": { "tileUrl": "https://tile.example.org/{z}/{x}/{y}.png" }
+}</code></pre>
+      <ul>
+        <li>
+          <code>kind</code> is <code>collectionTab</code>, <code>documentAction</code>,
+          <code>sidebarPanel</code> or <code>cellRenderer</code>.
+        </li>
+        <li><code>locale</code> is the app's language: <code>en</code>, <code>tr</code>, <code>zh</code>, <code>ja</code>, <code>es</code>, <code>pt</code>, <code>ko</code>, <code>de</code>, <code>fr</code>, <code>ru</code>.</li>
+        <li><code>theme</code> is <code>light</code> or <code>dark</code>.</li>
+        <li>
+          <code>accent</code> is the user's accent: <code>emerald</code>, <code>indigo</code>,
+          <code>violet</code>, <code>ocean</code> or <code>rose</code>. Treat any other value as
+          <code>emerald</code>.
+        </li>
+        <li>
+          <code>place</code> is <code>null</code> when the page was opened on no collection (a sidebar page, a
+          cell renderer). <code>connectionName</code> may be <code>null</code>. <code>view</code> is true for
+          a view: it can be read, never written, and has no indexes. <code>documentId</code> is the document
+          of a document action, as canonical Extended JSON, else <code>null</code>. <code>filter</code> is the
+          Documents filter for a collection tab, else <code>{}</code>. Both are data: a plugin without
+          <code>documents:read</code> gets <code>null</code> and <code>{}</code>.
+        </li>
+        <li>
+          <code>hidden</code> lists the field paths personal-data rules hide from the user in the collection,
+          as lists of keys (<code>[["contact", "phone"]]</code>; <code>"*"</code> one key,
+          <code>"**"</code> any number of keys, at any depth) — names only, for a plugin with
+          <code>documents:read</code>; <code>[]</code> otherwise; <code>null</code> when the app could not
+          tell in time (3 seconds). Such a field's values arrive as <code>"***"</code>: never take that for
+          its type.
+        </li>
+        <li><code>settings</code> holds the values an administrator set; a setting not set is absent.</li>
+      </ul>
+      <p>
+        When the user changes the language, the theme or the accent, the app sends
+        <code>context.changed</code> with <code>locale</code>, <code>theme</code> and <code>accent</code> (the
+        kit's <code>client.onContext</code>). Apply it at once: the page should never show the other theme or
+        language. A plugin that may read documents is also sent <code>context.changed</code> when the
+        Documents filter changes while its page is loaded — a collection tab that called
+        <code>ui.keepOpen</code> hears of every filter the user sets while it is out of sight. Ask
+        <code>context.get</code> again for the new <code>place</code>.
+      </p>
+
+      <h2 id="bridge">The bridge API</h2>
+      <h3 id="protocol">The protocol</h3>
+      <p>
+        The page and the app exchange plain JSON with <code>postMessage</code>. The kit
+        (<code>packages/plugins/kit/src/client.ts</code>) and the starter's <code>main.js</code> implement it;
+        the rules, should you write your own:
+      </p>
+      <ol>
+        <li>
+          Read only messages whose <code>event.source</code> is <code>window.parent</code> and whose
+          <code>mm</code> is <code>1</code>.
+        </li>
+        <li>
+          Once the page has loaded, the app greets it:
+          <code>{ "mm": 1, "type": "hello", "token": "..." }</code>. Keep the first token. Send nothing before
+          it.
+        </li>
+        <li>
+          A request is
+          <code>{ "mm": 1, "id": 1, "method": "documents.find", "params": { ... }, "token": "..." }</code>,
+          posted to <code>window.parent</code> with the target <code>'*'</code> (the frame's origin is
+          opaque). The id is a number or a string of at most 64 characters; the app ignores a request without
+          the token.
+        </li>
+        <li>
+          The answer carries the same id: <code>{ "mm": 1, "id": 1, "result": ... }</code> or
+          <code>{ "mm": 1, "id": 1, "error": { "code": "...", "message": "..." } }</code>.
+        </li>
+        <li>
+          The app sends <code>{ "mm": 1, "type": "context.changed", "locale", "theme", "accent" }</code> as
+          the user changes them (and, to a plugin with <code>documents:read</code>, the Documents filter), and
+          asks a cell renderer
+          <code>{ "mm": 1, "id": "h1", "method": "cells.render", "params": { ... } }</code>, which is answered
+          <code>{ "mm": 1, "id": "h1", "token", "result": [...] }</code>.
+        </li>
+      </ol>
+      <p>
+        The page must not leave its address. If it loads another page (a link, a form, a change of
+        <code>location</code>), the app closes the bridge and removes the frame, and the user has to open the
+        plugin again. Keep everything on one page.
+      </p>
+      <pre><code>import { createClient, askMessage, AskError } from './kit/client'
+
+const client = createClient()                       // requests time out after 15 s ("timeout")
+client.onContext((locale, theme, accent) =&gt; restyle(locale, theme, accent))
+client.onReady(async () =&gt; {
+  const context = await client.ask('context.get')
+  if (!context.place) return showNoCollection()
+  try {
+    const { documents, hasMore } = await client.ask('documents.find', { filter: context.place.filter, limit: 100 })
+    show(documents, hasMore)
+  } catch (e) {
+    showError(askMessage(e, context.locale))         // the app's code, in the user's language
+  }
+})</code></pre>
+
+      <h3 id="methods">Methods</h3>
+      <p>
+        Values are canonical Extended JSON both ways: an ObjectId is <code>{ "$oid": "..." }</code>, a date
+        <code>{ "$date": { "$numberLong": "..." } }</code>, an int <code>{ "$numberInt": "3" }</code>. Every
+        read runs as the user, with the user's rights and the app's masking. Methods marked "on its
+        collection" work on the collection in <code>place</code> and fail with
+        <code>no_collection</code> without one.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Method and permission</th>
+              <th>Parameters → result</th>
+              <th>Rules</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>context.get</code><br />none</td>
+              <td>none → the context</td>
+              <td>See <a href="#context">The context</a>.</td>
+            </tr>
+            <tr>
+              <td><code>documents.find</code><br /><code>documents:read</code></td>
+              <td>
+                <code>{ filter?, projection?, sort?, limit? }</code> →
+                <code>{ documents, hasMore }</code>
+              </td>
+              <td>
+                On its collection. <code>limit</code> 1 to 1000, default 100. At most 10 seconds. A document the
+                user may not see is left out. Not one of the user's recent queries.
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.get</code><br /><code>documents:read</code></td>
+              <td><code>{ id }</code> → the document, or <code>null</code></td>
+              <td>On its collection. <code>id</code> is the <code>_id</code> value.</td>
+            </tr>
+            <tr>
+              <td><code>documents.aggregate</code><br /><code>documents:read</code></td>
+              <td><code>{ pipeline, limit? }</code> → <code>{ documents, truncated }</code></td>
+              <td>
+                On its collection. Reading stages only: <code>$match</code>, <code>$group</code>,
+                <code>$sort</code>, <code>$limit</code>, <code>$skip</code>, <code>$project</code>,
+                <code>$addFields</code>, <code>$set</code>, <code>$unset</code>, <code>$count</code>,
+                <code>$unwind</code>, <code>$sortByCount</code>, <code>$bucket</code>, <code>$bucketAuto</code>,
+                <code>$facet</code> (no <code>$facet</code> inside it), <code>$replaceRoot</code>,
+                <code>$replaceWith</code>, <code>$sample</code>; at most 50 stages. With
+                <code>database:read</code>, also a plain <code>$lookup</code> of exactly <code>from</code>,
+                <code>localField</code>, <code>foreignField</code> and <code>as</code>, from a collection of the
+                same database. <code>limit</code> 1 to 1000, default 100. At most 10 seconds, never spilling to
+                disk, one pipeline at a time (<code>busy</code>: the kit's <code>serialAsk</code> queues them).
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.update</code><br /><code>documents:write</code></td>
+              <td><code>{ id, set?, unset? }</code> → <code>{ modified }</code></td>
+              <td>
+                On its collection, in sight only, right after a click in the plugin's page only.
+                <code>set</code> is an object of fields and values, <code>unset</code> a list of field names; at
+                least one change; a field name with a control, line-break or direction character is refused
+                (<code>bad_params</code>). The app shows the user every changed field, each quoted, on the
+                question's first line, then the whole change, every hidden or invisible character spelled out,
+                and applies it only if the user agrees; its Confirm takes a click only after a moment with no
+                press, once the pointer moved onto it. Refused on a view (<code>read_only</code>), for a change
+                too long to show (over 2000 characters: <code>too_large</code>), while another question waits
+                (<code>busy</code>), and after the user declined twice (<code>blocked</code>, until the plugin
+                is opened again). A decline is <code>declined</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>indexes.list</code><br /><code>collection:read</code></td>
+              <td><code>{ coll? }</code> → <code>[{ name, key, options, usage }]</code></td>
+              <td>
+                On its collection, or another of its database (<code>coll</code>, one that
+                <code>collections.list</code> names), which needs <code>database:read</code> too. A view has
+                none: <code>[]</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>collections.list</code><br /><code>database:read</code></td>
+              <td>none → <code>[{ name, type }]</code></td>
+              <td>
+                The collections and views of its database, <code>system.</code> ones left out, at most 500, kept
+                for 30 seconds.
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.findIn</code><br /><code>database:read</code></td>
+              <td><code>{ coll, filter?, projection?, limit? }</code> → <code>{ documents }</code></td>
+              <td>
+                Another collection of the same database, one that <code>collections.list</code> names.
+                <code>limit</code> 1 to 200, default 50. At most 10 seconds.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.toast</code><br />none</td>
+              <td><code>{ message, kind? }</code> → <code>true</code></td>
+              <td>
+                A short message in the app, after the plugin's name and id. <code>kind</code>:
+                <code>info</code> (default), <code>success</code> or <code>error</code>. At most 200 characters
+                shown, without control, direction or invisible characters; at most 5 messages a minute, shared
+                with <code>ui.copy</code>. In sight only.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.openDocument</code><br />none</td>
+              <td><code>{ id }</code> → <code>true</code></td>
+              <td>
+                On its collection, in sight only. Shows that document in Documents. <code>id</code> must be an
+                <code>_id</code> value, never a query. Right after a click in the plugin's page only; at most 30
+                a minute.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.resize</code><br />none</td>
+              <td><code>{ height }</code> → <code>true</code></td>
+              <td>The frame's height in pixels, kept between 80 and 2000.</td>
+            </tr>
+            <tr>
+              <td><code>ui.keepOpen</code><br />none</td>
+              <td>– → <code>true</code> / <code>false</code></td>
+              <td>
+                A collection tab's page stays loaded while another section shows (<code>false</code> anywhere
+                else). Ask it only when the page reads <code>context.get</code> again on
+                <code>context.changed</code>; out of sight it may read but not act.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.copy</code><br />none</td>
+              <td><code>{ text }</code> → <code>true</code></td>
+              <td>
+                Copies text (at most 100,000 characters) to the clipboard. Right after a click in its page only;
+                at most 5 a minute, shared with <code>ui.toast</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useQuery</code><br />none</td>
+              <td><code>{ filter?, projection?, sort? }</code> → <code>true</code></td>
+              <td>
+                On its collection. Puts the query in Documents of the collection's tab, as if the user had typed
+                it. Right after a click in its page only; at most 10 a minute, shared with the other
+                <code>ui.use…</code>
+                and SQL methods.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useQueryIn</code><br /><code>database:read</code></td>
+              <td><code>{ coll, filter?, projection?, sort? }</code> → <code>true</code></td>
+              <td>
+                On another collection of its database, one <code>collections.list</code> gives. Puts the query
+                in Documents of that collection's tab, as <code>ui.useQuery</code> does in its own (References
+                uses it to show the documents referring to one); the tab runs it as a query the user typed. One
+                at a time (<code>busy</code> while one is put in place), while its page is in sight, right after
+                a click in it only; at most 10 a minute, shared with the other <code>ui.use…</code> and SQL
+                methods.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.suggestPersonalData</code><br /><code>documents:read</code></td>
+              <td><code>{ fields: string[] }</code> → <code>true</code></td>
+              <td>
+                Fields of its collection suggested as personal data: 1 to 50 paths of plain names
+                (<code>contact.phone</code>; no <code>*</code>, no <code>$</code> starting a key). Nothing is
+                saved: the collection's Personal data section opens with them listed, named by the plugin; it
+                offers only those a sample of the collection holds, and an administrator adds each there (or all
+                at once, in one save). No hidden character and no space around a name; for the connection's
+                administrators, on a collection (not a view, not <code>system.*</code>), right after a click in
+                its page only; counted with the <code>ui.use…</code> methods.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useAggregation</code><br />none</td>
+              <td><code>{ stages }</code> → <code>true</code></td>
+              <td>
+                On its collection. Puts the stages in Aggregations as cards; asks the user before replacing a
+                pipeline that is there; nothing runs until the user runs it. At most 50 stages; any stage but
+                ones that write or run code. Right after a click in its page only; <code>declined</code>,
+                <code>busy</code> and <code>blocked</code> as for <code>documents.update</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.importSql</code><br />none</td>
+              <td>none → <code>true</code></td>
+              <td>
+                On its collection. Opens the app's <a href="import-export.html#sql">SQL ↔ MongoDB</a> page on
+                the import, in the collection's database. The plugin passes nothing and sees nothing of the
+                import; the user chooses the file and starts it. Right after a click in its page only;
+                <code>not_permitted</code> when the user may not write documents and run jobs there, or for a
+                system database.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.exportSql</code><br />none</td>
+              <td>none → <code>true</code></td>
+              <td>
+                On its collection. Opens the app's <a href="import-export.html#sql">SQL ↔ MongoDB</a> page on
+                the export, in the collection's database, with that collection chosen. The user chooses the
+                options and starts it. Right after a click in its page only; <code>not_permitted</code> when the
+                user may not export from the connection.
+              </td>
+            </tr>
+            <tr>
+              <td><code>validation.get</code><br /><code>collection:read</code></td>
+              <td>
+                <code>{ coll? }</code> → <code>{ validator, validationLevel, validationAction }</code> or
+                <code>null</code>
+              </td>
+              <td>
+                The collection's validation rules, as the Validation section reads them (<code>validator</code>
+                is <code>null</code> when it has none); <code>null</code> for a view. Another collection of the
+                database (<code>coll</code>) needs <code>database:read</code> too. What a rule says of a field
+                hidden from the user (its type, pattern or bounds) is left out — its schema is <code>{}</code>,
+                a query rule or <code>$expr</code> naming it is dropped — and its name is kept (in
+                <code>required</code>, for one); <code>failed</code> when what is hidden could not be told.
+              </td>
+            </tr>
+            <tr>
+              <td><code>database.model</code><br /><code>database:read</code></td>
+              <td>none → the data model</td>
+              <td>
+                The database's model as the Database tab draws it:
+                <code>{ db, sampleSize, collections, references, skipped, at }</code> — each collection's fields
+                with their types and shares (a field hidden from the user named only, <code>masked: true</code>,
+                without types), the references found between collections. Up to 200 sampled documents a
+                collection. One read for the frame, kept for 60 seconds; requests made while it runs share it
+                (for 90 seconds: the server ends a model at 60), and a failed one is not kept.
+              </td>
+            </tr>
+            <tr>
+              <td><code>storage.stats</code><br /><code>database:read</code></td>
+              <td>none → <code>{ collections, more }</code></td>
+              <td>
+                The database's storage, as its Storage report reads it: each collection's
+                <code
+                  >{ name, type, count, size, storageSize, freeBytes, indexSize, indexFreeBytes, indexes }</code
+                >
+                (each index's <code>{ name, size, freeBytes }</code>), up to 500 by name (<code>more</code> when
+                there are more). A figure MongoDB would not tell is <code>null</code> (<code>unread</code>), and
+                so are the sizes personal data rules hide (<code>sizesHidden</code>). One read kept 30 seconds a
+                database, for every frame, forgotten after a compact there.
+              </td>
+            </tr>
+            <tr>
+              <td><code>storage.compactEstimate</code><br /><code>collection:read</code></td>
+              <td>
+                <code>{ coll? }</code> → <code>{ available, estimatedBytes }</code> or
+                <code>{ available: false, reason }</code>
+              </td>
+              <td>
+                What <code>compact</code> would give back (MongoDB 8.0 and later), for its collection or, with
+                <code>database:read</code>, another of its database. <code>reason</code> is
+                <code>version</code>, <code>mongos</code> or <code>timeseries</code>; <code>read_only</code> on
+                a view.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.compact</code><br /><code>collection:read</code></td>
+              <td><code>{ coll? }</code> → <code>{ bytesFreed }</code></td>
+              <td>
+                Compacts the collection in the app's own dialog, which names the plugin and the collection and
+                runs only when the user types the collection's name. For a user who may administer databases, on
+                a connection that is not read-only, never a time series, a view or a collection personal data
+                rules reach; one compact of a collection at a time (<code>busy</code>). Right after a click in
+                its page only; counted with the <code>ui.use…</code> methods; <code>declined</code> or
+                <code>unanswered</code> when the user does not go on, <code>blocked</code> after two noes.
+              </td>
+            </tr>
+            <tr>
+              <td><code>shardKey.analyze</code><br /><code>documents:read</code></td>
+              <td><code>{ key }</code> → the analysis, or <code>{ available: false, reason }</code></td>
+              <td>
+                A candidate shard key's characteristics (<code>analyzeShardKey</code>): <code>key</code> is one
+                to five fields, each <code>1</code> or <code>"hashed"</code> (one at most). Answers
+                <code
+                  >{ numDocsTotal, numDocsSampled, numDistinctValues, avgDocSizeBytes, isUnique,
+                  mostCommonValues, monotonicity }</code
+                >
+                — its common values are data, as canonical Extended JSON; <code>reason</code> is
+                <code>version</code>, <code>standalone</code> or <code>no_index</code>.
+                <code>read_only</code> on a view.
+              </td>
+            </tr>
+            <tr>
+              <td><code>searchIndexes.list</code><br /><code>collection:read</code></td>
+              <td>none → <code>{ supported, reason?, indexes }</code></td>
+              <td>
+                The collection's search indexes (Atlas Search, vector search): each
+                <code>{ name, type, status, queryable, dynamic, fields }</code>, a field
+                <code>{ path, type, numDimensions?, similarity? }</code>. A field hidden from the user is left
+                out, as by <code>validation.get</code>; <code>failed</code> when what is hidden could not be
+                told.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.download</code><br />none</td>
+              <td><code>{ name, type, text? | base64? | html? }</code> → <code>true</code></td>
+              <td>
+                A file the plugin made, saved by the app (the frame cannot download). <code>type</code> is
+                <code>markdown</code>, <code>mermaid</code>, <code>csv</code>, <code>json</code>,
+                <code>text</code> (with <code>text</code>), <code>png</code> (with <code>base64</code>, which
+                must be a PNG) or <code>html</code> (with <code>{ title, css, body }</code>): the app assembles
+                the page — a policy that runs no script and loads nothing first, the title as text (at most 200
+                characters), a style that may hold no markup, escape (<code>\</code>), <code>@import</code>,
+                <code>@font-face</code>, image set, <code>src()</code>, expression or address but a
+                <code>data:</code> one, and the body through an allowlist of structural elements (no script,
+                form, frame, image, <code>svg</code>, MathML, template, link other than <code>#anchor</code>,
+                comment or <code>on…</code> attribute). A text, a style and a body are each at most 1,000,000
+                characters. In a CSV, a cell that starts like a formula (<code>=</code>, <code>+</code>,
+                <code>-</code>, <code>@</code>, a tab or a carriage return, and is not a number) is written with
+                a leading <code>'</code>. The name loses any path, reserved device name (<code>CON</code>,
+                <code>COM¹</code>, <code>CONIN$</code>…), hidden or reversing character, and its dots
+                (<code>_</code>): its one extension is the type's. Right after a click in its page only; counted
+                with the <code>ui.use…</code> methods; asked first after a press elsewhere in the app (see
+                <a href="#limits">Limits</a>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.importDocuments</code><br />none</td>
+              <td><code>{ ndjson }</code> → <code>true</code></td>
+              <td>
+                On its collection. Opens the app's Import wizard with these documents as its file — one JSON
+                object a line, at most 1,000,000 characters, and the whole message at most 1 MB as JSON (a quote
+                or a backslash in it counts twice). The user checks them, maps them and starts the import, with
+                their own rights. Right after a click in its page only; counted with the
+                <code>ui.use…</code> methods; asked first after a press elsewhere in the app;
+                <code>busy</code> while a dialog is open in the app; <code>not_permitted</code> when the user
+                may not write documents and run jobs there, or for a system database; <code>read_only</code> on
+                a view.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        In the filters, projections and sorts of <code>documents.find</code>,
+        <code>documents.findIn</code> and <code>ui.useQuery</code>, and in <code>documents.aggregate</code>,
+        the operators <code>$where</code>, <code>$function</code>, <code>$accumulator</code>,
+        <code>$out</code>, <code>$merge</code>, <code>$lookup</code>, <code>$graphLookup</code> and
+        <code>$unionWith</code> are refused at any depth (except the plain top-level
+        <code>$lookup</code> above). The stages of <code>ui.useAggregation</code> may read other collections,
+        since the user runs them with their own rights, but never hold <code>$where</code>,
+        <code>$function</code>, <code>$accumulator</code>, <code>$out</code> or <code>$merge</code>. Reads run
+        at once; <code>ui.useQuery</code> and <code>ui.useAggregation</code> only hand work to the user.
+      </p>
+
+      <h3 id="limits">Limits</h3>
+      <ul>
+        <li>
+          A message is at most 1 MB either way; a bigger answer fails with <code>too_large</code>. Ask for
+          fewer documents or project fewer fields.
+        </li>
+        <li>At most 8 requests wait at once (<code>too_many</code>).</li>
+        <li>
+          At most 60 reads a minute per frame (<code>documents.find</code>, <code>.get</code>,
+          <code>.aggregate</code>, <code>.findIn</code>, <code>collections.list</code>,
+          <code>database.model</code>), and apart from them 120 reads of definitions
+          (<code>indexes.list</code>, <code>validation.get</code>): a dictionary of 50 collections is one
+          model and 100 definitions.
+        </li>
+        <li>
+          <strong>Right after a click in the plugin's page.</strong> <code>ui.copy</code>,
+          <code>ui.useQuery</code>, <code>ui.useAggregation</code>, <code>ui.importSql</code>,
+          <code>ui.exportSql</code>, <code>ui.openDocument</code>, <code>ui.download</code>,
+          <code>ui.importDocuments</code> and <code>documents.update</code> are taken only while the user's
+          click or key press in the plugin's own page is fresh: the frame must have the focus, so a click
+          elsewhere in the app never counts. Call them directly in the click handler, before awaiting anything
+          else; otherwise they fail with <code>no_activation</code>. Every attempt at <code>ui.copy</code>, a
+          <code>ui.use…</code>, an SQL page or <code>ui.openDocument</code> counts toward that method's limit,
+          refused or not: a plugin that tries again and again, waiting for a click, spends its minute
+          (<code>too_many</code>); <code>documents.update</code> is bounded by its one question at a time and
+          the two noes instead. A frame can take the focus without a click, so a <code>ui.copy</code>,
+          <code>ui.download</code> or <code>ui.importDocuments</code> asked within 5 seconds of a click or key
+          press elsewhere in the app (the time the browser's activation of it lasts) is not done on the
+          plugin's word: the app asks the user, naming the plugin and what it wants (how many characters and
+          how the text starts, hidden characters spelled out; the file's name and size; how many documents for
+          which collection), and does it on a click of its own <strong>Copy</strong>, <strong>Save</strong> or
+          <strong>Open</strong>; the plugin's answer waits for it (<code>declined</code> when the user
+          dismisses it, <code>unanswered</code> when it goes unanswered, <code>busy</code> while one waits).
+          Every question the app asks for a plugin — these, a change, stages put in place — ends after 150
+          seconds even while pointed at; the kit waits 180 seconds for these requests, so a page hears the
+          app's answer, never its own timeout.
+        </li>
+        <li>
+          <strong>In sight.</strong> <code>documents.update</code>, <code>ui.openDocument</code> and the
+          methods above fail with <code>not_visible</code> from a cell renderer or from a page kept while
+          another tab shows.
+        </li>
+      </ul>
+
+      <h3 id="errors">Errors</h3>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>bad_params</code></td>
+              <td>A parameter is missing, of the wrong type, out of range, or holds a refused operator.</td>
+            </tr>
+            <tr>
+              <td><code>not_permitted</code></td>
+              <td>The plugin was not approved for the permission, or the user may not do this.</td>
+            </tr>
+            <tr>
+              <td><code>unknown_method</code></td>
+              <td>No such method.</td>
+            </tr>
+            <tr>
+              <td><code>unavailable</code></td>
+              <td>The method is not offered in this place.</td>
+            </tr>
+            <tr>
+              <td><code>no_collection</code></td>
+              <td>The page was opened on no collection.</td>
+            </tr>
+            <tr>
+              <td><code>not_visible</code></td>
+              <td>The frame is out of sight (a cell renderer, a page in the background).</td>
+            </tr>
+            <tr>
+              <td><code>no_activation</code></td>
+              <td>Not right after a click or key press in the plugin's page.</td>
+            </tr>
+            <tr>
+              <td><code>too_many</code></td>
+              <td>Too many requests waiting, or in the last minute.</td>
+            </tr>
+            <tr>
+              <td><code>too_large</code></td>
+              <td>A message over 1 MB, or a change too long to show the user.</td>
+            </tr>
+            <tr>
+              <td><code>busy</code></td>
+              <td>A pipeline of this frame is still running, or a question waits for the user.</td>
+            </tr>
+            <tr>
+              <td><code>declined</code></td>
+              <td>The user said no.</td>
+            </tr>
+            <tr>
+              <td><code>unanswered</code></td>
+              <td>
+                The user did not answer the app's question in time; nothing was done. Never counted as a no.
+              </td>
+            </tr>
+            <tr>
+              <td><code>blocked</code></td>
+              <td>The user said no twice; the plugin must be opened again.</td>
+            </tr>
+            <tr>
+              <td><code>read_only</code></td>
+              <td>A view, or the app runs read-only.</td>
+            </tr>
+            <tr>
+              <td><code>not_found</code></td>
+              <td>No such document.</td>
+            </tr>
+            <tr>
+              <td><code>timeout</code></td>
+              <td>No answer in time (set by the kit's client, after 15 seconds).</td>
+            </tr>
+            <tr>
+              <td><code>failed</code></td>
+              <td>Anything else; the app never passes its internal errors on.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        The server's own refusals arrive in lowercase too, for example <code>forbidden</code>,
+        <code>conflict</code> (the document changed meanwhile) or <code>validation_error</code>. The kit's
+        <code>askMessage(error, locale)</code> turns the common codes into a sentence in the reader's language.
+      </p>
+
+      <h2 id="permissions">Permissions</h2>
+      <p>
+        An administrator approves a plugin for the permissions it lists, as the Plugins page names them. Ask
+        for the fewest you need: each one is a reason for an administrator to say no.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Permission</th>
+              <th>What the administrator reads</th>
+              <th>What it allows</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>documents:read</code></td>
+              <td>read documents</td>
+              <td>
+                <code>documents.find</code>, <code>.get</code>, <code>.aggregate</code>; document actions and
+                cell renderers are offered only with it.
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents:write</code></td>
+              <td>change documents (each change confirmed)</td>
+              <td>
+                <code>documents.update</code>, each change confirmed by the user. Asking for it is always a
+                medium scan finding of its own.
+              </td>
+            </tr>
+            <tr>
+              <td><code>collection:read</code></td>
+              <td>read this collection's indexes</td>
+              <td><code>indexes.list</code>.</td>
+            </tr>
+            <tr>
+              <td><code>database:read</code></td>
+              <td>read the other collections of the same database (names and documents)</td>
+              <td>
+                <code>collections.list</code>, <code>documents.findIn</code>, a plain <code>$lookup</code>.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        A plugin with no permission may still show a page, read its context and settings, and use the
+        <code>ui.*</code> methods. A permission is never more than the user's own right: a user who may not
+        read a collection cannot read it through a plugin either.
+      </p>
+
+      <h2 id="sandbox">The sandbox</h2>
+      <p>
+        The page is loaded in an <code>iframe</code> with <code>sandbox="allow-scripts"</code>, from a signed
+        address that names the plugin, its version, its approved files and the user's session, sealed (a
+        ticket: the page must load within 10 minutes, its other files while that session lasts, at most 12
+        hours — a session renewed in place, by a sign-in in another tab or a password change, is followed;
+        signed out, the address serves nothing more, and the browser keeps none of its files). Every file
+        served is checked against its approved SHA-256. Its policy (Content-Security-Policy), with
+        <code>X-DNS-Prefetch-Control: off</code>:
+      </p>
+      <pre><code>default-src 'none'; script-src &lt;its files&gt;; style-src &lt;its files&gt;;
+img-src &lt;its files&gt; data: blob: &lt;the origins of its url settings&gt;; font-src &lt;its files&gt;;
+connect-src 'none'; webrtc 'block'; frame-ancestors 'self'; base-uri 'none'; form-action 'none';
+sandbox allow-scripts</code></pre>
+      <p>What that means for your code:</p>
+      <ul>
+        <li>
+          <strong>No network at all.</strong> No request to any address, including the plugin's own files: put
+          data in a script module (<code>data.js</code>) instead of a <code>.json</code> file you would load.
+          Do not use WebRTC or prefetch hints either: not every browser blocks them, and the scan flags them
+          as high risks.
+        </li>
+        <li>
+          <strong>No inline code or style.</strong> Scripts and styles come from the plugin's files only. No
+          inline <code>&lt;script&gt;</code>, no <code>&lt;style&gt;</code> element, no style attribute, no
+          inline event handler, no <code>eval</code>. Setting a property in script (<code
+            >el.style.width = '40px'</code
+          >) works.
+        </li>
+        <li>
+          <strong>An opaque origin.</strong> No cookies, no <code>localStorage</code>, no IndexedDB: they
+          fail. Keep state in memory; settings an administrator chooses come from the manifest's
+          <code>settings</code>.
+        </li>
+        <li>
+          <strong>No popups, dialogs, forms or downloads.</strong> <code>window.open</code>,
+          <code>alert</code>, <code>confirm</code> and form submission do nothing. Copy with
+          <code>ui.copy</code>; hand files to the user through the app's own import and export.
+        </li>
+        <li>
+          <strong>No reach into the app.</strong> The page cannot read the app's page, its session or its
+          storage. It only exchanges messages with it.
+        </li>
+        <li>
+          <strong>Fonts and images are its own files</strong> (or <code>data:</code> and
+          <code>blob:</code> images).
+        </li>
+      </ul>
+
+      <h2 id="scan">The security scan</h2>
+      <p>
+        Every plugin's files are scanned when they are found or installed, before an administrator approves
+        them. The scan reads script (<code>.js</code>, <code>.mjs</code>, <code>.cjs</code>), markup
+        (<code>.html</code>, <code>.htm</code>, <code>.svg</code>) and style (<code>.css</code>) files line by
+        line, comments included, and lists each finding with its severity, rule, file, line and an excerpt.
+        Markup files are also read whole, so a <code>&lt;script&gt;</code> tag or an inline handler spread
+        over several lines is found too. Libraries bundled into the plugin are scanned like your own code. The
+        scan is a heuristic: it looks for known patterns in the text, so code written to hide from it (a name
+        built from pieces, for one) is not found — a clean scan is no proof. A plugin with a
+        <strong>high</strong> finding can be approved only after the administrator types its id to accept the
+        risk; the server enforces it, and the audit log records the scan's counts and whether a risk was
+        accepted. Avoid every high finding, and keep medium ones to what you can explain.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Severity</th>
+              <th>Rule</th>
+              <th>What it flags</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>high</td>
+              <td><code>code-from-text</code></td>
+              <td>
+                <code>eval(</code> (also <code>eval?.(</code>), <code>eval</code> reached indirectly (<code
+                  >(0, eval)(…)</code
+                >, <code>['eval']</code>), <code>Function(</code> called bare or with <code>new</code> (also <code>window.Function(</code>, <code>self.</code>, <code>globalThis.</code> or <code>global.Function(</code>, <code>['Function']</code>, <code>Function.call(</code>, <code>.apply(</code> or <code>.bind(</code>, <code>Reflect.apply(Function</code> or <code>Reflect.construct(Function</code>; another
+                object's <code>.Function(</code> is not flagged), and <code>setTimeout</code> or
+                <code>setInterval</code> with a string.
+              </td>
+            </tr>
+            <tr>
+              <td>high</td>
+              <td><code>html-injection</code></td>
+              <td>
+                <code>.innerHTML</code> and <code>.outerHTML</code> assigned (<code>=</code>) or appended to
+                (<code>+=</code>), also in brackets (<code>['innerHTML'] =</code>);
+                <code>insertAdjacentHTML(</code>, <code>document.write(</code> and
+                <code>document.writeln(</code> (also called as <code>?.(</code>);
+                <code>createContextualFragment(</code>; <code>setHTMLUnsafe(</code>. A comparison such as
+                <code>innerHTML ===</code> is not flagged.
+              </td>
+            </tr>
+            <tr>
+              <td>high</td>
+              <td><code>remote-code</code></td>
+              <td>
+                A <code>&lt;script&gt;</code> whose <code>src</code> starts with <code>http</code> or
+                <code>//</code>, also when the tag spans several lines; an <code>import("http…")</code>; a
+                static <code>import … from "https://…"</code> or <code>import "//…"</code>; an
+                <code>export … from "https://…"</code>; <code>importScripts(</code>; and a CSS
+                <code>@import</code> of such an address.
+              </td>
+            </tr>
+            <tr>
+              <td>high</td>
+              <td><code>escape-attempt</code></td>
+              <td>
+                <code>parent.document</code>, <code>parent.location</code>, <code>top.document</code>,
+                <code>top.location</code>, <code>window.opener</code>, <code>self.opener</code>,
+                <code>globalThis.opener</code>, <code>opener.document</code>, <code>opener.location</code>,
+                <code>opener.postMessage</code>, <code>frameElement</code>. A variable named
+                <code>opener</code> is not flagged.
+              </td>
+            </tr>
+            <tr>
+              <td>high</td>
+              <td><code>packed-code</code></td>
+              <td><code>eval(atob(</code> or <code>Function(atob(</code>.</td>
+            </tr>
+            <tr>
+              <td>high</td>
+              <td><code>webrtc</code></td>
+              <td>
+                The words <code>RTCPeerConnection</code> (also <code>webkitRTCPeerConnection</code>,
+                <code>mozRTCPeerConnection</code>) and <code>RTCDataChannel</code>. A peer connection reaches
+                out past <code>connect-src 'none'</code>; the frame's <code>webrtc 'block'</code> stops it only
+                in browsers that know that directive.
+              </td>
+            </tr>
+            <tr>
+              <td>high</td>
+              <td><code>prefetch-hint</code></td>
+              <td>
+                <code>dns-prefetch</code> anywhere, and <code>preconnect</code>, <code>prefetch</code> or
+                <code>prerender</code> set as a link's <code>rel</code> (in markup, as <code>.rel =</code>,
+                <code>setAttribute('rel', …)</code> or <code>relList.add(…)</code>). A name looked up ahead is a
+                request no policy sees: data can ride in the name.
+              </td>
+            </tr>
+            <tr>
+              <td>medium</td>
+              <td><code>network</code></td>
+              <td>
+                The global <code>fetch(</code> (also as <code>window.fetch(</code>, <code>self.fetch(</code> or
+                <code>globalThis.fetch(</code>; another object's <code>.fetch(</code> is not flagged) and the
+                words <code>XMLHttpRequest</code>, <code>WebSocket</code>, <code>EventSource</code>,
+                <code>sendBeacon</code>. The sandbox blocks them all; the finding shows intent.
+              </td>
+            </tr>
+            <tr>
+              <td>medium</td>
+              <td><code>inline-handler</code></td>
+              <td>
+                In markup: an <code>on…=</code> attribute inside a tag (also when the tag spans several lines),
+                and <code>javascript:</code> anywhere.
+              </td>
+            </tr>
+            <tr>
+              <td>medium</td>
+              <td><code>workers</code></td>
+              <td><code>new Worker(</code>, <code>new SharedWorker(</code>, <code>WebAssembly.</code>.</td>
+            </tr>
+            <tr>
+              <td>medium</td>
+              <td><code>unusual-encoding</code></td>
+              <td>
+                A scanned file saved as UTF-16 (it starts with a byte-order mark; the scan reads it as the
+                browser would) or holding NUL bytes.
+              </td>
+            </tr>
+            <tr>
+              <td>medium</td>
+              <td><code>write-permission</code></td>
+              <td>The manifest asks for <code>documents:write</code>.</td>
+            </tr>
+            <tr>
+              <td>low</td>
+              <td><code>storage</code></td>
+              <td>
+                <code>localStorage</code>, <code>sessionStorage</code>, <code>indexedDB</code>,
+                <code>document.cookie</code> (they fail in the sandbox).
+              </td>
+            </tr>
+            <tr>
+              <td>info</td>
+              <td><code>minified</code></td>
+              <td>A script line over 2000 characters (minified or generated code), once a file.</td>
+            </tr>
+            <tr>
+              <td>info</td>
+              <td><code>data-blob</code></td>
+              <td>A base64 run of about 10 KB or more.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>How to pass it:</p>
+      <ul>
+        <li>
+          Write text with <code>textContent</code>, <code>append('text')</code> or the kit's
+          <code>h()</code> helper; build elements with <code>document.createElement</code>. To clear an
+          element, use <code>replaceChildren()</code>. None of these is ever flagged; assigning or appending
+          markup (<code>innerHTML =</code> or <code>innerHTML +=</code>) always is.
+        </li>
+        <li>Attach handlers with <code>addEventListener</code>, never in markup.</li>
+        <li>
+          Pass functions to <code>setTimeout</code> and <code>setInterval</code>. Reach the app only through
+          <code>window.parent.postMessage</code>.
+        </li>
+        <li>Save every file as UTF-8, without NUL bytes (never as UTF-16).</li>
+        <li>
+          Do not ship code that reaches out, even unused: check what a library brings. Prefer a build that is
+          not minified, or explain the <code>minified</code> finding in your README, and keep large data out
+          of base64 strings.
+        </li>
+        <li>
+          Remember that comments are scanned too: a comment that names <code>eval(</code> or
+          <code>innerHTML =</code> is a finding.
+        </li>
+        <li>
+          Say in your README why each remaining finding is safe: which library, which line, why it never runs
+          or why the sandbox stops it.
+        </li>
+      </ul>
+      <p>
+        Only script, markup and style files are scanned; the manifest is read for
+        <code>documents:write</code> (always a medium finding: ask for it only when the plugin changes
+        documents). At most 10 findings of one rule in one file, and at most 200 findings in all (the most
+        serious first), are listed; the counts always cover every finding. Every pattern runs in linear time,
+        so the scan finishes quickly on any file. If the scan itself fails, the plugin is not marked broken:
+        it has no scan, and (unless it is shipped with Mongo Manager) it can be approved only with its id
+        typed, as with a high finding. The scan of a plugin shipped with Mongo Manager is shown too, but
+        approving it never asks for its id.
+      </p>
+
+      <h2 id="ui">UI and theming</h2>
+      <p>
+        A plugin should look like part of the app: its colours, its type, its spacing, in the user's theme and
+        accent. Mongo Manager's own plugins use the plugin kit in <code>packages/plugins/kit</code>:
+      </p>
+      <ul>
+        <li>
+          <code>kit/src/ui.css</code>: the app's design tokens (<code>--ds-surface</code>,
+          <code>--ds-fg</code>, <code>--ds-accent</code>...) for light and dark and each accent, and
+          components (<code>mm-btn</code>, <code>mm-table</code>, <code>mm-empty</code>,
+          <code>mm-callout</code>...). Its fonts are files of the <code>@fontsource</code> packages: bundle
+          them with your plugin, or remove the <code>@font-face</code> rules to use the system font.
+        </li>
+        <li>
+          <code>kit/src/ui.ts</code>: <code>applyLook(theme, accent)</code> sets <code>html.dark</code> and
+          <code>html[data-accent]</code>; <code>h(tag, props, ...children)</code> builds elements where text
+          is always text; and <code>icon</code>, <code>button</code>, <code>segmented</code>,
+          <code>switchControl</code>, <code>chip</code>, <code>badge</code>, <code>pageHeader</code>,
+          <code>emptyState</code>, <code>skeleton</code>, <code>callout</code>, <code>table</code>,
+          <code>valueView</code>, <code>describeValue</code>, <code>formatNumber</code>,
+          <code>statusLine</code>, <code>setBusy</code>, <code>serialAsk</code>.
+        </li>
+        <li>
+          <code>kit/src/client.ts</code>: <code>createClient</code>, <code>AskError</code>,
+          <code>askMessage</code>.
+        </li>
+      </ul>
+      <p>
+        The kit is TypeScript, meant to be bundled: copy <code>kit/src</code> into your project and build with
+        Vite (or another bundler) into relative paths with no inline script, like the first-party plugins'
+        <code>vite.config.ts</code>: <code>base: './'</code>, <code>modulePreload: { polyfill: false }</code>,
+        <code>assetsInlineLimit: 0</code>. Package the build output, not your sources. The starter instead
+        carries a short copy of the client and the colours in plain JavaScript and CSS.
+      </p>
+      <pre><code>import './kit/ui.css'
+import { createClient } from './kit/client'
+import { applyLook, h, pageHeader, emptyState, button } from './kit/ui'
+
+const client = createClient()
+client.onContext((locale, theme, accent) =&gt; applyLook(theme, accent))
+client.onReady(async () =&gt; {
+  const context = await client.ask('context.get')
+  applyLook(context.theme, context.accent)
+  document.body.append(
+    h('div', { class: 'mm-page' },
+      pageHeader({ icon: 'table', title: 'Hello', description: context.place?.coll ?? '' }),
+      emptyState({ icon: 'search', title: 'Nothing yet', action: button({ label: 'Load', variant: 'primary' }) }),
+    ),
+  )
+})</code></pre>
+      <p>
+        Design for the place the page appears in: a collection tab is wide, a document action is a dialog, a
+        sidebar page fills the workspace. Show an empty state when there is nothing to show and
+        <code>place</code> is <code>null</code>, a skeleton while reading, and the app's words for a refusal.
+        Use buttons and real controls, so the page works from the keyboard.
+      </p>
+
+      <h2 id="localization">Languages</h2>
+      <p>
+        The app speaks English, Turkish, Simplified Chinese, Japanese, Spanish, Brazilian Portuguese, Korean,
+        German, French and Russian: <code>context.locale</code> is one of <code>en</code>, <code>tr</code>,
+        <code>zh</code>, <code>ja</code>, <code>es</code>, <code>pt</code>, <code>ko</code>, <code>de</code>,
+        <code>fr</code> and <code>ru</code>. A plugin should speak as many of them as it can, and English
+        always:
+      </p>
+      <ul>
+        <li>In the manifest, give each language you have beside <code>en</code> in every localized text.</li>
+        <li>
+          On the page, keep your words in a table by language, choose by <code>context.locale</code> (English
+          for a language you do not have), set <code>document.documentElement.lang</code> to the language your
+          words are in — <code>en</code> when you fell back to English — (<code>zh-CN</code> and
+          <code>pt-BR</code> for Chinese and Portuguese, so the right glyphs show), format numbers in that same
+          language, and
+          render again on <code>context.changed</code>.
+        </li>
+        <li>A cell renderer answers in the <code>locale</code> each batch is asked in.</li>
+        <li>
+          Format numbers and dates for the language (<code>Intl.NumberFormat</code>,
+          <code>Intl.DateTimeFormat</code>).
+        </li>
+        <li>
+          Add <code>README.&lt;language&gt;.md</code> beside <code>README.md</code> for each language
+          (<code>README.tr.md</code>, <code>README.zh.md</code>, …), and release notes in each.
+        </li>
+      </ul>
+
+      <h2 id="readme">README and release notes</h2>
+      <p>
+        <code>README.md</code> at the plugin's top is shown on its details page, where administrators read it
+        before they approve the plugin; <code>README.&lt;language&gt;.md</code> (<code>README.tr.md</code>, <code>README.ja.md</code>, …) is
+        shown instead to someone using the app in that language. The localized README is shown only when
+        <code>README.md</code> exists too. It is shown as safe Markdown: headings, paragraphs, lists (one
+        level), bold, italics, inline code and code blocks. Links, images, tables and HTML are shown as plain
+        text. At most 64 KB is shown.
+      </p>
+      <p>A good README says, in this order:</p>
+      <ol>
+        <li>What the plugin does, in two or three sentences.</li>
+        <li>Where it appears: which tab, action, page or cell text.</li>
+        <li>How to use it, step by step, with an example.</li>
+        <li>Each permission and why it is needed.</li>
+        <li>Its settings, if any.</li>
+        <li>Its limits: how many documents it reads, what it does not handle.</li>
+        <li>Each scan finding that remains, and why it is safe.</li>
+      </ol>
+      <p>
+        Release notes go in the manifest's <code>changelog</code>, newest first, one entry per version with
+        its day and notes in English and each of your languages. The details page shows them; after an update, the versions
+        since the last one are marked new.
+      </p>
+
+      <h2 id="versions">Versions and approval</h2>
+      <ul>
+        <li>
+          An approval is for exact files: their digest, the SHA-256 of every file's path and SHA-256. The
+          administrator sees it before approving.
+        </li>
+        <li>
+          <strong>Any change to any file</strong> of an uploaded plugin or a plugin folder (a new version, a
+          fixed typo in the README) disables it until an administrator approves it again. Raise
+          <code>version</code> and add a changelog entry for every release, so administrators know what they
+          approve.
+        </li>
+        <li>
+          Uploading a plugin whose id is installed replaces it; it stays enabled only if the files are the
+          very ones approved. Its settings are kept while the new manifest still declares them with the same
+          type.
+        </li>
+        <li>
+          A plugin folder placed by hand is managed by hand: an upload of the same id is refused, and removing
+          it in the app forgets it without deleting the folder.
+        </li>
+        <li>
+          Only plugins shipped with Mongo Manager keep their approval through an update, and only while they
+          are enabled and the update asks for no new permission; nothing is asked of an administrator then,
+          and the plugin's details page says it kept its approval. An update an administrator approved by hand
+          says it was approved by an administrator.
+        </li>
+      </ul>
+
+      <h2 id="packaging">Packaging</h2>
+      <p>
+        A plugin travels as a gzip-compressed tar archive (<code>.tgz</code>) whose files sit at the archive's
+        root, <code>mongo-manager-plugin.json</code> among them. One top folder holding everything (like
+        <code>npm pack</code>'s <code>package/</code>) is accepted and taken off. The archive must hold
+        regular files only (folders are implied); links, devices, special entries, paths that are not plain
+        and paths given twice are refused; at most 500 files and 25 MB unpacked, and at most 30 MB uploaded.
+      </p>
+      <p>The starter's <code>scripts/pack.mjs</code> does this with Node.js alone:</p>
+      <pre><code>node scripts/pack.mjs
+Packed 14 files (64.6 KB):
+  README.de.md
+  README.es.md
+  README.fr.md
+  README.ja.md
+  README.ko.md
+  README.md
+  README.pt.md
+  README.ru.md
+  README.tr.md
+  README.zh.md
+  index.html
+  main.js
+  mongo-manager-plugin.json
+  style.css
+
+hello-documents-0.1.0.tgz
+digest (sha256): 9ac77c4a...</code></pre>
+      <p>
+        It checks the paths and limits as the app does, leaves out what is not part of the plugin (hidden
+        files, <code>scripts/</code>, <code>node_modules/</code>, the AI assistant files, package files and
+        archives; edit its <code>SKIP</code> list to suit you), writes
+        <code>&lt;id&gt;-&lt;version&gt;.tgz</code>, and prints the digest the administrator will see. If you
+        build with a bundler, pack the build output folder instead, with its manifest at the top.
+      </p>
+
+      <h2 id="github">Publishing on GitHub</h2>
+      <p>
+        Administrators can install a plugin straight from a public GitHub repository, on a server set to allow
+        it (<code>MM_PLUGINS_GITHUB=1</code>; it is off by default). On the Plugins page they paste one of
+        these addresses:
+      </p>
+      <ul>
+        <li>
+          <code>https://github.com/&lt;owner&gt;/&lt;repo&gt;</code>, <code>…/releases</code> or
+          <code>…/releases/latest</code> for its <strong>latest release</strong>;
+        </li>
+        <li>
+          <code>https://github.com/&lt;owner&gt;/&lt;repo&gt;/releases/tag/&lt;tag&gt;</code> for a given one.
+          The tag may hold slashes (at most 4 parts).
+        </li>
+      </ul>
+      <p>
+        The address holds nothing else: no query, fragment, port or credentials. A renamed repository is
+        followed: the release's own page address names its repository. The app downloads that release's plugin
+        archive, its one asset whose name ends with <code>.tgz</code> or <code>.tar.gz</code>. A release with
+        no such asset, or with several, is refused. Tag and asset names must be printable ASCII. The asset
+        must belong to that repository's releases, and it may be no larger than an upload (30 MB), both as
+        declared and as read.
+      </p>
+      <p>
+        The app talks only to <code>github.com</code>, <code>api.github.com</code>,
+        <code>objects.githubusercontent.com</code> and <code>release-assets.githubusercontent.com</code>, over
+        https, at public addresses only, and sends nothing of the server's (no cookie, token or credentials).
+        It follows at most 4 redirects, only among those hosts, reads the release's description up to 5 MB,
+        and gives the whole install 4 minutes. The plugin is installed disabled, with its scan, and waits for
+        approval like an upload. It remembers where it came from (repository, release and archive), shown on
+        its details page.
+      </p>
+      <p>
+        When the install fails, the Plugins page says why: the repository has no published release, GitHub's
+        rate limit was reached, GitHub refused (the repository is not public), GitHub cannot be reached from
+        the server, a redirect went to a host that is not allowed, there were too many redirects, the release
+        has no archive or several, or the archive is not on that repository's releases.
+      </p>
+      <ol>
+        <li>
+          Raise <code>version</code>, add a <code>changelog</code> entry and set <code>publishedAt</code>.
+        </li>
+        <li>Run <code>node scripts/pack.mjs</code>.</li>
+        <li>
+          Create a GitHub release (tag <code>v0.1.0</code>, for example) and attach
+          <code>hello-documents-0.1.0.tgz</code> as its asset. Attach no other <code>.tgz</code> or
+          <code>.tar.gz</code> file.
+        </li>
+        <li>
+          Mark it as the latest release. Put the digest printed by <code>pack.mjs</code> in the release notes,
+          so administrators can compare it with what the app shows.
+        </li>
+      </ol>
+      <p>
+        Installs from GitHub are off unless <code>MM_PLUGINS_GITHUB=1</code> is set; a server may also be
+        unable to reach GitHub, or reach out only through a proxy (the install connects to GitHub directly and
+        does not use HTTP proxy settings); its administrators then download the <code>.tgz</code> and upload
+        it with <strong>Upload plugin</strong>.
+      </p>
+
+      <h2 id="testing">Testing on your own server</h2>
+      <ol>
+        <li>
+          Run Mongo Manager with plugins on (the default) and sign in as an administrator. Find its data
+          directory: <code>~/.mongo-manager</code> unless <code>MM_DATA_DIR</code> says otherwise.
+        </li>
+        <li>
+          Copy the plugin into <code>&lt;data-dir&gt;/plugins/&lt;id&gt;</code>:
+          <code>node scripts/pack.mjs --folder ~/.mongo-manager/plugins</code>. The folder's name must be the
+          id, and it may hold no hidden files (which is why the script copies the plugin's files only).
+          <code>~/</code> is your home folder in every shell; <code>~\</code> in cmd and PowerShell, or in
+          quotes (bash and zsh drop an unquoted backslash, and the script then refuses what is left). The
+          script replaces only a folder of this plugin that holds nothing but files and folders it could have
+          copied (no scripts, hidden files, links, pipes or sockets) and has no file system mounted at it or
+          in it, swapping the new copy in so that a copy that stops leaves the folder as it was. It refuses a
+          target that is the plugin's own folder, inside it or containing it, however the path names it (a
+          symbolic link, a junction or a share); nothing is written then.
+        </li>
+        <li>
+          Open <strong>Plugins</strong> and click <strong>Scan again</strong>. A plugin that cannot be used
+          says why (a manifest field, a path). Open its details: read the scan findings, the permissions and
+          the README as an administrator would.
+        </li>
+        <li>Click <strong>Approve and enable</strong>, then open a collection and try every contribution.</li>
+        <li>
+          After each change, copy again, click <strong>Scan again</strong> and approve again (the files
+          changed), then reopen the tab, page or dialog. Try several languages, both themes, a view, a collection
+          with no documents, and a sidebar page opened with no collection.
+        </li>
+        <li>
+          Finally, upload the <code>.tgz</code> itself with <strong>Upload plugin</strong> on a clean server,
+          as your users will.
+        </li>
+      </ol>
+      <p>
+        The browser's developer tools work inside the frame: pick the plugin's frame in the console to see its
+        errors and messages. A policy violation in the console means the page tried something the sandbox
+        forbids.
+      </p>
+
+      <h2 id="ai-files">Building with an AI assistant</h2>
+      <p>
+        The starter holds instruction files that teach an AI coding assistant everything on this page: the
+        manifest's rules, the bridge methods and permissions, the sandbox, the scan, languages, README,
+        packaging and publishing. Keep them at the top of your plugin's repository;
+        <code>pack.mjs</code> leaves them out of the archive. The <strong>Plugins</strong> page saves the
+        starter as a <code>.zip</code>, and each file on its own, under
+        <strong>Instructions for your AI assistant</strong>, to add to a plugin you already have; Copilot's is
+        saved as <code>copilot-instructions.md</code>, for your repository's <code>.github</code> folder.
+      </p>
+      <ul>
+        <li><code>CLAUDE.md</code>: Claude Code.</li>
+        <li><code>AGENTS.md</code>: OpenAI Codex and other agents that read <code>AGENTS.md</code>.</li>
+        <li><code>GEMINI.md</code>: Gemini CLI.</li>
+        <li><code>.github/copilot-instructions.md</code>: GitHub Copilot.</li>
+      </ul>
+      <p>
+        Ask the assistant for what your plugin should do; it should answer with code that passes the scan and
+        the checklist below. Read what it writes before you publish it: you are the one administrators trust.
+      </p>
+
+      <h2 id="checklist">Checklist before publishing</h2>
+      <ul>
+        <li>
+          The id is unique and equals the folder name; the version is raised and has a changelog entry with
+          today's day.
+        </li>
+        <li>
+          Every localized text has <code>en</code> and <code>tr</code>; the page follows
+          <code>locale</code> and <code>context.changed</code>.
+        </li>
+        <li>The permissions are the fewest that work, and the README says why each is needed.</li>
+        <li>The scan shows no high finding, and the README explains every other one.</li>
+        <li>
+          Text is written with <code>textContent</code> or <code>h()</code>; no markup is built from text.
+        </li>
+        <li>
+          Nothing reaches the network (no <code>fetch</code>, WebRTC or prefetch hint), uses storage, opens
+          popups or leaves the page.
+        </li>
+        <li>No inline script, style or event handler; every path is relative (<code>./main.js</code>).</li>
+        <li>Every file is saved as UTF-8, without NUL bytes.</li>
+        <li>The page follows the theme and the accent, and works from the keyboard.</li>
+        <li>
+          It handles <code>place</code> being <code>null</code>, a view, an empty collection and each error
+          code it may meet.
+        </li>
+        <li>Calls that need a click are made directly in the click handler.</li>
+        <li>Large reads are bounded: a <code>limit</code>, a projection, one pipeline at a time.</li>
+        <li>
+          <code>README.md</code> and its translations describe the plugin; <code>license</code>,
+          <code>author</code> and <code>repository</code> are set.
+        </li>
+        <li>The <code>.tgz</code> was uploaded to a clean server, scanned, approved and tried there.</li>
+        <li>
+          The GitHub release has exactly one plugin archive, named
+          <code>&lt;id&gt;-&lt;version&gt;.tgz</code>.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">On this page</p>
+      <ol>
+        <li><a href="#what">What a plugin is</a></li>
+        <li><a href="#quick-start">Quick start</a></li>
+        <li><a href="#files">Files and folder layout</a></li>
+        <li><a href="#manifest">The manifest</a></li>
+        <li><a href="#contributions">Contribution points</a></li>
+        <li><a href="#context">The context</a></li>
+        <li><a href="#bridge">The bridge API</a></li>
+        <li><a href="#permissions">Permissions</a></li>
+        <li><a href="#sandbox">The sandbox</a></li>
+        <li><a href="#scan">The security scan</a></li>
+        <li><a href="#ui">UI and theming</a></li>
+        <li><a href="#localization">Languages</a></li>
+        <li><a href="#readme">README and release notes</a></li>
+        <li><a href="#versions">Versions and approval</a></li>
+        <li><a href="#packaging">Packaging</a></li>
+        <li><a href="#github">Publishing on GitHub</a></li>
+        <li><a href="#testing">Testing on your own server</a></li>
+        <li><a href="#ai-files">Building with an AI assistant</a></li>
+        <li><a href="#checklist">Checklist before publishing</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

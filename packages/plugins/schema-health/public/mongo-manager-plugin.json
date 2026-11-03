@@ -1,0 +1,151 @@
+{
+  "id": "schema-health",
+  "name": {
+    "en": "Schema health",
+    "tr": "Şema sağlığı",
+    "zh": "模式健康度",
+    "ja": "スキーマの健全性",
+    "es": "Salud del esquema",
+    "pt": "Integridade do esquema",
+    "ko": "스키마 상태",
+    "de": "Schema-Zustand",
+    "fr": "Santé du schéma",
+    "ru": "Состояние схемы"
+  },
+  "version": "1.4.0",
+  "description": {
+    "en": "Checks a sample of a collection, its documents' sizes and its indexes for the schema anti-patterns MongoDB's documentation names: large documents and arrays, deep nesting, mixed types, unused and redundant indexes.",
+    "tr": "Bir koleksiyonun örneğini, belge boyutlarını ve indekslerini MongoDB belgelerinin adlandırdığı şema hatalarına karşı denetler: büyük belgeler ve diziler, derin iç içelik, karışık tipler, kullanılmayan ve gereksiz indeksler.",
+    "zh": "检查集合的采样、文档大小和索引，查找 MongoDB 文档所述的模式反模式：大文档和大数组、嵌套过深、混合类型、未使用和冗余的索引。",
+    "ja": "コレクションのサンプル、ドキュメントのサイズ、インデックスを調べ、MongoDB のドキュメントに挙げられているスキーマのアンチパターンを見つけます。大きなドキュメントや配列、深いネスト、型の混在、未使用や冗長なインデックスなどです。",
+    "es": "Comprueba una muestra de una colección, el tamaño de sus documentos y sus índices en busca de los antipatrones de esquema que nombra la documentación de MongoDB: documentos y arreglos grandes, anidamiento profundo, tipos mezclados, índices sin usar y redundantes.",
+    "pt": "Verifica uma amostra de uma coleção, o tamanho dos documentos e os índices em busca dos antipadrões de esquema citados na documentação do MongoDB: documentos e arrays grandes, aninhamento profundo, tipos mistos, índices sem uso e redundantes.",
+    "ko": "컬렉션의 샘플, 도큐먼트 크기, 인덱스를 점검하여 MongoDB 문서에 정의된 스키마 안티패턴을 찾습니다: 큰 도큐먼트와 배열, 깊은 중첩, 혼합 유형, 사용되지 않거나 중복된 인덱스.",
+    "de": "Prüft eine Stichprobe einer Collection, die Größe ihrer Dokumente und ihre Indizes auf die in der MongoDB-Dokumentation genannten Schema-Antipatterns: große Dokumente und Arrays, tiefe Verschachtelung, gemischte Typen, ungenutzte und redundante Indizes.",
+    "fr": "Vérifie un échantillon d’une collection, la taille de ses documents et ses index à la recherche des antipatrons de schéma cités dans la documentation de MongoDB : documents et tableaux volumineux, imbrication profonde, types mélangés, index inutilisés et redondants.",
+    "ru": "Проверяет выборку из коллекции, размеры ее документов и ее индексы на антипаттерны схемы, названные в документации MongoDB: большие документы и массивы, глубокая вложенность, смешанные типы, неиспользуемые и избыточные индексы."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read", "collection:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "health",
+        "title": {
+          "en": "Health",
+          "tr": "Sağlık",
+          "zh": "健康",
+          "ja": "健全性",
+          "es": "Salud",
+          "pt": "Integridade",
+          "ko": "상태",
+          "de": "Zustand",
+          "fr": "Santé",
+          "ru": "Состояние"
+        },
+        "icon": "layers"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "CC-BY-NC-SA-4.0",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.4.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Sizes read in MB in every language, with the number in that language, and the English count of sampled documents reads right for one.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Boyutlar her dilde MB olarak, sayı o dilin biçiminde yazılır.",
+        "zh": "现在与应用一样支持韩语、德语、法语和俄语。各语言中的大小都以 MB 显示，数字按该语言格式书写。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語に対応しました。サイズはどの言語でも MB で表示され、数値はその言語の書式になります。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Los tamaños se muestran en MB en todos los idiomas, con el número en ese idioma.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o aplicativo. Os tamanhos aparecem em MB em todos os idiomas, com o número nesse idioma.",
+        "ko": "이제 앱과 같이 한국어, 독일어, 프랑스어, 러시아어로도 사용할 수 있습니다. 크기는 모든 언어에서 MB로 표시되며 숫자는 해당 언어 형식을 따릅니다.",
+        "de": "Jetzt auch auf Koreanisch, Deutsch, Französisch und Russisch, wie die App. Größen stehen in jeder Sprache in MB, die Zahl in der Schreibweise der Sprache.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Les tailles s’écrivent en MB dans toutes les langues, le nombre dans la langue affichée.",
+        "ru": "Теперь доступно также на корейском, немецком, французском и русском, как и приложение. Размеры во всех языках пишутся в MB, а число — по правилам этого языка."
+      }
+    },
+    {
+      "version": "1.3.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルポルトガル語に対応しました。その他の変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o aplicativo. Nada mais muda.",
+        "ko": "이제 앱과 같이 중국어, 일본어, 스페인어, 브라질 포르투갈어로도 사용할 수 있습니다. 그 외 변경 사항은 없습니다.",
+        "de": "Jetzt auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь доступно также на китайском, японском, испанском и бразильском португальском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.2.1",
+      "date": "2026-10-16",
+      "notes": {
+        "en": "Security update of the shared kit: an address that hides a script behind a tab or a line break is refused like any other script address. Nothing else changes.",
+        "tr": "Ortak kitin güvenlik güncellemesi: bir betiği sekme ya da satır sonu arkasına gizleyen adres, diğer betik adresleri gibi reddedilir. Başka bir şey değişmez.",
+        "zh": "共享工具包的安全更新：将脚本隐藏在制表符或换行符之后的地址，会像其他脚本地址一样被拒绝。其他内容不变。",
+        "ja": "共有キットのセキュリティ更新: スクリプトをタブや改行の後ろに隠したアドレスも、他のスクリプトアドレスと同様に拒否されます。その他の変更はありません。",
+        "es": "Actualización de seguridad del kit compartido: una dirección que oculta un script tras un tabulador o un salto de línea se rechaza como cualquier otra dirección de script. Nada más cambia.",
+        "pt": "Atualização de segurança do kit compartilhado: um endereço que esconde um script atrás de uma tabulação ou quebra de linha é recusado como qualquer outro endereço de script. Nada mais muda.",
+        "ko": "공유 키트 보안 업데이트: 탭이나 줄바꿈 뒤에 스크립트를 숨긴 주소도 다른 스크립트 주소와 마찬가지로 거부됩니다. 그 외 변경 사항은 없습니다.",
+        "de": "Sicherheitsupdate des gemeinsamen Kits: Eine Adresse, die ein Skript hinter einem Tabulator oder Zeilenumbruch versteckt, wird wie jede andere Skriptadresse abgelehnt. Sonst ändert sich nichts.",
+        "fr": "Mise à jour de sécurité du kit partagé : une adresse qui cache un script derrière une tabulation ou un saut de ligne est refusée comme toute autre adresse de script. Rien d’autre ne change.",
+        "ru": "Обновление безопасности общего набора: адрес, скрывающий скрипт за табуляцией или переводом строки, отклоняется, как и любой другой адрес скрипта. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-10-11",
+      "notes": {
+        "en": "Works on views. On a view it reads no indexes and says nothing about them, since a view has no indexes of its own; the sample and the document sizes are checked as before.",
+        "tr": "Görünümlerde (view) de çalışır. Bir görünümde indeks okumaz ve indeksler hakkında bir şey söylemez, çünkü görünümün kendi indeksi yoktur; örnek ve belge boyutları eskisi gibi denetlenir.",
+        "zh": "支持视图。在视图上不读取索引，也不提及索引，因为视图本身没有索引；采样和文档大小照常检查。",
+        "ja": "ビューに対応しました。ビューにはそれ自体のインデックスがないため、ビューではインデックスを読み取らず、インデックスについても何も表示しません。サンプルとドキュメントのサイズは従来どおりチェックされます。",
+        "es": "Funciona en vistas. En una vista no lee índices ni dice nada sobre ellos, ya que una vista no tiene índices propios; la muestra y el tamaño de los documentos se comprueban como antes.",
+        "pt": "Funciona em visualizações. Em uma visualização, não lê índices nem diz nada sobre eles, já que uma visualização não tem índices próprios; a amostra e o tamanho dos documentos são verificados como antes.",
+        "ko": "뷰에서도 작동합니다. 뷰에는 자체 인덱스가 없으므로, 뷰에서는 인덱스를 읽지 않고 인덱스에 대해 아무것도 표시하지 않습니다. 샘플과 도큐먼트 크기는 이전처럼 점검합니다.",
+        "de": "Funktioniert auch in Views. In einer View liest es keine Indizes und sagt nichts dazu, da eine View keine eigenen Indizes hat; Stichprobe und Dokumentgrößen werden wie bisher geprüft.",
+        "fr": "Fonctionne aussi sur les vues. Sur une vue, il ne lit aucun index et n’en dit rien, puisqu’une vue n’a pas d’index propres ; l’échantillon et la taille des documents sont vérifiés comme avant.",
+        "ru": "Работает и с представлениями. В представлении индексы не читаются и о них ничего не сообщается, так как у представления нет собственных индексов; выборка и размеры документов проверяются, как раньше."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "Redesigned in the app's look: findings sorted by severity, each with what to do and, where it applies, Show in Documents. The check runs as soon as the tab opens, and errors are shown in the current language.",
+        "tr": "Uygulamanın görünümüyle yeniden tasarlandı: bulgular önem derecesine göre sıralanır; her biri ne yapılacağıyla ve uygun olduğunda “Belgelerde göster” ile gelir. Denetim sekme açılır açılmaz çalışır; hatalar geçerli dilde gösterilir.",
+        "zh": "按应用的外观重新设计：发现的问题按严重程度排序，每项都附有建议操作，适用时还有“在文档中显示”。标签页一打开就会运行检查，错误以当前语言显示。",
+        "ja": "アプリの外観に合わせて再設計しました。検出結果は重大度順に並び、それぞれに対処方法と、該当する場合は「ドキュメントで表示」が付きます。チェックはタブを開くとすぐに実行され、エラーは現在の言語で表示されます。",
+        "es": "Rediseñado con el aspecto de la aplicación: los hallazgos se ordenan por gravedad, cada uno con qué hacer y, cuando procede, Mostrar en Documentos. La comprobación se ejecuta en cuanto se abre la pestaña, y los errores se muestran en el idioma actual.",
+        "pt": "Redesenhado com a aparência do aplicativo: os achados são ordenados por gravidade, cada um com o que fazer e, quando se aplica, Mostrar em Documentos. A verificação é executada assim que a aba é aberta, e os erros aparecem no idioma atual.",
+        "ko": "앱의 디자인에 맞춰 새로 설계했습니다. 발견 항목이 심각도순으로 정렬되며, 각 항목에 해야 할 일과 해당하는 경우 “도큐먼트에서 보기”가 표시됩니다. 탭을 열면 바로 점검이 실행되고, 오류는 현재 언어로 표시됩니다.",
+        "de": "Im Look der App neu gestaltet: Die Ergebnisse sind nach Schweregrad sortiert, jedes mit Handlungsempfehlung und, wo es passt, „In Dokumenten anzeigen“. Die Prüfung läuft, sobald der Tab geöffnet wird, und Fehler erscheinen in der aktuellen Sprache.",
+        "fr": "Repensé dans le style de l’application : les constats sont triés par gravité, chacun avec ce qu’il faut faire et, le cas échéant, « Afficher dans Documents ». La vérification se lance dès l’ouverture de l’onglet, et les erreurs s’affichent dans la langue actuelle.",
+        "ru": "Переработано в стиле приложения: находки отсортированы по серьезности, у каждой указано, что делать, а при необходимости есть «Показать в Документах». Проверка запускается сразу при открытии вкладки, а ошибки показываются на текущем языке."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "First release. A Health tab checks a random sample of the collection, its documents' sizes measured by the server, and its indexes for large documents and arrays, deep nesting, very many fields, mixed types, and too many, unused or redundant indexes. Each finding says what was found, why it matters and what to do. A unique or TTL index is never reported as unused.",
+        "tr": "İlk sürüm. Sağlık sekmesi koleksiyonun rastgele bir örneğini, sunucunun ölçtüğü belge boyutlarını ve indekslerini; büyük belgeler ve diziler, derin iç içelik, çok sayıda alan, karışık tipler ve fazla, kullanılmayan ya da gereksiz indeksler açısından denetler. Her bulgu neyin bulunduğunu, neden önemli olduğunu ve ne yapılacağını söyler. Benzersiz (unique) ya da TTL bir indeks hiçbir zaman kullanılmıyor diye bildirilmez.",
+        "zh": "首个版本。“健康”标签页会检查集合的随机采样、由服务器测量的文档大小以及索引，查找大文档和大数组、嵌套过深、字段过多、混合类型，以及过多、未使用或冗余的索引。每项发现都会说明发现了什么、为何重要以及该怎么做。唯一索引或 TTL 索引绝不会被报告为未使用。",
+        "ja": "初回リリース。「健全性」タブが、コレクションのランダムなサンプル、サーバーが測定したドキュメントのサイズ、インデックスをチェックし、大きなドキュメントや配列、深いネスト、非常に多いフィールド、型の混在、多すぎる・未使用・冗長なインデックスを検出します。各検出結果には、何が見つかったか、なぜ重要か、何をすべきかが示されます。一意インデックスや TTL インデックスが未使用として報告されることはありません。",
+        "es": "Primera versión. Una pestaña Salud comprueba una muestra aleatoria de la colección, el tamaño de sus documentos medido por el servidor y sus índices en busca de documentos y arreglos grandes, anidamiento profundo, muchísimos campos, tipos mezclados e índices excesivos, sin usar o redundantes. Cada hallazgo dice qué se encontró, por qué importa y qué hacer. Un índice único o TTL nunca se informa como sin usar.",
+        "pt": "Primeira versão. Uma aba Integridade verifica uma amostra aleatória da coleção, o tamanho dos documentos medido pelo servidor e os índices em busca de documentos e arrays grandes, aninhamento profundo, muitíssimos campos, tipos mistos e índices em excesso, sem uso ou redundantes. Cada achado diz o que foi encontrado, por que importa e o que fazer. Um índice único ou TTL nunca é informado como sem uso.",
+        "ko": "첫 릴리스. 상태 탭이 컬렉션의 무작위 샘플, 서버가 측정한 도큐먼트 크기, 인덱스를 점검하여 큰 도큐먼트와 배열, 깊은 중첩, 매우 많은 필드, 혼합 유형, 과다하거나 사용되지 않거나 중복된 인덱스를 찾습니다. 각 발견 항목에는 무엇이 발견되었는지, 왜 중요한지, 무엇을 해야 하는지가 표시됩니다. 고유 인덱스나 TTL 인덱스는 사용되지 않는 인덱스로 보고되지 않습니다.",
+        "de": "Erste Version. Ein Tab „Zustand“ prüft eine zufällige Stichprobe der Collection, die vom Server gemessenen Dokumentgrößen und die Indizes auf große Dokumente und Arrays, tiefe Verschachtelung, sehr viele Felder, gemischte Typen sowie zu viele, ungenutzte oder redundante Indizes. Jedes Ergebnis nennt, was gefunden wurde, warum es wichtig ist und was zu tun ist. Ein eindeutiger oder TTL-Index wird nie als ungenutzt gemeldet.",
+        "fr": "Première version. Un onglet Santé vérifie un échantillon aléatoire de la collection, la taille de ses documents mesurée par le serveur et ses index à la recherche de documents et tableaux volumineux, d’imbrication profonde, de très nombreux champs, de types mélangés, et d’index trop nombreux, inutilisés ou redondants. Chaque constat indique ce qui a été trouvé, pourquoi c’est important et ce qu’il faut faire. Un index unique ou TTL n’est jamais signalé comme inutilisé.",
+        "ru": "Первый выпуск. Вкладка «Состояние» проверяет случайную выборку коллекции, размеры документов, измеренные сервером, и индексы на наличие больших документов и массивов, глубокой вложенности, очень большого числа полей, смешанных типов, а также слишком многих, неиспользуемых или избыточных индексов. Каждая находка сообщает, что обнаружено, почему это важно и что делать. Уникальный индекс или TTL-индекс никогда не считается неиспользуемым."
+      }
+    }
+  ]
+}

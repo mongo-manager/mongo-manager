@@ -1,0 +1,485 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# Every action is pinned by commit (supply chain, spec S17); the tag is in the comment.
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      # One leg failing does not cancel the other: each says what broke on its Node line.
+      fail-fast: false
+      matrix:
+        node: [24, 26]
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      # On Node 24 the suites run once, with coverage and its spec §9 thresholds (each package's
+      # vitest config); script tests run in both legs.
+      - if: matrix.node != 24
+        run: pnpm test
+      - if: matrix.node == 24
+        run: pnpm coverage && node --test scripts/*.test.mjs
+      - run: pnpm check:forbidden
+      # Supply chain (S17): no known high-severity advisories; every workflow pinned and least-privilege.
+      - run: pnpm audit --audit-level high
+      - run: pnpm check:workflows
+
+  # Spec §9: the server suites against every supported MongoDB line, from the 6.0 floor (phase 1h
+  # §10) to the latest release (mongodb-memory-server reads
+  # MONGOMS_VERSION). The other jobs use the package default.
+  server-mongo:
+    # CI 2026-10-20: the ubuntu-24.04 and ubuntu-26.04 (ubuntu-latest) runners have Linux 7.0.0, and
+    # MongoDB 8.0.30+, 8.3.9+ and 9.0 refuse kernels 6.19 to 7.0.13 (SERVER-121912). Ubuntu's
+    # `uname -r` stays 7.0.0 for the whole series, so they refuse it even when it carries the 7.0.14
+    # fix (SERVER-136848, open). ubuntu-22.04 (Linux 6.8) is the Linux runner they start on; it is
+    # retired on 2027-04-17 (runner-images #14254). The problem is Linux's alone, so the entries move
+    # to windows-latest, where the suite passed with 8.3.13 and 9.0.4 and the 9.0 entry keeps showing
+    # it; scripts/release-workflow.test.mjs fails from 2027-03-16 until none is left on ubuntu-22.04.
+    # The 8.3 and 9.0 legs also start an 8.0.32 beside them (backup-series-*.test.ts). Every leg,
+    # and the check job's suites on ubuntu-latest too, start a 6.0.29 (backup-series-options and
+    # transfer-copy-levels.test.ts) and a 7.0.45 (backup-series-options.test.ts) as other targets —
+    # never an 8.0.30 or later there, which refuses its Linux 7.0.
+    runs-on: ${{ matrix.runner }}
+    needs: check
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { mongodb: '6.0.29', runner: ubuntu-22.04 }
+          - { mongodb: '7.0.45', runner: ubuntu-22.04 }
+          - { mongodb: '8.0.34', runner: ubuntu-22.04 }
+          - { mongodb: '8.3.13', runner: ubuntu-22.04 }
+          - { mongodb: '9.0.4', runner: ubuntu-22.04 }
+          - { mongodb: '9.0.4', runner: windows-latest }
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @mongo-manager/server test
+        env:
+          MONGOMS_VERSION: ${{ matrix.mongodb }}
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # GitHub's Ubuntu runners ship Google Chrome; Playwright downloads no browser. Watch and Live
+      # sync (21, 22) need a replica set: the memory server's, required here so they never skip.
+      - run: pnpm test:e2e
+        env:
+          MM_E2E_CHANNEL: chrome
+          MM_E2E_REQUIRE_RS: '1'
+      # The suites that check built output skip without one; this job has built the web app and the
+      # plugins, and MM_REQUIRE_BUILD makes a missing build a failure here, never a skip.
+      - run: >-
+          pnpm --filter @mongo-manager/web exec vitest run test/build.test.ts &&
+          pnpm --filter @mongo-manager/server exec vitest run test/plugins-bundled-scan.test.ts
+        env:
+          MM_REQUIRE_BUILD: '1'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: failure()
+        with:
+          name: playwright-traces
+          path: packages/e2e/test-results
+
+  # Spec §3.6: the whole suite runs in a container on an internal network with no route out; only
+  # MongoDB shares that network. Every test already fails on a request to another origin.
+  e2e-offline:
+    # W5 review: the same Ubuntu release as the Playwright image (noble), so the mongod fetched on the
+    # runner for the replica set runs inside the container too.
+    runs-on: ubuntu-24.04
+    needs: check
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # W5: Watch and Live sync need a replica set. The memory server's mongod is fetched now, while
+      # the runner is online; inside the offline container it is only started (no download allowed).
+      - name: Fetch mongod for the replica set
+        run: pnpm --filter @mongo-manager/e2e exec node -e "import('mongodb-memory-server').then((m) => m.MongoBinary.getPath()).then(console.log)"
+        env:
+          MONGOMS_DOWNLOAD_DIR: ${{ github.workspace }}/.mongodb-binaries
+      - name: Run the e2e suite with no network
+        run: |
+          set -euo pipefail
+          docker network create --internal mm-offline
+          # CI 2026-10-20: the run once found no MongoDB the whole way through, and nothing said why.
+          # It must answer a ping first; if not, its state and its log are printed.
+          # The kernel, by Ubuntu's signature too: `uname -r` stays 7.0.0 for the whole series, and
+          # MongoDB 8 may crash on 6.19 to 7.0.13 (SERVER-121912).
+          uname -r
+          cat /proc/version_signature || true
+          # 8.2.6 is the memory server's default, the version run beside it here and in every job
+          # but server-mongo (it moves with that default; scripts/release-workflow.test.mjs checks).
+          # It starts here because it has no kernel check at its start (8.3.11 has one, and stopped
+          # on this runner), not because it is safe: on a kernel without the fix it crashes instead
+          # (SERVER-122741). It is safe here only if the upstream release the signature above names
+          # is 7.0.14 or later. 8.2 itself reached end of life on 2026-07-31; the supported 8.0 and
+          # 8.3 releases refuse this kernel and are tested in server-mongo.
+          docker run -d --name mongo --network mm-offline \
+            --health-cmd 'mongosh --quiet --eval "db.adminCommand({ ping: 1 }).ok" || exit 1' \
+            --health-interval 2s --health-retries 45 \
+            mongo:8.2.6@sha256:9690b268c50317b2988a7f84f514a2cdcf4de6836e12c295b48f3a203731fce1
+          state=''
+          for i in $(seq 90); do
+            state=$(docker inspect -f '{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}' mongo)
+            [ "$state" = 'running healthy' ] && break
+            case "$state" in exited* | dead*) break ;; esac
+            sleep 1
+          done
+          if [ "$state" != 'running healthy' ]; then
+            docker inspect -f '{{json .State}}' mongo
+            docker logs mongo
+            exit 1
+          fi
+          # By its address: the run needs no name looked up in a network that has no way out.
+          mongo_ip=$(docker inspect -f '{{(index .NetworkSettings.Networks "mm-offline").IPAddress}}' mongo)
+          # The runner's Node 24 (same Ubuntu base as the image) runs the server, not the image's own.
+          node_home="$(dirname "$(dirname "$(command -v node)")")"
+          docker run --rm --network mm-offline --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$node_home:/opt/node:ro" -e PATH=/opt/node/bin:/usr/local/bin:/usr/bin:/bin \
+            -v "$PWD:/work" -w /work/packages/e2e \
+            -e MM_E2E_EXTERNAL_MONGO_URI="mongodb://$mongo_ip:27017" -e MM_E2E_CHANNEL=chromium \
+            -e MM_E2E_MEMORY_RS=1 -e MM_E2E_REQUIRE_RS=1 \
+            -e MONGOMS_DOWNLOAD_DIR=/work/.mongodb-binaries -e MONGOMS_RUNTIME_DOWNLOAD=false \
+            mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27 \
+            sh -c 'node scripts/assert-offline.mjs && node_modules/.bin/playwright test'
+      - name: The offline MongoDB's log
+        if: failure()
+        run: docker logs mongo || true
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: failure()
+        with:
+          name: playwright-traces-offline
+          path: packages/e2e/test-results
+
+  pack:
+    needs: check
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # The built web app loads nothing from another origin (spec §3.6).
+      - run: pnpm check:web-offline
+      # Review of the CI fix 2026-10-20 (minor 3): the test's mongod is fetched first, so its own
+      # setup only starts it (within its launch time and hook timeout).
+      - name: Fetch mongod for the tests
+        run: pnpm --filter @mongo-manager/app exec node -e "import('mongodb-memory-server').then((m) => m.MongoBinary.getPath()).then(console.log)"
+      # The bundle runs outside the repository and reaches MongoDB through the bundled driver.
+      - run: pnpm --filter @mongo-manager/app test:bundle
+      # The tarball has no dependencies, installs with npm --offline and serves the app.
+      - run: node scripts/verify-pack.mjs --no-build
+
+  sea:
+    needs: check
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          # The spec builds release binaries with Node 26.
+          node-version: 26
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # Review of the CI fix 2026-10-20 (minor 3): the test's mongod is fetched first, so its own
+      # setup only starts it (within its launch time and hook timeout).
+      - name: Fetch mongod for the tests
+        run: pnpm --filter @mongo-manager/app exec node -e "import('mongodb-memory-server').then((m) => m.MongoBinary.getPath()).then(console.log)"
+      # Builds the standalone binary and runs it alone, with no Node on PATH.
+      - run: pnpm --filter @mongo-manager/app test:sea
+      - name: Install the service from the standalone binary (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          set -euo pipefail
+          BIN="$PWD/packages/cli/dist/sea/mongo-manager"
+          healthy() { for i in $(seq 1 60); do curl -fsS http://127.0.0.1:4398/healthz >/dev/null && return 0; sleep 1; done; return 1; }
+          # The runner's /opt is writable by every user, which the install refuses (the service-linux
+          # job checks that): made writable by root alone, as on a real server.
+          sudo chmod go-w /opt
+          sudo "$BIN" service install --web-port 4398
+          healthy
+          grep -q 'ExecStart="/opt/mongo-manager/app/bin/mongo-manager" start ' /etc/systemd/system/mongo-manager.service
+          test ! -e /opt/mongo-manager/app/bin/node
+          test "$(stat -c %U /opt/mongo-manager/app/bin/mongo-manager)" = root
+          # CI 2026-10-19: every installed file is root's, whoever owned what it was copied from.
+          others=$(sudo find /opt/mongo-manager/app \( ! -user root -o ! -group root \) -print)
+          if [ -n "$others" ]; then echo "Not root's:"; echo "$others"; exit 1; fi
+          curl -fsS http://127.0.0.1:4398/ | grep -q '<base href="/"'
+          sudo "$BIN" service uninstall
+
+  docker:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - run: docker build -t mongo-manager:ci .
+      - name: Run locked down and wait until healthy
+        run: |
+          docker run -d --name mm --read-only --tmpfs /tmp --cap-drop ALL \
+            --security-opt no-new-privileges -p 127.0.0.1:4321:4321 mongo-manager:ci
+          for i in $(seq 1 45); do
+            [ "$(docker inspect -f '{{.State.Health.Status}}' mm)" = healthy ] && break
+            sleep 2
+          done
+          docker inspect -f '{{.State.Health.Status}}' mm | grep -qx healthy || { docker logs mm; exit 1; }
+      - name: Non-root, no package managers, setup token printed, app served
+        run: |
+          test "$(docker exec mm id -u)" = 10001
+          # A negated command never stops a bash -e step: the check says so itself (review of the CI fixes).
+          if docker exec mm sh -c 'command -v npm || command -v npx || command -v yarn'; then echo 'a package manager is in the image'; exit 1; fi
+          docker logs mm 2>&1 | grep -q "setup token"
+          curl -fsS http://127.0.0.1:4321/ | grep -q '<base href="/"'
+      - name: Refuses a network bind without authentication (S1)
+        run: |
+          set +e
+          out=$(timeout 30 docker run --rm -e MM_AUTH=0 mongo-manager:ci 2>&1)
+          code=$?
+          set -e
+          echo "$out"
+          test "$code" -ne 0 && test "$code" -ne 124
+          echo "$out" | grep -q "Refusing to listen on 0.0.0.0 without authentication"
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: mongo-manager:ci
+          trivy-config: .github/trivy.yaml
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: 1
+
+  service-linux:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Install as a systemd service and check it
+        run: |
+          set -euo pipefail
+          # setup-node's Node belongs to the runner user, like an nvm install: the service runs a root-owned copy.
+          NODE="$(command -v node)"
+          CLI="$PWD/packages/cli/dist/cli.cjs"
+          healthy() { for i in $(seq 1 60); do curl -fsS http://127.0.0.1:4399/healthz >/dev/null && return 0; sleep 1; done; return 1; }
+          # CI 2026-10-18: the runner's /opt is writable by every user. The install must refuse it before
+          # it copies anything, and say how to fix it; then /opt is made writable by root alone, as on a
+          # real server.
+          if [ -n "$(find /opt -maxdepth 0 -perm /022)" ]; then
+            echo "/opt is $(stat -c %a /opt): the install must refuse it"
+            if sudo "$NODE" "$CLI" service install --web-port 4399 2> refused.txt; then echo 'installed under an open /opt'; exit 1; fi
+            cat refused.txt
+            grep -q '/opt is writable by others' refused.txt
+            grep -q 'sudo chmod go-w' refused.txt
+            test ! -e /opt/mongo-manager
+            test ! -e /etc/systemd/system/mongo-manager.service
+            if id mongo-manager > /dev/null 2>&1; then echo 'the service user was made before the check'; exit 1; fi
+            sudo chmod go-w /opt
+          fi
+          sudo "$NODE" "$CLI" service install --web-port 4399
+          healthy
+          grep -q 'ExecStart="/opt/mongo-manager/app/bin/node" ' /etc/systemd/system/mongo-manager.service
+          test "$(stat -c %U /opt/mongo-manager/app/bin/node)" = root
+          sudo journalctl -u mongo-manager --no-pager | grep -q "setup token"
+          systemctl show mongo-manager -p User | grep -qx "User=mongo-manager"
+          test "$(sudo stat -c %a /etc/mongo-manager/env)" = 600
+          test "$(sudo stat -c %a /var/lib/mongo-manager)" = 700
+          test "$(stat -c %U /opt/mongo-manager/app/dist/cli.cjs)" = root
+          # CI 2026-10-19: every installed file is root's, whoever owned what it was copied from.
+          others=$(sudo find /opt/mongo-manager/app \( ! -user root -o ! -group root \) -print)
+          if [ -n "$others" ]; then echo "Not root's:"; echo "$others"; exit 1; fi
+          # Third review of the CI fixes (I-1): the shell worker the server starts beside its bundle.
+          test -f /opt/mongo-manager/app/dist/shell-worker.cjs
+          # Crash: systemd brings it back.
+          sudo systemctl kill -s KILL mongo-manager
+          sleep 2
+          healthy
+          # Reinstall keeps the key and an admin's edits.
+          key_before=$(sudo sha256sum /etc/mongo-manager/env)
+          sudo sed -i 's/"logLevel": "info"/"logLevel": "info",\n  "readOnly": true/' /etc/mongo-manager/config.json
+          sudo "$NODE" "$CLI" service install --web-port 4399
+          healthy
+          test "$(sudo sha256sum /etc/mongo-manager/env)" = "$key_before"
+          sudo grep -q '"readOnly": true' /etc/mongo-manager/config.json
+          sudo "$NODE" "$CLI" service uninstall
+          # Fourth review of the CI fixes (minor 6): the program goes, and nothing a reinstall left beside it.
+          for d in app app.old app.new; do sudo test ! -e "/opt/mongo-manager/$d"; done
+          sudo test -d /var/lib/mongo-manager
+          sudo test -f /etc/mongo-manager/env
+          if systemctl is-enabled mongo-manager; then echo 'still enabled after uninstall'; exit 1; fi
+
+  service-windows:
+    needs: check
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # Windows only: a data directory is made private to its account in one step (security review
+      # 2026-10-13); the Ubuntu jobs skip this file.
+      - name: Data directory ACL
+        run: pnpm --filter @mongo-manager/server exec vitest run test/data-dir-acl.test.ts
+      # Second review of the CI fix 2026-10-20 (important 1): the trust and ACL checks against real
+      # Windows permissions; the Ubuntu jobs skip these files. And what doctor says of them, and that
+      # the icacls commands it gives work (review of the ACL reads, fourth review, minor).
+      - name: Program trust and ACL checks
+        run: pnpm --filter @mongo-manager/app exec vitest run test/service/windows-real.test.ts test/service/acl.test.ts test/doctor-acl.test.ts
+      # Fourth review of the CI fix 2026-10-20 (minor 2): the guard's Windows paths (.\, \\?\).
+      - name: The bundles' own-modules guard on Windows
+        run: node --test scripts/own-modules.test.mjs
+      - name: Install as a boot task and check it
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # The tool cache is writable by all users, like an nvm install: the service runs its own copy in Program Files.
+          $node = (Get-Command node).Source
+          $cli = "$PWD\packages\cli\dist\cli.cjs"
+          function Test-Healthy { for ($i = 0; $i -lt 90; $i++) { try { Invoke-WebRequest -UseBasicParsing http://127.0.0.1:4399/healthz | Out-Null; return $true } catch { Start-Sleep 1 } }; return $false }
+          & $node $cli service install --web-port 4399
+          if ($LASTEXITCODE -ne 0) { throw "install failed: $LASTEXITCODE" }
+          if (-not (Test-Healthy)) { & $node $cli service logs; throw 'not healthy' }
+          if (-not (Test-Path "$env:ProgramFiles\Mongo Manager\app\bin\node.exe")) { throw 'the service Node was not copied' }
+          # Fourth review of the CI fixes (minor 6): the shell worker the server starts beside its bundle.
+          if (-not (Test-Path "$env:ProgramFiles\Mongo Manager\app\dist\shell-worker.cjs")) { throw 'the shell worker was not copied' }
+          # Reinstalling replaces the program files the running server holds open.
+          $servers = { Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Where-Object { $_.CommandLine -like '*Mongo Manager*' } }
+          # A process is its id and its start time: Windows gives an ended one's id to a new one.
+          $old = @(& $servers | ForEach-Object { "$($_.ProcessId)@$($_.CreationDate.Ticks)" })
+          & $node $cli service install --web-port 4399
+          if ($LASTEXITCODE -ne 0) { throw "reinstall failed: $LASTEXITCODE" }
+          if (-not (Test-Healthy)) { & $node $cli service logs; throw 'not healthy after reinstall' }
+          # Review of the CI fix 2026-10-20 (minor 1): what answers is the new server, the old one gone.
+          if ($old.Count -eq 0) { throw 'no server was running before the reinstall' }
+          $left = @(& $servers | Where-Object { $old -contains "$($_.ProcessId)@$($_.CreationDate.Ticks)" })
+          if ($left.Count -gt 0) { throw "the old server still runs after the reinstall: $($left.ProcessId)" }
+          $root = "$env:ProgramData\Mongo Manager"
+          $acl = Get-Acl $root
+          if ($acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -ne 'S-1-5-32-544') { throw 'state folder must be owned by Administrators' }
+          # Read by SID (review of the ACL reads, minor 1): an app package's name cannot be turned back into its SID.
+          $sids = $acl.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier]) | Where-Object { $_.AccessControlType -eq 'Allow' } | ForEach-Object { $_.IdentityReference.Value }
+          foreach ($broad in 'S-1-1-0', 'S-1-5-32-545', 'S-1-5-11', 'S-1-5-4') { if ($sids -contains $broad) { throw "$broad must not have access to $root" } }
+          # Crash: the task's repetition brings it back within a minute or two.
+          Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Where-Object { $_.CommandLine -like '*Mongo Manager*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+          Start-Sleep 5
+          $back = $false
+          for ($i = 0; $i -lt 180; $i++) { try { Invoke-WebRequest -UseBasicParsing http://127.0.0.1:4399/healthz | Out-Null; $back = $true; break } catch { Start-Sleep 1 } }
+          if (-not $back) { throw 'the task did not restart the server' }
+          & $node $cli service uninstall
+          if ($LASTEXITCODE -ne 0) { throw "uninstall failed: $LASTEXITCODE" }
+          schtasks /Query /TN "Mongo Manager" 2>$null
+          if ($LASTEXITCODE -eq 0) { throw 'the task is still registered' }
+          # CI 2026-10-20: that query fails as it should, and the step would end with its exit code.
+          $global:LASTEXITCODE = 0
+          if (-not (Test-Path "$root\config.json")) { throw 'config was not kept' }
+          # Fourth review of the CI fixes (minor 6): the program goes, and nothing a reinstall left beside it.
+          foreach ($left in 'app', 'app.old', 'app.new') { if (Test-Path "$env:ProgramFiles\Mongo Manager\$left") { throw "$left was left after uninstall" } }
+          # Tenth review of the CI fix 2026-10-20 (minor 5): and the folder that held them, emptied.
+          if (Test-Path "$env:ProgramFiles\Mongo Manager") { throw 'the program folder was left after uninstall' }
+
+  service-macos:
+    needs: check
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Install as a launch daemon and check it
+        run: |
+          set -euo pipefail
+          # setup-node lives under /Users, like an nvm install: the service runs its own root-owned copy.
+          NODE="$(command -v node)"
+          CLI="$PWD/packages/cli/dist/cli.cjs"
+          healthy() { for i in $(seq 1 60); do curl -fsS http://127.0.0.1:4399/healthz >/dev/null && return 0; sleep 1; done; return 1; }
+          sudo "$NODE" "$CLI" service install --web-port 4399
+          healthy
+          test "$(stat -f %Su "/Library/Application Support/Mongo Manager/app/bin/node")" = root
+          # CI 2026-10-19: every installed file is root's (group wheel), whoever owned what it was copied from.
+          others=$(sudo find "/Library/Application Support/Mongo Manager/app" \( ! -user root -o ! -group wheel \) -print)
+          if [ -n "$others" ]; then echo "Not root's:"; echo "$others"; exit 1; fi
+          # Third review of the CI fixes (I-1): the shell worker the server starts beside its bundle.
+          test -f "/Library/Application Support/Mongo Manager/app/dist/shell-worker.cjs"
+          dscl . -read /Users/_mongomanager UserShell | grep -q /usr/bin/false
+          sudo pkill -KILL -f "Mongo Manager/app/dist/cli.cjs"
+          sleep 2
+          healthy
+          sudo "$NODE" "$CLI" service uninstall
+          # Fourth review of the CI fixes (minor 6): the program goes, and nothing a reinstall left beside it.
+          for d in app app.old app.new; do sudo test ! -e "/Library/Application Support/Mongo Manager/$d"; done
+          sudo test -f "/Library/Application Support/Mongo Manager/config.json"

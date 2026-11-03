@@ -1,0 +1,6 @@
+pnpm-lock.yaml
+**/dist/
+packages/cli/public/
+packages/cli/plugins/
+packages/shared/src/shell/catalogue.generated.ts
+packages/web/src/schema/geo/land-110m.json

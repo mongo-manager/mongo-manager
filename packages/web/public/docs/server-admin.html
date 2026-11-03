@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Server administration · Mongo Manager documentation</title>
+    <link rel="stylesheet" href="docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager documentation</a>
+      <details class="lang-menu">
+        <summary>English</summary>
+        <span class="langs" role="group" aria-label="Language">
+          <strong lang="en">English</strong>
+          <a lang="tr" hreflang="tr" href="tr/server-admin.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="zh/server-admin.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="ja/server-admin.html">日本語</a>
+          <a lang="es" hreflang="es" href="es/server-admin.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="pt/server-admin.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="ko/server-admin.html">한국어</a>
+          <a lang="de" hreflang="de" href="de/server-admin.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="fr/server-admin.html">Français</a>
+          <a lang="ru" hreflang="ru" href="ru/server-admin.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Overview</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="security.html">Security</a>
+      <a href="deployment.html">Deployment</a>
+      <a href="import-export.html">Import and export</a>
+      <a href="backup.html">Backup and restore</a>
+      <a href="watch.html">Watching changes</a>
+      <a href="sync.html">Live sync</a>
+      <strong>Server administration</strong>
+      <a href="ai.html">AI assistant</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Keyboard shortcuts</a>
+    </nav>
+    <main>
+      <h1>Server administration</h1>
+      <p>
+        Beyond your data, Mongo Manager manages the MongoDB server itself: its database users and roles, the
+        sharding of a cluster, alerts when something goes wrong, and each connection's health at a glance.
+      </p>
+
+      <h2 id="users-roles">Users and roles</h2>
+      <p>
+        A connection's page → <strong>Users &amp; roles</strong> manages MongoDB's own accounts, like
+        <em>Database Access</em> in Atlas. These are the accounts applications and people use to sign in to
+        MongoDB, not Mongo Manager's users.
+      </p>
+      <h3>Who may use it</h3>
+      <ul>
+        <li>
+          Users with the app permission <code>databases:admin</code> on the connection: app administrators, or
+          a user granted admin on that connection. A user an administrator hides personal data from never sees this section; one who hides it from themselves still does.
+        </li>
+        <li>
+          MongoDB's own rights apply too: the account the connection signs in with needs
+          <code>userAdmin</code> on the database, or <code>userAdminAnyDatabase</code> (<code>viewUser</code>
+          and <code>viewRole</code> are enough to list). When MongoDB refuses, the page says that MongoDB
+          refused, and which command — not the app.
+        </li>
+        <li>On a read-only connection, users and roles are listed but never changed.</li>
+      </ul>
+      <h3>The list</h3>
+      <p>
+        Users of every database, or of one (the database filter), with a search. Each user's roles show as
+        chips, "readWrite on shop" for example. The account the connection itself signs in with is marked
+        <strong>This connection</strong>.
+      </p>
+      <h3>Adding a user</h3>
+      <ul>
+        <li>
+          <strong>Authentication database</strong>: where the user signs in. <code>admin</code> is recommended
+          (users there can hold roles on any database), but any database works. <code>$external</code> is for
+          x.509, LDAP, Kerberos and AWS IAM users, which have no password: the name must match exactly what
+          that source sends.
+        </li>
+        <li><strong>Username.</strong></li>
+        <li>
+          <strong>Password</strong>: type one, or press <strong>Generate</strong> for 24 random characters
+          made in your browser from the system's random source, safe in a connection string, shown so you can
+          copy them.
+        </li>
+        <li>
+          <strong>Roles</strong>: built-in roles, each with what it allows, or your custom roles, each on a
+          database. Roles that exist only on <code>admin</code> (<code>clusterMonitor</code>,
+          <code>backup</code>, <code>root</code> and the like) are fixed to it.
+        </li>
+      </ul>
+      <p>
+        Passwords use SCRAM-SHA-256 and need at least 12 characters. A password is sent to MongoDB once; Mongo
+        Manager never stores it, logs it or writes it to the audit log. Copy a generated one before you close
+        the form. Granting broad rights asks you to confirm first, and the server refuses them unconfirmed:
+        the built-in roles <code>root</code>, <code>userAdminAnyDatabase</code>, <code>userAdmin</code>,
+        <code>dbOwner</code>, <code>clusterAdmin</code>, <code>clusterManager</code>,
+        <code>hostManager</code>, <code>backup</code>, <code>restore</code>,
+        <code>readWriteAnyDatabase</code> and <code>dbAdminAnyDatabase</code>, every other built-in role
+        of the admin database (<code>readAnyDatabase</code>, <code>clusterMonitor</code>,
+        <code>enableSharding</code>), any role of <code>local</code> (it holds the oplog, every write made)
+        or <code>config</code> (the sharding metadata), and any custom role that inherits one of them or
+        holds a privilege on the cluster, any resource, every database at once or <code>local</code> and
+        <code>config</code>, or one that makes users or roles (<code>createUser</code>,
+        <code>grantRole</code>, <code>changePassword</code> and the like).
+        Such custom roles are marked broad, and making one is confirmed too.
+      </p>
+      <h3>Changing and dropping users</h3>
+      <ul>
+        <li>
+          <strong>Edit</strong> sets a new password, new roles, or both. The roles you save replace the user's
+          list.
+        </li>
+        <li>
+          Changing or dropping the connection's own account warns that it can lock the connection out, and
+          needs a confirmation. So does changing or dropping a custom role that account holds. Which account
+          it is, MongoDB itself says (not the connection's settings, which an SRV record or a certificate can
+          change). After a new password, edit the connection too.
+        </li>
+        <li>Dropping a user or a role asks you to type its name.</li>
+      </ul>
+      <h3>Custom roles</h3>
+      <p>
+        <strong>Custom roles</strong> give a team exactly the actions it needs, nothing more. A role has a
+        database, a name, privileges and inherited roles.
+      </p>
+      <ul>
+        <li>
+          Each privilege applies to a database and collection (left empty, any database or any collection), to
+          the cluster, or to any resource.
+        </li>
+        <li>
+          Its actions are picked from MongoDB's list, grouped as query and write, database management, users
+          and roles, deployment, replication, and sharding.
+        </li>
+        <li>
+          A role outside <code>admin</code> inherits only roles of its own database (MongoDB's rule); a role
+          in <code>admin</code> may inherit roles of any database.
+        </li>
+      </ul>
+      <p>
+        Every change is in the audit log as <code>mongo.users.create</code>, <code>mongo.users.update</code>,
+        <code>mongo.users.grant</code>, <code>mongo.users.revoke</code>, <code>mongo.users.drop</code>,
+        <code>mongo.roles.create</code>, <code>mongo.roles.update</code> and <code>mongo.roles.drop</code>,
+        with the names and role lists, never a password.
+      </p>
+
+      <h2 id="sharding">Sharding</h2>
+      <p>
+        A connection's page → <strong>Sharding</strong> appears when the connection is to a
+        <code>mongos</code>. Everyone who may watch the server sees the balancer's state, the chunk
+        distribution and the cluster overview. Changes need <code>databases:admin</code> and a connection that
+        is not read-only.
+      </p>
+      <h3>Chunk distribution</h3>
+      <p>
+        One bar per sharded collection, a colour per shard, with the counts also in words for screen readers.
+      </p>
+      <h3>The balancer</h3>
+      <ul>
+        <li>
+          Start or stop it; stopping asks first. While stopped, no chunk moves between shards; a migration
+          under way finishes first. Stop it for a backup or maintenance, then start it again.
+        </li>
+        <li>
+          <strong>Active window</strong>: from–to, in the config server's clock. Chunks then move only within
+          those hours. <strong>Any time</strong> clears it.
+        </li>
+      </ul>
+      <h3>Sharding a collection</h3>
+      <ol>
+        <li>Pick the database and the collection.</li>
+        <li>
+          Build the shard key field by field. Each field is ranged or hashed, with at most one hashed field.
+          Order matters: move fields up and down.
+        </li>
+        <li>
+          <strong>Check this key</strong>: the server samples 1000 documents and answers with counts only, so
+          no value leaves MongoDB: the share of documents that have each field, the number of distinct values,
+          the share of the most common value, whether values grow with time (ObjectId, dates), and whether an
+          index starts with the key's fields. The verdict is good, fair or poor.
+        </li>
+        <li>
+          Options: <strong>unique</strong> (ranged keys only); <strong>create chunks up front</strong> (a
+          hashed key on an empty collection, MongoDB 6.0 and earlier, 1 to 8192 chunks);
+          <strong>create chunks per zone</strong> (a hashed key, with zones already defined).
+        </li>
+        <li>Sharding cannot be undone: confirm by typing the namespace.</li>
+      </ol>
+      <p>
+        A field that grows with time, used as a ranged key, sends every new document to one shard: hash it, or
+        put another field first. A collection with data needs an index that starts with the key's fields
+        before it can be sharded. MongoDB's own and system namespaces (<code>admin</code>,
+        <code>config</code>, <code>local</code>, <code>system.*</code>) are refused.
+      </p>
+      <h3>Zones</h3>
+      <ul>
+        <li>Each shard lists its zones; add a zone to a shard, or remove one.</li>
+        <li>
+          Key ranges per collection: the bounds are Extended JSON of the shard key's fields, with
+          <code>{"$minKey":1}</code> and <code>{"$maxKey":1}</code> for open ends, for example
+          <code>{"region": "eu"}</code> to <code>{"region": "us"}</code>. Operators are refused. The start is
+          included, the end is not.
+        </li>
+        <li>Remove a range when its documents may again live on any shard.</li>
+      </ul>
+      <p>
+        The audit log records <code>sharding.collection.shard</code>, <code>sharding.zone.shard</code>,
+        <code>sharding.zone.range</code> (the namespace and zone, never the bound values),
+        <code>sharding.balancer</code> and <code>sharding.balancer.window</code>. Mongo Manager's tests run
+        these screens against recorded <code>mongos</code> answers.
+      </p>
+
+      <h2 id="alerts">Alerts</h2>
+      <p>
+        Alerts tell you when a server crosses a threshold, or when one of the app's own jobs fails: in the
+        bell, by e-mail, or to a webhook.
+      </p>
+      <h3>Thresholds</h3>
+      <p>
+        A connection's page → <strong>Alerts</strong>, for app administrators (<code>settings:manage</code>).
+        A threshold watches one metric:
+      </p>
+      <ul>
+        <li><strong>Connections</strong>: open client connections (a count).</li>
+        <li><strong>Operations</strong>: operations per second, all kinds together.</li>
+        <li><strong>Replication lag</strong>: seconds the furthest secondary is behind (replica sets).</li>
+        <li><strong>WiredTiger cache</strong>: how full the cache is, in percent.</li>
+        <li><strong>Disk use</strong>: percent of the data files' disk in use (MongoDB 4.4 and later).</li>
+        <li>
+          <strong>Slow operations</strong>: the count of operations running longer than the seconds you choose
+          (needs <code>clusterMonitor</code>).
+        </li>
+      </ul>
+      <p>
+        The server evaluates them once a minute from the same <code>serverStatus</code> sampling as metric
+        history. Alerts sample a connection even when its history is off; samples are stored only when history
+        is on. At most 50 connections are sampled, for history and alerts together.
+      </p>
+      <p>
+        No flapping: an alert fires once the value has stayed above the threshold for the minutes you chose (1
+        to 60, default 2), and resolves only after it has stayed at or below 90% of the threshold for as long.
+        A threshold of 80% cache fill resolves at 72% or less.
+      </p>
+      <h3>Event alerts</h3>
+      <p>On the Alerts page, for every connection or one, or in a connection's section:</p>
+      <ul>
+        <li><strong>Backup failed</strong>: a backup, send or fetch job failed.</li>
+        <li>
+          <strong>Scheduled backup failed</strong>: a run failed, or reached only some of its destinations.
+        </li>
+        <li>
+          <strong>Live sync stopped</strong>: it failed, stopped or needs attention on its own — not when a
+          person stopped it.
+        </li>
+        <li><strong>Job failed</strong>: any other job (a restore drill has its own event).</li>
+        <li>
+          <strong>Restore drill failed</strong>: a scheduled restore drill could not restore its backup,
+          found data that differ, or could not drop its scratch database (a warning: the data matched). A
+          drill that passed is in the schedule's history, not an alert.
+        </li>
+        <li>
+          <strong>Two-way sync settled conflicts</strong>: both sides of a two-way live sync changed the same
+          documents; the last writer won (the <code>_id</code>s are in the sync's activity).
+        </li>
+        <li>
+          <strong>Watch matched its alert filter</strong>: a Watch feed whose owner asked for alerts passed
+          changes through its filter (at most every 10 seconds, while the feed runs).
+        </li>
+      </ul>
+      <p>
+        Notifications carry names and numbers only: never document values, error texts, connection strings or
+        hosts.
+      </p>
+      <h3>Scheduled reports</h3>
+      <p>
+        On the Alerts page (app administrators): a report says a few counts of one connection on a schedule —
+        every morning, every Monday, as often as an hour — in the bell, by e-mail or to webhooks, as alerts
+        are sent. Each count has its label, a collection and an optional filter (JSON; none counts every
+        document, the collection's estimate); a count past a million says "at least". Run one now, change it,
+        turn it off or delete it from its row; its last run's counts are shown there.
+      </p>
+      <p>
+        Numbers only, never a value. A filter that names a personal field — or one the personal-data rules
+        would read otherwise — is refused when the report is saved and left out, said why, when rules change
+        after; so are MongoDB's own namespaces, server JavaScript, views and time series (a view's pipeline
+        could pick by a personal field). A report counts as the connection's own credentials: one where each
+        person signs in is refused, and so is a filter where the connection encrypts fields on the client
+        (it would match nothing it can read). In the bell and the history, administrators see a run's counts
+        by their labels; others see that a report ran, not its counts. Each report's last 30 runs are kept in
+        the history; one whose schedule can no longer be worked out is turned off, said why.
+      </p>
+      <h3>Channels</h3>
+      <ul>
+        <li>
+          <strong>The bell.</strong> Each user turns on <em>Show alerts in the bell</em> for themselves, in
+          Preferences or on the Alerts page. They see alerts only for connections whose server they may watch
+          (<code>server:monitor</code>).
+        </li>
+        <li>
+          <strong>E-mail.</strong> The SMTP server, port, and TLS from the start (usually 465) or STARTTLS
+          (usually 587): a server that offers neither is refused, mail is never sent in plain text. A username
+          and password (sealed), the From address and up to 20 recipients. A new server, port, encryption or
+          username needs the password typed again: the saved one is never sent to another server.
+          <em>Send test message</em> sends with the saved settings. A session that does not finish its TLS
+          handshake or its exchange in time is given up. Mail goes through Mongo Manager's own client and its
+          egress guard: public addresses, and private ones only inside
+          <code>MM_ALERTS_PRIVATE_NETWORKS</code>.
+        </li>
+        <li>
+          <strong>Webhooks.</strong> An https address; plain http only to addresses inside
+          <code>MM_ALERTS_PRIVATE_NETWORKS</code>. No credentials in the address, cloud metadata and
+          link-local addresses never, and redirects are not followed. The server makes each webhook's signing
+          secret and shows it once; <em>Make a new secret</em> replaces it, and the old one stops working at
+          once.
+        </li>
+      </ul>
+      <p>Each rule chooses where it is sent; a rule with no channel is only recorded.</p>
+
+      <h3 id="webhook-delivery">Webhook deliveries</h3>
+      <p>Each delivery is a POST with a JSON body:</p>
+      <pre><code>{
+  "type": "alert.firing",
+  "id": "…",
+  "at": "2026-10-16T09:30:00.000Z",
+  "alert": {
+    "metric": "cacheFill",
+    "event": null,
+    "state": "firing",
+    "value": 91,
+    "threshold": 80,
+    "unit": "percent",
+    "startedAt": "2026-10-16T09:28:00.000Z",
+    "resolvedAt": null,
+    "connection": { "id": "…", "name": "Production" },
+    "detail": {}
+  }
+}</code></pre>
+      <p>
+        <code>type</code> is <code>alert.firing</code>, <code>alert.resolved</code>,
+        <code>alert.event</code> or <code>alert.test</code> (a test carries only <code>type</code> and
+        <code>at</code>). Event alerts set <code>event</code> (<code>backup.failed</code>,
+        <code>schedule.failed</code>, <code>liveSync.stopped</code>, <code>job.failed</code>) instead of
+        <code>metric</code>. The headers:
+      </p>
+      <ul>
+        <li><code>x-mm-event</code>: the type again.</li>
+        <li><code>x-mm-delivery</code>: a unique id for the delivery, the same on every retry.</li>
+        <li><code>x-mm-timestamp</code>: Unix seconds when this attempt was signed.</li>
+        <li>
+          <code>x-mm-signature</code>: <code>sha256=</code> followed by the hex HMAC-SHA256, with the
+          webhook's secret, of the timestamp, a dot and the body.
+        </li>
+      </ul>
+      <p>
+        Check the signature over the raw body, before parsing it, and refuse timestamps older than 5 minutes.
+        In Node.js:
+      </p>
+      <pre><code>const crypto = require('node:crypto')
+
+function verify(secret, headers, rawBody) {
+  const timestamp = headers['x-mm-timestamp']
+  const signature = headers['x-mm-signature'] ?? ''
+  if (!/^\d+$/.test(timestamp ?? '')) return false
+  if (Math.abs(Date.now() / 1000 - Number(timestamp)) &gt; 300) return false
+  const expected =
+    'sha256=' + crypto.createHmac('sha256', secret).update(timestamp + '.' + rawBody).digest('hex')
+  const a = Buffer.from(signature)
+  const b = Buffer.from(expected)
+  return a.length === b.length &amp;&amp; crypto.timingSafeEqual(a, b)
+}</code></pre>
+      <p>In Python:</p>
+      <pre><code>import hashlib, hmac, time
+
+def verify(secret: bytes, headers, raw_body: bytes) -&gt; bool:
+    timestamp = headers.get("x-mm-timestamp", "")
+    if not timestamp.isdigit() or abs(time.time() - int(timestamp)) &gt; 300:
+        return False
+    mac = hmac.new(secret, timestamp.encode() + b"." + raw_body, hashlib.sha256)
+    expected = "sha256=" + mac.hexdigest()
+    return hmac.compare_digest(headers.get("x-mm-signature", ""), expected)</code></pre>
+      <p>
+        A delivery is tried up to three more times, after 2 seconds, 10 seconds and 60 seconds, on a network
+        error, a 5xx answer, 408 or 429; never on any other 4xx, nor to an address the guard refuses. Each
+        attempt is signed again with a fresh timestamp. Use <code>x-mm-delivery</code> to ignore a delivery
+        you already handled.
+      </p>
+
+      <h3>Snoozing, pausing and acknowledging</h3>
+      <ul>
+        <li>
+          <strong>Snooze</strong> a rule for 1 hour, 8 hours or 1 day: alerts are still recorded, nothing is
+          sent. <strong>Wake now</strong> ends it early.
+        </li>
+        <li>Pause and resume a rule with its switch.</li>
+        <li>
+          Administrators <strong>acknowledge</strong> an alert for everyone, who then see who did; anyone else
+          <strong>dismisses</strong> it from their own bell. Outside the administrators, the bell shows what
+          happened (its codes) but not which sync, job, schedule or namespace.
+        </li>
+        <li>Deliveries go a few at a time from one queue, however many channels and alerts fire together.</li>
+        <li>
+          <strong>History</strong>, on the Alerts page and in each connection's section, keeps 90 days (at
+          most 20,000 entries), with each delivery's outcome and how many attempts it took.
+        </li>
+      </ul>
+      <p>
+        <code>MM_ALERTS=0</code> turns alerts off on the server: nothing is evaluated or sent (see
+        <a href="deployment.html#alerts">Deployment</a>). The audit log records
+        <code>alerts.rule.create</code>, <code>alerts.rule.update</code>, <code>alerts.rule.delete</code>,
+        <code>alerts.rule.snooze</code>, <code>alerts.email.update</code>, <code>alerts.email.test</code>,
+        <code>alerts.webhook.create</code>, <code>alerts.webhook.update</code>,
+        <code>alerts.webhook.delete</code>, <code>alerts.webhook.test</code> and
+        <code>alerts.acknowledge</code> — never the SMTP password or a webhook secret.
+      </p>
+
+      <h2 id="health">Live health</h2>
+      <p>
+        The connection cards on the Overview show each connection's ping latency, MongoDB version, topology
+        and the alerts firing on it. A connection's page shows the same in its header, with a status dot.
+      </p>
+      <ul>
+        <li>The server keeps each answer for 30 seconds.</li>
+        <li>
+          The list never connects on its own: a connection that is not open shows
+          <strong>Not connected</strong>. Opening a connection's page checks it, as listing its databases
+          would.
+        </li>
+        <li>Alert counts are shown only for connections whose server you may watch.</li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">On this page</p>
+      <ol>
+        <li><a href="#users-roles">Users and roles</a></li>
+        <li><a href="#sharding">Sharding</a></li>
+        <li><a href="#alerts">Alerts</a></li>
+        <li><a href="#health">Live health</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

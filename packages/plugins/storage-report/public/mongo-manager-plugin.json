@@ -1,0 +1,105 @@
+{
+  "id": "storage-report",
+  "name": {
+    "en": "Storage report",
+    "tr": "Depolama raporu",
+    "zh": "存储报告",
+    "ja": "ストレージレポート",
+    "es": "Informe de almacenamiento",
+    "pt": "Relatório de armazenamento",
+    "ko": "스토리지 보고서",
+    "de": "Speicherbericht",
+    "fr": "Rapport de stockage",
+    "ru": "Отчет о хранилище"
+  },
+  "version": "1.2.0",
+  "description": {
+    "en": "Shows what each collection of a database takes on disk, the free space WiredTiger holds inside its files and its indexes' files, and how large a share that is — and, for one collection, estimates what compact would give back and runs compact after the app asks you and you type the collection's name.",
+    "tr": "Her koleksiyonun diskte kapladığı yeri, WiredTiger'ın dosyalarında ve indekslerinin dosyalarında tuttuğu boş alanı ve payını gösterir; bir koleksiyon için sıkıştırmanın ne geri vereceğini tahmin eder ve uygulama sorup adını yazdıktan sonra sıkıştırır.",
+    "zh": "显示数据库中每个集合占用的磁盘空间、WiredTiger 在其文件及索引文件中保留的空闲空间及其占比；对单个集合可估算压缩能释放的空间，并在应用确认、您输入集合名称后执行压缩。",
+    "ja": "データベースの各コレクションがディスク上で使用している容量、WiredTiger がファイルとインデックスのファイル内に保持している空き領域とその割合を表示します。1 つのコレクションについては、コンパクトで解放できる容量を見積もり、アプリの確認とコレクション名の入力のあとでコンパクトを実行します。",
+    "es": "Muestra lo que ocupa en disco cada colección de una base de datos, el espacio libre que WiredTiger conserva en sus archivos y en los de sus índices, y qué parte supone. Para una colección, estima lo que devolvería compactar y la compacta cuando la aplicación te pregunta y escribes su nombre.",
+    "pt": "Mostra o que cada coleção de um banco de dados ocupa em disco, o espaço livre que o WiredTiger mantém nos arquivos dela e nos dos índices, e qual parte isso representa. Para uma coleção, estima o que a compactação devolveria e a compacta depois que o app pergunta e você digita o nome dela.",
+    "ko": "데이터베이스의 각 컬렉션이 디스크에서 차지하는 공간, WiredTiger가 컬렉션 파일과 인덱스 파일 안에 보유한 여유 공간과 그 비율을 보여줍니다. 컬렉션 하나에 대해서는 압축으로 반환할 수 있는 공간을 예상하고, 앱이 확인을 요청하고 컬렉션 이름을 입력하면 압축을 실행합니다.",
+    "de": "Zeigt, was jede Collection auf dem Datenträger belegt, den freien Platz, den WiredTiger in ihren Dateien und denen ihrer Indizes hält, und dessen Anteil. Für eine Collection schätzt es, was Verdichten zurückgäbe, und verdichtet sie, wenn die App nachfragt und Sie ihren Namen eingeben.",
+    "fr": "Affiche ce que chaque collection occupe sur le disque, l’espace libre que WiredTiger garde dans ses fichiers et ceux de ses index, et sa part. Pour une collection, estime ce que le compactage restituerait et la compacte quand l’application vous le demande et que vous saisissez son nom.",
+    "ru": "Показывает, сколько места каждая коллекция занимает на диске, сколько свободного места WiredTiger держит в ее файлах и файлах ее индексов и какова его доля. Для коллекции оценивает, сколько вернет уплотнение, и выполняет его, когда приложение спросит и вы введете имя коллекции."
+  },
+  "entry": "index.html",
+  "permissions": ["database:read", "collection:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "storage",
+        "title": {
+          "en": "Storage",
+          "tr": "Depolama",
+          "zh": "存储",
+          "ja": "ストレージ",
+          "es": "Almacenamiento",
+          "pt": "Armazenamento",
+          "ko": "스토리지",
+          "de": "Speicher",
+          "fr": "Stockage",
+          "ru": "Хранилище"
+        },
+        "icon": "chart"
+      }
+    ]
+  },
+  "author": {
+    "name": "Gokhan OZGEZER"
+  },
+  "license": "CC-BY-NC-SA-4.0",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Some wording and counts also read better in several languages.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Bazı ifadeler ve sayılar da birçok dilde daha doğru okunuyor.",
+        "zh": "现已与应用一样支持韩语、德语、法语和俄语。部分措辞和计数在多种语言中也更加准确。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。いくつかの言語で、一部の文言と件数の表記もより正確になりました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Además, algunos textos y recuentos se leen mejor en varios idiomas.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o app. Além disso, alguns textos e contagens ficaram mais corretos em vários idiomas.",
+        "ko": "이제 앱과 같이 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 또한 여러 언어에서 일부 문구와 개수 표기가 더 정확해졌습니다.",
+        "de": "Jetzt wie die App auch auf Koreanisch, Deutsch, Französisch und Russisch. Außerdem lesen sich einige Formulierungen und Zählungen in mehreren Sprachen besser.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Certaines formulations et certains décomptes se lisent aussi mieux dans plusieurs langues.",
+        "ru": "Теперь, как и приложение, также на корейском, немецком, французском и русском. Кроме того, некоторые формулировки и счетчики теперь точнее на нескольких языках."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现已与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他方面不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルポルトガル語に対応しました。ほかに変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. No cambia nada más.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o app. Nada mais muda.",
+        "ko": "이제 앱과 같이 중국어, 일본어, 스페인어, 브라질 포르투갈어도 지원합니다. 다른 변경 사항은 없습니다.",
+        "de": "Jetzt wie die App auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь, как и приложение, также на китайском, японском, испанском и бразильском португальском. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-27",
+      "notes": {
+        "en": "First release. A Storage tab lists the database's collections, the most reclaimable first: documents, data, storage and index sizes, the free bytes inside the collection's and its indexes' files and their share, with totals and a mark where compacting is worth it (20% and 10 MB free). A collection shows its indexes' sizes, an estimate of what compact would give back (MongoDB 8.0 and later) and Compact, which the app runs only after asking you, with the collection's name typed. Sizes hidden from you by personal data rules stay hidden.",
+        "tr": "İlk sürüm. Depolama sekmesi veritabanının koleksiyonlarını en çok geri kazanılabilir olan önce gelecek biçimde listeler: belgeler, veri, depolama ve indeks boyutları, koleksiyonun ve indekslerinin dosyalarındaki boş baytlar ve payları; toplamlar ve sıkıştırmanın değdiği yerde bir işaret (%20 ve 10 MB boş). Bir koleksiyon indekslerinin boyutlarını, sıkıştırmanın ne geri vereceğinin tahminini (MongoDB 8.0 ve sonrası) ve Sıkıştır'ı gösterir; uygulama bunu ancak sana sorup koleksiyonun adını yazdıktan sonra çalıştırır. Kişisel veri kurallarının senden gizlediği boyutlar gizli kalır.",
+        "zh": "首个版本。“存储”标签页按可回收空间从多到少列出数据库的集合：文档、数据、存储与索引大小，集合及其索引文件中的空闲字节数及占比，并显示合计，对值得压缩的集合（空闲达 20% 且 10 MB）给出标记。单个集合会显示其索引大小、压缩可释放空间的估算（MongoDB 8.0 及更高版本）以及“压缩”，应用仅在确认并要求输入集合名称后才会执行。被个人数据规则对您隐藏的大小保持隐藏。",
+        "ja": "最初のリリースです。「ストレージ」タブに、データベースのコレクションが解放可能な容量の多い順に表示されます。ドキュメント、データ、ストレージ、インデックスのサイズ、コレクションとそのインデックスのファイル内の空きバイト数とその割合、合計、そしてコンパクトの価値がある場合（空き 20% かつ 10 MB）の印が表示されます。1 つのコレクションでは、インデックスのサイズ、コンパクトで解放できる容量の見積もり（MongoDB 8.0 以降）、そしてコンパクトを表示します。コンパクトは、アプリが確認し、コレクション名が入力された後にのみ実行されます。個人データのルールで非表示のサイズは非表示のままです。",
+        "es": "Primera versión. Una pestaña Almacenamiento lista las colecciones de la base de datos, primero las más recuperables: documentos, datos, tamaños de almacenamiento e índices, los bytes libres dentro de los archivos de la colección y de sus índices y su proporción, con totales y una marca donde compensa compactar (20 % y 10 MB libres). Una colección muestra los tamaños de sus índices, una estimación de lo que devolvería compactar (MongoDB 8.0 y posterior) y Compactar, que la aplicación ejecuta solo después de preguntarte y de que escribas el nombre de la colección. Los tamaños que las reglas de datos personales te ocultan siguen ocultos.",
+        "pt": "Primeira versão. Uma aba Armazenamento lista as coleções do banco de dados, primeiro as mais recuperáveis: documentos, dados, tamanhos de armazenamento e de índices, os bytes livres dentro dos arquivos da coleção e dos índices dela e a proporção, com totais e uma marca onde vale compactar (20% e 10 MB livres). Uma coleção mostra os tamanhos dos índices dela, uma estimativa do que a compactação devolveria (MongoDB 8.0 e posterior) e Compactar, que o app só executa depois de perguntar a você e de você digitar o nome da coleção. Os tamanhos que as regras de dados pessoais ocultam de você continuam ocultos.",
+        "ko": "첫 릴리스입니다. 스토리지 탭에는 데이터베이스의 컬렉션이 회수 가능한 공간이 큰 순서로 나열됩니다. 도큐먼트 수, 데이터·스토리지·인덱스 크기, 컬렉션과 인덱스 파일 안의 여유 바이트와 그 비율, 합계, 그리고 압축할 가치가 있는 곳(여유 20%와 10 MB)의 표시가 나옵니다. 컬렉션 하나를 선택하면 인덱스 크기, 압축으로 반환할 수 있는 공간의 예상(MongoDB 8.0 이상), 그리고 압축이 표시되며, 압축은 앱이 확인을 요청하고 컬렉션 이름을 입력한 뒤에만 실행됩니다. 개인 데이터 규칙으로 숨겨진 크기는 계속 숨겨집니다.",
+        "de": "Erste Version. Ein Tab „Speicher“ listet die Collections der Datenbank auf, die am meisten Rückgewinnbares zuerst: Dokumente, Daten-, Speicher- und Indexgrößen, die freien Bytes in den Dateien der Collection und ihrer Indizes samt Anteil, mit Summen und einer Markierung, wo sich das Verdichten lohnt (20 % und 10 MB frei). Eine Collection zeigt die Größen ihrer Indizes, eine Schätzung, was Verdichten zurückgeben würde (MongoDB 8.0 und neuer), und Verdichten, das die App erst ausführt, nachdem sie Sie gefragt hat und der Name der Collection eingegeben wurde. Größen, die Regeln für personenbezogene Daten vor Ihnen verbergen, bleiben verborgen.",
+        "fr": "Première version. Un onglet Stockage liste les collections de la base de données, les plus récupérables d’abord : documents, tailles des données, du stockage et des index, octets libres dans les fichiers de la collection et de ses index et leur part, avec des totaux et un repère là où le compactage vaut la peine (20 % et 10 MB libres). Une collection affiche la taille de ses index, une estimation de ce que le compactage restituerait (MongoDB 8.0 et ultérieur) et Compacter, que l’application n’exécute qu’après vous avoir demandé confirmation, une fois le nom de la collection saisi. Les tailles que les règles sur les données personnelles vous masquent restent masquées.",
+        "ru": "Первый выпуск. Вкладка «Хранилище» перечисляет коллекции базы данных, сначала те, где можно вернуть больше всего: документы, размеры данных, хранилища и индексов, свободные байты внутри файлов коллекции и ее индексов и их доля, итоги и отметка там, где уплотнение оправдано (свободно 20 % и 10 MB). Для коллекции показываются размеры ее индексов, оценка того, что вернет уплотнение (MongoDB 8.0 и новее), и «Уплотнить»: приложение выполняет его только после того, как спросит вас и будет введено имя коллекции. Размеры, скрытые от вас правилами персональных данных, остаются скрытыми."
+      }
+    }
+  ]
+}

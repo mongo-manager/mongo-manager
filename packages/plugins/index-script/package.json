@@ -1,0 +1,17 @@
+{
+  "name": "@mongo-manager/plugin-index-script",
+  "private": true,
+  "version": "1.2.0",
+  "type": "module",
+  "description": "First-party Mongo Manager plugin: a collection's or a database's indexes as the commands that make them again, for mongosh, Node.js, Python or as JSON (research 2026-10-28).",
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "happy-dom": "^21.0.4",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.2"
+  }
+}

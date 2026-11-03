@@ -1,0 +1,365 @@
+{
+  "version": "8.2.6",
+  "sharded": true,
+  "raw": {
+    "queryPlanner": {
+      "winningPlan": {
+        "stage": "SHARD_MERGE",
+        "shards": [
+          {
+            "explainVersion": "1",
+            "shardName": "shard0",
+            "connectionString": "shard0/127.0.0.1:47371",
+            "serverInfo": {
+              "host": "capture-host",
+              "port": {
+                "$numberInt": "47371"
+              },
+              "version": "8.2.6",
+              "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+            },
+            "namespace": "shop.items",
+            "parsedQuery": {
+              "s": {
+                "$eq": "s3"
+              }
+            },
+            "indexFilterSet": false,
+            "queryHash": "05B513D4",
+            "planCacheShapeHash": "05B513D4",
+            "planCacheKey": "3E637E7B",
+            "optimizationTimeMillis": {
+              "$numberInt": "0"
+            },
+            "maxIndexedOrSolutionsReached": false,
+            "maxIndexedAndSolutionsReached": false,
+            "maxScansToExplodeReached": false,
+            "prunedSimilarIndexes": false,
+            "winningPlan": {
+              "isCached": false,
+              "stage": "SHARDING_FILTER",
+              "inputStage": {
+                "stage": "COLLSCAN",
+                "filter": {
+                  "s": {
+                    "$eq": "s3"
+                  }
+                },
+                "direction": "forward"
+              }
+            },
+            "rejectedPlans": []
+          },
+          {
+            "explainVersion": "1",
+            "shardName": "shard1",
+            "connectionString": "shard1/127.0.0.1:47372",
+            "serverInfo": {
+              "host": "capture-host",
+              "port": {
+                "$numberInt": "47372"
+              },
+              "version": "8.2.6",
+              "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+            },
+            "namespace": "shop.items",
+            "parsedQuery": {
+              "s": {
+                "$eq": "s3"
+              }
+            },
+            "indexFilterSet": false,
+            "queryHash": "05B513D4",
+            "planCacheShapeHash": "05B513D4",
+            "planCacheKey": "3E637E7B",
+            "optimizationTimeMillis": {
+              "$numberInt": "0"
+            },
+            "maxIndexedOrSolutionsReached": false,
+            "maxIndexedAndSolutionsReached": false,
+            "maxScansToExplodeReached": false,
+            "prunedSimilarIndexes": false,
+            "winningPlan": {
+              "isCached": false,
+              "stage": "SHARDING_FILTER",
+              "inputStage": {
+                "stage": "COLLSCAN",
+                "filter": {
+                  "s": {
+                    "$eq": "s3"
+                  }
+                },
+                "direction": "forward"
+              }
+            },
+            "rejectedPlans": []
+          }
+        ]
+      }
+    },
+    "executionStats": {
+      "nReturned": {
+        "$numberInt": "60"
+      },
+      "executionTimeMillis": {
+        "$numberInt": "5"
+      },
+      "totalKeysExamined": {
+        "$numberInt": "0"
+      },
+      "totalDocsExamined": {
+        "$numberInt": "3000"
+      },
+      "executionStages": {
+        "stage": "SHARD_MERGE",
+        "nReturned": {
+          "$numberInt": "60"
+        },
+        "executionTimeMillis": {
+          "$numberInt": "5"
+        },
+        "totalKeysExamined": {
+          "$numberInt": "0"
+        },
+        "totalDocsExamined": {
+          "$numberInt": "3000"
+        },
+        "totalChildMillis": {
+          "$numberInt": "0"
+        },
+        "shards": [
+          {
+            "shardName": "shard0",
+            "executionSuccess": true,
+            "nReturned": {
+              "$numberInt": "30"
+            },
+            "executionTimeMillis": {
+              "$numberInt": "0"
+            },
+            "totalKeysExamined": {
+              "$numberInt": "0"
+            },
+            "totalDocsExamined": {
+              "$numberInt": "1500"
+            },
+            "executionStages": {
+              "isCached": false,
+              "stage": "SHARDING_FILTER",
+              "nReturned": {
+                "$numberInt": "30"
+              },
+              "executionTimeMillisEstimate": {
+                "$numberInt": "0"
+              },
+              "works": {
+                "$numberInt": "1501"
+              },
+              "advanced": {
+                "$numberInt": "30"
+              },
+              "needTime": {
+                "$numberInt": "1470"
+              },
+              "needYield": {
+                "$numberInt": "0"
+              },
+              "saveState": {
+                "$numberInt": "0"
+              },
+              "restoreState": {
+                "$numberInt": "0"
+              },
+              "isEOF": {
+                "$numberInt": "1"
+              },
+              "chunkSkips": {
+                "$numberInt": "0"
+              },
+              "inputStage": {
+                "stage": "COLLSCAN",
+                "filter": {
+                  "s": {
+                    "$eq": "s3"
+                  }
+                },
+                "nReturned": {
+                  "$numberInt": "30"
+                },
+                "executionTimeMillisEstimate": {
+                  "$numberInt": "0"
+                },
+                "works": {
+                  "$numberInt": "1501"
+                },
+                "advanced": {
+                  "$numberInt": "30"
+                },
+                "needTime": {
+                  "$numberInt": "1470"
+                },
+                "needYield": {
+                  "$numberInt": "0"
+                },
+                "saveState": {
+                  "$numberInt": "0"
+                },
+                "restoreState": {
+                  "$numberInt": "0"
+                },
+                "isEOF": {
+                  "$numberInt": "1"
+                },
+                "direction": "forward",
+                "docsExamined": {
+                  "$numberInt": "1500"
+                }
+              }
+            }
+          },
+          {
+            "shardName": "shard1",
+            "executionSuccess": true,
+            "nReturned": {
+              "$numberInt": "30"
+            },
+            "executionTimeMillis": {
+              "$numberInt": "0"
+            },
+            "totalKeysExamined": {
+              "$numberInt": "0"
+            },
+            "totalDocsExamined": {
+              "$numberInt": "1500"
+            },
+            "executionStages": {
+              "isCached": false,
+              "stage": "SHARDING_FILTER",
+              "nReturned": {
+                "$numberInt": "30"
+              },
+              "executionTimeMillisEstimate": {
+                "$numberInt": "0"
+              },
+              "works": {
+                "$numberInt": "1501"
+              },
+              "advanced": {
+                "$numberInt": "30"
+              },
+              "needTime": {
+                "$numberInt": "1470"
+              },
+              "needYield": {
+                "$numberInt": "0"
+              },
+              "saveState": {
+                "$numberInt": "0"
+              },
+              "restoreState": {
+                "$numberInt": "0"
+              },
+              "isEOF": {
+                "$numberInt": "1"
+              },
+              "chunkSkips": {
+                "$numberInt": "0"
+              },
+              "inputStage": {
+                "stage": "COLLSCAN",
+                "filter": {
+                  "s": {
+                    "$eq": "s3"
+                  }
+                },
+                "nReturned": {
+                  "$numberInt": "30"
+                },
+                "executionTimeMillisEstimate": {
+                  "$numberInt": "0"
+                },
+                "works": {
+                  "$numberInt": "1501"
+                },
+                "advanced": {
+                  "$numberInt": "30"
+                },
+                "needTime": {
+                  "$numberInt": "1470"
+                },
+                "needYield": {
+                  "$numberInt": "0"
+                },
+                "saveState": {
+                  "$numberInt": "0"
+                },
+                "restoreState": {
+                  "$numberInt": "0"
+                },
+                "isEOF": {
+                  "$numberInt": "1"
+                },
+                "direction": "forward",
+                "docsExamined": {
+                  "$numberInt": "1500"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "queryShapeHash": "469B9301E26B2A019F3E6E00A25A2A8A3AF3C3788A2E27FC7B41426A765F5A82",
+    "serverInfo": {
+      "host": "capture-host",
+      "port": {
+        "$numberInt": "47373"
+      },
+      "version": "8.2.6",
+      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFacetMaxOutputDocSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceGroupMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryMaxBlockingSortMemoryUsageBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryProhibitBlockingMergeOnMongoS": {
+        "$numberInt": "0"
+      },
+      "internalQueryMaxAddToSetBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": {
+        "$numberInt": "1"
+      }
+    },
+    "command": {
+      "find": "items",
+      "filter": {
+        "s": "s3"
+      },
+      "maxTimeMS": {
+        "$numberInt": "30000"
+      },
+      "$db": "shop"
+    },
+    "ok": {
+      "$numberInt": "1"
+    }
+  }
+}

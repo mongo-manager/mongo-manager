@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Yedekleme ve geri yükleme · Mongo Manager belgeleri</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager belgeleri</a>
+      <details class="lang-menu">
+        <summary>Türkçe</summary>
+        <span class="langs" role="group" aria-label="Dil">
+          <a lang="en" hreflang="en" href="../backup.html">English</a>
+          <strong lang="tr">Türkçe</strong>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/backup.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/backup.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/backup.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/backup.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/backup.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/backup.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/backup.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/backup.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Genel bakış</a>
+      <a href="getting-started.html">Başlarken</a>
+      <a href="security.html">Güvenlik</a>
+      <a href="deployment.html">Kurulum ve dağıtım</a>
+      <a href="import-export.html">İçe ve dışa aktarma</a>
+      <strong>Yedekleme ve geri yükleme</strong>
+      <a href="watch.html">Değişiklikleri izleme</a>
+      <a href="sync.html">Canlı senkron</a>
+      <a href="server-admin.html">Sunucu yönetimi</a>
+      <a href="ai.html">AI asistanı</a>
+      <a href="plugins.html">Eklentiler</a>
+      <a href="shortcuts.html">Klavye kısayolları</a>
+    </nav>
+    <main>
+      <h1>Yedekleme ve geri yükleme</h1>
+      <p>
+        Bir koleksiyonu, bir veritabanını ya da tüm sunucuyu yedekleyin; dosyayı indirin ya da bir süre
+        sunucuda tutun. Yedeklerinizden birini, bir mongodump arşivini ya da bir mongodump klasörünün zip'ini
+        seçtiğiniz ad alanlarına geri yükleyin. İkisi de iş listesinden izleyebileceğiniz arka plan işleri
+        olarak çalışır.
+      </p>
+      <p>
+        Kenar çubuğundaki koleksiyon ya da veritabanı menüsünden, bağlantının menüsünden, bağlantının Yedekler
+        sekmesinden, bir veritabanının ya da koleksiyonun Yedekler bölümünden veya komut paletinden
+        ("Yedekle…", "Yedekten geri yükle…") başlayın.
+      </p>
+
+      <h2 id="taking-a-backup">Yedek almak</h2>
+      <p>
+        Yedek, açıldığı yer için önerilen seçimle tek ekranda açılır: veride kişisel alanlar varsa şifreli
+        yedek, yoksa sıkıştırılmış arşiv. Yanındaki denetimler her değişiklikte güncellenir: beklenen boyut ve
+        süre, boş yedek alanınız, dosyada açık okunabilecek kişisel alanlar ve dışarıda kalanlar.
+        Düzeltilebilen her denetimin bir düğmesi vardır. "Özelleştir…" adımları açar: kapsam, motor, içerik,
+        koruma ve özet.
+      </p>
+      <p>
+        Yedek arka planda çalışır: diyaloğu istediğiniz zaman kapatın. Başladığında yedeklenen yerin Yedekler
+        bölümü açılır: koleksiyonun, veritabanının ya da bağlantının. Sürerken Yedekler bölümü ve işler
+        listesi her ad alanını kendi ilerlemesiyle gösterir (kaçının bittiği, okunmakta olan ve aşama).
+        Bitince bildirimi "İndir" ve "Raporu aç" seçeneklerini sunar.
+      </p>
+      <p>
+        Yedek alma ve geri yükleme bağlantının sunucusuna ihtiyaç duyar ve yalnız Mongo Manager sunucuya
+        bağlıyken (veritabanları okunduysa) gösterilir. Bağlanırken ya da bağlanamadığı sürece (zaman aşımı,
+        ağ, DNS ya da TLS hatası, reddedilen oturum açma, kullanılamayan sunucu) bağlantının sayfası yalnız
+        genel bakışı, hatayı, Tekrar dene ve Düzenle düğmelerini gösterir: Performans, İzle, Kullanıcılar ve
+        roller, Uyarılar, Kişisel veriler, Yedekler, Yeni veritabanı ya da kabuk görünmez; veritabanı
+        sayfasında da Model, İzle ve Yedekler görünmez. Ağaçtaki ve bu sayfalardaki menülerde yedekleme, geri
+        yükleme, canlı eşitleme, kabuk, oluşturma, yeniden adlandırma ve silme yer almaz; komut paletinin
+        sunucuyla çalışan komutları da bağlantı olmadığını söyler. Başka bir yoldan açılan yedek ya da geri
+        yükleme bunu söyler, Tekrar dene sunar ve hiçbir şey başlatmaz. Sunucuya ulaşmakla ilgisi olmayan bir
+        yanıt (tüm bağlantıların bir an meşgul olması, bir sorgunun süre sınırını aşması) hiçbir şeyi
+        gizlemez. Veritabanları yeniden okununca hepsi geri gelir: Tekrar dene, Yenile, başarılı bir bağlantı
+        testi ya da sorun kendiliğinden geçtiğinde (ağ, zaman aşımı, DNS, kullanılamayan sunucu): açık bir
+        sayfa, tarayıcıda görüntülendiği sürece 15 saniyede bir yeniden dener. Sunucunun reddettiği bir oturum
+        açma (kullanıcı adı ya da parola, SSH oturum açma, değişen SSH sunucu anahtarı) beş dakika boyunca ya
+        da bağlantı düzenlenene, kişi yeniden oturum açana (her kişinin kendi hesabıyla bağlandığı
+        bağlantılarda) veya bir bağlantı testi başarılı olana kadar hatırlanır: bu sürede Mongo Manager'ın
+        hiçbir bölümü (sayfalar, paneller, sağlık denetimi, işler, kabuk) onun için yeniden oturum açmaz ve
+        bağlantıyı yalnız yöneticileri yeniden test edebilir. Böylece dizin hizmetinin hesap kilitleme
+        kuralları hesabı kilitlemez; hata mesajı da nasıl yeniden deneneceğini söyler.
+      </p>
+
+      <h2 id="formats">Biçimler</h2>
+      <ul>
+        <li><code>.archive</code>: mongodump arşivi; <code>mongorestore --archive</code> ile açılır.</li>
+        <li>
+          <code>.archive.gz</code>: aynı arşivin gzip ile sıkıştırılmışı;
+          <code>mongorestore --archive --gzip</code>.
+        </li>
+        <li>
+          <code>.mmbak</code>: Zstandard ile sıkıştırılır, sonra her biri okunurken doğrulanan parçalar
+          halinde AES-256-GCM ile mühürlenir. Parola en az 12 karakter olmalıdır; "Güçlü bir parola üret"
+          sizin için bir tane üretir. Parola hiçbir yerde saklanmaz ve kurtarılamaz: o olmadan yedek açılamaz.
+          Mongo Manager'da açın ya da
+          <code>mongo-manager backup decrypt &lt;dosya&gt; -o &lt;dosya.archive&gt;</code> ile düz bir arşive
+          çevirin (parola ekrana yansımadan sorulur ya da <code>--password-stdin</code> ile bir borudan
+          okunur). <code>mongo-manager backup inspect &lt;dosya&gt;</code> her yedeğin içeriğini listeler.
+        </li>
+      </ul>
+
+      <h2 id="engines">Motorlar</h2>
+      <ul>
+        <li>
+          Yerleşik: Mongo Manager üzerinden okur; kişisel alan kuralları ve maskeleme uygulanır. Her kurulumda
+          çalışır ve arşivleri mongorestore ile açılır.
+        </li>
+        <li>
+          mongodump ve mongorestore: MongoDB'nin kendi araçları; çok büyük verilerde daha hızlı olabilir.
+          Kişisel değerleri gören bağlantı yöneticilerine sunulur; SSH tünelleri üzerinden kullanılamaz.
+          MongoDB Database Tools 100.9 veya üstünü (MongoDB 8.3 ve sonrası için 100.16 veya üstünü; Docker
+          imajının kendi araçları henüz bu sürümde değil, orada yerleşik motor kullanılır) kurup
+          <code>MM_MONGODB_TOOLS_PATH</code> ayarlayın ya da araçları içeren Docker imajını kullanın. Kimlik
+          bilgileri araçlara, iş bitince silinen özel ve geçici bir yapılandırma dosyasıyla ulaşır; asla komut
+          satırında yer almaz.
+        </li>
+      </ul>
+
+      <h2 id="time-series">Zaman serileri</h2>
+      <p>
+        Bir zaman serisi, mongodump'ın sunucunun sürümü için sakladığı gibi saklanır: MongoDB 8.3'ten itibaren
+        kendi adı altında, bu ad üzerinden <code>rawData</code> ile okunup yazılarak; 8.3'ten önce
+        <code>system.buckets.&lt;ad&gt;</code> altında. Yerleşik motor her iki türden yedeği, Mongo
+        Manager'ınkini de mongodump'ınkini de, desteklenen her sürüme geri yükler; bir 8.3 yedeğini daha eski
+        bir sunucuya da. mongorestore, 8.3 veya sonrası bir yedek ya da hedef için 100.16 veya üstünü ister ve
+        bir 8.3 yedeğindeki zaman serisini yalnızca yedeği mongodump 100.16 veya üstü ya da Mongo Manager'ın
+        bu sürümü yaptıysa bulur: başka türlü yapılmış bir yedek için plan yerleşik motoru önerir. Sürümünü
+        söylemeyen bir sunucu için tahmin yürütülmez: zaman serisi, nedeni yazılarak yedeğin dışında
+        bırakılır; onun geri yüklemesi planda reddedilir, tatbikatı da belgelerinden hiçbirini yazmadan durur
+        ve geçici veritabanını siler. MongoDB 8.3 ve sonrasında oturum açma gerekiyorsa, zaman serisini
+        yedekleyen ya da geri yükleyen hesabın ayrıca <code>performRawDataOperations</code> yetkisine sahip
+        olması gerekir (MongoDB'nin <code>backup</code> rolünde vardır; geri yükleme için
+        <code>restore</code> ile birlikte verin).
+      </p>
+
+      <h2 id="personal-data">Kişisel veri</h2>
+      <ul>
+        <li>
+          Kişisel değerleri göremeyen bir kullanıcı onların yerine <code>***</code> yedekler: böyle bir yedek
+          her zaman anonimdir. Herkes anonim yedek seçebilir.
+        </li>
+        <li>
+          Kişisel alanlı time series'ler ve tanımında maskelenecek bir değer bulunan view'lar maskeli yedeğin
+          dışında kalır. Doğrulayıcısında böyle bir değer bulunan bir koleksiyon, maskelenmiş verisiyle ama
+          doğrulayıcısı olmadan yedeğe girer. Rapor neyin neden dışarıda kaldığını söyler.
+        </li>
+        <li>Kişisel alan kuralları değişince maskeli bir yedek artık indirilemez ve geri yüklenemez.</li>
+        <li>
+          Maskeli bir yedeği var olan belgelerin üstüne geri yüklemek onay ister; çünkü
+          <code>***</code> saklanan değerlerin yerini alır.
+        </li>
+      </ul>
+
+      <h2 id="restoring">Geri yükleme</h2>
+      <ol>
+        <li>
+          Bir dosya bırakın, seçin ya da saklanan yedeklerinizden birini alın. Büyük dosyalar parça parça
+          yüklenir ve bağlantı koparsa kaldığı yerden sürer; dosyanın içeriği yükleme sürerken gösterilir.
+          Şifreli bir yedek parolasını sorar.
+        </li>
+        <li>
+          Neyin nereye geri yükleneceğini seçin: veritabanını tüm ad alanları için tek seferde yeniden
+          adlandırın, adlara <code>_restored</code> ekleyin ya da "Yeni bir veritabanına" seçin (yedeklenen
+          veritabanının adı ve tarihle adlandırılır, hedefte zaten olan bir ad asla seçilmez; birkaç
+          veritabanının yedeği her biri için ayrı bir yeni veritabanı alır, böylece aynı adlı koleksiyonlar
+          asla karşılaşmaz). Zaten var olan hedefler belge sayılarıyla işaretlenir. Bir koleksiyondaki "Buraya
+          geri yükle…" o koleksiyona geri yükler: tek koleksiyonluk bir yedek, adı ne olursa olsun o
+          koleksiyona gider.
+        </li>
+        <li>
+          Nasıl yazılacağını seçin: ekle (<code>_id</code>'si zaten olan belge reddedilir ve listelenir),
+          anahtar alanlarla upsert ya da değiştir. Değiştirme önce geçici bir koleksiyona geri yükler ve ancak
+          her şey gelince yerine koyar; böylece başarısız ya da iptal edilen bir geri yükleme hedefi olduğu
+          gibi bırakır. Yerleşik motorla, değiştirmenin yedekten almadığı şeyler (dışarıda bırakılınca
+          indeksleri ya da seçenekleri ve doğrulayıcısı) hedefin kendi ayarları olarak kalır: kendi
+          indekslerinden biri yeniden kurulamazsa ya da kendi sınırı (capped) yazılandan az belge tutacaksa
+          hiçbir şey değiştirilmez. mongorestore bunları koruyamaz. Bir time series, yedekte de hedefte de
+          olsa değiştirilemez; yeni bir koleksiyona geri yükleyin. Yeniden çalıştırılan bir geri yükleme, daha
+          önce yazdığı belgeleri olduğu gibi bulur ve onları reddetmek yerine zaten var olarak sayar; bir
+          deneme de öyle.
+        </li>
+        <li>
+          Onay gerekenleri onaylayın: yazılan koleksiyonun sahip olacağı TTL indeksleri ve koleksiyon süresi,
+          yedeğinkiler ya da bir değiştirmenin koruduğu hedefinkiler (rapor ve deneme, tarihleri süresini
+          çoktan geçmiş olduğu için yazılır yazılmaz silinen belgeleri, hedefin kendi TTL'i dahil sayar),
+          hedefte eksik kişisel alan kuralları (bir yönetici bunları ekleyebilir) ve değiştirmenin üstüne
+          yazacağı her dolu hedefin adı, yazılarak.
+        </li>
+        <li>
+          Ne olacağını görmek için bir deneme çalıştırın, sonra "Bu ayarlarla şimdi geri yükle"yi seçin ya da
+          geri yüklemeyi başlatın. Her ad alanının sağlaması doğrulanır; uyuşmazlık geri yüklemeyi başarısız
+          kılar. İlerlemesi ad alanı başına, ardından kurduğu indeksler ve görünümlerle gösterilir; bitince
+          bildirimi ve işler listesindeki satırı yazdığı yeri ("Koleksiyonu aç", birden çoksa "Veritabanını
+          aç") ve raporunu açar.
+        </li>
+      </ol>
+
+      <h2 id="kept-backups">Saklanan yedekler</h2>
+      <p>
+        Bir bağlantının, veritabanının ya da koleksiyonun Yedekler bölümü yedeklerinizi (koleksiyonunki onu
+        içerenleri) koruma biçimi, boyutu, yaşı ve ne zaman silineceğiyle, yedek alanı kullanımınızla birlikte
+        listeler. Bir yedeğin "…" menüsünden onu indirebilir, gönderebilir, geri yükleyebilir ya da
+        silebilirsiniz (geri almak için beş saniyeniz olur). Yedekler yalnız sizindir; bağlantısına
+        erişiminizi kaybettiğinizde ya da orada kişisel değerler sizden gizlendiğinde geri çekilir.
+      </p>
+
+      <h2 id="destinations">Hedefler</h2>
+      <p>
+        Bir yedek başka bir yere de gönderilebilir: sunucudaki bir klasöre, S3 uyumlu depolamaya, Google
+        Drive'a ya da bir WebDAV sunucusuna. Hedefleri yöneticiler <em>Hesap menüsü → Yedek hedefleri</em>
+        altında tanımlar ve her birini kimlerin kullanabileceğini seçer; diğerleri bir hedefin yalnız adını
+        görür, adresini ya da anahtarlarını asla. Anahtarlar şifreli saklanır; yalnız değiştirilebilir, geri
+        okunamaz.
+      </p>
+      <ul>
+        <li>
+          <strong>Sunucu klasörü:</strong> <code>MM_BACKUP_FOLDER_ROOTS</code> içinde listelenen klasörlerden
+          birinin içinde, veri klasörünün dışında mutlak bir yol. Bu ayar olmadan klasör hedefi oluşturulamaz.
+        </li>
+        <li>
+          <strong>S3 uyumlu depolama:</strong> uç nokta, bölge, bucket, erişim anahtarı kimliği ve gizli
+          anahtar. Hazır ayarlar Amazon S3, MinIO, Cloudflare R2 (hesap kimliğiniz), Backblaze B2,
+          DigitalOcean Spaces, DigitalOcean Spaces Cold Storage, Wasabi ya da başka bir S3 hizmeti için
+          doldurabildiklerini doldurur.
+        </li>
+        <li>
+          <strong>Google Drive:</strong> ekranda gösterilen bir kodla bağlanan kendi Google Cloud OAuth
+          istemciniz ya da bir Ortak drive'a yazan servis hesabı (aşağıya bakın).
+        </li>
+        <li>
+          <strong>WebDAV:</strong> sunucunun adresi, bir kullanıcı adı ve bir uygulama parolası (Nextcloud,
+          ownCloud ya da herhangi bir WebDAV sunucusu). Nextcloud ve ownCloud büyük yedekleri devam
+          ettirilebilir parçalar halinde alır.
+        </li>
+        <li>
+          <strong>Google Cloud Storage:</strong> bir bucket, isteğe bağlı bir önek, yedeklerin yazılacağı
+          depolama sınıfı (Standart, Nearline, Coldline ya da Archive — her sınıf hemen okunur; daha soğuk
+          olanlar en az bir süre faturalanır) ve bucket üzerinde <em>Storage Object User</em> rolü
+          (yeterlidir: nesneleri okur, yazar, listeler ve siler) olan bir servis hesabının JSON anahtarı.
+          Anahtar sunucuda mühürlenir; yalnızca hesabın adresi gösterilir. Yüklemeler bağlantı koparsa kaldığı
+          yerden sürer ve her kopya Google'ın MD5 değeriyle denetlenir.
+        </li>
+        <li>
+          <strong>Azure Blob Storage:</strong> bir depolama hesabı, bir kapsayıcı, isteğe bağlı bir önek ve
+          yedeklerin yazılacağı erişim katmanı (hesabın varsayılanı, Hot, Cool, Cold ya da Archive); SAS
+          belirteci ya da hesap anahtarıyla imzalanır. Yalnızca bu kapsayıcı için okuma, ekleme, oluşturma,
+          yazma, silme ve listeleme izni olan bir SAS belirteci en dar yetkidir; bitiş tarihinde çalışmayı
+          bırakır. Yalnızca bir SAS belirtecinin taşıyabileceği alanlar kabul edilir ve yalnızca seçilen
+          imzalama yolunun kullandığı kimlik bilgisi saklanır. Küçük bir yedek bütün olarak MD5 değeriyle
+          denetlenir. Büyük yedekler, her biri Azure tarafından MD5 ile denetlenen bloklar halinde gider ve
+          tamamlanan blob boyutuyla karşılaştırılır (Azure bloklardan oluşan bir blobun sağlama toplamını
+          tutmaz); yarıda kalan bir yükleme yalnızca kendi bloklarından devam eder — her yükleme bloklarını
+          işaretler, böylece başka bir denemenin bıraktığı bloklar asla bu yüklemenin sanılmaz. Archive
+          katmanındaki bir blob arşivde olarak gösterilir: <em>Çözdür…</em> onu standart ya da yüksek
+          öncelikle Cool katmanına taşır (orada kalır). Bildirim dosyaları hiçbir zaman Archive'a yazılmaz.
+          <em>Gelişmiş</em> bölümü başka bir Azure bulutunun uç noktasını ve bir CA sertifikasını alır.
+        </li>
+        <li>
+          <strong>SFTP:</strong> bir sunucu, portu, bir kullanıcı adı, isteğe bağlı bir klasör (boşsa oturum
+          klasörü; var olmalıdır) ve bir parola ya da özel anahtar (parolasıyla). Sunucunun anahtarı SHA-256
+          parmak iziyle sabitlenir: parmak izini boş bırakın, <em>Bağlantıyı test et</em>'i çalıştırın,
+          gösterilen anahtarı sunucunun kendi anahtarıyla karşılaştırın (örneğin sunucuda
+          <code>ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub</code>) ve
+          <em>Bu anahtara güven ve yeniden test et</em>'i seçin. Anahtarı güvenilen anahtar olmayan bir
+          sunucuya hiçbir şey gönderilmez; değişen bir anahtar parolayı ya da özel anahtarı yeniden ister.
+          Yedekler <code>.part</code> dosyaları olarak yazılır, tamamlanınca yeniden adlandırılır ve yarıda
+          kalan bir yükleme kaldığı yerden sürer — ancak .part dosyasının tuttuğu kısım geri okunup yedeğin
+          başı olduğu görüldükten sonra (geri okuyarak doğrulama kapalı olsa bile); öyle olmayan bir .part
+          dosyası baştan başlar. SFTP sağlama toplamı tutmadığından,
+          <em>Geri okuyarak doğrula</em> kapatılmadıkça her kopya bütünüyle geri okunur. Yeniden yazılan bir
+          bildirim dosyası, sunucu <code>posix-rename@openssh.com</code> sunuyorsa (OpenSSH sunar) eskisinin
+          yerini bir anda alır. Bir dakika boyunca hiçbir şey almayan bir indirme bırakılır. Bağlantı, diğer
+          hedeflerle aynı adres denetimlerinden ve vekil sunucudan geçer.
+        </li>
+      </ul>
+      <p>
+        <em>Erişim</em> adımında hedefi başka kimlerin kullanabileceğini seçin: <em>Gönder</em>, kullanıcının
+        kendi yedeklerini oraya göndermesine ve gönderdiklerini geri yüklemesine izin verir;
+        <em>Tümüne göz at</em>, oradaki her yedeği, başka kullanıcılarınkiler dahil, okumasına izin verir.
+        Yöneticiler her hedefi her zaman kullanabilir.
+      </p>
+
+      <h3 id="testing">Hedefi test etmek</h3>
+      <p>
+        Düzenleyicinin son adımı <em>Test et ve kaydet</em>, gerçek hedefte <em>Bağlantıyı test et</em>'i
+        çalıştırır ve her adımı süresiyle gösterir: <em>Adresi bul</em>, <em>Güvenli bağlan</em>,
+        <em>Oturum aç</em>, <em>Deneme dosyası yaz</em>, <em>Geri oku</em> ve <em>Sil</em>. Sunucu klasöründe
+        ilk ikisi <em>Bu sunucuda</em> olarak görünür. Başarısız olan adım nedenini söyler; ondan sonrakiler
+        <em>Çalıştırılmadı</em> olarak kalır. Testten sonra değişen bir ayar yeni bir test ister. Başarısız
+        bir testten sonra <em>Kaydet</em> önce <em>Başarılı bir test olmadan kaydedilsin mi?</em> diye sorar;
+        <em>Yine de kaydet</em> hedefi sonradan düzeltilmek üzere olduğu gibi kaydeder. Kayıtlı bir hedefi
+        menüsündeki <em>Şimdi test et</em> ile yeniden test edebilirsiniz. Hedefin kartı sonucu gösterir:
+        <em>Sağlıklı</em>, <em>Dikkat gerekiyor</em>, <em>Yeniden bağlanmalı</em> (Google Drive, aşağıya
+        bakın) ya da <em>Henüz test edilmedi</em>.
+      </p>
+
+      <h3 id="google-drive">Google Drive</h3>
+      <p>
+        Mongo Manager Drive'a kendi Google Cloud OAuth istemcinizle ya da Google Workspace'te bir servis
+        hesabıyla bağlanır. Yalnız <code>drive.file</code> kapsamını ister: o Drive'da yalnız kendi
+        oluşturduğu dosya ve klasörleri görür, başka hiçbir şeyi görmez.
+      </p>
+      <p><strong>Google hesabınızla</strong> (düzenleyicide <em>Google hesabım</em>):</p>
+      <ol>
+        <li>
+          Google Cloud konsolunda bir proje seçin ya da oluşturun.
+          <em>APIs &amp; Services (API'ler ve Hizmetler) → Library (Kitaplık)</em> altında
+          <em>Google Drive API</em>'yi etkinleştirin.
+        </li>
+        <li>
+          Önce <em>OAuth consent screen (OAuth izin ekranı)</em>'nı yapılandırın (yeni konsollarda
+          <em>Google Auth Platform</em>, <em>Branding (Markalama)</em> ve
+          <em>Audience (Kitle)</em> bölümleriyle). Google Workspace'te kullanıcı türü olarak
+          <em>Internal (Dahili)</em>'yi seçin: yalnız kuruluşunuzun hesapları bağlanabilir. Değilse
+          <em>External (Harici)</em>'yi seçin, sonra durumu <em>In production (Üretimde)</em> olsun diye
+          <em>Publish app (Uygulamayı yayınla)</em>'yı seçin; <code>drive.file</code> hassas olmayan bir
+          kapsam olduğundan yayınlamak Google'ın incelemesini gerektirmez. Harici bir uygulamayı
+          <em>Testing (Test)</em> durumunda bırakmayın: Google onun oturumlarını 7 gün sonra geçersiz kılar ve
+          hedef <em>Yeniden bağlanmalı</em> olarak görünür.
+        </li>
+        <li>
+          <em
+            >Credentials (Kimlik bilgileri) → Create credentials (Kimlik bilgisi oluştur) → OAuth client ID
+            (OAuth istemci kimliği)</em
+          >
+          yolunu izleyin ve tür olarak
+          <em>TVs and Limited Input devices (TV'ler ve Sınırlı Giriş cihazları)</em>'nı seçin. Yönlendirme
+          adresi gerekmez. İstemci kimliğini ve istemci gizli anahtarını saklayın.
+        </li>
+        <li>
+          Düzenleyicide <em>OAuth istemci kimliği</em> ve <em>OAuth istemci gizli anahtarı</em> alanlarını
+          doldurup <em>Google hesabını bağla</em>'yı seçin. Gösterilen adresi (google.com/device) açın ve geri
+          sayım bitmeden kodu, yedekleri tutacak Google hesabıyla girin. Düzenleyici ardından "&lt;hesap&gt;
+          <em>olarak bağlandı</em>" der. Yedekler uygulamanın oluşturduğu bir klasöre gider (<em
+            >Klasör adı</em
+          >; değiştirmezseniz "Mongo Manager backups").
+        </li>
+        <li>
+          Google bağlantıyı artık kabul etmediğinde (erişim Google hesabından kaldırıldıysa, altı ay
+          kullanılmadıysa ya da uygulama Test durumunda kaldıysa) hedef <em>Yeniden bağlanmalı</em> olarak
+          görünür. <em>Düzenle…</em>'yi açın, <em>Yeniden bağlan</em>'ı seçin, yeni kodu girin ve kaydedin.
+          Bunun için kayıtlı istemci gizli anahtarı kullanılır: yeniden girmezsiniz ve tarayıcıya hiç geri
+          gelmez.
+        </li>
+      </ol>
+      <p><strong>Servis hesabıyla</strong> (Google Workspace, düzenleyicide <em>Servis hesabı</em>):</p>
+      <ol>
+        <li>
+          Aynı projede
+          <em>IAM &amp; Admin (IAM ve Yönetici) → Service accounts (Hizmet hesapları)</em> altında bir servis
+          hesabı oluşturun (rol gerekmez). Onun <em>Keys (Anahtarlar)</em> sekmesinde
+          <em>Add key (Anahtar ekle) → Create new key (Yeni anahtar oluştur)</em> ile JSON türünde bir anahtar
+          oluşturun.
+        </li>
+        <li>
+          Google Drive'da yedekleri tutacak Ortak drive'ı açın, <em>Üyeleri yönet</em>'i seçin ve servis
+          hesabının adresini <em>İçerik yöneticisi</em> olarak ekleyin (servis hesabının kendi depolama alanı
+          yoktur). Ortak drive'ın kimliği adresinin son parçasıdır
+          (<code>drive.google.com/drive/folders/&lt;kimlik&gt;</code>).
+        </li>
+        <li>
+          Düzenleyicide anahtarı <em>Servis hesabı anahtarı (JSON)</em> alanına yapıştırın ya da dosyasını
+          bırakın ve <em>Ortak drive kimliği</em>'ni girin. Ekranda yalnız hesabın adresi kalır.
+        </li>
+      </ol>
+
+      <h3>Yedek göndermek</h3>
+      <p>
+        Yedek alırken hedefleri <em>Nereye</em> altında seçin ya da saklanan bir yedekte <em>Gönder…</em>'i
+        kullanın. Her kopya yedeğin satırında görünür: gönderilirken ilerlemesiyle "&lt;hedef&gt;
+        <em>hedefine gönderiliyor</em>", doğrulandıktan sonra "&lt;hedef&gt; <em>üzerinde</em>", olmazsa
+        nedeniyle birlikte "&lt;hedef&gt; <em>hedefine gönderilemedi</em>".
+      </p>
+      <ul>
+        <li>
+          Bir hedef, bir yönetici kapatmadıkça <strong>yalnız şifreli yedekleri</strong> kabul eder
+          (değişiklik denetim kaydına yazılır).
+        </li>
+        <li>
+          Kişisel alan kuralları olan verinin yedeği, hedefin ayarı ne olursa olsun, ancak şifreli ya da
+          maskeli ise bir hedefe gider.
+        </li>
+        <li>
+          Bir kopya ancak doğrulandığında gönderilmiş sayılır. Her hedef boyutu karşılaştırır. S3 uyumlu
+          depolama ayrıca yüklenen her parçayı gelirken SHA-256'sıyla denetler; Google Drive bildirdiği
+          sağlama toplamını karşılaştırır. Sunucu klasörü dosyanın tamamını geri okur ve SHA-256'sını
+          karşılaştırır; <em>Her yüklemeyi geri okuyarak doğrula</em> açıkken WebDAV da öyle yapar (trafik iki
+          katına çıkar). Bu seçenek kapalıyken WebDAV yalnız boyutu denetler ve pencere bunu söyler.
+          Doğrulanamayan bir kopya hedeften silinir.
+        </li>
+        <li>
+          <em>Doğrulanmış yüklemeden sonra yerel kopyayı sil</em> bu doğrulamaya dayanır: sunucudaki kopya
+          ancak seçilen her hedef kendi kopyasını doğruladığında silinir. Biri başarısız olursa yerel kopya
+          bir gönderimin yeniden denenebileceği süre olan 7 gün tutulur ve iş bunu söyler; iptal edilen bir
+          gönderim onu asla silmez.
+        </li>
+        <li>
+          Her hedef aynı anda sınırlı sayıda aktarım çalıştırır (<code>MM_BACKUP_DEST_TRANSFERS</code>,
+          varsayılan 2, gönderim ve indirmeler birlikte). Fazlası bekler; iş, bir yer boşalana kadar
+          "&lt;hedef&gt; <em>bekleniyor</em>" der.
+        </li>
+        <li>
+          Gönderilemeyen bir kopyada <em>Yeniden dene</em>, onu yeniden gönderir ve
+          <em>Yerel kopyayı sil</em> seçimini korur: o ve aynı seçimle gönderilen diğer kopyalar
+          doğrulandığında yerel kopya silinir. <em>Kopyayı at</em>, başarısız kopyayı bırakır ve yarım kalan
+          yüklemesinden vazgeçer.
+        </li>
+        <li>
+          Sunucunun yeniden başlamasıyla yarıda kalan bir gönderim, "Gönderilirken sunucu yeniden başladı."
+          nedeniyle gönderilemeyen bir kopya olur; <em>Yeniden dene</em>, sağlayıcının sakladığı yerlerde (S3
+          çok parçalı yüklemeleri, Nextcloud parçaları) zaten yüklenmiş parçalardan devam eder.
+        </li>
+      </ul>
+
+      <h3>Orada ne saklanır</h3>
+      <p>
+        Dosyalar hedefin klasöründe ya da önekinde <code>mongo-manager/&lt;yıl&gt;/&lt;ay&gt;/</code> altına,
+        tarih, saat ve kısa bir kimlikle adlandırılarak, boyutu, biçimi ve sağlama toplamını taşıyan küçük bir
+        <code>.json</code> manifestin yanına konur; manifest en son, dosya doğrulandıktan sonra yazılır. Ne
+        adlarda ne manifestte veritabanı ya da koleksiyon adı bulunur.
+      </p>
+
+      <h3>Bir hedeften geri yükleme</h3>
+      <p>
+        Yedekler kartında hedefin sekmesini ya da geri yükleme sayfasında <em>Bir hedeften</em>'i seçin ve bir
+        yedek seçin. Geri yüklemek için hedef bağlantıya yazma yetkisi gerekir. Dosya sunucuya indirilir ve
+        gelirken önizlenir; geri yükleme, indirme tamamlanıp sağlama toplamı gönderilirken kaydedilenle ya da
+        manifesttekiyle tuttuğunda başlayabilir. Sağlama toplamı tutmayan dosya silinir. Manifesti olmayan bir
+        dosya (başka bir araçla ya da elle konmuş) <em>Başka bir kurulumdan</em> olarak listelenir: geri
+        yüklenebilir, ama önceden hiçbir şey onu doğrulayamaz ve geri yükleme sayfası bunu söyler.
+      </p>
+      <p>
+        Başarısız olan bir indirme aldığı kısmı tutar: aynı yedeği yeniden seçmek kaldığı yerden sürdürür.
+        İptal edilen indirme atılır; aldığı kısım işe yaramayan (sağlama toplamı tutmayan ya da dosyası
+        kaybolan) indirme de. Alınan kısım, sürdürülene, atılana ya da süresi dolana
+        (<code>MM_BACKUP_TTL_HOURS</code>) kadar yedek alanınızdan sayılır.
+      </p>
+      <p>
+        Yeni bir kurulumda hedefi aynı ayarlarla yeniden tanımlayın: aynı klasör; aynı uç nokta, bucket ve
+        önek; aynı WebDAV adresi ve klasörü. Google Drive için aynı OAuth istemcisini (ya da aynı servis
+        hesabını ve Ortak drive'ı) ve aynı klasör adını kullanın: <code>drive.file</code> ile bir istemci
+        yalnız kendi oluşturduğu dosyaları görür. Yöneticiler oradaki her yedeği, eski kurulumunkiler dahil,
+        görür. Diğerlerinin <em>Tümüne göz at</em> yetkisine ihtiyacı vardır: <em>Gönder</em> yalnız o
+        kullanıcının bu kurulumdan gönderdiği yedekleri gösterir.
+      </p>
+
+      <h3>Cold Storage ve arşiv depolama sınıfları</h3>
+      <p>
+        DigitalOcean Spaces Cold Storage yedekleri ucuza tutar ve hemen okunabilir kalırlar; ama her nesne en
+        az 30 gün için faturalanır ve sağlayıcı bir kotanın ötesinde veri geri okuma ücreti alabilir:
+        gönderdikten kısa süre sonra silmek ya da geri yüklemek ücretlidir.
+      </p>
+      <p>
+        Bir S3 hedefinin <em>Depolama sınıfı</em> (<em>Gelişmiş</em> altında, varsayılan
+        <code>STANDARD</code>) yedek dosyalarına uygulanır; manifestler <code>STANDARD</code>'da kalır.
+        <code>GLACIER</code> ya da <code>DEEP_ARCHIVE</code>'daki dosyalar çözdürülene kadar okunamaz: hedefin
+        listesi onları arşivde olarak, bir <em>Çözdür…</em> eylemiyle gösterir; bu eylem çözülen kopyanın ne
+        kadar okunabilir kalacağını (1–30 gün) ve sağlayıcının ne hızla çalışacağını (Standart, Toplu — en
+        ucuz ve en yavaş — ya da Hızlandırılmış, Deep Archive için değil) sorar. Sağlayıcı çözdürmeyi ve o
+        günleri ücretlendirir. Sürerken kopya çözdürülüyor olarak görünür; çözülünce günler dolana kadar
+        listeden geri yüklenebilir. Hedeften geri yükleyebilen herkes çözdürebilir (gönderen, kendi
+        kopyalarını); dakikada en çok 10 çözdürme yapılabilir ve her biri denetim kaydına yazılır.
+        <code>GLACIER_IR</code>, <code>STANDARD_IA</code>, <code>ONEZONE_IA</code> ve
+        <code>INTELLIGENT_TIERING</code> hemen okunur.
+      </p>
+
+      <h2 id="scheduled">Zamanlanmış yedekler</h2>
+      <p>
+        Bir zamanlama aynı yedeği düzenli olarak yeniden alır, her birini seçtiğiniz hedeflere gönderir ve
+        saklama kuralının söylediği kadarını tutar. <em>Hesap menüsü → Zamanlanmış yedekler</em>'i, komut
+        paletini ("Zamanlanmış yedekleri aç") ya da bir bağlantının veya veritabanının Yedekler bölümündeki
+        <em>Zamanla…</em> düğmesini kullanın; sonuncusu zamanlamayı o bağlantı için başlatır. Düzenleyicinin
+        altı adımı vardır: ne, ne zaman, koruma, nereye, saklama ve sunucu denetimleriyle bir özet.
+      </p>
+
+      <h3 id="scheduled-who">Kimler zamanlayabilir</h3>
+      <ul>
+        <li>
+          Bir bağlantıyı yedekleyebilen herkes onu zamanlayabilir (orada belge okuma, iş çalıştırma ve dışa
+          aktarma yetkisi). Her çalışma, sahibinin o andaki yetkileriyle yapılır; zamanlama kaydedildiği
+          andaki yetkilerle değil.
+        </li>
+        <li>
+          Kaybedilen bir yetki, hiçbir veri okunmadan zamanlamayı duraklatır ve nedeni kartında yazar: sahibin
+          hesabı devre dışı, sahibi artık bu bağlantıyı yedekleyemiyor ya da bir hedefe gönderemiyor, bir
+          hedef silindi, yedek anahtarı etkin değil, şifresiz bir zamanlamanın kapsamı artık kişisel veri
+          içeriyor, bir hedef artık yalnızca şifreli yedek kabul ediyor, bu sunucu sıklığını ya da saat
+          dilimini okuyamıyor (başka bir sürümün bildiği bir saat dilimi) ya da sunucuda tuttuğu kopyalar
+          yedek alanınızı dolduruyor. Neden ortadan kalkınca sürdürün.
+        </li>
+        <li>
+          Yöneticiler her zamanlamayı görür; duraklatabilir, sürdürebilir, çalıştırabilir ve silebilir, ama
+          başka bir kullanıcının zamanlamasını düzenlemez. Bir yöneticinin duraklattığı zamanlamayı bir
+          yönetici sürdürür. Bir kullanıcı en çok 10 zamanlama tutabilir.
+        </li>
+      </ul>
+
+      <h3 id="cadence">Ne zaman çalışır</h3>
+      <ul>
+        <li><strong>N saatte bir</strong> (1–24), saatin seçilen dakikasında.</li>
+        <li><strong>Günlük</strong>, günün en çok dört saatinde.</li>
+        <li><strong>Haftalık</strong>, seçtiğiniz günlerde, bir saatte.</li>
+        <li><strong>Aylık</strong>, 1–28 arasındaki bir günde ya da ayın son gününde, bir saatte.</li>
+        <li>
+          <strong>Gelişmiş</strong>: beş alanlı bir cron ifadesi (dakika, saat, ayın günü, ay, haftanın günü);
+          yazdıkça sözcüklerle okunur. Klasik Vixie kurallarına uyar: ayın günü ve haftanın günü ikisi birden
+          kısıtlıysa birinin tutması yeter; <code>*</code> ile başlayan bir alan kısıtsız sayılır.
+          <code>@</code> kısaltmaları, saniye ve <code>L</code>, <code>W</code>, <code>#</code> yoktur.
+        </li>
+      </ul>
+      <p>
+        Çalışmalar arasında en az bir saat olmalı ve zamanlama önümüzdeki beş yıl içinde çalışmalıdır;
+        düzenleyici sonraki çalışmaları zamanlamanın saat diliminde gösterir ve bu kurallardan biri
+        bozulduğunda söyler.
+      </p>
+
+      <h3 id="time-zones">Saat dilimleri ve yaz saati</h3>
+      <p>
+        Her zamanlamanın kendi saat dilimi vardır (varsayılan sizinki); saatler o dilimdeki duvar saatidir.
+        Saatler ileri alındığında o gün var olmayan bir saat, değişiklikten sonraki ilk dakikada çalışır. Geri
+        alındığında iki kez yaşanan bir saat bir kez, ilk geldiğinde çalışır. Saatlik bir zamanlama,
+        tekrarlanan saatte bir saat içinde iki kez çalışmak yerine bir çalışmasını atlar.
+      </p>
+
+      <h3 id="missed-runs">Kaçırılan çalışmalar, çakışma ve kuyruk</h3>
+      <ul>
+        <li>
+          Sunucu bir çalışma zamanında kapalıysa, bir sonraki açılışta, kaçırılan en son zaman zamanlamanın
+          kendi aralığından (en çok bir gün) eski değilse bir telafi yedeği alınır. Kaçırılan diğer zamanlar
+          kaçırıldı olarak kaydedilir; hiçbir zaman birden fazla telafi yapılmaz.
+        </li>
+        <li>
+          Bir önceki çalışma sürerken ya da hâlâ sırasını beklerken zamanı gelen çalışma atlanır ve hangisi
+          olduğuyla birlikte atlandı olarak kaydedilir.
+        </li>
+        <li>
+          Aynı anda en çok <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code> zamanlanmış çalışma yürür (varsayılan
+          2). Diğerleri zaman sırasıyla en çok altı saat bekler; daha uzun bekleyen çalışma atlanır.
+        </li>
+        <li>
+          İleri sıçrayan bir saat en çok bir telafi verir; geri giden bir saat hiçbir şeyi iki kez
+          çalıştırmaz.
+        </li>
+      </ul>
+
+      <h3 id="run-history">Şimdi çalıştır ve çalışma geçmişi</h3>
+      <p>
+        <em>Şimdi çalıştır</em> bir sonraki çalışmayı kaydırmadan hemen bir çalışma başlatır; bir zamanlama
+        aynı anda bir kez çalışır. Her kart son çalışmalarını bir şerit olarak gösterir: yeşil başarılı,
+        kehribar kısmi (bir hedef başarısız), kırmızı başarısız, gri atlandı, kesikli çerçeve kaçırıldı ve
+        süren çalışma için yanıp sönen bir işaret. Çalışma geçmişi her çalışmayı sonucu, süresi, boyutu, her
+        kopyanın nereye gittiği, saklamanın kaldırdıkları ve başarılı olmayan bir çalışma için nedeniyle
+        listeler. Her zamanlamanın son 200 çalışması saklanır. Son biten çalışması başarısız ya da kısmi olan
+        bir kart bunu nedeniyle birlikte söyler. Bir zamanlamanın başlattığı işler iş listesinde adını taşır;
+        duraklamış ya da başarısız olan bir zamanlamanız hesap menüsünü işaretler.
+      </p>
+
+      <h3 id="scheduled-protection">Koruma ve hedefler</h3>
+      <ul>
+        <li>
+          Varsayılan olarak her çalışma, yedek anahtarınızla mühürlenmiş şifreli bir
+          <code>.mmbak</code> dosyasıdır (bkz. <a href="security.html#backup-keys">Yedek anahtarları</a>):
+          yazılacak bir parola yoktur ve kurtarma kiti onu her yerde açar. Önce
+          <em>Hesap ayarları → Yedek anahtarları</em>
+          altında bir anahtar oluşturun.
+        </li>
+        <li>
+          Şifresiz bir biçime (<code>.archive</code> ya da <code>.archive.gz</code>) yalnızca kapsam kişisel
+          veri içermiyorsa ve seçilen her hedef şifresiz yedek kabul ediyorsa izin verilir; ikisi de her
+          çalışmadan önce yeniden denetlenir.
+        </li>
+        <li>
+          Her çalışma, sizinle paylaşılan hedeflerden seçtiklerinize gider; her hedefte doğrulanmış bir kopya
+          olunca bu sunucudaki kopya silinir. <em>Sunucuda da tut</em> onu burada da, aynı saklama kuralıyla
+          ve yedek alanınızda tutar; düzenleyici bunların yaklaşık ne kadar yer tutacağını söyler.
+          Kapatıldığında o ana kadar tutulan kopyalar normal saklama süresine geçer.
+        </li>
+      </ul>
+
+      <h3 id="restore-drills">Geri yükleme tatbikatları</h3>
+      <p>
+        Bir yedek, ancak geri yüklenebildiği kadar iyidir. "Yedeklerin geri yüklendiğini sına" (saklama
+        adımında) belirli sayıda çalıştırmada bir (1 ile 30 arası) bir geri yükleme tatbikatı yapar: o
+        çalıştırmanın yedeği yedek anahtarınızla açılır, aynı bağlantıda yeni ve geçici bir veritabanına
+        (<code>mm_drill_</code> ve 12 rastgele karakter) geri yüklenir, her ad alanı geri okunup yedekle
+        karşılaştırılır — belge sayısı ve her belge bayt bayt — ve sonuç ne olursa olsun geçici veritabanı
+        silinir. Geçici veritabanı var olduğu sürece, yöneticiler dahil herkese kapalıdır: ağaçta, Performans
+        sayfasında, yavaş sorgularda ya da çalışan işlemlerde listelenmez (veritabanlarının toplam boyutuna da
+        katılmaz); hiçbir sayfa, istek, kabuk komutu, asistan, değişiklik akışı, canlı senkron, kopya,
+        karşılaştırma, yedek ya da geri yükleme onu okumaz veya ona yazmaz — onu adlandıran bir istek
+        reddedilir. Uygulamanın erişemediği iki şey kalır: bir bağlantı yöneticisinin kabuğundaki
+        <code>listDatabases</code> yanıtı adını hâlâ gösterir (açılamaz) ve tatbikatın yazdıkları, her yazma
+        gibi, oplog'da (<code>local.oplog.rs</code>, yalnızca yöneticiler) ve bir yöneticinin kabuğunda açılan
+        dağıtım çapındaki bir değişiklik akışında görünür. Ayrıca içindekilerin kişisel veri kurallarını
+        (yedeğinkileri ve bağlantının o ad alanları için olanları) taşır; böylece değerleri, görmemesi gereken
+        herkesten gizlenir. Bu kurallar bağlantının listesine eklenmez ve veritabanıyla birlikte gider.
+        Koleksiyonlar seçenekleri olmadan geri yüklenir (bir doğrulayıcı ya da sınır, sınamayı hedefin
+        sınamasına çevirirdi) ve görünümler denetlenmez. Çalıştırma, tatbikat bitene kadar sunucudaki
+        kopyasını tutar, sonra her zamanki gibi bırakır. Çalıştırma geçmişi her tatbikatın başarılı mı
+        başarısız mı olduğunu (ve hangi ad alanlarında) söyler, tatbikatın raporu işler listesindedir ve
+        başarısız bir tatbikat uyarı verir. Tatbikat, bağlantıda veritabanı oluşturma izni ister; bu izin
+        yoksa (ya da bağlantı salt okunursa) yedek değil, tatbikat atlanır. Yedekteki kadar veri yazar ve
+        bağlantı hangi üyeyi gösterirse göstersin yazmalar birincil üyeye gider: sakin bir zaman seçin. Bir
+        şey yazmadan önce bağlantının MongoDB kullanıcısının veritabanı silebildiğini denetler (arkasını
+        toplayamayacak bir tatbikat hemen başarısız olur), hiçbir veritabanının kullanmadığı bir geçici ad
+        seçer ve yazdıklarını sunucunun boş disk alanının yarısının altında tutar — mongos üzerinden en dolu
+        parçanınkinin; ayarlanmışsa <code>MM_BACKUP_DRILL_MAX_MB</code> değerinin de altında; boş alanını
+        bildirmeyen bir sunucu (Atlas paylaşımlı katmanları) bu ayarı gerektirir — daha büyük bir yedek
+        tatbikatı, nedeni söylenerek, başarısız kılar. Okunamayan bir silme hakkı varsayılmaz: tatbikat
+        başlamaz. Geçici veritabanı sonunda silinemezse tatbikat başarısız olur, bir uyarı verilir ve rapor
+        veritabanının adını söyler: bağlantının yöneticileri onu bağlantının sayfasında görür ve adını yazarak
+        orada siler (herhangi bir tatbikat çalışırken değil). Bu arada herkese kapalıdır ve bir yeniden
+        başlatma onu siler.
+      </p>
+
+      <h2 id="retention">Saklama</h2>
+      <p>
+        Saklama kuralı, bir zamanlamanın her konumda (her hedef ve kopya tutuyorsa bu sunucu) hangi yedekleri
+        tuttuğunu belirler. Zamanlamanın saat diliminde sayılan dört katman vardır; herhangi bir katmanın
+        tuttuğu yedek kalır:
+      </p>
+      <ul>
+        <li><strong>En yeni</strong>: en son N yedek (1–100).</li>
+        <li><strong>Günlük</strong>: her takvim gününün en yeni yedeği, o kadar gün boyunca (0–90).</li>
+        <li>
+          <strong>Haftalık</strong>: her ISO haftasının (pazartesi–pazar) en yenisi, o kadar hafta boyunca
+          (0–52).
+        </li>
+        <li><strong>Aylık</strong>: her takvim ayının en yenisi, o kadar ay boyunca (0–60).</li>
+      </ul>
+      <p>
+        Hazır kalıplar: <em>30 gün boyunca günlük</em> (en yeni 7 ve 30 gün boyunca günde bir),
+        <em>Standart</em> (en yeni 7, 14 gün, 8 hafta ve 12 ay), <em>Uzun</em> (en yeni 7, 30 gün, 26 hafta ve
+        60 ay) ve <em>Özel</em>. Düzenleyici nelerin kalacağını bir zaman çizelgesinde gösterir.
+      </p>
+      <ul>
+        <li>
+          Bir konumda yalnızca zamanlamanın kendi tamamlanmış ve doğrulanmış kopyaları kaldırılır; elle
+          gönderilmiş bir kopya, zamanlanmış bir yedeğin kopyası olsa bile, hiçbir zaman kaldırılmaz.
+          Sahibinin artık kullanamadığı bir hedefte hiçbir şey kaldırılmaz.
+        </li>
+        <li>En yeni yedek asla kaldırılmaz; başarısız bir çalışma hiçbir şey kaldırmaz.</li>
+        <li>
+          Bir konumda kaldırma, bu çalışmanın oradaki kopyası tamamlandıktan sonra yapılır; konum ve çalışma
+          başına en çok 100 kaldırma. Başarısız olan bir kaldırma bir sonraki çalışmadan sonra yeniden
+          denenir. Her kaldırma, dosyanın adıyla denetim günlüğüne yazılır.
+        </li>
+        <li>
+          Bir defada ondan fazla yedeği kaldıracak bir kural, saat dilimi, hedef ya da tutma değişikliği önce
+          sayının onaylanmasını ister.
+        </li>
+        <li>
+          DigitalOcean Spaces Cold Storage her nesneyi en az 30 gün için ücretlendirir: bir kural orada
+          yedekleri daha kısa tutacaksa düzenleyici uyarır.
+        </li>
+      </ul>
+
+      <h2 id="opening-scheduled">Zamanlanmış bir yedeği açmak</h2>
+      <ul>
+        <li>
+          Bu sunucuda onu diğer yedekler gibi geri yükleyin: yedek anahtarınızla (emekliye ayrılmış anahtarlar
+          dahil) açılır ve geri yükleme hangi anahtarın açtığını söyler.
+        </li>
+        <li>
+          Başka bir yerde ya da anahtarlarınızdan hiçbiri açmıyorsa geri yükleme, yedeğin kurtarma kitini
+          ister (yapıştırın ya da dosyasını seçin). Kit yalnızca o geri yükleme için kullanılır ve saklanmaz;
+          <em>Bu anahtarı içe aktar</em> işaretlenirse anahtar yedek anahtarlarınıza eklenir.
+        </li>
+        <li>
+          Uygulama olmadan:
+          <code
+            >mongo-manager backup decrypt &lt;file.mmbak&gt; --key-file &lt;kit.txt&gt; -o
+            &lt;file.archive&gt;</code
+          >
+          şifresiz arşivi yazar; o da <code>mongorestore --archive</code> ile açılır.
+          <code>--key-file</code> olmadan, yalnızca yedek anahtarıyla açılan bir dosya hiçbir şey sormadan
+          önce bunu söyler.
+        </li>
+      </ul>
+
+      <h2 id="limits-and-settings">Sınırlar ve ayarlar</h2>
+      <ul>
+        <li><code>MM_BACKUP_QUOTA</code>: kullanıcı başına yedek alanı, MiB (varsayılan 20 480).</li>
+        <li>
+          <code>MM_BACKUP_TOTAL_QUOTA</code>: tüm kullanıcılar için yedek alanı, MiB (varsayılan 102 400).
+        </li>
+        <li><code>MM_BACKUP_MAX_UPLOAD</code>: geri yüklenecek en büyük dosya, MiB (varsayılan 20 480).</li>
+        <li><code>MM_BACKUP_TTL_HOURS</code>: yedeklerin ve yüklemelerin tutulma süresi (varsayılan 24).</li>
+        <li>
+          <code>MM_BACKUP_MAX_JOB_HOURS</code>: bir yedekleme ya da geri yüklemenin en uzun süresi (varsayılan
+          12).
+        </li>
+        <li><code>MM_BACKUP_CHUNK_MB</code>: şifreli yedeklerin varsayılan parça boyutu (varsayılan 64).</li>
+        <li><code>MM_MONGODB_TOOLS_PATH</code>: mongodump ve mongorestore'un klasörü.</li>
+        <li>Bir arşivde en çok 10 000 ad alanı; bir mongodump klasörünün zip'i 4 GiB'tan küçük olmalıdır.</li>
+        <li>
+          <code>MM_BACKUP_SCHEDULES</code> ve <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code>: zamanlamanın açık
+          ya da kapalı olması ve aynı anda yürüyen zamanlanmış çalışmalar (bkz.
+          <a href="deployment.html#scheduled-backups">Kurulum ve dağıtım</a>).
+        </li>
+      </ul>
+
+      <h2 id="not-covered">Kapsam dışı</h2>
+      <p>
+        Kullanıcılar ve roller, oplog ve belirli bir ana geri dönüş. Bir yedek koleksiyonları tek bir anda
+        değil, birbiri ardına okur: bu sırada yazılan belgeler kısmen içinde olabilir. Tek bir anın kopyası
+        için yazmaların durduğu bir replica set üyesini yedekleyin ya da MongoDB'nin kendi anlık görüntülerini
+        kullanın.
+      </p>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Bu sayfada</p>
+      <ol>
+        <li><a href="#taking-a-backup">Yedek almak</a></li>
+        <li><a href="#formats">Biçimler</a></li>
+        <li><a href="#engines">Motorlar</a></li>
+        <li><a href="#time-series">Zaman serileri</a></li>
+        <li><a href="#personal-data">Kişisel veri</a></li>
+        <li><a href="#restoring">Geri yükleme</a></li>
+        <li><a href="#kept-backups">Saklanan yedekler</a></li>
+        <li><a href="#destinations">Hedefler</a></li>
+        <li><a href="#scheduled">Zamanlanmış yedekler</a></li>
+        <li><a href="#retention">Saklama</a></li>
+        <li><a href="#opening-scheduled">Zamanlanmış bir yedeği açmak</a></li>
+        <li><a href="#limits-and-settings">Sınırlar ve ayarlar</a></li>
+        <li><a href="#not-covered">Kapsam dışı</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>
