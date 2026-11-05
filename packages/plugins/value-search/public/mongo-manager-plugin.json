@@ -1,0 +1,183 @@
+{
+  "id": "value-search",
+  "name": {
+    "en": "Value search",
+    "tr": "Değer arama",
+    "zh": "值搜索",
+    "ja": "値の検索",
+    "es": "Búsqueda de valores",
+    "pt": "Busca de valores",
+    "ko": "값 검색",
+    "de": "Wertsuche",
+    "fr": "Recherche de valeurs",
+    "ru": "Поиск значений"
+  },
+  "version": "1.3.1",
+  "description": {
+    "en": "Looks for a text, a number or an ObjectId in every field of a collection's documents, and shows where it was found.",
+    "tr": "Bir koleksiyonun belgelerinin her alanında bir metni, sayıyı ya da ObjectId'yi arar ve nerede bulunduğunu gösterir.",
+    "zh": "在集合文档的每个字段中查找文本、数字或 ObjectId，并显示它出现的位置。",
+    "ja": "コレクション内のドキュメントのすべてのフィールドからテキスト、数値、ObjectId を探し、見つかった場所を表示します。",
+    "es": "Busca un texto, un número o un ObjectId en cada campo de los documentos de una colección y muestra dónde lo encontró.",
+    "pt": "Procura um texto, um número ou um ObjectId em todos os campos dos documentos de uma coleção e mostra onde foi encontrado.",
+    "ko": "컬렉션 도큐먼트의 모든 필드에서 텍스트, 숫자 또는 ObjectId를 찾아 발견된 위치를 보여 줍니다.",
+    "de": "Sucht einen Text, eine Zahl oder eine ObjectId in jedem Feld der Dokumente einer Collection und zeigt, wo sie gefunden wurde.",
+    "fr": "Cherche un texte, un nombre ou un ObjectId dans chaque champ des documents d’une collection et indique où il a été trouvé.",
+    "ru": "Ищет текст, число или ObjectId в каждом поле документов коллекции и показывает, где найдено."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "search",
+        "title": {
+          "en": "Search",
+          "tr": "Ara",
+          "zh": "搜索",
+          "ja": "検索",
+          "es": "Buscar",
+          "pt": "Buscar",
+          "ko": "검색",
+          "de": "Suchen",
+          "fr": "Rechercher",
+          "ru": "Поиск"
+        },
+        "icon": "table"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-11-04",
+  "changelog": [
+    {
+      "version": "1.3.1",
+      "date": "2026-11-04",
+      "notes": {
+        "en": "A search asked as the page opened, before it knew its collection, is no longer dropped: it runs once the page knows. Nothing else changes.",
+        "tr": "Sayfa açılırken, hangi koleksiyonda olduğunu bilmeden istenen bir arama artık atılmaz: sayfa koleksiyonunu öğrenince çalışır. Başka bir şey değişmez.",
+        "zh": "页面打开时、尚未得知所在集合前发起的搜索不再被丢弃：页面得知集合后即会执行。其他内容不变。",
+        "ja": "ページを開いた直後、コレクションがまだわからないうちに始めた検索が無視されなくなりました。コレクションがわかりしだい実行されます。ほかの変更はありません。",
+        "es": "Una búsqueda pedida al abrirse la página, antes de que supiera su colección, ya no se pierde: se ejecuta en cuanto la página la conoce. No cambia nada más.",
+        "pt": "Uma busca pedida ao abrir a página, antes de ela saber sua coleção, não é mais perdida: ela é feita assim que a página a conhece. Nada mais muda.",
+        "ko": "페이지가 열리자마자 컬렉션을 알기 전에 요청한 검색이 더 이상 무시되지 않습니다. 페이지가 컬렉션을 알게 되면 바로 실행됩니다. 다른 변경 사항은 없습니다.",
+        "de": "Eine Suche, die beim Öffnen der Seite gestartet wurde, bevor sie ihre Collection kannte, geht nicht mehr verloren: Sie läuft, sobald die Seite sie kennt. Sonst ändert sich nichts.",
+        "fr": "Une recherche lancée à l’ouverture de la page, avant qu’elle connaisse sa collection, n’est plus perdue : elle s’exécute dès que la page la connaît. Rien d’autre ne change.",
+        "ru": "Поиск, запущенный при открытии страницы, пока она еще не знала свою коллекцию, больше не теряется: он выполняется, как только страница ее узнает. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.3.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. A count of one now reads right (1 field, 1 document).",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Bir sayısı artık doğru yazılır (1 alan, 1 belge).",
+        "zh": "现在与应用一样支持韩语、德语、法语和俄语。数量为一时的措辞现在正确。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語に対応しました。件数が1のときの表現を修正しました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Un recuento de uno ahora se lee bien (1 campo, 1 documento).",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o app. Uma contagem de um agora é lida corretamente (1 campo, 1 documento).",
+        "ko": "앱과 같이 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 개수가 하나일 때의 표현을 바로잡았습니다.",
+        "de": "Jetzt auch auf Koreanisch, Deutsch, Französisch und Russisch, wie die App. Eine Anzahl von eins liest sich jetzt richtig (1 Feld, 1 Dokument).",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Un compte de un se lit désormais correctement (1 champ, 1 document).",
+        "ru": "Теперь и на корейском, немецком, французском и русском, как и приложение. Счет из одного теперь читается правильно (1 поле, 1 документ)."
+      }
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルポルトガル語に対応しました。ほかの変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. No cambia nada más.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o app. Nada mais muda.",
+        "ko": "앱과 같이 중국어, 일본어, 스페인어, 브라질 포르투갈어도 지원합니다. 다른 변경 사항은 없습니다.",
+        "de": "Jetzt auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь и на китайском, японском, испанском и бразильском португальском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.1.3",
+      "date": "2026-10-16",
+      "notes": {
+        "en": "Security update of the shared kit: an address that hides a script behind a tab or a line break is refused like any other script address. Nothing else changes.",
+        "tr": "Ortak kitin güvenlik güncellemesi: bir betiği sekme ya da satır sonu arkasına gizleyen adres, diğer betik adresleri gibi reddedilir. Başka bir şey değişmez.",
+        "zh": "共享套件的安全更新：把脚本藏在制表符或换行符之后的地址，会像其他脚本地址一样被拒绝。其他内容不变。",
+        "ja": "共有キットのセキュリティ更新：タブや改行の後ろにスクリプトを隠したアドレスも、ほかのスクリプトアドレスと同様に拒否されます。ほかの変更はありません。",
+        "es": "Actualización de seguridad del kit compartido: una dirección que oculta un script tras una tabulación o un salto de línea se rechaza como cualquier otra dirección de script. No cambia nada más.",
+        "pt": "Atualização de segurança do kit compartilhado: um endereço que esconde um script atrás de uma tabulação ou de uma quebra de linha é recusado como qualquer outro endereço de script. Nada mais muda.",
+        "ko": "공유 키트 보안 업데이트: 탭이나 줄바꿈 뒤에 스크립트를 숨긴 주소도 다른 스크립트 주소와 마찬가지로 거부됩니다. 다른 변경 사항은 없습니다.",
+        "de": "Sicherheitsupdate des gemeinsamen Kits: Eine Adresse, die ein Skript hinter einem Tabulator oder Zeilenumbruch versteckt, wird wie jede andere Skriptadresse abgelehnt. Sonst ändert sich nichts.",
+        "fr": "Mise à jour de sécurité du kit partagé : une adresse qui cache un script derrière une tabulation ou un saut de ligne est refusée comme toute autre adresse de script. Rien d’autre ne change.",
+        "ru": "Обновление безопасности общего набора: адрес, скрывающий скрипт за табуляцией или переводом строки, отклоняется так же, как любой другой адрес скрипта. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.1.2",
+      "date": "2026-10-16",
+      "notes": {
+        "en": "Opening a result and coming back keeps the search and its results. The one-document filter opening leaves in Documents is not offered as “Documents filter”, and a filter changed in Documents is used by the next search, never by one run unasked. The empty page says what is searched, its fields read from a sample.",
+        "tr": "Bir sonucu açıp geri dönünce arama ve sonuçları yerinde kalır. Açmanın Belgeler'de bıraktığı tek belgelik filtre “Belgeler filtresi” olarak sunulmaz; Belgeler'de değişen filtre bir sonraki aramada kullanılır, kendiliğinden arama yapılmaz. Boş sayfa neyin arandığını ve alanların bir örnekten okunduğunu söyler.",
+        "zh": "打开某条结果后再返回，搜索及其结果会保留。打开操作在“文档”中留下的单文档筛选不会再作为“文档筛选”提供；在“文档”中更改的筛选会用于下一次搜索，绝不会自动执行搜索。空白页面会说明搜索的范围，并说明字段读取自样本。",
+        "ja": "結果を開いて戻っても、検索とその結果はそのまま残ります。結果を開いたときにドキュメントに残る 1 件指定のフィルターは「ドキュメントのフィルター」として提示されなくなり、ドキュメントで変更したフィルターは次の検索で使われます（自動では検索しません）。空のページには、検索対象と、フィールドがサンプルから読み取られることが表示されます。",
+        "es": "Al abrir un resultado y volver, se conservan la búsqueda y sus resultados. El filtro de un solo documento que deja Abrir en Documentos ya no se ofrece como «Filtro de documentos», y un filtro cambiado en Documentos lo usa la siguiente búsqueda, nunca una que se ejecute sin pedirla. La página vacía indica qué se busca y que sus campos se leen de una muestra.",
+        "pt": "Ao abrir um resultado e voltar, a busca e seus resultados continuam lá. O filtro de um único documento que Abrir deixa em Documentos não é mais oferecido como “Filtro de documentos”, e um filtro alterado em Documentos é usado pela próxima busca, nunca por uma executada sem pedido. A página vazia diz o que é pesquisado e que os campos são lidos de uma amostra.",
+        "ko": "결과를 열었다가 돌아오면 검색과 결과가 그대로 유지됩니다. 열기가 도큐먼트에 남기는 단일 도큐먼트 필터는 더 이상 “도큐먼트 필터”로 제공되지 않으며, 도큐먼트에서 바뀐 필터는 다음 검색에만 사용되고 요청하지 않은 검색에는 사용되지 않습니다. 빈 페이지에는 무엇을 검색하는지, 그리고 필드를 샘플에서 읽는다는 점이 표시됩니다.",
+        "de": "Wenn Sie ein Ergebnis öffnen und zurückkehren, bleiben die Suche und ihre Ergebnisse erhalten. Der Filter für ein einzelnes Dokument, den Öffnen in Dokumente hinterlässt, wird nicht mehr als „Dokumentfilter“ angeboten, und ein in Dokumente geänderter Filter gilt für die nächste Suche, nie für eine ungefragt ausgeführte. Die leere Seite zeigt, was durchsucht wird und dass die Felder aus einer Stichprobe gelesen werden.",
+        "fr": "Ouvrir un résultat puis revenir conserve la recherche et ses résultats. Le filtre d’un seul document que laisse Ouvrir dans Documents n’est plus proposé comme « Filtre de documents », et un filtre modifié dans Documents sert à la recherche suivante, jamais à une recherche lancée sans demande. La page vide indique ce qui est recherché et que les champs sont lus dans un échantillon.",
+        "ru": "Если открыть результат и вернуться, поиск и его результаты сохраняются. Фильтр по одному документу, который «Открыть» оставляет в «Документах», больше не предлагается как «Фильтр документов», а фильтр, измененный в «Документах», используется при следующем поиске и никогда не запускает поиск сам. Пустая страница сообщает, что ищется и что поля считываются из выборки."
+      }
+    },
+    {
+      "version": "1.1.1",
+      "date": "2026-10-15",
+      "notes": {
+        "en": "A decimal is found as written: 524.66 finds a Decimal128 524.66, which no double equals. Contains also finds the digits inside a number, so 524 finds 524.66 and 1524, in a field or in an array.",
+        "tr": "Ondalık sayı yazıldığı gibi bulunur: 524.66, hiçbir double'ın eşit olmadığı Decimal128 524.66 değerini bulur. İçerir, bir sayının içindeki rakamları da bulur; 524, bir alanda ya da dizide 524.66 ve 1524 değerlerini bulur.",
+        "zh": "小数按所写形式查找：524.66 能找到任何 double 都不等于的 Decimal128 524.66。“包含”还会查找数字中的数位，因此 524 能在字段或数组中找到 524.66 和 1524。",
+        "ja": "小数は書かれたとおりに検索されます。524.66 は、どの double とも等しくない Decimal128 の 524.66 を見つけます。「含む」は数値の中の桁も検索するため、524 はフィールドや配列内の 524.66 と 1524 を見つけます。",
+        "es": "Un decimal se encuentra tal como se escribe: 524.66 encuentra un Decimal128 524.66, que ningún double iguala. Contiene también encuentra los dígitos dentro de un número, así que 524 encuentra 524.66 y 1524, en un campo o en un arreglo.",
+        "pt": "Um decimal é encontrado como foi escrito: 524.66 encontra um Decimal128 524.66, que nenhum double iguala. Contém também encontra os dígitos dentro de um número, então 524 encontra 524.66 e 1524, em um campo ou em um array.",
+        "ko": "소수는 입력한 그대로 찾습니다. 524.66은 어떤 double과도 같지 않은 Decimal128 524.66을 찾습니다. 포함은 숫자 안의 자릿수도 찾으므로 524는 필드나 배열에서 524.66과 1524를 찾습니다.",
+        "de": "Eine Dezimalzahl wird so gefunden, wie sie geschrieben ist: 524.66 findet ein Decimal128 524.66, dem kein Double entspricht. Enthält findet auch die Ziffern innerhalb einer Zahl, sodass 524 in einem Feld oder in einem Array 524.66 und 1524 findet.",
+        "fr": "Un décimal est trouvé tel qu’il est écrit : 524.66 trouve un Decimal128 524.66, qu’aucun double n’égale. Contient trouve aussi les chiffres à l’intérieur d’un nombre : 524 trouve 524.66 et 1524, dans un champ ou dans un tableau.",
+        "ru": "Десятичное число находится в том виде, в каком записано: 524.66 находит Decimal128 524.66, которому не равен ни один double. «Содержит» находит и цифры внутри числа, поэтому 524 находит 524.66 и 1524 в поле или в массиве."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "Redesigned in the app's look. The whole collection is searched by default, with the Documents filter as a choice; a date finds date fields on that day, minute or second; the fields found narrow the list. Fixed the highlight in Turkish text, and “100+” is shown only when more matched.",
+        "tr": "Uygulamanın görünümüyle yeniden tasarlandı. Varsayılan olarak tüm koleksiyonda aranır, Belgeler filtresi bir seçenektir; bir tarih, tarih alanlarında o günü, dakikayı ya da saniyeyi bulur; bulunan alanlar listeyi daraltır. Türkçe metinlerdeki vurgulama düzeltildi ve “100+” yalnız daha fazlası eşleştiğinde gösterilir.",
+        "zh": "按应用的外观重新设计。默认搜索整个集合，“文档筛选”作为可选项；日期会查找该日、该分钟或该秒内的日期字段；找到的字段可缩小列表范围。修复了土耳其语文本中的高亮问题，并且仅在匹配更多时才显示“100+”。",
+        "ja": "アプリの見た目に合わせて再設計しました。既定ではコレクション全体を検索し、ドキュメントのフィルターは選択式です。日付は、その日・分・秒の日付フィールドを見つけます。見つかったフィールドで一覧を絞り込めます。トルコ語テキストのハイライトを修正し、「100+」はそれ以上一致した場合にのみ表示します。",
+        "es": "Rediseñado con el aspecto de la aplicación. Se busca en toda la colección por defecto, con el filtro de documentos como opción; una fecha encuentra campos de fecha de ese día, minuto o segundo; los campos encontrados reducen la lista. Se corrigió el resaltado en texto turco, y «100+» solo se muestra cuando coincidieron más.",
+        "pt": "Redesenhado com o visual do app. A busca é feita na coleção inteira por padrão, com o filtro de documentos como opção; uma data encontra campos de data daquele dia, minuto ou segundo; os campos encontrados reduzem a lista. Corrigido o destaque em texto turco, e “100+” só aparece quando mais documentos corresponderam.",
+        "ko": "앱의 디자인에 맞게 새로 설계했습니다. 기본적으로 컬렉션 전체를 검색하며 도큐먼트 필터는 선택 사항입니다. 날짜는 해당 날, 분 또는 초의 날짜 필드를 찾고, 찾은 필드로 목록을 좁힐 수 있습니다. 터키어 텍스트의 강조 표시를 수정했고, “100+”는 더 많은 도큐먼트가 일치할 때만 표시됩니다.",
+        "de": "In der Optik der App neu gestaltet. Standardmäßig wird die ganze Collection durchsucht, der Dokumentfilter ist eine Option. Ein Datum findet Datumsfelder an diesem Tag, in dieser Minute oder Sekunde, und die gefundenen Felder grenzen die Liste ein. Die Hervorhebung in türkischem Text wurde korrigiert, und „100+“ erscheint nur, wenn mehr Dokumente übereinstimmen.",
+        "fr": "Repensé dans l’apparence de l’application. Toute la collection est recherchée par défaut, le filtre de documents étant un choix ; une date trouve les champs de date de ce jour, de cette minute ou de cette seconde ; les champs trouvés restreignent la liste. La mise en évidence dans un texte turc a été corrigée, et « 100+ » n’apparaît que si davantage de documents correspondent.",
+        "ru": "Переработано в стиле приложения. По умолчанию поиск идет по всей коллекции, фильтр документов — на выбор; дата находит поля с датой в этот день, минуту или секунду; найденные поля сужают список. Исправлено выделение в турецком тексте, а «100+» показывается только тогда, когда совпало больше документов."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "First release. A Search tab looks for a text, number or ObjectId in every field a random sample of the collection holds, as Contains, Whole value or a regular expression, within the Documents query. Each document found shows the fields that matched and opens in the app, and the search can be put in Documents. The server judges a regular expression, and the page never runs one that could backtrack without end; numbers match as numbers whatever their stored type.",
+        "tr": "İlk sürüm. Ara sekmesi bir metni, sayıyı ya da ObjectId'yi Belgeler sorgusu içinde, koleksiyonun rastgele bir örneğindeki her alanda arar: İçerir, Tam değer ya da düzenli ifade olarak. Bulunan her belge eşleşen alanlarını gösterir ve uygulamada açılır; arama Belgeler'e konabilir. Düzenli ifadeyi sunucu değerlendirir; sayfa, sonu gelmeyecek biçimde geri izleme yapabilecek bir ifadeyi hiç çalıştırmaz. Sayılar saklandıkları tipten bağımsız olarak sayı olarak eşleşir.",
+        "zh": "首个版本。“搜索”标签页会在“文档”查询范围内，于集合随机样本包含的每个字段中查找文本、数字或 ObjectId，支持“包含”、“完整值”或正则表达式。找到的每个文档都会显示匹配的字段，并可在应用中打开；搜索也可以放入“文档”。正则表达式由服务器判断，页面绝不会运行可能无限回溯的表达式；数字无论存储为何种类型，都按数字匹配。",
+        "ja": "初回リリースです。「検索」タブは、ドキュメントのクエリの範囲内で、コレクションのランダムなサンプルが持つすべてのフィールドからテキスト、数値、ObjectId を探します。一致方法は「含む」「完全一致」「正規表現」から選べます。見つかった各ドキュメントには一致したフィールドが表示され、アプリで開けます。検索はドキュメントに設定することもできます。正規表現はサーバーが判定し、ページは際限なくバックトラックする可能性のある式を実行しません。数値は保存された型にかかわらず数値として一致します。",
+        "es": "Primera versión. Una pestaña Buscar encuentra un texto, número u ObjectId en cada campo de una muestra aleatoria de la colección, como Contiene, Valor completo o una expresión regular, dentro de la consulta de Documentos. Cada documento encontrado muestra los campos que coincidieron y se abre en la aplicación, y la búsqueda se puede poner en Documentos. El servidor juzga la expresión regular, y la página nunca ejecuta una que pueda retroceder sin fin; los números coinciden como números sea cual sea su tipo almacenado.",
+        "pt": "Primeira versão. Uma aba Buscar procura um texto, número ou ObjectId em todos os campos de uma amostra aleatória da coleção, como Contém, Valor inteiro ou uma expressão regular, dentro da consulta de Documentos. Cada documento encontrado mostra os campos que corresponderam e abre no app, e a busca pode ser colocada em Documentos. O servidor avalia a expressão regular, e a página nunca executa uma que possa retroceder sem fim; números correspondem como números, qualquer que seja o tipo armazenado.",
+        "ko": "첫 릴리스. 검색 탭이 컬렉션의 무작위 샘플이 가진 모든 필드에서 텍스트, 숫자 또는 ObjectId를 포함, 전체 값 또는 정규식으로 도큐먼트 쿼리 안에서 찾습니다. 찾은 도큐먼트마다 일치한 필드가 표시되고 앱에서 열리며, 검색을 도큐먼트에 넣을 수 있습니다. 정규식은 서버가 판단하며, 페이지는 끝없이 되돌아갈 수 있는 정규식을 실행하지 않습니다. 숫자는 저장된 유형과 관계없이 숫자로 일치합니다.",
+        "de": "Erste Veröffentlichung. Ein Tab „Suchen“ sucht einen Text, eine Zahl oder eine ObjectId in jedem Feld einer zufälligen Stichprobe der Collection, als „Enthält“, „Ganzer Wert“ oder regulärer Ausdruck, innerhalb der Abfrage von Dokumente. Jedes gefundene Dokument zeigt die übereinstimmenden Felder und öffnet sich in der App, und die Suche lässt sich in Dokumente übernehmen. Den regulären Ausdruck beurteilt der Server, und die Seite führt nie einen aus, der endlos zurückverfolgen könnte. Zahlen stimmen als Zahlen überein, unabhängig vom gespeicherten Typ.",
+        "fr": "Première version. Un onglet Rechercher cherche un texte, un nombre ou un ObjectId dans chaque champ d’un échantillon aléatoire de la collection, en « Contient », « Valeur entière » ou expression régulière, dans la requête de Documents. Chaque document trouvé affiche les champs qui correspondent et s’ouvre dans l’application, et la recherche peut être placée dans Documents. Le serveur juge l’expression régulière, et la page n’en exécute jamais une qui pourrait revenir en arrière sans fin ; les nombres correspondent comme des nombres, quel que soit leur type stocké.",
+        "ru": "Первый выпуск. Вкладка «Поиск» ищет текст, число или ObjectId в каждом поле случайной выборки коллекции — как «Содержит», «Значение целиком» или регулярное выражение — в рамках запроса «Документов». Каждый найденный документ показывает совпавшие поля и открывается в приложении, а поиск можно перенести в «Документы». Регулярное выражение проверяет сервер, а страница никогда не запускает выражение, способное бесконечно откатываться; числа совпадают как числа независимо от сохраненного типа."
+      }
+    }
+  ]
+}

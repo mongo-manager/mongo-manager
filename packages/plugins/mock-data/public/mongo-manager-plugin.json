@@ -1,0 +1,103 @@
+{
+  "id": "mock-data",
+  "name": {
+    "en": "Test data",
+    "tr": "Test verisi",
+    "zh": "测试数据",
+    "ja": "テストデータ",
+    "es": "Datos de prueba",
+    "pt": "Dados de teste",
+    "ko": "테스트 데이터",
+    "de": "Testdaten",
+    "fr": "Données de test",
+    "ru": "Тестовые данные"
+  },
+  "version": "1.2.0",
+  "description": {
+    "en": "Makes realistic test documents shaped like a collection's — names, e-mails, addresses, prices, dates and more, from over 100 templates in ten languages — and hands them to the Import wizard, where you check and start the import.",
+    "tr": "Bir koleksiyonun belgelerine benzeyen gerçekçi test belgeleri üretir — adlar, e-postalar, adresler, fiyatlar, tarihler ve daha fazlası, on dilde 100'den fazla şablondan — ve onları İçe aktarma sihirbazına verir; içe aktarmayı orada kontrol edip siz başlatırsınız.",
+    "zh": "根据集合的文档结构生成逼真的测试文档——姓名、电子邮件、地址、价格、日期等，来自 100 多个模板，支持十种语言——并交给导入向导，由你检查后开始导入。",
+    "ja": "コレクションのドキュメントに似せたリアルなテストドキュメントを作成します。氏名、メールアドレス、住所、価格、日付など 100 以上のテンプレートから 10 の言語で生成し、インポートウィザードに渡します。確認してからインポートを開始できます。",
+    "es": "Crea documentos de prueba realistas con la forma de los de una colección —nombres, correos electrónicos, direcciones, precios, fechas y más, a partir de más de 100 plantillas en diez idiomas— y los entrega al asistente de importación, donde los compruebas y empiezas la importación.",
+    "pt": "Cria documentos de teste realistas no formato dos de uma coleção — nomes, e-mails, endereços, preços, datas e mais, a partir de mais de 100 modelos em dez idiomas — e os entrega ao assistente de importação, onde você confere e inicia a importação.",
+    "ko": "컬렉션의 도큐먼트와 같은 형태의 현실적인 테스트 도큐먼트를 만들어 가져오기 마법사에 전달합니다. 이름, 이메일, 주소, 가격, 날짜 등 100개 이상의 템플릿을 10개 언어로 제공하며, 마법사에서 확인한 뒤 가져오기를 시작합니다.",
+    "de": "Erzeugt realistische Testdokumente in der Form der Dokumente einer Collection – Namen, E-Mails, Adressen, Preise, Daten und mehr aus über 100 Vorlagen in zehn Sprachen – und übergibt sie dem Import-Assistenten, in dem Sie sie prüfen und den Import starten.",
+    "fr": "Génère des documents de test réalistes, de la forme de ceux d’une collection — noms, e-mails, adresses, prix, dates et plus, à partir de plus de 100 modèles en dix langues — et les transmet à l’assistant d’importation, où vous les vérifiez et lancez l’importation.",
+    "ru": "Создает реалистичные тестовые документы по форме документов коллекции — имена, адреса электронной почты, адреса, цены, даты и многое другое из более чем 100 шаблонов на десяти языках — и передает их мастеру импорта, где вы проверяете их и запускаете импорт."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "test-data",
+        "title": {
+          "en": "Test data",
+          "tr": "Test verisi",
+          "zh": "测试数据",
+          "ja": "テストデータ",
+          "es": "Datos de prueba",
+          "pt": "Dados de teste",
+          "ko": "테스트 데이터",
+          "de": "Testdaten",
+          "fr": "Données de test",
+          "ru": "Тестовые данные"
+        },
+        "icon": "wand"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Made-up company names are invented, never real brands, and no list can join into a famous person. Russian surnames are now Russian and the same for either gender. Sizes read MB in every language; counts take the right plural form.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Uydurma şirket adları gerçek bir marka değil, tamamen kurgudur; listeler ünlü bir kişiyi oluşturmaz. Rusça soyadları artık gerçekten Rusçadır ve iki cinsiyet için de aynıdır. Boyutlar her dilde MB olarak yazılır; sayılar doğru çoğul biçimini alır.",
+        "zh": "现在与应用一样也支持韩语、德语、法语和俄语。虚构的公司名都是自创的，不是真实品牌，名字列表也不会拼出名人。俄语姓氏现在是真正的俄语姓氏，男女通用。各语言的大小一律写作 MB，数量使用正确的复数形式。",
+        "ja": "アプリと同様に、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。架空の会社名は実在のブランドではない創作で、名前の組み合わせが有名人になることもありません。ロシア語の姓は本物のロシアの姓になり、男女共通です。サイズはどの言語でも MB と表記し、件数は正しい複数形で表示します。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Los nombres de empresa son inventados, nunca marcas reales, y ninguna lista puede formar una persona famosa. Los apellidos rusos son ahora rusos y valen para ambos géneros. Los tamaños se escriben en MB en todos los idiomas y los recuentos usan la forma de plural correcta.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o app. Os nomes de empresa são inventados, nunca marcas reais, e nenhuma lista forma uma pessoa famosa. Os sobrenomes russos agora são russos e servem para os dois gêneros. Os tamanhos aparecem em MB em todos os idiomas e as contagens usam o plural correto.",
+        "ko": "앱과 같이 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 가상의 회사 이름은 실제 브랜드가 아닌 창작이며, 이름 조합이 유명인이 되지 않도록 했습니다. 러시아어 성은 이제 진짜 러시아 성이고 남녀가 같습니다. 크기는 모든 언어에서 MB로 표시하고, 개수는 올바른 복수형으로 표시합니다.",
+        "de": "Jetzt auch auf Koreanisch, Deutsch, Französisch und Russisch, wie die App. Erfundene Firmennamen sind frei erfunden, nie echte Marken, und keine Liste ergibt eine berühmte Person. Russische Nachnamen sind jetzt russisch und für beide Geschlechter gleich. Größen stehen in jeder Sprache in MB; Zahlen nehmen die richtige Pluralform.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Les noms d’entreprise sont inventés, jamais de vraies marques, et aucune liste ne forme une personne célèbre. Les noms de famille russes sont désormais russes et valent pour les deux genres. Les tailles s’écrivent en MB dans toutes les langues ; les nombres prennent la bonne forme de pluriel.",
+        "ru": "Теперь и на корейском, немецком, французском и русском, как и приложение. Названия компаний выдуманы, это не настоящие бренды, а из списков не составить известного человека. Русские фамилии теперь действительно русские и одинаковы для обоих полов. Размеры во всех языках пишутся в MB, а числа получают правильную форму множественного числа."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他一切不变。",
+        "ja": "アプリと同様に、中国語、日本語、スペイン語、ブラジルのポルトガル語に対応しました。ほかに変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o app. Nada mais muda.",
+        "ko": "앱과 같이 중국어, 일본어, 스페인어, 브라질 포르투갈어도 지원합니다. 그 밖의 변경 사항은 없습니다.",
+        "de": "Jetzt auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь и на китайском, японском, испанском и бразильском португальском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-26",
+      "notes": {
+        "en": "First release. A Test data tab reads a sample of the collection, gives each field test values by its name and type (over 100 templates: person, internet, location, company, commerce, finance, dates, numbers, text, identifiers), lets you change them, add fields, choose how many documents, how many fields to leave out, the language of the words and a seed, previews them, and hands them to the Import wizard or saves them as JSON. E-mails and web addresses use reserved example domains, phone numbers a range no line has, and a person's name, e-mail or address is never copied from the collection.",
+        "tr": "İlk sürüm. Test verisi sekmesi koleksiyondan bir örnek okur; her alana adına ve türüne göre test değerleri verir (100'den fazla şablon: kişi, internet, konum, şirket, ticaret, finans, tarih, sayı, metin, kimlik); bunları değiştirmenize, alan eklemenize, belge sayısını, boş bırakılacak alanların oranını, sözcüklerin dilini ve bir tohum seçmenize olanak tanır; önizler ve İçe aktarma sihirbazına verir ya da JSON olarak kaydeder. E-postalar ve web adresleri ayrılmış örnek alan adlarını, telefon numaraları hiçbir hattın olmadığı bir aralığı kullanır; bir kişinin adı, e-postası ya da adresi koleksiyondan asla kopyalanmaz.",
+        "zh": "首个版本。“测试数据”标签页会读取集合的一份样本，按字段名称和类型为每个字段提供测试值（100 多个模板：人物、互联网、位置、公司、商业、金融、日期、数字、文本、标识符）；你可以修改这些模板、添加字段，选择文档数量、留空字段的比例、词语语言和种子，预览结果，并将文档交给导入向导或保存为 JSON。电子邮件和网址使用保留的示例域名，电话号码使用无人使用的号段，个人的姓名、电子邮件或地址绝不会从集合中复制。",
+        "ja": "最初のリリースです。「テストデータ」タブがコレクションのサンプルを読み取り、フィールド名と型に応じてテスト値を割り当てます（100 以上のテンプレート：人物、インターネット、場所、会社、商取引、金融、日付、数値、テキスト、識別子）。テンプレートの変更、フィールドの追加、ドキュメント数、空にするフィールドの割合、単語の言語、シードの選択ができ、プレビューしたうえで、インポートウィザードに渡すか JSON として保存できます。メールアドレスと Web アドレスには予約済みの例示用ドメイン、電話番号にはどの回線にもない番号帯を使い、個人の氏名、メールアドレス、住所がコレクションからコピーされることはありません。",
+        "es": "Primera versión. Una pestaña Datos de prueba lee una muestra de la colección, da a cada campo valores de prueba según su nombre y tipo (más de 100 plantillas: persona, internet, ubicación, empresa, comercio, finanzas, fechas, números, texto, identificadores), te permite cambiarlos, añadir campos, elegir cuántos documentos crear, cuántos campos omitir, el idioma de las palabras y una semilla, los muestra en una vista previa y los entrega al asistente de importación o los guarda como JSON. Los correos electrónicos y las direcciones web usan dominios de ejemplo reservados, los teléfonos un rango sin líneas, y el nombre, el correo electrónico o la dirección de una persona nunca se copia de la colección.",
+        "pt": "Primeira versão. Uma aba Dados de teste lê uma amostra da coleção, dá a cada campo valores de teste conforme o nome e o tipo (mais de 100 modelos: pessoa, internet, localização, empresa, comércio, finanças, datas, números, texto, identificadores), permite alterá-los, adicionar campos, escolher quantos documentos criar, quantos campos omitir, o idioma das palavras e uma semente, mostra uma pré-visualização e os entrega ao assistente de importação ou os salva como JSON. E-mails e endereços web usam domínios de exemplo reservados, os telefones uma faixa sem linhas, e o nome, o e-mail ou o endereço de uma pessoa nunca é copiado da coleção.",
+        "ko": "첫 릴리스입니다. 테스트 데이터 탭이 컬렉션의 샘플을 읽고, 각 필드의 이름과 유형에 맞는 테스트 값을 지정합니다(100개 이상의 템플릿: 사람, 인터넷, 위치, 회사, 상거래, 금융, 날짜, 숫자, 텍스트, 식별자). 값을 바꾸고, 필드를 추가하고, 도큐먼트 수, 제외할 필드 비율, 단어 언어, 시드를 선택할 수 있으며, 미리보기 후 가져오기 마법사에 전달하거나 JSON으로 저장할 수 있습니다. 이메일과 웹 주소는 예약된 예시 도메인을, 전화번호는 회선이 없는 번호 대역을 사용하며, 사람의 이름, 이메일, 주소는 컬렉션에서 절대 복사하지 않습니다.",
+        "de": "Erste Version. Ein Tab „Testdaten“ liest eine Stichprobe der Collection, gibt jedem Feld nach Name und Typ Testwerte (über 100 Vorlagen: Person, Internet, Standort, Unternehmen, Handel, Finanzen, Datum, Zahlen, Text, Kennungen), lässt Sie diese ändern, Felder hinzufügen, die Anzahl der Dokumente, den Anteil ausgelassener Felder, die Sprache der Wörter und einen Seed wählen, zeigt eine Vorschau und übergibt die Dokumente dem Import-Assistenten oder speichert sie als JSON. E-Mails und Webadressen verwenden reservierte Beispiel-Domains, Telefonnummern einen Bereich ohne Anschlüsse, und Name, E-Mail oder Adresse einer Person werden nie aus der Collection kopiert.",
+        "fr": "Première version. Un onglet Données de test lit un échantillon de la collection, attribue à chaque champ des valeurs de test selon son nom et son type (plus de 100 modèles : personne, internet, lieu, entreprise, commerce, finance, dates, nombres, texte, identifiants), vous permet de les modifier, d’ajouter des champs, de choisir le nombre de documents, la part de champs à omettre, la langue des mots et une graine, affiche un aperçu, puis les transmet à l’assistant d’importation ou les enregistre en JSON. Les e-mails et adresses web utilisent des domaines d’exemple réservés, les numéros de téléphone une plage sans lignes, et le nom, l’e-mail ou l’adresse d’une personne n’est jamais copié depuis la collection.",
+        "ru": "Первый выпуск. Вкладка «Тестовые данные» читает выборку из коллекции, подбирает каждому полю тестовые значения по имени и типу (более 100 шаблонов: человек, интернет, местоположение, компания, торговля, финансы, даты, числа, текст, идентификаторы), позволяет изменять их, добавлять поля, выбирать количество документов, долю пропускаемых полей, язык слов и начальное значение, показывает предпросмотр и передает документы мастеру импорта или сохраняет их как JSON. В адресах электронной почты и веб-адресах используются зарезервированные домены для примеров, в телефонных номерах — диапазон без линий, а имя, адрес электронной почты или адрес человека никогда не копируются из коллекции."
+      }
+    }
+  ]
+}

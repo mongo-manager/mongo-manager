@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Güvenlik · Mongo Manager belgeleri</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager belgeleri</a>
+      <details class="lang-menu">
+        <summary>Türkçe</summary>
+        <span class="langs" role="group" aria-label="Dil">
+          <a lang="en" hreflang="en" href="../security.html">English</a>
+          <strong lang="tr">Türkçe</strong>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/security.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/security.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/security.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/security.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/security.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/security.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/security.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/security.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Genel bakış</a>
+      <a href="getting-started.html">Başlarken</a>
+      <strong>Güvenlik</strong>
+      <a href="deployment.html">Kurulum ve dağıtım</a>
+      <a href="import-export.html">İçe ve dışa aktarma</a>
+      <a href="backup.html">Yedekleme ve geri yükleme</a>
+      <a href="watch.html">Değişiklikleri izleme</a>
+      <a href="sync.html">Canlı senkron</a>
+      <a href="server-admin.html">Sunucu yönetimi</a>
+      <a href="ai.html">AI asistanı</a>
+      <a href="plugins.html">Eklentiler</a>
+      <a href="shortcuts.html">Klavye kısayolları</a>
+    </nav>
+    <main>
+      <h1>Güvenlik</h1>
+      <h2 id="modes">Modlar</h2>
+      <p>
+        Mongo Manager varsayılan olarak <code>127.0.0.1</code> adresini dinler ve ekip modu
+        (<code>--auth</code>) açık değilse ağ adresini reddeder. Porta başkası erişebiliyorsa ekip modunu
+        kullanın.
+      </p>
+      <h2 id="saved-secrets-and-the-key">Saklanan gizli bilgiler ve anahtar</h2>
+      <p>
+        Bağlantı parolaları, anahtarlar ile geçmişin, favorilerin ve kayıtlı pipeline'ların sorguları, veri
+        klasöründeki
+        <code>secret.key</code> dosyasında tutulan ya da <code>MM_SECRET_KEY</code> ile verilen bir anahtarla
+        şifrelenir.
+      </p>
+      <ul>
+        <li>Anahtarı veri klasörüyle birlikte yedekleyin, ama ikisini ayrı yerlerde saklayın.</li>
+        <li>
+          Favorilerin ve kayıtlı pipeline'ların adları ve etiketleri aranabilsin diye şifresiz saklanır:
+          bunlara gizli bilgi yazmayın.
+        </li>
+        <li>
+          Windows'ta Mongo Manager'ın oluşturduğu bir veri klasörü, üst klasörü ne izin verirse versin SYSTEM,
+          Yöneticiler ve çalıştığı hesapla sınırlı tutulur. Zaten var olan ve Everyone, Users, Authenticated
+          Users ya da Interactive'e erişim veren bir dizin (ya da anahtarı veya günlük dosyası) başlangıçta bu
+          izinleri kaybeder — yalnızca bunları; günlük onu eski izinleriyle birlikte yazar. Bu yalnızca bu
+          hesabın sahibi olduğu ve Mongo Manager'ın dosyalarını tutan (ya da boş) bir dizine yapılır; bir
+          sürücüye, ağ paylaşımına ya da ortak bir klasöre asla. <code>mongo-manager doctor</code>, veri
+          klasörünü her kullanıcı okuyabiliyorsa ya da sahibi başkasıysa söyler. Linux ve macOS'ta aynı
+          başlangıç grup ve diğer erişimini kaldırır (klasör için 0700, anahtar ve günlük dosyası için 0600);
+          doctor ise anahtar, veritabanı ya da <code>launch.key</code> veri klasörünün sahibinden başka bir
+          kullanıcıya aitse söyler (<code>sudo cp</code> ile geri yüklenen bir anahtar root'a aittir) ve veri
+          klasörünü çalıştığı kullanıcı olarak okuyamıyorsa başarısız olur. Windows hizmeti, Windows'un kendi
+          bazı hizmetleriyle paylaştığı LocalService hesabıyla çalışır: bunlardan biri ele geçirilirse veri
+          klasörünü, <code>secret.key</code> ve <code>launch.key</code>
+          dahil, okuyabilir. Bunun önemli olduğu yerde Mongo Manager'ı Docker'da ya da ona ayrılmış bir
+          bilgisayarda çalıştırın.
+        </li>
+        <li>
+          <code>mongo-manager rotate-key</code> anahtarı değiştirir ve her şeyi yeniden şifreler (önce
+          sunucuyu durdurun). Önceki anahtarı ve onunla şifrelenmiş bir yedeği veri klasöründe bırakır; ikisi
+          birlikte gizli bilgileri eski hâliyle açar, bu yüzden yeni anahtar çalışınca onları taşıyın ya da
+          silin. Yedi günlük bir kurtarma süresidirler: bu süreden sonra veriyi yeni anahtarla açan ilk
+          başlangıç onları siler, o zamana dek her başlangıcın günlüğü onları adlandırır.
+          <code>mongo-manager doctor</code> hâlâ duranları listeler.
+        </li>
+      </ul>
+      <h2 id="signing-in">Giriş</h2>
+      <p>
+        Yerel modda hesap yoktur. Yalnızca bu bilgisayarın geri döngü adresinde, yalnızca kendi sunduğu
+        sayfalara (başka siteler ve başka ana makine adları reddedilir) ve yalnızca onu tek kullanımlık bir
+        açılış bağlantısından açan tarayıcıya yanıt verir. Mongo Manager başlarken bağlantısının nerede
+        olduğunu söyler: bir terminalde bağlantıyı yazdırır, başka yerde (bir hizmet, bir konteyner, bir
+        günlük) yalnızca kendi hesabının okuyabildiği ve onu açan bir dosyanın yolunu;
+        <code>mongo-manager open</code> çalışan birini yeni bir bağlantıyla açar (kurulu hizmet için yönetici
+        olarak <code>mongo-manager service open</code>). Tarayıcı da böyle bir dosyayla açılır; böylece hiçbir
+        bağlantı bir komut satırında görünmez. Bir bağlantı yeniden başlatmadan sonra bile yalnızca bir kez ve
+        bir saat içinde çalışır (hemen açılan iki dakika içinde) ve adres çubuğunda bir şey bırakmaz.
+      </p>
+      <p>
+        Bunun koruduğu: bir bağlantıyı açan her tarayıcı kendine ait bir çerez ve hemen ardından, sayfasının
+        kendi deposunda tuttuğu ve her istekle gönderdiği kendine ait bir anahtar alır. Bu bilgisayarın
+        adresindeki çerezler o adresin her portuna gider; başka bir hesabın başka bir portta dinleyen programı
+        çerezi alabilir, ama başka hiçbir portun sayfasının okuyamadığı anahtar olmadan çerez hiçbir şey
+        açmaz. Bağlantılar, veri klasöründe <code>secret.key</code> gibi oluşturulan ve yalnızca Mongo
+        Manager'ı çalıştıran hesapla yöneticilerin okuyabildiği <code>launch.key</code> sırrından üretilir.
+        Korumadığı: sizin hesabınızla ya da yönetici olarak çalışan her şey (<code>launch.key</code>'i,
+        tarayıcınızın deposunu ve veri klasörünü okuyabilir) ve bu adreste izin verdiğiniz bir tarayıcı
+        eklentisi. Bir tarayıcı bu siteye ait verileri tuttuğu sürece, son kullanımından sonra en çok altı ay
+        içeride kalır. Hesap ayarları da <code>mongo-manager forget-browsers</code> da bütün tarayıcıların
+        oturumunu kapatır (çalışan sunucu üzerinden: açık bağlantıları ve yerel shell'ler, içlerinde çalışan
+        bir komutla birlikte hemen sona erer). Paylaştığınız bir bilgisayar ya da ağ için ekip modu vardır.
+      </p>
+      <p>
+        Ekip modunda her kullanıcı bir doğrulayıcı uygulama, passkey'ler ve kurtarma kodları ekleyebilir.
+        Yöneticiler her kullanıcıya bir rol (yönetici, düzenleyici, görüntüleyici) verir ve bunu bağlantı
+        başına daraltabilir.
+      </p>
+      <p>
+        <code>databases:admin</code> uygulama yetkisi MongoDB'nin kendi kullanıcılarını ve rollerini ve bir
+        kümenin parçalanmasını yönetir (bkz. <a href="server-admin.html">Sunucu yönetimi</a>). Yöneticilerde
+        her bağlantıda, bir bağlantıda yönetici yetkisi verilen kullanıcıda ise o bağlantıda bulunur;
+        MongoDB'nin kendi yetkileri de geçerliliğini korur. Bir veri yazma yetkisi değildir, yine de salt
+        okunur bir bağlantı kullanıcılarını, rollerini ve parçalamasını gösterir ama asla değiştirmez. Bir yöneticinin kişisel verileri gizlediği kullanıcı, bu yetkiye sahip olsa bile Kullanıcılar ve roller bölümünü ya da parçalama yönetimini hiç görmez. Verileri kendinden gizleyen biri ve yerel moddaki tek kişi kullanıcıları ve rolleri yine yönetir (yalnızca adlar içerirler); parçalama yönetimi onlardan gizli kalır.
+      </p>
+      <p>
+        Yanlış şifreler, beş denemeden sonra hesabı geldikleri adreste bekletir; birçok hesabı deneyen bir
+        adres ise yirmi denemeden sonra bekletilir. Birçok adresten gelen tahminler hesabı ancak elli
+        denemeden sonra bekletir; son 30 günde giriş yapılan bir adreste ise hiç bekletmez (sunucu yeniden
+        başlayana kadar hatırlanır). Doğru bir yanıt hiçbir zaman hesabın aleyhine sayılmaz, bir giriş
+        beklemeyi kaldırır ve tahminler bir gün sonra unutulur. İkinci faktör eklemek ya da kaldırmak veya
+        yeni kurtarma kodları oluşturmak da, bu oturumda son on dakikada ikinci faktör kullanmadıysanız ikinci
+        faktörlerinizden birini ister; orada istenen kodlar da aynı şekilde sınırlanır. Bir yönetici başka
+        kullanıcıların ikinci faktörlerini sıfırlar, kendisininkileri asla: onlar Hesap ayarlarından
+        yönetilir.
+      </p>
+      <p>
+        Kullanıcı eklemek, birini yeniden etkinleştirmek, bir rolü değiştirmek ve başka bir kullanıcının
+        şifresini ya da ikinci faktörlerini sıfırlamak yöneticinin kendi şifresini ister; ikinci faktörü varsa
+        ve bu oturumda son on dakikada kullanmadıysa birini de: başkasının eline geçen bir oturum kalıcı bir
+        giriş yolu bırakamaz. Kurtarma kodları yalnızca anahtarlı bir özet olarak saklanır; veritabanının bir
+        kopyası tek başına tahminleri denemeye yetmez.
+      </p>
+      <p>
+        Bir hesabın şifresi en az 12 karakter olmalı, kullanıcı adını içermemeli ve yaygın ya da kolay tahmin
+        edilen bir şifre (ardışık karakterler, bir klavye sırası, tekrar, yaygın bir kelimeyle bir yıl)
+        olmamalıdır. Şifrenin seçildiği her yerde, yazılırken ne kadar güçlü olduğunu bir gösterge gösterir;
+        sunucu aynı kuralları denetler.
+      </p>
+      <p>
+        Kullanıcının kendisinin ya da bir yöneticinin belirlediği yeni bir şifre, o kullanıcının diğer bütün
+        oturumlarını ve ikinci adımını bekleyen her girişi sona erdirir. Çıkış yapmak, yeni bir şifre, ikinci
+        faktörlerin sıfırlanması ve bir kullanıcının silinmesi, o kullanıcının uygulamaya açık bağlantılarını
+        ve shell'lerini de içlerinde hâlâ çalışan komutlarla birlikte sona erdirir.
+      </p>
+      <p>
+        Yöneticilerin iki adımlı giriş kullanması uygulamadan ya da <code>MM_REQUIRE_ADMIN_2FA</code> ile
+        (uygulamadan kapatılamaz) zorunlu tutulabilir; herkes için de <code>MM_REQUIRE_2FA</code> ile ya da
+        uygulamadan, tek bir kullanıcı için de eklenirken ya da sonradan. Bu durumda iki adımlı girişi olmayan
+        bir kullanıcı, onu kurana kadar yalnızca kendi hesabına erişir ve son ikinci faktörünü kaldıramaz.
+        Herkes için zorunluluğu yalnızca kendisi iki adımlı giriş kullanan bir yönetici açabilir. Bir kuralı
+        uygulamadan kapatmak yöneticinin şifresini ve, varsa, yakın zamanda kullanılmış bir ikinci faktörü
+        ister.
+      </p>
+      <p>
+        Bir oturum 30 dakika boyunca hiç istek gelmezse sona erer; girişten 12 saat sonra ise her durumda
+        kapanır. Bir yönetici Kullanıcılar sayfasından başka bir boşta kalma süresi seçebilir (15 dakika, 30
+        dakika, 1, 4 ya da 8 saat); seçim tüm oturumlara hemen uygulanır. Daha uzun bir süre yöneticinin
+        şifresini ve, varsa, yakın zamanda kullanılmış bir ikinci faktörü ister; 12 saatlik sınır seçimden
+        bağımsız olarak kalır.
+      </p>
+      <h2 id="sign-in-bans">Engellenen adresler</h2>
+      <p>
+        Bu sınırlara ek olarak, 15 dakika içinde 30 başarısız ya da reddedilmiş giriş denemesi yapılan bir adresten giriş engellenir: 15 dakika, sonra bir hafta içinde her geri gelişinde bir saat, 6 saat ve bir gün. Engellenen bir adres hiçbir şifre denetlenmeden hemen reddedilir. Bu adresten oturum açmış olanlar oturumda kalır; son 30 günde buradan giriş yapmış bir hesap burada yine giriş yapabilir (kendi sınırları onu yine tutar). Engeller veri dizininde saklanır, yeniden başlatma onları kaldırmaz. IPv6 adresleri /64 bloğuyla engellenir; bu bilgisayarın kendi adresi (127.0.0.1, ::1) hiçbir zaman engellenmez. Bir yöneticinin koyduğu engel herkes için geçerlidir, bu hesaplar için de. Bir IPv6 /48 bloğu 300 başarısız denemeden sonra bütünüyle engellenir; böylece /64 blokları arasında gezinmek işe yaramaz. Güvenilen bir ters vekil sunucu yokken özel adresler de (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, fc00::/7 ve benzerleri) hiçbir zaman engellenmez, çünkü herkesin geldiği vekil olabilir; yukarıdaki sınırlar onları yine tutar.
+      </p>
+      <p>
+        Bir adresten gelen tüm giriş adımları dakikada 30 isteği paylaşır. Şifre denetimleri birkaç tane birden çalışır: çok sayıda adresten aynı anda çok deneme gelirse geri kalanı kısa süre bekler ya da meşgul diye reddedilir; böylece bir saldırı sunucunun çalışanlarını hiçbir zaman tutamaz. Hiçbir şey denetlenmeden reddedilen bir giriş denetim günlüğüne ayrı satır yazmaz; bir engel tek satırdır. Bir adresten yakın zamanda giriş yapmış hesapların bu kuyrukta kendilerine ayrılmış yerleri vardır; meşgul diye yapılan retler denetim günlüğüne dakikada bir yazılır.
+      </p>
+      <p>
+        Yöneticiler engellenen adresleri Kullanıcılar sayfasında görür, bir adresi bir saat, bir gün, 7 ya da 30 gün engeller ve engeli kaldırır; kaldırmak yöneticinin şifresini ve varsa yakın zamanda kullanılmış bir ikinci adımı ister. Kendi adresi engellenmiş ve açık oturumu kalmamış bir yönetici sunucuda <code>mongo-manager bans lift &lt;adres&gt;</code> komutunu çalıştırır (<code>mongo-manager bans list</code> engelleri listeler). Bir ters vekil sunucunun arkasındaysanız onu <code>--trusted-proxies</code> ile belirtin: yoksa her giriş vekilden geliyor gibi görünür ve herkes onun sınırlarını paylaşır.
+      </p>
+      <h2 id="panel-access">Panel erişimi</h2>
+      <p>
+        Ekip modunda bir yönetici, ters vekil sunucuya gerek kalmadan Kullanıcılar sayfasından panelin yalnızca bazı adreslere yanıt vermesini sağlayabilir: her biri bir notla IPv4 ya da IPv6 adresleri ve aralıkları (<code>203.0.113.0/24</code>). Boş liste her adrese izin verir. Başka bir adresten API, giriş, gerçek zamanlı bağlantı, eklenti çerçeveleri ve OIDC dönüşü reddedilir; web sayfasının kendisi yine açılır ve adresin izinli olmadığını söyler, böyle bir adresten gelen oturum da sonlandırılır. Sağlık denetimleri ve kendi anahtarı olan ölçümler panel değildir ve her adrese yanıt verir.
+      </p>
+      <p>
+        Sayfa şu an kimin, hangi adresten ve tarayıcıdan oturum açtığını ve liste hazırlanırken kimin oturumunun kapanacağını gösterir. Kaydetmek yöneticinin şifresini ve varsa yakın zamanda kullanılmış bir ikinci adımı ister; listenin dışındaki adreslerden açılmış tüm oturumları hemen kapatır. Liste yöneticinin şu an kullandığı adresi dışarıda bırakıyorsa sayfa bunu kaydetmeden önce söyler: oturumu kapanır ve bu adresten bir daha giriş yapamaz; kaydetmek bunun için de onay ister. Yine de dışarıda mı kaldınız? Sunucuda <code>mongo-manager access clear</code> birkaç saniye içinde her adrese yeniden izin verir. Bir ters vekil sunucunun arkasındaysanız önce onu <code>--trusted-proxies</code> ile belirtin: yoksa her istek vekilden geliyor gibi görünür ve sayfa bu konuda uyarır. Orada yalnızca vekilin kendi adresini belirtin: geniş bir aralık, içindeki her makinenin başka bir adresmiş gibi davranmasına izin verir. IPv6’da “Adresimi ekle” /64 bloğunuzu ekler, çünkü bir cihazın IPv6 adresi bu blok içinde sık değişir.
+      </p>
+      <h2 id="audit-log">Denetim günlüğü</h2>
+      <p>
+        Her değişiklik, giriş ve yetki değişikliği, yöneticilerin okuyabildiği ve yalnızca eklenebilen bir
+        denetim günlüğüne kaydedilir.
+      </p>
+      <ul>
+        <li>
+          Her işlem uygulamanın dilinde sözcüklerle yazılır; kodu (örneğin <code>auth.totp.disable</code>)
+          ipucunda ve ayrıntılarında durur. Filtre bir işlemi adıyla ya da koduyla seçer, eksiksiz yazılmış
+          bir kodu da kabul eder. Dışa aktarımlar kodları korur.
+        </li>
+        <li>
+          Gösterilen filtrelerle CSV veya NDJSON olarak dışa aktarılabilir. Bir tablolama programının formül
+          olarak çalıştıracağı CSV hücreleri metin olarak yazılır.
+        </li>
+        <li>
+          Bir yönetici süre belirlemedikçe süresiz saklanır; süre (30–3650 gün) belirlenince daha eski
+          kayıtlar silinir ve her silme ayrıca kaydedilir. Daha kısa bir süre yöneticinin şifresini (ve varsa
+          yakın zamanda kullanılmış bir ikinci faktörü) ister ve bir gün sonra başlar: geri almak ya da önce
+          dışa aktarmak için zaman kalır.
+        </li>
+        <li>
+          Her kayıt anahtarlı bir özetle kendinden öncekine zincirlenir; veritabanı dosyası elde edilerek bir
+          kayıt değiştirilir, silinir ya da eklenirse zincir kırılır. Denetim sayfası bunun hangi kayıtta
+          olduğunu söyler; dışa aktarma da <code>X-Audit-Chain</code> başlığında belirtir (<code>ok</code> ya
+          da kaydın numarasıyla <code>broken at</code>). Kayıt, sunucuyu hiç bekletmeden azar azar denetlenir:
+          her bakışta yeni olanlar, saatte bir de tamamı. Zincirden önce yazılmış kayıtlar olduğu gibi kalır
+          ve denetim sayfası kaç tane olduklarını söyler (yeni bir kurulumda hiç yoktur); zincir başladıktan
+          sonra bağı olmayan bir kayıt bir kırılmadır. Aynı dosyada tutulan bir zincir, en yeni kayıtların
+          silinmesini ya da her şeyin anahtarıyla birlikte sıfırlanmasını gösteremez.
+        </li>
+        <li>
+          Yanlış bir güvenlik belirteci yüzünden reddedilen gerçek zamanlı bağlantılar da kaydedilir; bir
+          adresten dakikada en çok beş tane.
+        </li>
+        <li>
+          Ekip modunda yöneticiler, her kullanıcının son 7, 30 veya 90 gündeki girişlerini, başarısız
+          girişlerini, işlemlerini, reddedilen işlemlerini ve son etkinliğini denetim günlüğünden görür.
+        </li>
+      </ul>
+      <h2 id="what-the-server-enforces">Sunucunun uyguladıkları</h2>
+      <p>
+        Salt okunur bağlantılar, roller ve bağlantı başına erişim, yalnızca tarayıcıda değil her istekte
+        sunucu tarafından denetlenir. Açamayacağınız bağlantılara giden linkler hiçbir şey göstermez. local
+        veritabanı (oplog'u her yazmayı tutar) ve kimlik bilgisi tutan koleksiyonlar, nerede görünürlerse
+        görünsünler yalnızca bağlantının adminlerine açıktır: veriler, işler, çalışan işlemler, yavaş
+        sorgular, kitaplık ve paylaşılan AI geçmişi; ikisi de hiçbir zaman bir AI sağlayıcısına gönderilmez,
+        gösterilen komutlarda parola özetleri ve tuzları herkesten gizlenir.
+      </p>
+      <p>
+        Bir SSH tüneli, bağlantısı açıkken bu bilgisayarın geri döngü adresinde rastgele bir portta dinler.
+        Bilgisayardaki her program o porta ulaşabildiği için tünel yalnızca o tünel için üretilen kullanıcı
+        adı ve şifreyi veren bir istemciyi iletir (SOCKS5, yalnızca bellekte tutulur); başka hiçbir şey hiçbir
+        yere ulaşmaz.
+      </p>
+      <p>
+        Kayıtlı bir şifre ya da anahtar yalnızca girildiği hedefe gönderilir: bir bağlantının sunucularını,
+        oturum açma yöntemini, TLS ayarlarını (TLS'i kapatmak, başka bir CA, atlanan sertifika denetimleri) ya
+        da SSH sunucusunu değiştirmek, kaydederken de test ederken de gizli bilgilerin yeniden girilmesini
+        ister.
+      </p>
+      <p>
+        Oturum açmamış birinin isteği, sunucu gövdesinden tek bir bayt okumadan reddedilir; yalnızca giriş ve
+        kurulum yolları en fazla 1 MiB JSON okur ve onun 30 saniye içinde gelmesini bekler. Bir eklenti
+        yüklemesi, gönderen yönetici değilse arşivinin tek bir baytı gelmeden reddedilir; diğer isteklerin
+        gövdesi (en fazla 1 MiB JSON) izinleri denetlenmeden önce okunur. Gövdesi bir dakika boyunca gelmeyen
+        isteğin bağlantısı kapatılır. Bir istek ya da yanıtının okunmasını 10 dakika sessizce bekleyen bir
+        bağlantı da kapatılır, ama sunucu yanıt üzerinde çalışırken asla (uzun bir <code>$out</code> ya da
+        toplu güncelleme). Diske akan yüklemeler (içe aktarmalar, yedekler, GridFS dosyaları) baytları gelmeye
+        devam ettikçe gerektiği kadar sürebilir.
+      </p>
+      <h2 id="server-identity">Sunucunun kendi kimliği</h2>
+      <p>
+        Bir bağlantı kendi kimlik bilgileriyle oturum açar; Mongo Manager'ın çalıştığı makinenin bir
+        kimliğiyle asla açmaz, yoksa sunucunun her kullanıcısı o kimliği ödünç alırdı. MONGODB-AWS bir IAM
+        kullanıcısının ya da rolünün erişim anahtarı kimliğini ve gizli erişim anahtarını ister (geçici
+        anahtarlar için <code>AWS_SESSION_TOKEN</code> ekleyin); sunucunun ortam değişkenleri, AWS profili ve
+        örnek (instance) rolü ne bağlantı ne de mongodump ve mongorestore tarafından okunur. Yapıştırılan bir
+        bağlantı dizesi formu doldurur ve kaydederken eksik olanı söyler.
+      </p>
+      <p>
+        İki yöntem makinenin kimliğiyle oturum açabilir; ekip modunda bir yönetici sunucuda izin vermedikçe
+        reddedilirler. Kerberos (GSSAPI), Mongo Manager'ın çalıştığı hesabın Kerberos biletiyle oturum açar:
+        yerel modda bu sizin kendi biletinizdir; ekip modunda ise bir Kerberos bağlantısının her kullanıcısı o
+        hesap olarak oturum açardı. Bu yüzden <code>MM_ALLOW_KERBEROS=1</code> olmadan reddedilir ve form bunu
+        kırmızıyla söyler. OIDC iş yükü kimliği (<code>ENVIRONMENT</code>: Azure, GCP veya Kubernetes)
+        makinenin bulut kimliğidir: yalnızca bağlantıda seçildiğinde, ekip modunda da yalnızca
+        <code>MM_ALLOW_WORKLOAD_IDENTITY=1</code> ile kullanılır. Bu kurallar bir bağlantı kaydedilirken, içe
+        aktarılırken veya test edilirken ve her bağlanışında yeniden denetlenir; sonradan değişen bir ayar da
+        geçerli olur. Kerberos ve OIDC bağlantılarında yedekleme ve geri yükleme (mongodump, mongorestore)
+        çalıştırılmaz: araçlar sunucunun kendi biletini ya da kimliğini kullanırdı ve bir kişinin OIDC oturumu
+        başka bir programa asla verilmez.
+      </p>
+      <h2 id="oidc">OIDC ile oturum açma</h2>
+      <p>
+        MONGODB-OIDC bağlantısı, herkesi MongoDB sunucusunun bildirdiği kimlik sağlayıcıyla oturum açtırır.
+        Ekip modunda her kullanıcı kendi oturumunu açar ve kendine ait bir MongoDB istemcisi alır: bir kişinin
+        belirteçleri hiçbir zaman başkası için kullanılmaz ve arkasında bir kişi olmadan kendi başına çalışan
+        işler (metrik örnekleme, sağlık denetimi, uyarılar, zamanlanmış yedekler, canlı eşitlemeler) böyle bir
+        bağlantıyı kullanamaz. Bir iş (içe aktarma, dışa aktarma, kopyalama) onu başlatan kişinin oturumunu
+        kullanır.
+      </p>
+      <ul>
+        <li>
+          Oturum tarayıcınızda açılır: PKCE (S256), rastgele bir <code>state</code> ve <code>nonce</code> ile
+          yetkilendirme kodu akışı, en fazla on dakika. Kimlik sağlayıcı tarayıcıyı
+          <code>&lt;base path&gt;oidc/callback</code> adresine geri gönderir; kod sunucu tarafından
+          değiştirilir ve tarayıcı yalnızca geri gönderildiği adresi görür. Oturum açma başlarken oluşturulan,
+          kısa ömürlü bir HttpOnly çerez de geri gelmelidir: başkasının başlatıp sizin tarayıcınızda bitirilen
+          bir oturum açma reddedilir (login CSRF). Kimlik sağlayıcı tarayıcıyı bu sunucuya geri gönderemiyorsa
+          bunun yerine sağlayıcıda bir kod girilir (cihaz akışı); sunucu onu bekler.
+        </li>
+        <li>
+          Belirteçler sunucunun anahtarıyla şifrelenir (<code>rotate-key</code> yeniden şifreler), her kişi ve
+          bağlantı için geldikleri kimlik sağlayıcı ve istemciyle birlikte saklanır, yenileme belirteciyle
+          yenilenir ve MongoDB sürücüsüne yalnızca aynı kimlik sağlayıcıyı bildiren bir sunucu için verilir.
+          Hiçbir zaman bir tarayıcıya ulaşmaz ve günlüğe yazılmaz. Oturumu kapatmak onları sağlayıcıda iptal
+          eder (RFC 7009) ve istemcinizi kapatır; bir yönetici bir bağlantıdaki herkesin oturumunu
+          kapatabilir. Bir bağlantının ayarlarını değiştirmek ya da bir kullanıcıyı silmek oturumlarını
+          düşürür.
+        </li>
+        <li>
+          Kimlik sağlayıcının adresi MongoDB sunucusundan gelir, yani başkasının seçtiği bir adrestir: keşfi
+          ve ona yapılan her çağrı yedekleme hedefleriyle aynı giden trafik korumasından geçer — https, genel
+          adresler, özel adresler yalnızca <code>MM_OIDC_PRIVATE_NETWORKS</code> içinde, meta veri ve
+          link-local adresler asla, yönlendirme yok. Meta verisi kimlik sağlayıcının kendisini adlandırmalı
+          (karışıklık saldırısına karşı) ve S256 sunmalıdır.
+        </li>
+        <li>
+          Belirteçleriniz yalnızca izin verilen sunuculara gider: bağlantı başka sunucular listelemedikçe
+          MongoDB Atlas ve bu bilgisayar. Bağlantının adlandırdığı sunucular da denetlenir; böylece bir SSH
+          tüneli (sürücünün yalnızca <code>127.0.0.1</code> gördüğü) nereye gittiklerini gizlemez. Bu,
+          sunucunun kendi bulut kimliği olan iş yükü kimliği için de geçerlidir; MongoDB sunucusu bu
+          bilgisayarda değilse ya da bir SSH tüneliyle ulaşılmıyorsa OIDC, sertifika denetimli TLS ister. Bir
+          iş yükü kimliğinin belirteç kaynağı (yapıştırılan bir bağlantı dizesi onu doldurur) ancak formda o
+          değer onaylandıktan sonra, iş yükü kimliğinin kendisi de ortamı onaylandıktan sonra kullanılır; içe
+          aktarılan bir dosya onay getirmez.
+        </li>
+        <li>
+          Yönlendirmeden önce oturum açma penceresi, MongoDB sunucusunun bildirdiği kimlik sağlayıcının
+          adresini ve belirtecinizin gideceği sunucuları gösterir. Bir yönetici bağlantıda
+          <em>beklenen kimlik sağlayıcıyı</em> ayarlayabilir: başka bir sağlayıcı, kimse oraya gönderilmeden
+          reddedilir. Ekip modunda kimlik sağlayıcı tarayıcıyı yalnızca bu sunucuya geri gönderir. Her oturum
+          açma kendi bağlama çerezini alır (https üzerinde kök yolda <code>__Host-</code> çerezi), böylece
+          birkaç oturum açma aynı anda bekleyebilir.
+        </li>
+        <li>
+          Her oturum, kimlik sağlayıcıdaki kim olduğuyla (ID belirtecinin konusu ve adı, belirteçlerle
+          birlikte şifreli) saklanır; yöneticiler bunu oturumlar listesinde, denetim günlüğü ise her oturum
+          açmada görür. Kodla oturum açmada (cihaz akışı) kodu kim onaylarsa o oturum açar; bu yüzden ekip
+          modunda bir yönetici açmadıkça kapalıdır (<code>MM_OIDC_DEVICE_FLOW</code>) ve bir kişi aynı anda en
+          fazla üç kodla bekleyebilir. Bağlantı silindiğinde, ayarları değiştiğinde ya da kullanıcı
+          silindiğinde oturumlar sağlayıcıda da iptal edilir. Kişiye özel OIDC bağlantısında ekip modunda
+          sunucunun kendi başına yaptığı işler (sağlık, metrik geçmişi, profil oluşturucunun geri alınması)
+          çalışamaz: sağlık bunu söyler ve profil oluşturucunun düzey 2’si reddedilir.
+        </li>
+      </ul>
+      <h2 id="encryption">İstemci tarafı şifreleme</h2>
+      <p>
+        CSFLE ve Queryable Encryption, isteğe bağlı <code>mongodb-client-encryption</code> paketini gerektirir
+        (yalnızca npm paketi). Anahtar sağlayıcılarının kimlik bilgileri (yerel ana anahtar, AWS, Azure,
+        Google Cloud, KMIP istemci sertifikası) bağlantıyla birlikte şifrelenir, maskeli gösterilir ve
+        düzenlemede yalnızca aynı anahtar kasası, hesap ve uç nokta için korunur. Kimlik bilgisi olmayan bir
+        sağlayıcı reddedilir: sunucunun kendi bulut kimliği asla alınmaz. Bir anahtar yönetim hizmetine açılan
+        her soket yalnızca sağlayıcıların 443 numaralı porttaki kendi adreslerine, bağlantı ayarlarında yazan
+        uç noktalara ya da işletmecinin listesine (<code>MM_KMS_ALLOWED_HOSTS</code>) gider — başka bir adres
+        adlandıran ana anahtar, anahtar oluşturulurken ya da yeniden sarılırken reddedilir ve soketi hiç
+        açılmaz — ardından giden trafik korumasından geçer (özel adresler yalnızca
+        <code>MM_KMS_PRIVATE_NETWORKS</code> içinde).
+      </p>
+      <p>
+        Anahtar kasası ve Queryable Encryption'ın meta veri koleksiyonları (<code>enxcol_.*</code>) her okuma
+        ve yazmada yalnızca bağlantı yöneticisinindir: belgeler, işlem hatları (<code>$lookup</code>,
+        <code>$merge</code>, <code>$out</code>), kabuk, içe aktarma, Watch, veri modeli, parçalama; anahtar
+        kasasını barındıran veritabanını silmek de öyle. Kopyalama, karşılaştırma, canlı eşitleme, yedekleme
+        ve geri yükleme, kim çalıştırırsa çalıştırsın, onları asla okumaz ya da yazmaz (anahtar kasasını kendi
+        araçlarınızla yedekleyin). Kişisel verilerin gizlendiği biri, yönetici de olsa, bir veri anahtarının
+        malzemesini, diğer adlarını ya da ana anahtarını asla görmez.
+      </p>
+      <ul>
+        <li>
+          crypt_shared kitaplığı sunucunun yüklediği koddur. Ekip modunda yalnızca işletmecinin kitaplığı
+          yüklenir (<code>MM_CRYPT_SHARED_LIB_PATH</code>, tam yol); bir bağlantı kendi kitaplığını yalnızca
+          yerel modda adlandırabilir; o da yalnızca bu bilgisayarda bulunan <code>mongo_crypt_v1</code> adlı
+          bir dosya (<code>.so</code>, <code>.dylib</code> ya da <code>.dll</code>) olabilir, asla bir ağ
+          paylaşımındaki dosya olamaz. Bir bağlantı dosyası içe aktarılırken içindeki yol atılır: bağlantıda
+          yeniden yazın. Sistemin kendi kitaplık araması asla kullanılmaz. mongocryptd her sorguyu açık olarak
+          görür: yalnızca bu bilgisayarda çalışır, sunucunun <code>PATH</code>'inden başlatılır ve adresi
+          seçeneksiz bir geri döngü (loopback) sunucusu ile porttan ibarettir.
+        </li>
+        <li>
+          Çözülmüş değerler veriyi görebilenler içindir. Kişisel verilerin gizlendiği biri şifre çözmeyen bir
+          istemci alır: şifreli değeri saklandığı gibi görür, açık halini asla görmez ve o bağlantıda belge
+          yazamaz (şifrelemeyen bir istemci onları açık olarak saklardı). Yalnızca şifre çözmeye ayarlanmış
+          bir bağlantı hiç belge yazmaz. Gelişmiş kabuk orada salt okunurdur (kabuk şifreleyemez). Kişisel
+          alan maskelemesi gösterilen her şeye uygulanmaya devam eder.
+        </li>
+        <li>
+          Kopyalama, dışa aktarma ve yedekler şifreli değerleri saklandığı gibi taşır, asla çözmez. Queryable
+          Encryption koleksiyonu kopyalamada reddedilir (değerleri kaynağın şifreleme meta verisine bağlıdır);
+          CSFLE koleksiyonu şifreli metin olarak kopyalanır ve yalnızca kaynağın anahtarlarıyla okunabilir.
+        </li>
+        <li>
+          AI asistanı ve ajanı hiçbir zaman çözülmüş bir değer almaz: bir sağlayıcı için okudukları saklandığı
+          gibi okunur, anahtar kasası ve Queryable Encryption'ın meta veri koleksiyonları onlar için asla
+          okunmaz ve ajan böyle bir bağlantıda belge yazmayı önermez.
+        </li>
+        <li>
+          Veri anahtarları anahtar malzemesi olmadan listelenir. Veri anahtarı oluşturmak, yenilemek ve
+          şifreli koleksiyon oluşturmak bağlantının yöneticilerine aittir; kişisel verilerin gizlendiği biri
+          bunları yapamaz (anahtarların diğer adları çoğu zaman kişileri adlandırır). Her değişiklik denetim
+          günlüğüne yazılır.
+        </li>
+      </ul>
+      <h2 id="copy-compare-and-sync">Kopyalama, karşılaştırma ve eşitleme</h2>
+      <p>
+        Bir kopyanın hedefi istekten gelir; sunucu onu adresteki bağlantı gibi denetler: açabiliyor
+        olmalısınız, oradaki rolünüz kopyanın neyi yazabileceğini belirler, salt okunur bağlantılar yazmayı
+        reddeder ve admin, local, config veritabanlarına ya da system koleksiyonlarına asla yazılmaz. Aynı
+        sunucuya giden iki bağlantı tanınır, böylece bir koleksiyon kendi üstüne kopyalanmaz. Kopya kişisel
+        veriyi yalnız sizin görebildiğiniz kadar okur; karşılaştırmalar iki tarafı da iki tarafın kurallarıyla
+        maskeler, böylece sayılar ve örnekler gizli bir değeri ele vermez. İndeksler, seçenekler ve view'lar
+        bir izin listesinden geçer; JavaScript çalıştıran bir view ya da doğrulayıcı, sunucu tarafı JavaScript
+        açık değilse oluşturulmaz. Kişisel değerleri maskeleyen bir kopya (değerler size gizli olduğu için ya
+        da anonim olduğu için), tanımı maskelenecek bir değer içeren her doğrulayıcıyı, indeks filtresini ve
+        view'ı maskeli bir yedek gibi dışarıda bırakır ve planı her birini listeler; canlı senkron da sonradan
+        izlediği koleksiyonlar ve indeksler için aynısını yapar; kaynağın doğrulayıcısı böyle bir değer içeren
+        yeni seçenekleri ise yalnızca yok sayılabilir, asla uygulanmaz. İşler, raporlar ve kayıtlı ayarlar
+        yalnız sahibine aittir.
+      </p>
+      <h2 id="backups">Yedekler</h2>
+      <p>
+        Bir yedek dosyası aksi kanıtlanana kadar kötü niyetli sayılır. Boyutu, iç içeliği, ad alanı sayısı ve
+        sıkıştırma oranı sınırlıdır; böylece özel hazırlanmış bir arşiv ya da "zip bombası" temiz biçimde
+        başarısız olur. Yolları klasörünün dışına çıkan zip'ler reddedilir ve her ad alanının sağlaması
+        doğrulanır; değiştirme önce geçici bir koleksiyona yazdığından bozuk bir dosya hedefe asla zarar
+        vermez. admin, local, config veritabanlarına ya da system koleksiyonlarına hiçbir şey geri yüklenmez;
+        JavaScript çalıştıran view ya da doğrulayıcılar, sunucu tarafı JavaScript açık değilse dışarıda kalır.
+        Şifreli yedekler, parolanızdan scrypt ile türetilen bir anahtarla AES-256-GCM kullanır; parola asla
+        saklanmaz, günlüğe yazılmaz ve işle birlikte tutulmaz, yanlış denemeler yavaşlatılır. mongodump ve
+        mongorestore yalnız kısıtsız yöneticiler içindir ve kimlik bilgilerini komut satırından değil, özel ve
+        geçici bir dosyadan alır. Kişisel değerleri göremeyen bir kullanıcı, her yerdeki maskelemeyle yedekler
+        ve geri yükler; yedekler, yüklemeler ve raporları yalnız sahibine görünür. Bir hedefte
+        <em>Tümüne göz at</em> yetkisi olan kullanıcı oradaki başka kullanıcıların yedeklerini de listeler,
+        ama her birinin içeriğini (veritabanı ve koleksiyon adlarını) yalnız o yedeğin bağlantısını
+        okuyabiliyorsa görür.
+      </p>
+      <h2 id="backup-destinations">Yedek hedefleri</h2>
+      <p>
+        Sunucunun bir yedek hedefine ve bir Drive oturumu için Google'a açtığı her bağlantı korunan tek bir
+        istemciden geçer. Yalnız HTTPS kullanılır; sertifikalar denetlenir ve TLS 1.2 ya da üstü gerekir. Bir
+        adın çözümlendiği her adres bağlantı kurulurken denetlenir; böylece sonradan başka yeri gösteren bir
+        ad yeniden denetlenir. Geri döngü (loopback), özel (10/8, 172.16/12, 192.168/16, fc00::/7), CGNAT
+        (100.64/10), çok noktaya yayın ve ayrılmış adresler, IPv4 eşlemeli, çevrilmiş ve NAT64 biçimleri
+        dahil, reddedilir. Yönlendirmeler izlenmez, yanıtların boyutu ve süresi sınırlıdır.
+        <code>MM_BACKUP_PROXY</code> bir vekil sunucu adlandırmadıkça vekil kullanılmaz; adlandırsa bile adres
+        burada denetlenir ve vekilden tam o adrese bağlanması istenir. Bir SFTP hedefine de aynı yoldan
+        ulaşılır (SSH oturumu kendi şifrelemesini getirir) ve yalnızca sunucu, bir yöneticinin güvendiği
+        anahtarı gösterdiğinde. Azure SAS belirteçleri yalnızca SAS alanları taşıyabilir ve her hedef yalnızca
+        oturum açma yolunun kullandığı kimlik bilgilerini saklar.
+      </p>
+      <p>
+        Arayüzden değil, yalnız sunucuda ayarlanan <code>MM_BACKUP_PRIVATE_NETWORKS</code> hedeflere özel
+        aralıkları (loopback, 10/8, 172.16/12, 192.168/16, 100.64/10, fc00::/7) ve onların içinde düz HTTP'yi
+        açabilir. Genel (public) bir aralık sunucu başlarken reddedilir. Bağlantı-yerel (link-local) ve bulut
+        meta veri adreslerine (169.254.0.0/16, fe80::/10, 169.254.169.254, fd00:ec2::254, 100.100.100.200)
+        asla izin verilemez: bunlardan birinin içinde kalan bir aralık, hangi biçimde yazılırsa yazılsın (IPv4
+        eşlemeli ve NAT64 dahil), başlangıçta o aralığın adı iletide geçerek reddedilir; listelenen bir aralık
+        bu adresleri içerse bile onlar reddedilmeye devam eder.
+      </p>
+      <p>
+        Bir hedefin anahtarları sunucunun anahtarıyla mühürlenir ve yalnız yazılabilir: sayfa yalnız her
+        birinin kayıtlı olup olmadığını (S3'te bir de erişim anahtarı kimliğinin son dört karakterini)
+        gösterir. Hedefin gösterdiği yeri değiştirmek — bir klasörün yolu; S3 uç noktası, bucket'ı ya da CA
+        sertifikası; WebDAV adresi, kullanıcı adı ya da CA sertifikası; Drive'ın bağlanma yolu, OAuth
+        istemcisi ya da Ortak drive'ı — her anahtar yeniden girilmedikçe reddedilir; böylece saklanan kimlik
+        bilgileri asla başka bir sunucuya gönderilemez. Drive'ı yeniden bağlamak sunucudaki kayıtlı istemci
+        gizli anahtarını kullanır; anahtar tarayıcıya asla geri gitmez. Yöneticiler dışındaki kullanıcılar bir
+        hedefin yalnız adını görür, adresini asla — bir hata iletisinde bile. Testler yönetici başına dakikada
+        10 ve aynı anda iki, bir hedefteki yedeklerin listelenmesi kullanıcı başına dakikada 30 ve aynı anda
+        iki ile sınırlıdır; her biri sağlayıcıya giden bir istektir. Hedef oluşturma, değiştirme, test etme ve
+        silme, erişimleri, Google oturumları, bir hedefe gönderimler, oradan indirmeler ve oradaki silmeler
+        denetim kaydına yazılır.
+      </p>
+      <p>
+        Klasör hedefleri <code>MM_BACKUP_FOLDER_ROOTS</code> içinde listelenen klasörlerin içinde ve veri
+        klasörünün dışında kalır; ağ ve aygıt yolları, yol üzerindeki sembolik bağlantılar ve junction'lar
+        reddedilir. Linux servisi yalnızca veri klasörüne ve kurulduğu köklere, bağlantılar izlendiğinde
+        vardıkları gerçek yerde yazabilir. Kurulum, hiçbir yere varmayan bir bağlantının ardındaki kökü ve
+        servisin kullanıcısının, grupları ve ACL'ler yoluyla da olsa değiştirebileceği bir klasörün altındaki
+        kökü dışarıda bırakır; o kullanıcı olarak çalışan bir süreç oraya <code>/etc</code>'ye giden bir
+        bağlantı koyabilir ve servis yeniden başladığında systemd o bağlantıyı izler. Kurulum ve
+        <code>mongo-manager doctor</code>, bir kökün üstünde başka bir kullanıcının değiştirebileceği bir
+        klasörü bildirir (bkz. <a href="deployment.html#backup-destinations">Kurulum ve dağıtım</a>).
+      </p>
+      <h2 id="backup-keys">Yedek anahtarları</h2>
+      <p>
+        Zamanlanmış yedekler başında kimse yokken çalışır, bu yüzden parola soramaz. Bunun yerine bir yedek
+        anahtarıyla şifrelenir: kullanıcı başına 32 rastgele bayt; adı bir parmak izidir (<code>K-</code> ve 8
+        onaltılık karakter). Anahtarlarınızı <em>Hesap ayarları → Yedek anahtarları</em> altında yönetin.
+      </p>
+      <ul>
+        <li>
+          Sunucu her anahtarı <code>secret.key</code> ile, sahibine ve o anahtarın kendi kaydına bağlı olarak
+          mühürlü tutar ve yalnızca sahibi için açar: yöneticiler dahil hiç kimse başka bir kullanıcının
+          anahtarını kullanamaz; veritabanında başka bir hesaba taşınan bir anahtar hiçbir şey açmaz.
+        </li>
+        <li>
+          Bir anahtar oluşturulduğunda kurtarma kiti bir kez gösterilir: <code>MMKEY1-</code> ile başlayıp bir
+          sağlama grubuyla biten bir satır. İndirin ya da yazdırın ve çevrimdışı saklayın; sunucu onu hiçbir
+          zaman saklamaz. Anahtar, kitin son grubunu yazarak onayladığınızda çalışmaya başlar; kiti hiç
+          onaylanmayan bir anahtar bir saat içinde silinir.
+        </li>
+        <li>
+          <em>Yeni anahtar</em> yeni bir etkin anahtar oluşturur ve mevcut olanı emekliye ayırır: yeni
+          yedekler yeni anahtarı kullanır, emekli bir anahtarla alınmış yedekler burada açılmaya devam eder.
+          Bir anahtar ancak hiçbir zamanlama ve bu sunucudaki hiçbir yedek ona ihtiyaç duymuyorsa ve
+          zamanlanmış yedeklerinizden biri çalışmıyorsa silinebilir. Diyalog kapandığında kiti onaylanmamış
+          bir anahtar, bir saat içinde kendi satırından onaylanabilir. <em>Kit içe aktar</em> bir anahtarı
+          kurtarma kitinden geri getirir.
+        </li>
+        <li>
+          Veritabanını ve <code>secret.key</code> dosyasını birlikte ele geçiren, her kullanıcının yedek
+          anahtarlarını ve onlarla her zamanlanmış yedeği açabilir. <code>secret.key</code> dosyasını koruyun:
+          kısıtlı dosya izinleri, <code>MM_SECRET_KEY</code> ile bir gizli bilgi yöneticisi ve veri
+          klasöründen ayrı tutulan yedekleri. Kurtarma kitlerini çevrimdışı saklayın. Veritabanı tek başına
+          hiçbir şey açmaz.
+        </li>
+        <li>
+          <code>mongo-manager rotate-key</code> yedek anahtarlarını da diğer her şeyle birlikte yeniden
+          mühürler.
+        </li>
+        <li>
+          Hiçbir anahtar, kit ya da bir parçası denetim günlüğüne, bir işe, bir rapora ya da sunucu günlüğüne
+          yazılmaz.
+        </li>
+      </ul>
+      <h2 id="watch">Değişiklikleri izleme</h2>
+      <ul>
+        <li>
+          Bir akış, bağlantıda belge okuma yetkisi ister; bu yetki her gönderimden önce ve en az saniyede bir
+          yeniden denetlenir. Yetkinin, hesabın ya da oturumun yitirilmesi, başka bir şey gönderilmeden akışı
+          bitirir.
+        </li>
+        <li>
+          Change stream'in pipeline'ını sunucu kurar. Filtreniz yalnızca bir <code>$match</code>'tir; en çok
+          12 KB ve 20 düzey derinliktedir ve <code>MM_ALLOW_SERVER_JS</code> ne derse desin MongoDB'de asla
+          JavaScript çalıştırmaz. Kimlik bilgisi koleksiyonları yönetici olmayanların akışlarından iki kez
+          çıkarılır: pipeline'da ve her değişiklikte.
+        </li>
+        <li>
+          Kişisel verileri göremeyen kullanıcılar her değişikliği koleksiyonun kurallarına göre maskelenmiş
+          görür; gizli alanlar üzerindeki filtreler reddedilir ve denetim kaydına (değerleri olmadan) yazılır.
+          Bu kullanıcıların tamamen maskelenmiş gördüğü şema değişikliği açıklamaları (doğrulayıcılar, kısmi
+          indeks filtreleri) üzerindeki filtreler de öyle. MongoDB'nin kendi hata metni asla gösterilmez.
+        </li>
+        <li>
+          Resume token'lar (belge anahtarlarını taşır), oturum kimlikleri ve koleksiyon UUID'leri sunucudan
+          asla çıkmaz. Bir akış kullanıcısına aittir: başka bir kullanıcının akış kimliği hiçbir şeyi
+          sürdürmez.
+        </li>
+        <li>
+          Akışlar sınırlıdır (pencere başına 3, kullanıcı başına 5, sunucuda <code>MM_WATCH_MAX_FEEDS</code>,
+          kullanıcı başına dakikada 60 başlatma); yavaş bir tarayıcı sunucuya akış başına 200'den fazla
+          değişiklik ya da 8 MB tutturmaz; bir değişikliğin 256 KB'tan büyük bir parçası gönderilmez ve
+          yanında adı verilir. Başlamalar ve durmalar tarayıcının adresiyle ve filtrenin anahtarlı özetiyle
+          (<code>secret.key</code>'den türetilen bir anahtarla HMAC-SHA-256) denetim kaydına yazılır,
+          değerleriyle asla; böylece denetim kaydı değerleri tahmin etmek için kullanılamaz.
+        </li>
+      </ul>
+      <h2 id="live-sync">Canlı senkron</h2>
+      <ul>
+        <li>
+          Canlı senkron sahibinin adına çalışır: kaynaktan dışa aktarma ile hedefte belge yazma, koleksiyon ve
+          dizin oluşturma ve iş çalıştırma yetkileri her partiden önce, hesabın o anki halinden (oturumdan
+          değil) yeniden okunur. Birini ya da hesabı kaybetmek, daha fazla bir şey okunmadan veya yazılmadan
+          senkronu durdurur.
+        </li>
+        <li>
+          Senkronun devam edeceği yer (belge anahtarları taşıyan bir resume token) sunucunun veritabanında
+          <code>secret.key</code> ile mühürlenir ve asla tarayıcıya gönderilmez; anahtar olmadan veritabanının
+          bir kopyası hiçbirini açığa çıkarmaz.
+        </li>
+        <li>
+          Maskeli ve anonim senkronlar yazdıkları her belgeyi maskeler; aynı kuralları olmayan bir hedefe
+          maskesiz senkron, denetim kaydına yazılan bir onay ister; iki taraftan birinde kuralların değişmesi
+          ya da bağlantılardan birinin düzenlenmesi, sahibi yeni bir özeti inceleyene kadar senkronu durdurur.
+          Kişisel verileri göremeyen bir sahip için MongoDB'nin kendi hata metni yerine yalnızca kodu
+          gösterilir.
+        </li>
+        <li>
+          Hedef asla silinmez; "hedefi değiştir" adının yazılmasını ister; silmeler yalnızca kaynağın sildiği
+          belgelere ulaşır. Kendi kaynağına ya da bir döngü kuracak senkron reddedilir.
+        </li>
+        <li>
+          İki yönlü senkron, kendi iki yönü arasında bu döngü kuralının tek istisnasıdır: sahibinin çakışan
+          iki değişiklikten sonrakinin kazandığını onaylamasını, iki tarafta da okuma ve dışa aktarma
+          haklarını ve iki tarafta aynı kişisel alan kurallarını ister; maskelemeyi reddeder. Yazmaları
+          belgelerdeki bir alanla değil, oturumla işaretlenir. Filtreli bir senkronun filtresi kaynak
+          tarafından ham değerler üzerinde değerlendirilir: maskeli bir senkron gizli bir alanı okuyan
+          filtreyi reddeder. Reddedilen kayıt dosyaları ve doğrulama örnekleri belge içerir ve yalnızca
+          senkronun sahibine, onları okuyabildiği sürece verilir.
+        </li>
+        <li>
+          Senkronlar sınırlıdır (kullanıcı başına 3, sunucu başına <code>MM_LIVE_SYNC_MAX</code>, 1.000
+          değişiklik veya 8 MB'lık partiler, aynı anda 2 doğrulama). Her başlatma, denetim işlemi ve
+          kendiliğinden durma, iki bağlantı ve ad alanlarıyla denetim kaydındadır; partiler değildir.
+        </li>
+      </ul>
+      <h2 id="server-admin">Uyarılar ve veritabanı kullanıcıları</h2>
+      <p>
+        Uyarı kanallarının gizli bilgileri — SMTP parolası ve her webhook'un imza anahtarı —
+        <code>secret.key</code> ile mühürlenir, <code>mongo-manager rotate-key</code> ile yeniden mühürlenir
+        ve tarayıcıya asla geri gönderilmez: bir webhook'un imza anahtarı yalnızca sunucu onu ürettiğinde bir
+        kez gösterilir. Posta sunucularına ve webhook'lara yedek hedefleriyle aynı çıkış korumasından geçerek
+        ulaşılır; özel ağları yalnızca <code>MM_ALERTS_PRIVATE_NETWORKS</code> açar (bkz.
+        <a href="server-admin.html#alerts">Sunucu yönetimi</a>). Kullanıcılar ve roller bölümünde yazılan
+        veritabanı kullanıcı parolaları MongoDB'ye bir kez gider; asla saklanmaz, günlüğe ya da denetim
+        kaydına yazılmaz.
+      </p>
+      <h2 id="the-advanced-shell">Gelişmiş shell</h2>
+      <p>
+        Her shell oturumu gerçek mongosh'u ayrı bir alt süreçte, Node izin modeliyle, string'den kod üretimi
+        kapalı ve dosya, süreç, ağ ya da eklenti erişimi olmadan çalıştırır. Hiçbir kimlik bilgisi tutmaz:
+        sunucudaki kimlik doğrulayan bir vekil MongoDB bağlantısını açar (SCRAM, X.509 ya da LDAP/PLAIN) ve
+        trafiği aktarır; alt süreç parolayı, TLS ya da SSH anahtarını hiç görmez. Alt süreç yalnızca o vekile
+        ulaşabilir, vekil de yalnızca bağlantının kendi sunucularına.
+      </p>
+      <p>
+        Komut kuralları vekilde, kum havuzunun dışında uygulanır: salt okunur oturum yalnızca okuma komutu
+        çalıştırabilir, admin olmayan kimlik bilgisi koleksiyonlarına dokunamaz ve küme ya da kullanıcı
+        yönetimi yapamaz. Her komut (gizli bilgileri maskelenerek) denetime yazılır. Root çalışan POSIX
+        sunucuda her worker yetkisiz bir kullanıcıya düşürülür; servisi root ya da Windows yöneticisiyle
+        çalıştırmayın.
+      </p>
+      <p>
+        Sunucu tarafı JavaScript (<code>$where</code>, <code>$function</code>, <code>$accumulator</code>,
+        MongoDB'nin iç <code>$_internal…</code> operatörleri, <code>mapReduce</code>),
+        <code>MM_ALLOW_SERVER_JS=1</code> (ya da yapılandırma dosyasında <code>allowServerJs</code>)
+        ayarlanmadıkça shell'de de her yerdeki gibi reddedilir; adminler için de. <code>$client</code> gibi
+        MongoDB'nin iç komut argümanları reddedilir. Admin olmayan biri profiler'ı (<code
+          >system.profile</code
+        >
+        her istemcinin sorgularını değerleriyle tutar), MongoDB kullanıcısının yetkilerini ya da tüm
+        veritabanlarının kullanıcı ve rollerini okuyamaz. Alt süreç bağlantı dinleyemez ve UDP gönderemez.
+      </p>
+      <p>
+        Komutlar arasında MongoDB'ye sürücünün bağlantı bakımından başka bir şey ulaşmaz: bir komutun çalışır
+        bıraktığı kod reddedilir ve denediği şey denetime yazılır. Ctrl+C'de, bir komut süre sınırını
+        aştığında, yanıtı gelmemiş bir istekle bittiğinde ve shell bir komut sırasında yeniden başlatıldığında
+        ya da kapatıldığında sunucu, ulaşılan her sunucuda shell'in kendi bağlantılarının işlemlerini listeler
+        (bağlantının MongoDB kullanıcısıyla; küme yetkisi gerekmez) ve beş saniye içinde sonlandırır. Ctrl+C
+        ya da süre sınırından sonra iki saniye içinde durmayan shell yeniden başlatılır. Shard'lara geçmiş
+        işlemler shell'in değiştiremeyeceği adıyla bulunur. Sunucu her shell'in belleğini, shell yaşadığı
+        sürece işletim sisteminden izler; sınırı aşanı ya da hiçbir komut çalışmıyorken 15 saniye yanıt
+        vermeyeni yeniden başlatır. Bellek Linux'ta saniyede birkaç kez, başka sistemlerde yaklaşık saniyede
+        bir ölçülür; bu yüzden bir shell yeniden başlatılmadan önce sınırını kısa bir süre aşabilir. Alt
+        sürecin sunucuya gönderdiklerinin boyutu, derinliği ve hızı okunmadan önce denetlenir.
+      </p>
+      <p>
+        Tamamlama kodunuzu asla çalıştırmaz: tarayıcı mongosh'tan üretilmiş bir katalogdan tamamlar, kum
+        havuzundaki worker ise yalnızca tip analizi yapar; bir komutla aynı yetki denetimleri ve vekil
+        kuralları geçerlidir (alan örneklemesi dahil). Aynı anda tek bir tamamlama çalışır, asla bir komutla
+        birlikte çalışmaz ve süresini aşan bir tamamlamanın worker'ı sıfırlanır. Veritabanından gelen
+        koleksiyon ve alan adları düz bir tanımlayıcı değilse tırnaklı metin olarak eklenir, böylece düşmanca
+        bir ad koda dönüşemez; her zaman metin olarak gösterilir.
+      </p>
+      <p>
+        Paylaşılan bir snippet metni paylaşır, yetkiyi değil: onu çalıştıranın oturumunda, onun yetkileri,
+        salt okunur durumu ve vekil kurallarıyla çalışır. Snippet'i açmak onu asla çalıştırmaz; yazarı
+        gösterilir ve her parametre değeri kendi türünde bir değer olarak eklenir (tırnaklı metin, sayı,
+        true/false ya da bir EJSON değeri), böylece kendini kapatıp çalışamaz. Parametre bir değerin
+        yazılacağı yerde durmalıdır: bir metnin, şablonun, düzenli ifadenin ya da yorumun içindeki parametre
+        reddedilir. Snippet'ler şifreli saklanır; kodları denetim kaydına girmez. CSV dışa aktarma, bir hesap
+        tablosunun formül olarak çalıştıracağı hücreleri korur (baştaki boşluklardan sonra
+        <code>= + - @</code>, sekme ya da satır sonu ile başlayan metnin başına <code>'</code> ekler; dosyayı
+        başka bir program okuyacaksa dışa aktarma penceresinden kapatılabilir) ve shell sonuçları yalnızca
+        bellekte tutulur.
+      </p>
+      <p>
+        Kişisel veriler kullanıcı bazında gizlenebilir. Bağlantı yöneticisi kişisel veri tutan alanları
+        listeler; "kişisel verileri göremez" yetkisi verilen kullanıcı bu değerleri *** olarak görür — sunucu
+        onları hiçbir şey dışarı çıkmadan önce kaldırır: belgelerde, aggregation sonuçlarında, explain
+        planlarında, şema analizinde, validator, indeks ve view tanımlarında, paylaşılan favori ve
+        pipeline'larda, hata mesajlarında, profiler'da, yavaş sorgularda ve işlem listesinde. Uygulama bu
+        değerleri kilit simgesiyle gösterir — tabloda, kartlarda, ağaçta ve JSON görünümünde, ekran okuyucunun
+        okuduğu bir etiketle — ve veri gösteren her ekranda bazı değerlerin gizli olduğunu söyler: Belgeler,
+        Aggregation'lar, Explain, Şema, Doğrulama, İndeksler ve İzleme. Gizlemenin, kural düzenleyicinin
+        belirttiği bir maliyeti vardır: böyle bir kullanıcı için kişisel veri tutabilecek bir alanda sıralama,
+        gruplama ya da birleştirme gizli bir kopya üzerinde çalışır ve indeks kullanamayabilir; bu yüzden
+        kesin kurallar <code>*</code> ve <code>**</code> kurallarından daha ucuzdur. Sunucu bir değerin hangi
+        alana ait olduğunu anlayamazsa değeri gizler. Böyle bir kullanıcı shell kullanamaz. Kurallardan
+        bağımsız olarak komutlardaki parolalar, belirteçler ve anahtarlar ile bağlantı adresleri her zaman
+        gizlenir. Profiler değişiklikleri bağlantı yöneticilerine aittir ve denetim kaydına girer; seviye 2,
+        sunucu yeniden başlasa bile 30 dakika sonra kendiliğinden kapanır. İşlem ve yavaş sorgu filtreleri
+        sunucuda denetlenir; MongoDB sorgusunu sunucunun kendisi kurar. Atlas Search ve Vector Search indeks
+        tanımları değerleri değil alanları anar. Kişisel veri kurallarının geçerli olduğu yerde böyle bir
+        kullanıcı çözümleyicileri ve eş anlamlı eşlemeleri maskelenmiş görür (birinin seçtiği sözcükleri,
+        örneğin durak sözcüklerini, tutabilirler) ve arama indeksi oluşturamaz ya da değiştiremez; başka
+        yerlerde onları tam olarak görür ve düzenler. Toplu güncelleme ve silme bir view üzerinde reddedilir;
+        önizleme örnekleri her okuma gibi maskelenir.
+      </p>
+      <p>
+        Kişisel verileri göremeyen kullanıcı onları sorguda da kullanamaz: kişisel bir alanı adlandıran
+        filtre, sıralama, gruplama, birleştirme, sayım ya da hesaplanan alan reddedilir; böylece bir değer
+        parça parça tahmin edilemez. Altında kişisel veri bulunabilecek bir alanda MongoDB yalnızca düz
+        değerleri karşılaştırır. View'lar okudukları koleksiyonlar gibi denetlenir. GridFS dosya içerikleri bu
+        kullanıcıya ne indirme olarak ne de bir kovanın <code>.chunks</code> koleksiyonu üzerinden açıktır:
+        bir sorgu, onu okuyan ya da ona yazan bir pipeline, bir dışa aktarma, bir değişiklik akışı, bir kopya,
+        bir canlı senkron, bir yedek ya da bir geri yükleme — son dördü kovayı, bunu söyleyerek, dışarıda
+        bırakır; yeni koleksiyonları izleyen maskeli bir canlı senkron, başladıktan sonra oluşturulan bir
+        kovayı da asla izlemez. Bir bağlantıda herhangi bir kişisel veri kuralı varsa, bir
+        <code>.chunks</code>
+        koleksiyonunun kopyası kim yaparsa yapsın kişisel veri tutabileceğinin onaylanmasını ister. Sunucuda
+        JavaScript bu kullanıcıya kapalıdır. Pencere işlevleri (<code>$setWindowFields</code>),
+        <code>$fill</code> ve <code>$densify</code> kişisel veri tutmayan alanlarda çalışır: kişisel bir alan
+        üzerinde pencere, onu doldurma ya da sıklaştırma veya kişisel veri tutabilecek bir alanın ham değerine
+        göre bölümleme reddedilir; kişisel veriye denk gelebilecek bir sıralama gizli bir kopya üzerinden
+        yapılır. Kural olan yerde <code>$redact</code> yalnızca <code>$$ROOT</code> alanlarını okuyabilir:
+        oradaki düz bir alan belgenin her düzeyinde, kişisel olanlar da dahil, yeniden okunur; bu yüzden
+        reddedilir. Her ret, alanın adıyla — asla değeriyle değil — denetim kaydına yazılır.
+      </p>
+      <p>
+        Böyle bir kullanıcı yine de belge düzenleyebilir, ekleyebilir ve silebilir; ancak yazdığı hiçbir şey
+        kişisel bir değeri değiştirmez, silmez, taşımaz ya da kopyalamaz: tam değiştirmede belgenin ***
+        gösterdiği yerlerde saklı değerler korunur, yeni bir belge kişisel alan içeremez, toplu güncelleme
+        gizli veriyi ezeceği belgeleri olduğu gibi bırakır. Kişisel veri üzerine view, onun üzerinde benzersiz
+        indeks ve onu tutan bir koleksiyonu kopyalamak ya da yeniden adlandırmak reddedilir. Kişisel veri
+        üzerinde TTL indeksi, kural olan yerde hesaplama yapan ($expr) bir doğrulayıcı ve kişisel veriyi
+        kapsayan benzersiz bir indeksin anahtar alanını değiştirmek de reddedilir; aksi halde yinelenen
+        anahtar hatası iki belgenin aynı gizli değeri paylaşıp paylaşmadığını ele verirdi.
+      </p>
+      <p>
+        Okumalar, tek bir kullanıcının sunucunun belleğini tüketemeyeceği şekilde sınırlıdır: bir belge ya da
+        GridFS dosyası sayfası 16 MiB'de durur (daha büyük bir sayfa daha az belge ya da alan ister); bir
+        kullanıcı aynı anda altı, sunucu 32 sayfa okur ve her biri yanıtı gönderilene kadar tutulur —
+        sayımlar, tek belgeler, şema analizleri ve toplu işlem önizlemeleri bu altı hakkı paylaşır;
+        aggregation çalıştırmaları ve sayımları, explain'ler ve doğrulama testleri kullanıcı başına aynı anda
+        iki, sunucuda 16 tanedir; bir yedeği incelemek ya da geri yüklemesini planlamak için okumak kullanıcı
+        başına bir, sunucuda üç tanedir, diğerlerinden biraz beklemeleri istenir.
+      </p>
+      <p>
+        İçe aktarılan dosyalar boyut, derinlik, alan sayısı ve açılma oranı sınırları içinde, geldikçe okunur;
+        hiçbir şey diske açılmaz, değerlendirilmez ya da çalıştırılmaz, DTD ya da makro içeren çalışma
+        kitapları reddedilir ve güvenle okunamayan kayıt tahmin edilmez, raporlanır. Kişisel verileri
+        göremeyen kullanıcıların dışa aktarmaları değerlerin yerinde <code>***</code> taşır. Aktarım dosyaları
+        onları oluşturan kişiye aittir, sınırlı süre tutulur ve o kişi dışa aktarma hakkını kaybedince ya da
+        kişisel alan kuralları değişince indirilemez. Yüklemeler, içe ve dışa aktarmalar ve indirmeler denetim
+        günlüğüne yazılır.
+      </p>
+      <p>
+        Sunucu kendiliğinden yalnızca metrik geçmişini bir bağlantı yöneticisinin açtığı bağlantılara
+        bağlanır: dakikada bir, canlı grafiklerle aynı okumayla (yedek hedeflerine de yalnız birinin
+        başlattığı gönderim ve indirmeler için ve 7 gündür yarım kalan yüklemeleri temizlemek için); geçmiş
+        yalnızca sayı tutar ve bağlantıyla birlikte silinir. İndeks önerileri ve sharding özeti yalnızca okur;
+        yanıtlarında alan ve indeks adları bulunur, jumbo chunk sınırları da her kişisel değer gibi
+        maskelenir.
+      </p>
+      <h2 id="ai">AI asistanı</h2>
+      <ul>
+        <li>
+          Sağlayıcıları yalnızca yöneticiler ekler; istekler yedek hedefleriyle aynı korumalı istemciden
+          geçer: yalnızca https, yönlendirme ya da vekil sunucu yok, adres bağlantının kurulduğu yerde
+          denetlenir, metadata ve link-local adreslere asla, özel ve loopback adreslere yalnızca
+          <code>MM_AI_PRIVATE_NETWORKS</code> içinde listelendiklerinde. Bir kullanıcı hiçbir zaman adres
+          veremez.
+        </li>
+        <li>
+          Sağlayıcı anahtarları <code>secret.key</code> ile mühürlenir, bir daha gösterilmez, hiçbir
+          tarayıcıya gönderilmez, günlüklerin ve denetim kaydının dışında tutulur ve
+          <code>rotate-key</code> ile yeniden mühürlenir. Bir sağlayıcının adresini değiştirmek anahtarını
+          unutturur.
+        </li>
+        <li>
+          Gönderileni soranın hakları altında sunucu kurar; kişisel veri kuralları onu herkes için maskeler;
+          örnekler her istekte onay ve onları alabilen bir sağlayıcı ister; MongoDB'nin kendi koleksiyonları
+          asla gönderilmez; bir bağlantı yalnızca yerel sağlayıcılara izin verebilir ya da hiçbirine.
+        </li>
+        <li>
+          Ajan modu kapalıyken asistanın aracı yoktur ve yanıtları yalnızca editör metni olur, güvenli
+          ayrıştırıcıdan geçer; yanıtlar resim, bağlantı ya da HTML olmadan çizilir. Tek seferlik istekler
+          saklanmaz; izin verilen ya da reddedilen her istek ve sohbet mesajı, her sohbet silme ve her
+          sağlayıcı değişikliği, sözler olmadan denetlenir.
+        </li>
+        <li>
+          Ajan modu (her kişinin kendi anahtarı) modele, uygulamanın kendi yollarını süreç içinde ve kişinin
+          adına çağıran araçlar verir: sunucudan hiç çıkmayan tek kullanımlık bir belirteç kişinin oturumunu
+          temsil eder ve oturum her çağrıda yeniden okunur; böylece yetkiler, salt okunur mod, maskeleme
+          kapısı, hız sınırları ve denetim kaydı kişinin kendi isteklerinde olduğu gibi uygulanır. Bağlantılar
+          modele yalnızca adlarıyla söylenir; AI politikası kapalı olan hiç anılmaz, yalnızca yerel olan
+          yalnızca yerel bulunan bir sağlayıcıya söylenir. Her değişiklik kişinin onayladığı bir karttır
+          (Onayla basılmadan önce kısa bir bekleme, tek yanıt, bir kaldırmada adın yazılması); yalnızca
+          değişikliği öneren turun sahibi yanıt verebilir. Araç sonuçları modele veri olarak işaretlenip
+          gider; belge değerleri yalnızca mesaj başına onayla, kişisel alanlar herkes için maskeli; sunucu
+          JavaScript'i, <code>$out</code> ve <code>$merge</code> ajan için asla çalıştırılmaz. Adımlar, mesaj
+          ve dakika başına işlemler sınırlıdır; her adım bağımsız değişkenleri olmadan denetlenir. Yöneticiler
+          ajanın değişikliklerini bağlantı bazında kapatabilir.
+        </li>
+        <li>
+          Sohbetler mesaj ve başlık başına <code>secret.key</code> ile mühürlenir, yalnızca sahibi okuyabilir
+          (hiçbir yönetim yolu onları okumaz), <code>rotate-key</code> ile yeniden mühürlenir,
+          <code>MM_AI_CHAT_DAYS</code> gün (ya da yalnızca bellekte) tutulur ve kullanıcısıyla birlikte
+          silinir. Önceki mesajlar her mesajda yeniden denetlenir — yetkiler, bağlantının politikası, kişisel
+          veri kuralları — ve ancak sonra gönderilir; yalnızca yerel sağlayıcılara izin veren bir bağlantıdan
+          gelen bir mesaj, isteğin tamamını listelenen ağlarda tutar.
+        </li>
+        <li>
+          Her mühürlü mesajın yanında kaydı açık olarak tutulur: ilgili olduğu koleksiyon ve bağlantı,
+          sağlayıcı, zamanlar, token sayıları ve geçmişin dışarıda bıraktıkları (yalnızca sayılar). Veritabanı
+          dosyasına sahip olan bu kayıtları görür, sözleri asla; <code>secret.key</code> de elindeyse sözler
+          okunabilir.
+        </li>
+      </ul>
+      <h2 id="plugins">Eklentiler</h2>
+      <ul>
+        <li>
+          Eklenti, opak kaynaklı korumalı bir çerçevede (<code>sandbox="allow-scripts"</code>) gösterilen
+          durağan dosyalardır. Content-Security-Policy yalnızca kendi dosyalarına izin verir ve hiçbir adrese
+          istek tanımaz (<code>connect-src 'none'</code>): istek, çerez ya da depolama yoktur; uygulamanın
+          sayfasına, oturumuna ya da depolamasına erişemez. Dosyaları yalnızca kendi çerçevesine sunulur:
+          uygulamanın bir sayfası onları kendi betikleri gibi yükleyemez; sunuldukları adres yalnızca
+          verildiği oturum sürdükçe geçerlidir (sayfa 10 dakika, diğer dosyaları en fazla 12 saat; aynı
+          kullanıcının yerinde yenilenen oturumu izlenir, oturumu kapatmak izlenmez ve tarayıcı bunlardan
+          hiçbirini önbellekte tutmaz). Eklentinin hiçbir parçası sunucuda çalışmaz.
+        </li>
+        <li>
+          Politikanın her yerde durduramadıkları: WebRTC'yi yalnız CSP'nin
+          <code>webrtc 'block'</code> yönergesini uygulayan tarayıcılar engeller — Chromium tabanlı
+          tarayıcılar (Chrome, Edge) 149 sürümü itibarıyla bunu yok sayar, Firefox'a da güvenilmemeli — bu
+          yüzden oralarda bir eklenti, taraması ne derse desin, okuduklarını WebRTC ile hâlâ dışarı
+          gönderebilir; bir önceden yükleme ipucu (<code>dns-prefetch</code>, <code>preconnect</code>) da veri
+          taşıyabilen bir adı çözdürebilir. Çerçeve tarayıcıdan önceden çözümleme yapmamasını ister (<code
+            >X-DNS-Prefetch-Control: off</code
+          >) ve tarama ikisini de yüksek risk olarak işaretler. Tarama dosyaların metni üzerinde çalışan bir
+          sezgisel denetimdir: ondan gizlenmek için yazılmış kod bulunmaz. Bir eklentiyi yalnızca
+          okuyabileceği verilerle ona güveniyorsanız onaylayın. Bir adres ayarı (harita döşemeleri),
+          eklentinin okuduklarını bir resmin adresinde gönderebileceği yerdir: yalnızca https (düz http yalnız
+          bu bilgisayar için) ve onay ekranı bunu söyler.
+        </li>
+        <li>
+          Bir eklentinin uygulamada yaptıkları — panoya kopyalama, bir sorgu ya da aşamaları yerine koyma, bir
+          belge açma ya da bir değişiklik isteme — yalnızca kendi sayfasındaki bir tıklamanın ya da tuş
+          basışının hemen ardından kabul edilir (odak çerçevede olmalıdır; uygulamanın başka bir yerindeki
+          tıklama hiç sayılmaz) ve değişiklik dışında her deneme dakikadaki birkaç hakkından sayılır. Bir
+          çerçeve odağı kendiliğinden alabildiği için, uygulamanın başka bir yerindeki bir tıklama ya da tuş
+          basışından (uygulamanın açılışından beri izlenir) sonraki 5 saniye içinde istenen bir kopyalama
+          eklentinin sözüyle yapılmaz: uygulama kopyalanacak olanı gösterir ve kendi düğmesine tıklanınca
+          kopyalar. Kalan açıklar: hemen önce tıklanan başka bir eklentinin çerçevesi etkinliğini ödünç
+          verebilir; odağı kendisi alan bir eklenti o süre içinde kullanıcının kendi düzenleyicilerine bir
+          sorgu ya da aşamalar koyabilir ya da bir belge açabilir — kullanıcı olmadan hiçbir şey çalışmaz ya
+          da değişmez. Uygulamanın onay soruları Onayla düğmesini ancak hiçbir basışın olmadığı kısa bir
+          sürenin ardından, fareyle yalnızca ondan sonra başlayan ve işaretçinin o arada düğmenin üzerine
+          geldiği bir basıştan alır; bu yüzden bir eklentinin düğmesinde başlayan çift tıklama, art arda
+          tıklamalar ya da işaretçi Onayla'nın çıktığı yerde dururken bir duraklamanın ardından gelen tıklama
+          onları asla yanıtlamaz; ekran okuyucunun ya da bir tuşun basışı kabul edilir. Kalan: kullanıcıyı
+          Onayla'nın üzerine gidip tıklamaya ikna eden bir sayfa. Bir değişiklik önce dokunduğu her alanı
+          tırnak içinde sayar. Eklentinin mesajları adının yanında kimliğini gösterir ve uygulamanın
+          kendisininki gibi okunan (<em>Mongo Manager</em>, <em>Sistem</em>, <em>Güvenlik</em>…), bir sözcükte
+          yazı sistemlerini karıştıran ya da ayraç içinde bir kimlik taklit eden bir ad reddedilir.
+        </li>
+        <li>
+          Verilere yalnızca köprü üzerinden ulaşır ve köprü oturum açmış kullanıcı olarak davranır: onun
+          yetkileri, salt okunur bağlantıları ve kişisel veri maskelemesiyle. Bir eklentinin izni asla
+          kullanıcının kendi yetkisini aşmaz; istediği her değişiklik kullanıcıya gösterilir ve kararı
+          kullanıcı verir.
+        </li>
+        <li>
+          Yönetici tam olarak belirli dosyaları (özetlerini: her yolun, dosyasının SHA-256 değeriyle birlikte
+          SHA-256 özeti) ve istenen izinleri onaylar. Sunulan her dosya bu özete göre denetlenir; dosyalardaki
+          her değişiklik eklentiyi yeniden onaylanana dek devre dışı bırakır.
+        </li>
+        <li>
+          Onaydan önce her eklentinin betik, işaretleme ve stil dosyaları taranır: metni kod olarak
+          çalıştıran, metinden işaretleme kuran, kodu başka bir yerden yükleyen, çerçevesinden çıkmaya
+          çalışan, dışarıya ulaşan ya da ne yaptığını gizleyen kod aranır. Yüksek bulgusu olan ya da taraması
+          tamamlanamayan bir eklenti yalnızca kimliği yazılarak onaylanır: bunu sunucu uygular, denetim kaydı
+          da taramanın sayılarını ve bir riskin kabul edilip edilmediğini yazar.
+        </li>
+        <li>
+          Mongo Manager ile gelen eklentiler aynı korumalı alanda çalışır ve aynı biçimde taranır, ama
+          uygulamanın kendi kodu oldukları için onaylanırken kimlikleri hiçbir zaman sorulmaz. Böyle bir
+          eklentinin güncellemesi onayını yalnızca eklenti etkinken ve yeni bir izin istemiyorsa korur.
+        </li>
+        <li>
+          GitHub'dan kurulum yalnızca <code>github.com</code>, <code>api.github.com</code>,
+          <code>objects.githubusercontent.com</code> ve <code>release-assets.githubusercontent.com</code>
+          sunucularına, https üzerinden, yalnızca herkese açık adreslerde ve vekil sunucu kullanmadan ulaşır;
+          bu sunucular arasında en fazla 4 yönlendirme izler, boyutlar sınırlıdır ve her şey 4 dakikada
+          bitmelidir. Sunucuya ait hiçbir şey göndermez: çerez, jeton ya da kimlik bilgisi yok. Eklenti devre
+          dışı, taranmış ve onay bekler hâlde gelir.
+        </li>
+        <li>
+          <code>MM_PLUGINS=0</code> eklentileri kapatır; GitHub'dan kurulum,
+          <code>MM_PLUGINS_GITHUB=1</code> ile açılmadıkça kapalıdır (bkz.
+          <a href="deployment.html#plugins">Kurulum ve dağıtım</a>). Kurulumlar, taramalar, onaylar, ayarlar,
+          devre dışı bırakma ve kaldırma denetim kaydına yazılır. Eklenti geliştirme, köprü ve taramanın
+          kuralları ayrıntılarıyla: <a href="plugins.html">Eklentiler</a>.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Bu sayfada</p>
+      <ol>
+        <li><a href="#modes">Modlar</a></li>
+        <li><a href="#saved-secrets-and-the-key">Saklanan gizli bilgiler ve anahtar</a></li>
+        <li><a href="#signing-in">Giriş</a></li>
+        <li><a href="#sign-in-bans">Engellenen adresler</a></li>
+        <li><a href="#panel-access">Panel erişimi</a></li>
+        <li><a href="#audit-log">Denetim günlüğü</a></li>
+        <li><a href="#what-the-server-enforces">Sunucunun uyguladıkları</a></li>
+        <li><a href="#server-identity">Sunucunun kendi kimliği</a></li>
+        <li><a href="#oidc">OIDC ile oturum açma</a></li>
+        <li><a href="#encryption">İstemci tarafı şifreleme</a></li>
+        <li><a href="#copy-compare-and-sync">Kopyalama, karşılaştırma ve eşitleme</a></li>
+        <li><a href="#backups">Yedekler</a></li>
+        <li><a href="#backup-destinations">Yedek hedefleri</a></li>
+        <li><a href="#backup-keys">Yedek anahtarları</a></li>
+        <li><a href="#watch">Değişiklikleri izleme</a></li>
+        <li><a href="#live-sync">Canlı senkron</a></li>
+        <li><a href="#server-admin">Uyarılar ve veritabanı kullanıcıları</a></li>
+        <li><a href="#the-advanced-shell">Gelişmiş shell</a></li>
+        <li><a href="#ai">AI asistanı</a></li>
+        <li><a href="#plugins">Eklentiler</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

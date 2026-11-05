@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Klavye kısayolları · Mongo Manager belgeleri</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager belgeleri</a>
+      <details class="lang-menu">
+        <summary>Türkçe</summary>
+        <span class="langs" role="group" aria-label="Dil">
+          <a lang="en" hreflang="en" href="../shortcuts.html">English</a>
+          <strong lang="tr">Türkçe</strong>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/shortcuts.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/shortcuts.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/shortcuts.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/shortcuts.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/shortcuts.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/shortcuts.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/shortcuts.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/shortcuts.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Genel bakış</a>
+      <a href="getting-started.html">Başlarken</a>
+      <a href="security.html">Güvenlik</a>
+      <a href="deployment.html">Kurulum ve dağıtım</a>
+      <a href="import-export.html">İçe ve dışa aktarma</a>
+      <a href="backup.html">Yedekleme ve geri yükleme</a>
+      <a href="watch.html">Değişiklikleri izleme</a>
+      <a href="sync.html">Canlı senkron</a>
+      <a href="server-admin.html">Sunucu yönetimi</a>
+      <a href="ai.html">AI asistanı</a>
+      <a href="plugins.html">Eklentiler</a>
+      <strong>Klavye kısayolları</strong>
+    </nav>
+    <main>
+      <h1>Klavye kısayolları</h1>
+      <h2 id="your-own-keys">Kendi tuşlarınız</h2>
+      <p>
+        Aşağıdakiler uygulamanın varsayılan tuşlarıdır. Genel kısayollara — komut paleti, kenar çubuğu, odak
+        modu, sabitleme, kısayol listesi, sorgular, AI'ya sor, asistan, sekmeyi taşıma ve bölünmüş görünüm —
+        Hesap → Klavye kısayolları bölümünde başka tuşlar verilebilir: Değiştir'i seçip yeni tuşlara basın.
+        Başka bir kısayolun kullandığı tuşlar, tarayıcının ya da düzenlemenin ayırdığı tuşlar (kopyala,
+        yapıştır, sekmeyi kapat, yenile…) ve siz yazarken çalışacak tek bir harf ya da işaret, nedeni
+        söylenerek reddedilir. Sıfırla bir kısayola kendi tuşlarını (o tuşlara yeniden basmak da), Tümünü
+        sıfırla hepsine geri verir; tuşlarınız sunucudan okunana dek hiçbir şey değiştirilemez, Tekrar dene
+        yeniden sorar. Yeni bir sürümün artık kullanamadığı tuşlar kısayolun kendi tuşlarına döner ve ayarlar
+        bir kez hangilerinin döndüğünü söyler. Tuşlarınız sunucuda sizin için saklanır; diğer
+        tarayıcılarınızda da geçerlidir. <kbd>?</kbd> listesi, komut paleti, ipuçları ve ekran okuyucular
+        sizin tuşlarınızı söyler. Düzenleyicilerin, listelerin, tabloların, diyagramın ve shell'in tuşları
+        olduğu gibi kalır.
+      </p>
+      <h2 id="general">Genel</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>Komut paletini aç</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>K</kbd></td>
+          </tr>
+          <tr>
+            <td>Bağlantı panelini göster veya gizle</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>B</kbd></td>
+          </tr>
+          <tr>
+            <td>Odak modu: sekmenin çevresindeki panelleri gizle ya da göster</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd></td>
+          </tr>
+          <tr>
+            <td>Açık sekmenin yerini Ana sayfaya sabitle ya da kaldır</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd></td>
+          </tr>
+          <tr>
+            <td>Komut paletinin sonuçlarında gezin</td>
+            <td><kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>Açık koleksiyonun sorgu çubuğuna geç</td>
+            <td><kbd>/</kbd></td>
+          </tr>
+          <tr>
+            <td>Bu kısayolları göster</td>
+            <td><kbd>?</kbd></td>
+          </tr>
+          <tr>
+            <td>Sorguları aç</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd></td>
+          </tr>
+          <tr>
+            <td>Koleksiyon hakkında AI asistanına sor</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>I</kbd></td>
+          </tr>
+          <tr>
+            <td>Asistanı aç ya da kapat</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>.</kbd></td>
+          </tr>
+          <tr>
+            <td>Bir iletişim kutusunu, menüyü veya açılır pencereyi kapat</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="queries-and-editors">Sorgular ve düzenleyiciler</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>Sorguyu çalıştır veya tek satırlık alanı gönder</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Çok satırlı düzenleyiciden çalıştır veya kaydet</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Çok satırlı düzenleyicide girinti ekle</td>
+            <td><kbd>Tab</kbd></td>
+          </tr>
+          <tr>
+            <td>Çok satırlı düzenleyiciden çık (Escape, ardından Tab)</td>
+            <td><kbd>Escape</kbd> + <kbd>Tab</kbd></td>
+          </tr>
+          <tr>
+            <td>Öneriler arasında gez</td>
+            <td><kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>Öneriyi kabul et</td>
+            <td><kbd>Tab</kbd> / <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Önerileri kapat</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="assistant">Asistan</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>Mesajı gönder</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Mesajda yeni satır</td>
+            <td><kbd>Shift</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Çalışma alanına dön</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+          <tr>
+            <td>Asistanı genişlet ya da daralt (ayırıcı odaktayken)</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="workspace-tabs">Çalışma alanı sekmeleri</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>Sekmeler arasında gezin</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd> / <kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+          <tr>
+            <td>Odaktaki sekmeyi kapat</td>
+            <td><kbd>Delete</kbd></td>
+          </tr>
+          <tr>
+            <td>Etkin sekmeyi sola veya sağa taşı</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>←</kbd> / <kbd>→</kbd></td>
+          </tr>
+          <tr>
+            <td>Etkin sekmeyi bir öncekinin yanında aç; bölünmüş görünümde diğer bölmeye geç</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>\</kbd></td>
+          </tr>
+          <tr>
+            <td>
+              Odaktaki sekmenin menüsünü aç (Yanında aç, Bölmeyi kapat, Sekmeyi kapat, Diğer sekmeleri kapat)
+            </td>
+            <td><kbd>Shift</kbd> + <kbd>F10</kbd> / <kbd>Menü</kbd></td>
+          </tr>
+          <tr>
+            <td>Bölmeleri yeniden boyutlandır (ayırıcı odaktayken)</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd> / <kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <p>
+        <strong>Bölünmüş görünüm</strong> iki sekmeyi yan yana gösterir. Bir sekmenin menüsündeki
+        <em>Yanında aç</em> ile (oku, sağ tık ya da Shift + F10), bir sekmeyi çalışma alanının sağ tarafına
+        sürükleyerek ya da Ctrl / ⌘ + \ ile açılır. Tek bir sekme şeridi vardır: ekrandaki iki sekmede bir
+        bölme işareti bulunur ve şeritte seçilen sekme kullanılan bölmede açılır. Kullanılan bölmenin vurgu
+        çubuğu vardır ve <em>Etkin bölme</em> yazar; diğerini kullanmak için ona tıklayın ya da Tab ile içine
+        geçin. Genişliği paylaştırmak için ayırıcıyı sürükleyin ya da ona odaklanıp ok tuşlarını kullanın
+        (%20–80). Bir bölmenin başlığındaki <em>Bölmeyi kapat</em> bölünmeyi bitirir ve iki sekmeyi de açık
+        tutar, klavye odağı kalan bölmeye geçer; bir bölmenin sekmesini kapatmak da bölünmeyi bitirir. Ana
+        sayfa bölünmeyi bitirmeden gizler: sekmelerinden birini seçmek ya da Ana sayfada Ctrl / ⌘ + \ onu
+        yeniden gösterir (saklı bir bölünme yoksa Ana sayfada Ctrl / ⌘ + \ en son kullanılan iki sekmeyi yan
+        yana açar). Ctrl / ⌘ + \ klavye odağını kullanılan bölmeye taşır; bölmeler arasında geçmek tarayıcı
+        geçmişine adım eklemez. Bölünmüş görünüm, sekmeler gibi, sayfa yenilendiğinde geri gelir. 768
+        pikselden dar pencerelerde tek sekme gösterilir — bölünme daha geniş bir pencere için saklanır — ve
+        Yanında aç sekmeyi yalnızca açar. Ekran okuyucular her bölmeyi sekmesinin adını taşıyan bir bölge
+        olarak bulur ("orders, sol bölme").
+      </p>
+      <p>
+        Başka bir yerde — başka bir veritabanında, başka bir sayfada — çalışırken bir veritabanının koleksiyon
+        sekmeleri (iki ya da daha fazlası, açıksa veritabanının kendi sekmesiyle birlikte) veritabanının adını
+        ve kaç sekme içerdiğini gösteren tek bir sekmede toplanır; üzerine gelince ya da odaklanınca
+        sekmelerin adlarını gösterir. Ona tıklamak ya da üzerinde Enter'a basmak veritabanının kendisini açar
+        (sekmesi açık değilse açılır) ve sekmeleri yeniden gösterir; koleksiyonlarından birini herhangi bir
+        yerden açmak da onları gösterir, o koleksiyon etkin olur. Oklar onu açmadan üzerinde durur; Delete,
+        kapatma düğmesi ya da orta tık hepsini kapatır, Geri al onları geri getirir. Ctrl / ⌘ + Shift + oklar
+        etkin sekmeyi toplanmış bir grubun ötesine tek parça olarak taşır; grup sürüklenebilir.
+      </p>
+      <h2 id="tabs-inside-a-screen">Ekran içindeki sekmeler</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>Bir ekranın veya iletişim kutusunun sekmeleri arasında gez</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd> / <kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="connection-tree">Bağlantı ağacı</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>Öğeler arasında gez</td>
+            <td><kbd>↑</kbd> / <kbd>↓</kbd> / <kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+          <tr>
+            <td>Genişlet veya daralt</td>
+            <td><kbd>→</kbd> / <kbd>←</kbd></td>
+          </tr>
+          <tr>
+            <td>Sekmede aç</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Yerinde genişlet veya daralt</td>
+            <td><kbd>Space</kbd></td>
+          </tr>
+          <tr>
+            <td>Öğenin işlemlerini aç</td>
+            <td><kbd>Shift</kbd> + <kbd>F10</kbd> / <kbd>Menu</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="document-table">Belge tablosu</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>Odaktaki hücreyi düzenle</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Hücreyi kaydet</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Düzenlemeden vazgeç</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+          <tr>
+            <td>Hücredeyken satırın işlemlerini aç</td>
+            <td><kbd>Shift</kbd> + <kbd>F10</kbd> / <kbd>Menu</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="document-page">Belge sayfası</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>Önceki veya sonraki belge</td>
+            <td><kbd>Alt</kbd> + <kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>Belgede ara</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>F</kbd></td>
+          </tr>
+          <tr>
+            <td>Sonraki veya önceki eşleşme</td>
+            <td><kbd>Enter</kbd> / <kbd>Shift</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Ağaçta ya da metinde bir düzenlemeyi geri al veya yinele</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Z</kbd> / <kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></td>
+          </tr>
+          <tr>
+            <td>Ağaçta seçili değeri değiştir</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Belgenin metnini biçimlendir</td>
+            <td><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd></td>
+          </tr>
+          <tr>
+            <td>Seçili alanı yeniden adlandır</td>
+            <td><kbd>F2</kbd></td>
+          </tr>
+          <tr>
+            <td>Seçili alanı kaldır</td>
+            <td><kbd>Delete</kbd></td>
+          </tr>
+          <tr>
+            <td>Sonuçlara dön</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="data-model-diagram">Veri modeli diyagramı</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>Yakınlaştır ya da uzaklaştır (diyagram odaktayken)</td>
+            <td><kbd>+</kbd> / <kbd>-</kbd></td>
+          </tr>
+          <tr>
+            <td>Diyagramı görünüme sığdır</td>
+            <td><kbd>0</kbd></td>
+          </tr>
+          <tr>
+            <td>Diyagramı kaydır</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd> / <kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>Odaktaki koleksiyonu seç</td>
+            <td><kbd>Enter</kbd> / <kbd>Boşluk</kbd></td>
+          </tr>
+          <tr>
+            <td>Seçimi kaldır</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="shell">Shell</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>Kodu çalıştır (parantez, metin ya da ifade açıksa devam eder)</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Yeni satır ekle</td>
+            <td><kbd>Shift</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Kodu olduğu gibi çalıştır</td>
+            <td><kbd>Ctrl</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Çalışan komutu durdur ya da satırı temizle (çıktı seçiliyse kopyala)</td>
+            <td><kbd>Ctrl</kbd> + <kbd>C</kbd></td>
+          </tr>
+          <tr>
+            <td>Komut geçmişinde ara (yine: daha eski eşleşmeler)</td>
+            <td><kbd>Ctrl</kbd> + <kbd>R</kbd></td>
+          </tr>
+          <tr>
+            <td>Ekranı ve sonuçları temizle</td>
+            <td><kbd>Ctrl</kbd> + <kbd>L</kbd></td>
+          </tr>
+          <tr>
+            <td>Satırlar arasında, sonra önceki ve sonraki komut</td>
+            <td><kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>Satırın başı ve sonu</td>
+            <td>
+              <kbd>Home</kbd> / <kbd>End</kbd> (<kbd>Ctrl</kbd> + <kbd>A</kbd> / <kbd>Ctrl</kbd> + <kbd>E</kbd>)
+            </td>
+          </tr>
+          <tr>
+            <td>Satırın başına ya da sonuna kadar sil</td>
+            <td><kbd>Ctrl</kbd> + <kbd>U</kbd> / <kbd>Ctrl</kbd> + <kbd>K</kbd></td>
+          </tr>
+          <tr>
+            <td>Bir kelime geri ve ileri</td>
+            <td>
+              <kbd>Alt</kbd> + <kbd>B</kbd> / <kbd>Alt</kbd> + <kbd>F</kbd> (<kbd>Ctrl</kbd> + <kbd>←</kbd> /
+              <kbd>Ctrl</kbd> + <kbd>→</kbd>; Mac'te Option)
+            </td>
+          </tr>
+          <tr>
+            <td>İmleçten önceki ya da sonraki kelimeyi sil</td>
+            <td>
+              <kbd>Ctrl</kbd> + <kbd>W</kbd> / <kbd>Alt</kbd> + <kbd>D</kbd> (<kbd>Ctrl</kbd> +
+              <kbd>Backspace</kbd> / <kbd>Ctrl</kbd> + <kbd>Delete</kbd>)
+            </td>
+          </tr>
+          <tr>
+            <td>Komutu tamamla</td>
+            <td><kbd>Tab</kbd></td>
+          </tr>
+          <tr>
+            <td>Terminalden çık</td>
+            <td><kbd>Shift</kbd> + <kbd>Tab</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="shell-page">Shell sayfası</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>Sonuçları genişlet ya da daralt (tutamacında)</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd></td>
+          </tr>
+          <tr>
+            <td>Daha büyük adımlarla boyutlandır (bir tutamaçta)</td>
+            <td><kbd>Shift</kbd> + bir ok</td>
+          </tr>
+          <tr>
+            <td>Sonuçları en dar ya da en geniş yap (tutamacında)</td>
+            <td><kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+          <tr>
+            <td>Terminal ile sonuçlar arasında (dar ekranda) ya da sonuç görünümleri arasında geç</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd></td>
+          </tr>
+        </table>
+      </div>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Bu sayfada</p>
+      <ol>
+        <li><a href="#your-own-keys">Kendi tuşlarınız</a></li>
+        <li><a href="#general">Genel</a></li>
+        <li><a href="#queries-and-editors">Sorgular ve düzenleyiciler</a></li>
+        <li><a href="#assistant">Asistan</a></li>
+        <li><a href="#workspace-tabs">Çalışma alanı sekmeleri</a></li>
+        <li><a href="#tabs-inside-a-screen">Ekran içindeki sekmeler</a></li>
+        <li><a href="#connection-tree">Bağlantı ağacı</a></li>
+        <li><a href="#document-table">Belge tablosu</a></li>
+        <li><a href="#document-page">Belge sayfası</a></li>
+        <li><a href="#data-model-diagram">Veri modeli diyagramı</a></li>
+        <li><a href="#shell">Shell</a></li>
+        <li><a href="#shell-page">Shell sayfası</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

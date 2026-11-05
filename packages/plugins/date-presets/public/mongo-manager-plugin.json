@@ -1,0 +1,103 @@
+{
+  "id": "date-presets",
+  "name": {
+    "en": "Date filters",
+    "tr": "Tarih filtreleri",
+    "zh": "日期筛选",
+    "ja": "日付フィルター",
+    "es": "Filtros de fecha",
+    "pt": "Filtros de data",
+    "ko": "날짜 필터",
+    "de": "Datumsfilter",
+    "fr": "Filtres de date",
+    "ru": "Фильтры по дате"
+  },
+  "version": "1.2.0",
+  "description": {
+    "en": "Puts the date ranges people filter by — today, yesterday, the last 7 days, this month, the last n hours or days, between two days — on a date field, or on _id by when its documents were made, in the Documents query.",
+    "tr": "İnsanların filtrelediği tarih aralıklarını — bugün, dün, son 7 gün, bu ay, son n saat ya da gün, iki gün arası — bir tarih alanına ya da belgelerin oluşturulma zamanına göre _id'ye Belgeler sorgusunda koyar.",
+    "zh": "在“文档”查询中，为日期字段设置常用的日期范围，如今天、昨天、最近 7 天、本月、最近 n 小时或 n 天、两天之间；也可对 _id 按文档的创建时间筛选。",
+    "ja": "ドキュメントのクエリで、今日・昨日・過去 7 日間・今月・過去 n 時間または n 日・2 つの日付の間といった日付範囲を、日付フィールドに、または作成時刻を使って _id に設定します。",
+    "es": "Pone en la consulta de Documentos los rangos de fechas por los que se filtra (hoy, ayer, los últimos 7 días, este mes, las últimas n horas o días, entre dos días) en un campo de fecha, o en _id según cuándo se crearon sus documentos.",
+    "pt": "Coloca na consulta de Documentos os intervalos de datas usados para filtrar (hoje, ontem, os últimos 7 dias, este mês, as últimas n horas ou dias, entre dois dias) em um campo de data, ou em _id conforme o momento em que seus documentos foram criados.",
+    "ko": "도큐먼트 쿼리에서 사람들이 자주 쓰는 날짜 범위(오늘, 어제, 최근 7일, 이번 달, 최근 n시간 또는 n일, 두 날짜 사이)를 날짜 필드에, 또는 _id에 도큐먼트가 생성된 시점 기준으로 설정합니다.",
+    "de": "Setzt in der Dokumentabfrage die gängigen Datumsbereiche – heute, gestern, die letzten 7 Tage, dieser Monat, die letzten n Stunden oder Tage, zwischen zwei Tagen – auf ein Datumsfeld oder auf _id nach dem Zeitpunkt, zu dem die Dokumente erstellt wurden.",
+    "fr": "Place dans la requête Documents les plages de dates courantes (aujourd’hui, hier, les 7 derniers jours, ce mois-ci, les n dernières heures ou jours, entre deux jours) sur un champ de date, ou sur _id selon le moment de création des documents.",
+    "ru": "Задает в запросе «Документы» привычные диапазоны дат (сегодня, вчера, последние 7 дней, этот месяц, последние n часов или дней, между двумя днями) для поля даты или для _id — по времени создания документов."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "dates",
+        "title": {
+          "en": "Dates",
+          "tr": "Tarihler",
+          "zh": "日期",
+          "ja": "日付",
+          "es": "Fechas",
+          "pt": "Datas",
+          "ko": "날짜",
+          "de": "Datum",
+          "fr": "Dates",
+          "ru": "Даты"
+        },
+        "icon": "calendar"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Başka bir şey değişmez.",
+        "zh": "现在也支持韩语、德语、法语和俄语，与应用一致。其他方面不变。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。ほかに変更はありません。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o aplicativo. Nada mais muda.",
+        "ko": "앱과 마찬가지로 이제 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 다른 변경 사항은 없습니다.",
+        "de": "Jetzt auch auf Koreanisch, Deutsch, Französisch und Russisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь также на корейском, немецком, французском и русском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他方面不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルのポルトガル語に対応しました。ほかに変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o aplicativo. Nada mais muda.",
+        "ko": "앱과 마찬가지로 중국어, 일본어, 스페인어, 브라질 포르투갈어를 지원합니다. 다른 변경 사항은 없습니다.",
+        "de": "Jetzt auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь также на китайском, японском, испанском и бразильском португальском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-28",
+      "notes": {
+        "en": "First release. A Dates tab finds the date fields of 200 random documents and puts a range on the one chosen in the Documents query: today, yesterday, the last 24 hours, 7 or 30 days, this or last week (from Monday), this or last month, this year, the last n hours, days, weeks or months, or between two days — in the browser's time or in UTC. On _id it selects the documents made in the range, by their ObjectId's time.",
+        "tr": "İlk sürüm. Tarihler sekmesi rastgele 200 belgenin tarih alanlarını bulur ve seçilenin üzerine Belgeler sorgusunda bir aralık koyar: bugün, dün, son 24 saat, son 7 ya da 30 gün, bu ya da geçen hafta (pazartesiden), bu ya da geçen ay, bu yıl, son n saat, gün, hafta ya da ay, ya da iki gün arası — tarayıcının saatinde ya da UTC'de. _id üzerinde, aralıkta oluşturulan belgeleri ObjectId zamanlarına göre seçer.",
+        "zh": "首个版本。“日期”标签页会找出 200 个随机文档中的日期字段，并在“文档”查询中为所选字段设置范围：今天、昨天、最近 24 小时、7 天或 30 天、本周或上周（从星期一起）、本月或上月、今年、最近 n 小时、天、周或月，或两天之间，可按浏览器时间或 UTC。对 _id，则按 ObjectId 的时间选取在该范围内创建的文档。",
+        "ja": "最初のリリースです。「日付」タブは無作為の 200 件のドキュメントから日付フィールドを見つけ、選んだフィールドにドキュメントのクエリで範囲を設定します。今日、昨日、過去 24 時間、7 日または 30 日、今週・先週（月曜始まり）、今月・先月、今年、過去 n 時間・日・週・か月、2 つの日付の間に対応し、ブラウザーの時刻または UTC で扱えます。_id では、ObjectId の時刻によって範囲内に作成されたドキュメントを選択します。",
+        "es": "Primera versión. Una pestaña Fechas encuentra los campos de fecha de 200 documentos aleatorios y pone un rango en el elegido en la consulta de Documentos: hoy, ayer, las últimas 24 horas, 7 o 30 días, esta semana o la pasada (desde el lunes), este mes o el pasado, este año, las últimas n horas, días, semanas o meses, o entre dos días, en la hora del navegador o en UTC. En _id selecciona los documentos creados en el rango, según la hora de su ObjectId.",
+        "pt": "Primeira versão. Uma aba Datas encontra os campos de data de 200 documentos aleatórios e coloca um intervalo no escolhido na consulta de Documentos: hoje, ontem, as últimas 24 horas, 7 ou 30 dias, esta semana ou a passada (a partir de segunda-feira), este mês ou o passado, este ano, as últimas n horas, dias, semanas ou meses, ou entre dois dias, no horário do navegador ou em UTC. Em _id seleciona os documentos criados no intervalo, pelo horário do ObjectId.",
+        "ko": "첫 릴리스입니다. 날짜 탭이 무작위 도큐먼트 200개에서 날짜 필드를 찾아, 선택한 필드에 도큐먼트 쿼리의 범위를 설정합니다. 오늘, 어제, 최근 24시간, 7일 또는 30일, 이번 주 또는 지난주(월요일 시작), 이번 달 또는 지난달, 올해, 최근 n시간·일·주·개월, 두 날짜 사이를 지원하며 브라우저 시간 또는 UTC를 기준으로 합니다. _id에서는 ObjectId의 시간을 기준으로 해당 범위에 생성된 도큐먼트를 선택합니다.",
+        "de": "Erste Version. Der Tab „Datum“ findet die Datumsfelder in 200 zufälligen Dokumenten und setzt in der Dokumentabfrage einen Bereich auf das gewählte Feld: heute, gestern, die letzten 24 Stunden, 7 oder 30 Tage, diese oder letzte Woche (ab Montag), dieser oder letzter Monat, dieses Jahr, die letzten n Stunden, Tage, Wochen oder Monate oder zwischen zwei Tagen – in der Zeit des Browsers oder in UTC. Bei _id werden anhand der Zeit der ObjectId die im Bereich erstellten Dokumente ausgewählt.",
+        "fr": "Première version. Un onglet Dates trouve les champs de date de 200 documents aléatoires et place une plage sur celui choisi dans la requête Documents : aujourd’hui, hier, les dernières 24 heures, 7 ou 30 jours, cette semaine ou la précédente (à partir du lundi), ce mois-ci ou le précédent, cette année, les n dernières heures, jours, semaines ou mois, ou entre deux jours, à l’heure du navigateur ou en UTC. Sur _id, il sélectionne les documents créés dans la plage, d’après l’heure de leur ObjectId.",
+        "ru": "Первая версия. Вкладка «Даты» находит поля с датами в 200 случайных документах и задает в запросе «Документы» диапазон для выбранного поля: сегодня, вчера, последние 24 часа, 7 или 30 дней, эта или прошлая неделя (с понедельника), этот или прошлый месяц, этот год, последние n часов, дней, недель или месяцев, либо между двумя днями — по времени браузера или по UTC. Для _id выбирает документы, созданные в этом диапазоне, по времени их ObjectId."
+      }
+    }
+  ]
+}

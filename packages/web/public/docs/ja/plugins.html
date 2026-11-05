@@ -1,0 +1,1376 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>プラグイン · Mongo Manager ドキュメント</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager ドキュメント</a>
+      <details class="lang-menu">
+        <summary>日本語</summary>
+        <span class="langs" role="group" aria-label="言語">
+          <a lang="en" hreflang="en" href="../plugins.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/plugins.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/plugins.html">简体中文</a>
+          <strong lang="ja">日本語</strong>
+          <a lang="es" hreflang="es" href="../es/plugins.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/plugins.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/plugins.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/plugins.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/plugins.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/plugins.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">概要</a>
+      <a href="getting-started.html">はじめに</a>
+      <a href="security.html">セキュリティ</a>
+      <a href="deployment.html">デプロイメント</a>
+      <a href="import-export.html">インポートとエクスポート</a>
+      <a href="backup.html">バックアップとリストア</a>
+      <a href="watch.html">変更の監視</a>
+      <a href="sync.html">ライブ同期</a>
+      <a href="server-admin.html">サーバー管理</a>
+      <a href="ai.html">AI アシスタント</a>
+      <strong>プラグイン</strong>
+      <a href="shortcuts.html">キーボードショートカット</a>
+    </nav>
+    <main>
+      <h1>プラグインの開発</h1>
+      <p>
+        プラグインは、Mongo Manager にビュー、アクション、ページを追加します。たとえば、コレクション内の場所を示す地図、チャート、重複検出ツール、SQL からの変換ツールなどです。このガイドは、プラグインを開発する方を対象としています。プラグインを構成するファイル、プラグインがアプリに要求できるすべての操作、アプリが適用するルール、そしてパッケージ化、テスト、公開の方法を説明します。管理者は
+        <strong>プラグイン</strong> ページでプラグインをインストールして承認します。承認モデルについては <a href="security.html#plugins">セキュリティ</a> を参照してください。このページにはすべてのプラグインが一覧表示され、有効なもの、管理者の対応が必要なもの（承認待ち、変更あり、動作不良）、無効なものに絞り込めるほか、ソースでの絞り込みや、名前、説明、ID、バージョン、要求する権限、追加する機能での検索もできます。
+      </p>
+      <ul class="toc-inline">
+        <li><a href="#what">プラグインとは</a></li>
+        <li><a href="#quick-start">クイックスタート</a></li>
+        <li><a href="#files">ファイルとフォルダー構成</a></li>
+        <li><a href="#manifest">マニフェスト</a></li>
+        <li><a href="#contributions">拡張ポイント</a></li>
+        <li><a href="#context">コンテキスト</a></li>
+        <li><a href="#bridge">ブリッジ API</a></li>
+        <li><a href="#permissions">権限</a></li>
+        <li><a href="#sandbox">サンドボックス</a></li>
+        <li><a href="#scan">セキュリティスキャン</a></li>
+        <li><a href="#ui">UI とテーマ</a></li>
+        <li><a href="#localization">言語</a></li>
+        <li><a href="#readme">README とリリースノート</a></li>
+        <li><a href="#versions">バージョンと承認</a></li>
+        <li><a href="#packaging">パッケージ化</a></li>
+        <li><a href="#github">GitHub での公開</a></li>
+        <li><a href="#testing">自分のサーバーでのテスト</a></li>
+        <li><a href="#ai-files">AI アシスタントでの開発</a></li>
+        <li><a href="#checklist">公開前のチェックリスト</a></li>
+      </ul>
+
+      <h2 id="what">プラグインとは</h2>
+      <p>
+        プラグインは<strong>静的ファイル</strong>のフォルダーです。HTML ページ、そのスクリプト、スタイル、画像、フォント、そしてプラグインが追加するものと実行できる操作を記述するマニフェスト
+        <code>mongo-manager-plugin.json</code> で構成されます。アプリはそのページを<strong>サンドボックス化されたフレーム</strong>内に表示し、ページはメッセージを通じてのみアプリとやり取りします。ページがドキュメントを要求すると、アプリはサインイン中のユーザーとして、そのユーザーの権限とアプリのマスクを適用して応答します。
+      </p>
+      <ul>
+        <li>
+          <strong>サーバーコードはありません。</strong> プラグインのコードがサーバー上で実行されることはありません。サーバーはファイルを保存し、検査し、フレームに配信するだけです。
+        </li>
+        <li>
+          <strong>ネットワークは使えません。</strong> ページは、配信元のサーバーを含め、どのアドレスからも取得できません。Cookie もストレージもなく、アプリのページにもアクセスできません。ブラウザー側には抜け道が 2 つ残っています。WebRTC は、ポリシーの
+          <code>webrtc</code> ディレクティブを適用するブラウザーでのみブロックされます。Chromium 系ブラウザー（Chrome、Edge）はバージョン 149 時点でこれを無視し、Firefox も当てにできません。そのため、これらのブラウザーでは、プラグインが読み取った内容を WebRTC で外部に送信できてしまいます。また、プリフェッチヒント（<code>dns-prefetch</code>、<code>preconnect</code>）によって名前解決を発生させることもできます。フレームはブラウザーにプリフェッチしないよう求め、スキャンはどちらも高リスクとして検出しますが、スキャンはファイルのテキストから既知のパターンを探すだけなので、回避するように書かれたコードは検出されません。信頼できるプラグインだけを承認してください。
+        </li>
+        <li>
+          <strong>承認なしでは何も動きません。</strong> プラグインは、管理者がそのファイルの内容そのままと、要求する権限を承認した後にのみ実行されます。ファイルを変更するたびに、新たな承認が必要です。
+        </li>
+        <li>
+          <strong>変更はユーザーを経由します。</strong> ドキュメントを変更できるプラグインは、確認を求めます。アプリが専用のダイアログで変更内容を表示し、ユーザーが判断します。プラグインが用意したクエリやパイプラインは、ユーザー自身のエディターに入力されるだけで、ユーザーが実行するまで何も実行されません。
+        </li>
+      </ul>
+      <p>
+        Mongo Manager には、独自のプラグインがいくつか付属しています（マップ、チャート、スキーマの状態、重複検出、値の検索、参照、ドキュメントの差分、SQL から MongoDB へ、時間のヒント、バイナリのプレビュー、データディクショナリ、ローカル時刻、ログ分析、テストデータ、再構成、匿名化、検索プレイグラウンド、シャードキー分析、ストレージレポート、検証チェック、レガシー UUID、日付フィルター、インデックススクリプト、有効期限 (TTL)、個人データの検出、ドキュメントサイズ）。これらは同じサンドボックスで動作し、同じブリッジで通信し、同じ方法でスキャンされます。ただし、アプリ自身のコードであるため、承認時に ID の入力は求められません（<a href="#versions">バージョンと承認</a> を参照）。プラグインは <code>MM_PLUGINS=0</code> でサーバー全体で無効にできます（<a href="deployment.html#plugins">デプロイメント</a> を参照）。
+      </p>
+
+      <h2 id="quick-start">クイックスタート</h2>
+      <p>
+        スターターテンプレートから始めます。<strong>プラグイン</strong> ページの
+        <strong>独自のプラグインを作成</strong> で <strong>スターターをダウンロード (.zip)</strong> を選びます（Mongo Manager のソースコードの
+        <code>packages/plugins/starter</code> フォルダーでもあります）。ビルド手順も依存関係もない、プレーンな JavaScript で書かれた完全なプラグインで、コレクションのドキュメントを一覧表示するコレクションタブとサイドバーページが含まれています。
+      </p>
+      <ol>
+        <li>展開するかフォルダーをコピーして、自分用の新しいリポジトリに置きます。</li>
+        <li>
+          <code>mongo-manager-plugin.json</code> の <code>id</code>、<code>name</code>、
+          <code>author</code>、<code>repository</code> を変更します。ID は一意でなければなりません。すべてのサーバーでプラグインのフォルダー名になるためです。
+        </li>
+        <li>ページを <code>main.js</code> と <code>style.css</code> に書きます。</li>
+        <li>
+          自分のサーバーで試します。
+          <code>node scripts/pack.mjs --folder ~/.mongo-manager/plugins</code> を実行し、
+          <strong>プラグイン → 再スキャン</strong> を選んで、スキャン結果を確認してから承認します。
+          <a href="#testing">自分のサーバーでのテスト</a> を参照してください。
+        </li>
+        <li>
+          <code>node scripts/pack.mjs</code> でパッケージ化すると
+          <code>&lt;id&gt;-&lt;version&gt;.tgz</code> が書き出されます。このファイルを GitHub のリリースに添付します。
+          <a href="#github">GitHub での公開</a> を参照してください。
+        </li>
+      </ol>
+      <p>
+        スターターには、AI コーディングアシスタント向けの指示ファイル（<code>CLAUDE.md</code>、
+        <code>AGENTS.md</code>、<code>GEMINI.md</code>、<code>.github/copilot-instructions.md</code>）も含まれています。
+        <a href="#ai-files">AI アシスタントでの開発</a> を参照してください。
+      </p>
+
+      <h2 id="files">ファイルとフォルダー構成</h2>
+      <pre><code>hello-documents/
+  mongo-manager-plugin.json   the manifest (required, at the top)
+  index.html                  the entry page every contribution opens
+  main.js                     the page's script (an ES module)
+  style.css                   the page's styles
+  README.md                   shown to administrators on the plugin's details page
+  README.tr.md, README.zh.md  the same in another language of the app (optional)
+  scripts/pack.mjs            packaging (not part of the plugin: left out of the archive)
+  CLAUDE.md, AGENTS.md, ...   AI assistant files (left out of the archive)</code></pre>
+      <p>プラグインのファイルに対するアプリのルールは次のとおりです。</p>
+      <ul>
+        <li>
+          合計で最大 <strong>500 ファイル</strong>、<strong>25 MB</strong> まで。マニフェストは最大 64 KB です。
+        </li>
+        <li>
+          すべてのパスは相対パスで、単純な形式でなければなりません。各部分は英字、数字、<code>_</code>、<code>-</code> のいずれかで始まり、英字、数字、<code>.</code>、<code>_</code>、<code>-</code> のみを含み、最大 100 文字です。階層は最大 16 段、全体で最大 240 文字です。隠しファイルや隠しフォルダー（<code>.</code> で始まる名前）、スペース、デバイス名（<code>con</code>、<code>nul</code>、<code>com1</code>...）、<code>__proto__</code>、<code>constructor</code>、<code>prototype</code> は使えません。
+        </li>
+        <li>ファイルとフォルダーのみ使えます。リンク、ジャンクション、特殊ファイルがあると、プラグインは使用できなくなります。</li>
+        <li>大文字と小文字の違いだけで区別されるパスを 2 つ置くことはできません。</li>
+        <li>
+          ファイルは拡張子から決まる種類で配信されます。<code>html</code>、<code>js</code>、
+          <code>mjs</code>、<code>css</code>、<code>json</code>、<code>map</code>、<code>txt</code>、
+          <code>svg</code>、<code>png</code>、<code>jpg</code>、<code>jpeg</code>、<code>gif</code>、
+          <code>webp</code>、<code>avif</code>、<code>ico</code>、<code>woff</code>、<code>woff2</code>、
+          <code>ttf</code>、<code>otf</code> です。それ以外はバイト列として配信され、実行されることはありません。
+        </li>
+      </ul>
+
+      <h2 id="manifest">マニフェスト</h2>
+      <p>
+        <code>mongo-manager-plugin.json</code> は厳密に検査されます。未知のフィールド、誤った型、範囲外の値があると、プラグインは使用できなくなり、プラグインページにどのフィールドが誤っているかが表示されます。人が読むテキスト（名前、タイトル、ノート）には、制御文字や、テキストを隠したり反転させたりする文字を含めることはできません。
+      </p>
+      <pre><code>{
+  "id": "hello-documents",
+  "name": { "en": "Hello documents", "tr": "Merhaba belgeler" },
+  "version": "0.1.0",
+  "description": { "en": "Lists the documents of a collection.", "tr": "Bir koleksiyonun belgelerini listeler." },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [{ "id": "list", "title": { "en": "Hello", "tr": "Merhaba" }, "icon": "table" }],
+    "sidebarPanels": [{ "id": "page", "title": { "en": "Hello documents" }, "icon": "puzzle" }]
+  },
+  "settings": {},
+  "author": { "name": "Your Name", "url": "https://example.com" },
+  "homepage": "https://example.com/hello-documents",
+  "repository": "https://github.com/your-name/hello-documents",
+  "license": "MIT",
+  "publishedAt": "2026-10-11",
+  "changelog": [
+    { "version": "0.1.0", "date": "2026-10-11", "notes": { "en": "First release.", "tr": "İlk sürüm." } }
+  ]
+}</code></pre>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>フィールド</th>
+              <th>必須</th>
+              <th>ルール</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td>はい</td>
+              <td>
+                小文字の英字と数字をダッシュで区切った形式（<code>geojson-map</code>）で、最大 64 文字です。プラグインのフォルダー名と一致している必要があります。Mongo Manager 付属のプラグインの ID や、アプリが予約している名前と読める ID（後述）は使えません。
+              </td>
+            </tr>
+            <tr>
+              <td><code>name</code></td>
+              <td>はい</td>
+              <td>
+                ローカライズされたテキストで、最大 60 文字です。<code>{ "en": "...", "tr": "..." }</code>。不可視文字（ゼロ幅文字、タグ文字、異体字セレクター。絵文字に含まれるものは可）は使えません。また、アプリ自身のメッセージと読める名前も使えません。<em>Mongo Manager</em>（またはそれで始まる名前）、<em>MongoDB</em>、<em>System</em>、<em>Session</em>、<em>Security</em>、<em>Admin</em>、<em>Server</em>、<em>Update</em> などが、アプリのどの言語でも対象で、大文字小文字、スペース、アクセント、似た文字の違いを除いた見た目で比較されます。各単語の文字は、すべてラテン文字であるか、まったくラテン文字でないかのどちらかでなければならず（ギリシャ文字とキリル文字の混在は不可）、角かっこの中に ID と読めるもの（<code>(value-search)</code>）を入れることはできません（<code>(beta)</code> は可）。アプリは、プラグインのメッセージや質問を、名前の横に ID を添えて表示します。
+              </td>
+            </tr>
+            <tr>
+              <td><code>version</code></td>
+              <td>はい</td>
+              <td>
+                セマンティックバージョニング: <code>major.minor.patch</code>。プレリリース（<code>1.2.0-beta.1</code>）も付けられます。最大 64 文字です。
+              </td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td>いいえ</td>
+              <td>ローカライズされたテキストで、最大 300 文字です。</td>
+            </tr>
+            <tr>
+              <td><code>entry</code></td>
+              <td>はい</td>
+              <td>
+                すべての拡張ポイントが開くページ。プラグイン内の <code>.html</code> ファイルへの単純なパスです。
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions</code></td>
+              <td>いいえ</td>
+              <td>
+                <code>documents:read</code>、<code>documents:write</code>、<code>collection:read</code>、
+                <code>database:read</code> のいずれか（各 1 回まで）。既定値はなしです。
+                <a href="#permissions">権限</a> を参照してください。
+              </td>
+            </tr>
+            <tr>
+              <td><code>contributes</code></td>
+              <td>いいえ</td>
+              <td>
+                <code>collectionTabs</code>、<code>documentActions</code>、<code>sidebarPanels</code>、
+                <code>cellRenderers</code>: それぞれ最大 5 件のリストで、ID はリスト内で一意でなければなりません。
+                <a href="#contributions">拡張ポイント</a> を参照してください。
+              </td>
+            </tr>
+            <tr>
+              <td><code>settings</code></td>
+              <td>いいえ</td>
+              <td>
+                最大 10 件。キー（英字で始まり、英数字が続く、最大 32 文字）ごとに指定します。
+                <code>{ "type": "url" | "text" | "boolean", "title": localized text of at most 60 }</code>。
+                値は管理者が設定し、ページはコンテキストからそれを読み取ります。
+              </td>
+            </tr>
+            <tr>
+              <td><code>author</code></td>
+              <td>いいえ</td>
+              <td><code>{ "name": text of at most 80, "url": an https address (optional) }</code>。</td>
+            </tr>
+            <tr>
+              <td><code>homepage</code>、<code>repository</code></td>
+              <td>いいえ</td>
+              <td>
+                ホストを含む <code>https://</code> アドレスで、最大 300 文字です。認証情報、スペース、バックスラッシュを含めることはできません。
+              </td>
+            </tr>
+            <tr>
+              <td><code>license</code></td>
+              <td>いいえ</td>
+              <td>
+                SPDX 式で、最大 40 文字です。<code>MIT</code>、<code>Apache-2.0 OR MIT</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>publishedAt</code></td>
+              <td>いいえ</td>
+              <td>実在する日付を <code>YYYY-MM-DD</code> で指定します（1900 年から 2100 年の間）。</td>
+            </tr>
+            <tr>
+              <td><code>changelog</code></td>
+              <td>いいえ</td>
+              <td>
+                最大 50 件のエントリ
+                <code>{ "version", "date": "YYYY-MM-DD", "notes": localized text of at most 1000 }</code>。各バージョンは 1 回までで、マニフェストの <code>version</code> より新しいものは指定できません。
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        ローカライズされたテキストは、<code>en</code>（必須）と、必要に応じてアプリのその他の言語（<code>tr</code>、<code>zh</code>（簡体字中国語）、<code>ja</code>、<code>es</code>、
+        <code>pt</code>（ブラジルポルトガル語）、<code>ko</code>、<code>de</code>、<code>fr</code>、
+        <code>ru</code>）を持つオブジェクトです。閲覧者の言語がない場合は英語が表示されます。拡張ポイントは
+        <code>{ "id", "title": localized text of at most 40, "icon" }</code> で表します。ID は小文字の英字で始まり、小文字の英字、数字、ダッシュが続く最大 32 文字で、アイコンは
+        <code>map</code>、<code>chart</code>、<code>table</code>、<code>file</code>、<code>image</code>、
+        <code>globe</code>、<code>layers</code>、<code>puzzle</code>、<code>book</code>、<code>wand</code>、
+        <code>shapes</code>、<code>scroll</code>、<code>code</code>、<code>calendar</code>、
+        <code>hourglass</code>、<code>shield</code>、<code>fingerprint</code>、<code>ruler</code> のいずれかです（アプリ自身のアイコンであり、プラグインが独自のアイコンを持ち込むことはできません）。セルレンダラーは代わりに
+        <code>{ "id", "match" }</code> で表し、任意で <code>"display"</code>（<code>inline</code>（既定）または <code>tooltip</code>）を指定できます。
+      </p>
+      <p>
+        <code>url</code> 設定は、認証情報を含まない https アドレスでなければなりません（http が使えるのはこのコンピューター、つまり <code>localhost</code>、<code>127.0.0.1</code>、<code>[::1]</code> に限ります）。そのスキームとホストとポートは、フレームが読み込める画像の許可対象に追加されます（地図タイルの場合、先頭の <code>{s}.</code> は任意のサブドメインになりますが、2 つ以上の部分からなる名前の前に限り、アドレスには適用されません）。画像のアドレスにはデータを含められます。つまり、プラグインは読み取った内容をそのサーバーに送信できるため、承認画面と設定画面にその旨が表示されます。
+        <code>text</code> 設定は最大 500 文字です。プラグインのすべてのユーザーが設定を読み取れるため、シークレットを求めてはいけません。サーバーは、他のすべての保存値と同様に、設定をサーバーのキーで暗号化して保存します。
+      </p>
+
+      <h2 id="contributions">拡張ポイント</h2>
+      <p>
+        すべての拡張ポイントは同じエントリページを開きます。ページは、どの拡張ポイントなのかを、アドレスのフラグメント <code>#&lt;kind&gt;=&lt;id&gt;</code>（たとえば <code>#collectionTab=list</code>）と、コンテキストの
+        <code>contribution</code> から知ります。
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>種類</th>
+              <th>表示場所と開き方</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>collectionTabs</code></td>
+              <td>
+                すべてのコレクションのタブで、アプリ自身のタブの後ろに表示されます。ビューでも表示されます。フレームはタブ全体に表示されます。その <code>place</code> は、そのコレクションと、ユーザーが設定したドキュメントの <code>filter</code> です。ページはタブが表示されるたびに再読み込みされますが、<code>ui.keepOpen</code> で維持を要求した場合は、そのコレクションのタブの別のセクションが表示されている間も読み込まれたままになります（表示されていない間は、読み取りはできますが操作はできません: <code>not_visible</code>）。
+              </td>
+            </tr>
+            <tr>
+              <td><code>documentActions</code></td>
+              <td>
+                ドキュメントタブの、ドキュメントのアクションメニューにあるエントリで、<code>documents:read</code> を承認されたプラグインにのみ表示されます。ページを表示するダイアログが開き、<code>place.documentId</code> はそのドキュメントの <code>_id</code> です。プラグインがクエリまたはパイプラインを配置すると（<code>ui.useQuery</code>、<code>ui.useQueryIn</code>、<code>ui.useAggregation</code>）、ダイアログは閉じます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>sidebarPanels</code></td>
+              <td>
+                サイドバーのエントリで、専用のページが <code>/plugin/&lt;id&gt;/&lt;contribution&gt;</code> のワークスペースタブとして開きます。コレクションのタブがアクティブなときにクリックすると、そのコレクションでページが開き
+                （<code>/plugin/&lt;id&gt;/&lt;contribution&gt;/&lt;connection&gt;/&lt;db&gt;/&lt;collection&gt;</code>）、<code>place</code> がそれを示します。それ以外の場所からは <code>place</code> は <code>null</code> です。リンクから開かれたページは、そのコレクションを読み取る前にユーザーに確認し、ユーザーはコレクションなしで続行することもできます。ページは別のタブが表示されている間も読み込まれたままになります。表示されていない間は、読み取りはできますが操作はできません（<code>not_visible</code>）。
+              </td>
+            </tr>
+            <tr>
+              <td><code>cellRenderers</code></td>
+              <td>
+                ドキュメントタブが値を表示するあらゆる場所（テーブル、ツリー、カード、ドキュメントページ、チェンジストリームの詳細）で、値についての短いテキストを表示します。たとえば、ObjectId が作成された日付です。表示は、値の横（<code>"display": "inline"</code>、既定）か、そのセルや行にホバーまたはフォーカスしたときに値全体の下に表示され、プラグイン名が添えられるツールチップ（<code
+                  >"display": "tooltip"</code
+                >）です。ツールチップのテキストはプレーンテキストで、<code>tone</code> は使われません。スクリーンリーダーは値と一緒に読み上げます。プラグインが値の横と、そのツールチップに出せるテキストはそれぞれ 1 つで、各場所で応答する最初のレンダラーが使われます。ページは非表示のフレームでプラグインごとに 1 つ実行され、<code>documents:read</code> を承認されたプラグインのみが対象で、自分自身を表示することはありません。<code>match</code> は
+                <code>geojson</code>、<code>string</code>、<code>number</code>、<code>date</code>、
+                <code>object</code>、<code>objectId</code>、<code>binary</code>（UUID を除く）のいずれかです。
+                <a href="#cells">セルレンダラー</a> を参照してください。
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="cells">セルレンダラー</h3>
+      <p>
+        アプリは、表示する値について、<code>cells.render</code> メッセージで非表示のフレームに最大 200 件ずつまとめて問い合わせます。キットを使う場合は、<code>client.onCells</code> で応答します。
+      </p>
+      <pre><code>client.onCells((renderer, values, locale, paths, place) =&gt;
+  values.map((v) =&gt; (typeof v?.$oid === 'string' ? { text: createdAt(v.$oid, locale), tone: 'info' } : null)),
+)</code></pre>
+      <ul>
+        <li>
+          <code>renderer</code> は拡張ポイントの ID、<code>values</code> は正規の Extended JSON 形式の値、<code>locale</code> はアプリの言語、<code>paths</code> は各値のフィールドパス（または
+          <code>null</code>）、<code>place</code> は値の取得元のコレクション（または <code>null</code>）です。
+        </li>
+        <li>
+          <code>binary</code> 値は、全体ではなく先頭部分のみが
+          <code>{ "$binaryHead": { "base64", "subType", "length" } }</code> として、最初の 2,048 バイトとともに送られます。画像の種類とサイズを判別するには十分です。
+        </li>
+        <li>
+          値ごとに 1 件ずつ、順番に応答します。<code>{ "text", "tone" }</code>、テキストなしを示す <code>null</code>、または後でもう一度問い合わせるよう求める <code>{ "retry": true }</code> です。長さが異なるリストは無視されます。
+        </li>
+        <li>
+          テキストはプレーンテキストとして表示されます。値の横では最大 80 文字、ツールチップでは最大 200 文字で、制御文字と不可視文字は取り除かれます。
+          <code>tone</code> は <code>neutral</code>、<code>info</code>、<code>success</code>、
+          <code>warning</code>、<code>danger</code> のいずれかです。
+        </li>
+        <li>
+          応答は 3 秒以内に返す必要があります。間に合わなかった場合は元の値がそのまま表示され、30 秒後にもう一度問い合わせます。応答は、値、言語、プラグインの設定ごとに保持されます。設定を変更すると再度問い合わせられ、1 分より古い応答は、その値が次に表示されるときにあらためて問い合わせられます（新しい応答が届くまで古い応答が残り、再度の問い合わせに失敗した場合も残ります）。<code>binary</code> 値の応答は、その長さ、サブタイプ、先頭部分のハッシュをキーとして保持されます。
+        </li>
+        <li>
+          レンダラーは、応答する前に読み取りを行えます（たとえば他のドキュメントへの参照）。その場合、リクエストで渡された <code>place</code> を <code>{ place, filter, ... }</code> として渡し、読み取れるのはそこだけです。レンダラーのコンテキストの <code>place</code> は <code>null</code> です。
+        </li>
+      </ul>
+
+      <h2 id="context">コンテキスト</h2>
+      <p>
+        <code>context.get</code> は、ページがどこにあり、どのように表示すべきかを返します。最初に呼び出してください。コレクションが開いている場合は、アプリがビューかどうかを確認するため、応答まで最大 3 秒かかることがあります。
+      </p>
+      <pre><code>{
+  "plugin": { "id": "hello-documents", "version": "0.1.0" },
+  "contribution": { "kind": "collectionTab", "id": "list" },
+  "locale": "en",
+  "theme": "dark",
+  "accent": "emerald",
+  "place": {
+    "connectionId": "6650...",
+    "connectionName": "Production",
+    "db": "shop",
+    "coll": "orders",
+    "view": false,
+    "documentId": null,
+    "filter": { "status": "open" }
+  },
+  "settings": { "tileUrl": "https://tile.example.org/{z}/{x}/{y}.png" }
+}</code></pre>
+      <ul>
+        <li>
+          <code>kind</code> は <code>collectionTab</code>、<code>documentAction</code>、
+          <code>sidebarPanel</code>、<code>cellRenderer</code> のいずれかです。
+        </li>
+        <li><code>locale</code> はアプリの言語です: <code>en</code>、<code>tr</code>、<code>zh</code>、<code>ja</code>、<code>es</code>、<code>pt</code>、<code>ko</code>、<code>de</code>、<code>fr</code>、<code>ru</code>。</li>
+        <li><code>theme</code> は <code>light</code> または <code>dark</code> です。</li>
+        <li>
+          <code>accent</code> はユーザーのアクセントカラーです: <code>emerald</code>、<code>indigo</code>、
+          <code>violet</code>、<code>ocean</code>、<code>rose</code>。それ以外の値は
+          <code>emerald</code> として扱ってください。
+        </li>
+        <li>
+          <code>place</code> は、ページがコレクションなしで開かれた場合（サイドバーページ、セルレンダラー）は <code>null</code> です。<code>connectionName</code> は <code>null</code> になることがあります。<code>view</code> はビューの場合に true で、ビューは読み取りはできますが書き込みはできず、インデックスもありません。<code>documentId</code> は、ドキュメントアクションの場合はそのドキュメントを正規の Extended JSON で表したもの、それ以外は <code>null</code> です。<code>filter</code> は、コレクションタブの場合はドキュメントタブのフィルター、それ以外は <code>{}</code> です。どちらもデータです。<code>documents:read</code> のないプラグインには <code>null</code> と <code>{}</code> が渡されます。
+        </li>
+        <li>
+          <code>hidden</code> は、そのコレクションで個人データのルールによってユーザーから隠されるフィールドパスの一覧で、キーのリストとして表されます（<code>[["contact", "phone"]]</code>。<code>"*"</code> は 1 つのキー、
+          <code>"**"</code> は任意の数のキーで、どの深さでも対象）。名前のみで、<code>documents:read</code> を持つプラグインに渡されます。それ以外は <code>[]</code>、アプリが時間内（3 秒）に判断できなかった場合は <code>null</code> です。そのようなフィールドの値は <code>"***"</code> として届きます。それをそのフィールドの型だと受け取らないでください。
+        </li>
+        <li><code>settings</code> は管理者が設定した値を保持します。設定されていない設定は含まれません。</li>
+      </ul>
+      <p>
+        ユーザーが言語、テーマ、アクセントカラーを変更すると、アプリは <code>locale</code>、<code>theme</code>、<code>accent</code> を含む
+        <code>context.changed</code> を送信します（キットの <code>client.onContext</code>）。すぐに反映してください。ページに、もう一方のテーマや言語が表示されたままになってはいけません。ドキュメントを読み取れるプラグインには、ページが読み込まれている間にドキュメントタブのフィルターが変わった場合にも <code>context.changed</code> が送信されます。<code>ui.keepOpen</code> を呼び出したコレクションタブは、表示されていない間にユーザーが設定したすべてのフィルターを受け取ります。新しい <code>place</code> を取得するには、もう一度 <code>context.get</code> を呼び出してください。
+      </p>
+
+      <h2 id="bridge">ブリッジ API</h2>
+      <h3 id="protocol">プロトコル</h3>
+      <p>
+        ページとアプリは、<code>postMessage</code> でプレーンな JSON をやり取りします。キット（<code>packages/plugins/kit/src/client.ts</code>）とスターターの <code>main.js</code> がこれを実装しています。独自に実装する場合のルールは次のとおりです。
+      </p>
+      <ol>
+        <li>
+          <code>event.source</code> が <code>window.parent</code> で、<code>mm</code> が <code>1</code> のメッセージのみを読み取ります。
+        </li>
+        <li>
+          ページが読み込まれると、アプリがあいさつを送ります:
+          <code>{ "mm": 1, "type": "hello", "token": "..." }</code>。最初のトークンを保持してください。それより前には何も送信しないでください。
+        </li>
+        <li>
+          リクエストは
+          <code>{ "mm": 1, "id": 1, "method": "documents.find", "params": { ... }, "token": "..." }</code>
+          の形式で、<code>window.parent</code> にターゲット <code>'*'</code> で投稿します（フレームのオリジンは不透明です）。ID は数値か最大 64 文字の文字列です。トークンのないリクエストはアプリが無視します。
+        </li>
+        <li>
+          応答には同じ ID が付きます:
+          <code>{ "mm": 1, "id": 1, "result": ... }</code> または
+          <code>{ "mm": 1, "id": 1, "error": { "code": "...", "message": "..." } }</code>。
+        </li>
+        <li>
+          アプリは、ユーザーが変更するたびに
+          <code>{ "mm": 1, "type": "context.changed", "locale", "theme", "accent" }</code> を送信します（<code>documents:read</code> を持つプラグインには、ドキュメントタブのフィルターも送信します）。また、セルレンダラーには
+          <code>{ "mm": 1, "id": "h1", "method": "cells.render", "params": { ... } }</code> を問い合わせます。これには
+          <code>{ "mm": 1, "id": "h1", "token", "result": [...] }</code> で応答します。
+        </li>
+      </ol>
+      <p>
+        ページは自身のアドレスから離れてはいけません。別のページを読み込む（リンク、フォーム、<code>location</code> の変更）と、アプリはブリッジを閉じてフレームを削除し、ユーザーはプラグインをもう一度開く必要があります。すべてを 1 つのページに収めてください。
+      </p>
+      <pre><code>import { createClient, askMessage, AskError } from './kit/client'
+
+const client = createClient()                       // requests time out after 15 s ("timeout")
+client.onContext((locale, theme, accent) =&gt; restyle(locale, theme, accent))
+client.onReady(async () =&gt; {
+  const context = await client.ask('context.get')
+  if (!context.place) return showNoCollection()
+  try {
+    const { documents, hasMore } = await client.ask('documents.find', { filter: context.place.filter, limit: 100 })
+    show(documents, hasMore)
+  } catch (e) {
+    showError(askMessage(e, context.locale))         // the app's code, in the user's language
+  }
+})</code></pre>
+
+      <h3 id="methods">メソッド</h3>
+      <p>
+        値は、どちらの方向でも正規の Extended JSON です。ObjectId は <code>{ "$oid": "..." }</code>、日付は
+        <code>{ "$date": { "$numberLong": "..." } }</code>、整数は <code>{ "$numberInt": "3" }</code> です。すべての読み取りは、ユーザーの権限とアプリのマスクを適用して、ユーザーとして実行されます。「そのコレクション上」と記されたメソッドは <code>place</code> にあるコレクションに対して動作し、それがない場合は
+        <code>no_collection</code> で失敗します。
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>メソッドと権限</th>
+              <th>パラメーター → 結果</th>
+              <th>ルール</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>context.get</code><br />なし</td>
+              <td>なし → コンテキスト</td>
+              <td><a href="#context">コンテキスト</a> を参照してください。</td>
+            </tr>
+            <tr>
+              <td><code>documents.find</code><br /><code>documents:read</code></td>
+              <td>
+                <code>{ filter?, projection?, sort?, limit? }</code> →
+                <code>{ documents, hasMore }</code>
+              </td>
+              <td>
+                そのコレクション上。<code>limit</code> は 1 から 1000 で、既定値は 100 です。最大 10 秒です。ユーザーが見られないドキュメントは除外されます。ユーザーの最近のクエリには記録されません。
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.get</code><br /><code>documents:read</code></td>
+              <td><code>{ id }</code> → ドキュメント、または <code>null</code></td>
+              <td>そのコレクション上。<code>id</code> は <code>_id</code> の値です。</td>
+            </tr>
+            <tr>
+              <td><code>documents.aggregate</code><br /><code>documents:read</code></td>
+              <td><code>{ pipeline, limit? }</code> → <code>{ documents, truncated }</code></td>
+              <td>
+                そのコレクション上。読み取り用のステージのみ: <code>$match</code>、<code>$group</code>、
+                <code>$sort</code>、<code>$limit</code>、<code>$skip</code>、<code>$project</code>、
+                <code>$addFields</code>、<code>$set</code>、<code>$unset</code>、<code>$count</code>、
+                <code>$unwind</code>、<code>$sortByCount</code>、<code>$bucket</code>、<code>$bucketAuto</code>、
+                <code>$facet</code>（その内側に <code>$facet</code> は不可）、<code>$replaceRoot</code>、
+                <code>$replaceWith</code>、<code>$sample</code>。最大 50 ステージです。<code>database:read</code> がある場合は、<code>from</code>、
+                <code>localField</code>、<code>foreignField</code>、<code>as</code> のみからなる単純な <code>$lookup</code> も、同じデータベースのコレクションに対して使えます。<code>limit</code> は 1 から 1000 で、既定値は 100 です。最大 10 秒で、ディスクへのスピルは行われず、パイプラインは一度に 1 つだけ実行されます（<code>busy</code>: キットの <code>serialAsk</code> が順番待ちにします）。
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.update</code><br /><code>documents:write</code></td>
+              <td><code>{ id, set?, unset? }</code> → <code>{ modified }</code></td>
+              <td>
+                そのコレクション上で、表示中のみ、かつプラグインのページ内でのクリックの直後のみ。
+                <code>set</code> はフィールドと値のオブジェクト、<code>unset</code> はフィールド名のリストで、少なくとも 1 つの変更が必要です。制御文字、改行文字、方向文字を含むフィールド名は拒否されます（<code>bad_params</code>）。アプリは、変更されるすべてのフィールドを引用符で囲んで質問の 1 行目に示し、続いて変更全体を、隠し文字や不可視文字を明示した形で表示し、ユーザーが同意した場合にのみ適用します。確認ボタンは、ポインターがその上に移動してから、しばらく操作がなかった後にはじめてクリックを受け付けます。ビューでは拒否され（<code>read_only</code>）、表示しきれないほど長い変更（2000 文字超: <code>too_large</code>）、別の質問が待機している間（<code>busy</code>）、ユーザーが 2 回拒否した後（<code>blocked</code>。プラグインを開き直すまで）も拒否されます。ユーザーが拒否した場合は <code>declined</code> です。
+              </td>
+            </tr>
+            <tr>
+              <td><code>indexes.list</code><br /><code>collection:read</code></td>
+              <td><code>{ coll? }</code> → <code>[{ name, key, options, usage }]</code></td>
+              <td>
+                そのコレクション上、または同じデータベースの別のコレクション（<code>coll</code>、<code>collections.list</code> が返すもの）に対して使えます。後者には <code>database:read</code> も必要です。ビューにはインデックスがないため <code>[]</code> を返します。
+              </td>
+            </tr>
+            <tr>
+              <td><code>collections.list</code><br /><code>database:read</code></td>
+              <td>なし → <code>[{ name, type }]</code></td>
+              <td>
+                そのデータベースのコレクションとビューです。<code>system.</code> で始まるものは除外され、最大 500 件で、30 秒間保持されます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.findIn</code><br /><code>database:read</code></td>
+              <td><code>{ coll, filter?, projection?, limit? }</code> → <code>{ documents }</code></td>
+              <td>
+                同じデータベースの別のコレクションで、<code>collections.list</code> が返すもの。
+                <code>limit</code> は 1 から 200 で、既定値は 50 です。最大 10 秒です。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.toast</code><br />なし</td>
+              <td><code>{ message, kind? }</code> → <code>true</code></td>
+              <td>
+                アプリ内に表示される短いメッセージで、プラグインの名前と ID が前に付きます。<code>kind</code>:
+                <code>info</code>（既定）、<code>success</code>、<code>error</code>。表示は最大 200 文字で、制御文字、方向文字、不可視文字は含められません。1 分あたり最大 5 件で、<code>ui.copy</code> と共有されます。表示中のみ使えます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.openDocument</code><br />なし</td>
+              <td><code>{ id }</code> → <code>true</code></td>
+              <td>
+                そのコレクション上で、表示中のみ。そのドキュメントをドキュメントタブに表示します。<code>id</code> は <code>_id</code> の値でなければならず、クエリは不可です。プラグインのページ内でのクリックの直後のみ、1 分あたり最大 30 回です。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.resize</code><br />なし</td>
+              <td><code>{ height }</code> → <code>true</code></td>
+              <td>フレームの高さ（ピクセル）で、80 から 2000 の範囲に収められます。</td>
+            </tr>
+            <tr>
+              <td><code>ui.keepOpen</code><br />なし</td>
+              <td>– → <code>true</code> / <code>false</code></td>
+              <td>
+                コレクションタブのページは、別のセクションが表示されている間も読み込まれたままになります（それ以外の場所では <code>false</code>）。ページが <code>context.changed</code> で再度 <code>context.get</code> を読み取る場合にのみ要求してください。表示されていない間は、読み取りはできますが操作はできません。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.copy</code><br />なし</td>
+              <td><code>{ text }</code> → <code>true</code></td>
+              <td>
+                テキスト（最大 100,000 文字）をクリップボードにコピーします。そのページ内でのクリックの直後のみ、1 分あたり最大 5 回で、<code>ui.toast</code> と共有されます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useQuery</code><br />なし</td>
+              <td><code>{ filter?, projection?, sort? }</code> → <code>true</code></td>
+              <td>
+                そのコレクション上。ユーザーが入力したかのように、そのコレクションのタブのドキュメントタブにクエリを入力します。そのページ内でのクリックの直後のみ、1 分あたり最大 10 回で、他の
+                <code>ui.use…</code>
+                および SQL メソッドと共有されます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useQueryIn</code><br /><code>database:read</code></td>
+              <td><code>{ coll, filter?, projection?, sort? }</code> → <code>true</code></td>
+              <td>
+                同じデータベースの別のコレクションで、<code>collections.list</code> が返すもの。<code>ui.useQuery</code> が自身のコレクションで行うのと同様に、そのコレクションのタブのドキュメントタブにクエリを入力します（参照プラグインは、あるドキュメントを参照しているドキュメントを表示するためにこれを使います）。タブはそれをユーザーが入力したクエリとして実行します。一度に 1 つだけ（入力中は <code>busy</code>）、ページが表示されている間に、その中でのクリックの直後のみ、1 分あたり最大 10 回で、他の <code>ui.use…</code> および SQL メソッドと共有されます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.suggestPersonalData</code><br /><code>documents:read</code></td>
+              <td><code>{ fields: string[] }</code> → <code>true</code></td>
+              <td>
+                そのコレクションのフィールドを個人データとして提案します。単純な名前のパスを 1 から 50 件（<code>contact.phone</code>。<code>*</code> は不可、キーの先頭に <code>$</code> も不可）。何も保存されません。そのコレクションの個人データセクションが、プラグイン名付きで一覧を表示した状態で開きます。コレクションのサンプルに含まれるフィールドのみが提案され、管理者がそこで 1 つずつ（またはまとめて 1 回の保存で）追加します。不可視文字や名前の前後のスペースは不可で、接続の管理者に対してのみ、コレクション（ビューや <code>system.*</code> は不可）上で、そのページ内でのクリックの直後のみ使えます。<code>ui.use…</code> メソッドと合算されます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useAggregation</code><br />なし</td>
+              <td><code>{ stages }</code> → <code>true</code></td>
+              <td>
+                そのコレクション上。ステージをカードとして集計タブに入力します。すでにあるパイプラインを置き換える前にユーザーに確認し、ユーザーが実行するまで何も実行されません。最大 50 ステージで、書き込みやコード実行を行うものを除くすべてのステージが使えます。そのページ内でのクリックの直後のみ。<code>declined</code>、
+                <code>busy</code>、<code>blocked</code> は <code>documents.update</code> と同様です。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.importSql</code><br />なし</td>
+              <td>なし → <code>true</code></td>
+              <td>
+                そのコレクション上。アプリの <a href="import-export.html#sql">SQL ↔ MongoDB</a> ページを、そのコレクションのデータベースでインポートの状態で開きます。プラグインは何も渡さず、インポートの内容も一切見られません。ファイルの選択と開始はユーザーが行います。そのページ内でのクリックの直後のみ。ユーザーがそこでドキュメントを書き込んでジョブを実行する権限を持たない場合、またはシステムデータベースの場合は
+                <code>not_permitted</code> です。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.exportSql</code><br />なし</td>
+              <td>なし → <code>true</code></td>
+              <td>
+                そのコレクション上。アプリの <a href="import-export.html#sql">SQL ↔ MongoDB</a> ページを、そのコレクションのデータベースでエクスポートの状態で、そのコレクションを選択して開きます。オプションの選択と開始はユーザーが行います。そのページ内でのクリックの直後のみ。ユーザーがその接続からエクスポートする権限を持たない場合は <code>not_permitted</code> です。
+              </td>
+            </tr>
+            <tr>
+              <td><code>validation.get</code><br /><code>collection:read</code></td>
+              <td>
+                <code>{ coll? }</code> → <code>{ validator, validationLevel, validationAction }</code> または
+                <code>null</code>
+              </td>
+              <td>
+                検証セクションが読み取るとおりの、コレクションの検証ルールです（<code>validator</code> は、ルールがない場合は <code>null</code>）。ビューの場合は <code>null</code> です。データベースの別のコレクション（<code>coll</code>）には <code>database:read</code> も必要です。ユーザーから隠されているフィールドについてルールが述べている内容（その型、パターン、範囲）は除外されます。そのスキーマは <code>{}</code> になり、そのフィールドを名指しするクエリルールや <code>$expr</code> は削除されますが、名前は保持されます（たとえば <code>required</code> 内）。隠されている内容を判断できなかった場合は <code>failed</code> です。
+              </td>
+            </tr>
+            <tr>
+              <td><code>database.model</code><br /><code>database:read</code></td>
+              <td>なし → データモデル</td>
+              <td>
+                データベースタブが描画するとおりの、データベースのモデルです:
+                <code>{ db, sampleSize, collections, references, skipped, at }</code>。各コレクションのフィールドとその型・割合（ユーザーから隠されているフィールドは名前のみで、<code>masked: true</code>、型なし）、およびコレクション間で見つかった参照を含みます。コレクションごとに最大 200 件のドキュメントをサンプリングします。フレームごとに 1 回の読み取りで、60 秒間保持されます。実行中に行われたリクエストはそれを共有します（90 秒間: サーバーはモデルを 60 秒で打ち切ります）。失敗した結果は保持されません。
+              </td>
+            </tr>
+            <tr>
+              <td><code>storage.stats</code><br /><code>database:read</code></td>
+              <td>なし → <code>{ collections, more }</code></td>
+              <td>
+                ストレージレポートが読み取るとおりの、データベースのストレージ情報です。各コレクションの
+                <code
+                  >{ name, type, count, size, storageSize, freeBytes, indexSize, indexFreeBytes, indexes }</code
+                >
+                （各インデックスの <code>{ name, size, freeBytes }</code>）を、名前順で最大 500 件返します（それ以上ある場合は <code>more</code>）。MongoDB が返さなかった数値は <code>null</code>（<code>unread</code>）となり、個人データのルールによって隠されるサイズも同様です（<code>sizesHidden</code>）。読み取りは 1 データベースにつき 1 回で 30 秒間保持され、すべてのフレームで共有されます。そのデータベースで compact を実行した後は破棄されます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>storage.compactEstimate</code><br /><code>collection:read</code></td>
+              <td>
+                <code>{ coll? }</code> → <code>{ available, estimatedBytes }</code> または
+                <code>{ available: false, reason }</code>
+              </td>
+              <td>
+                <code>compact</code> で解放される容量（MongoDB 8.0 以降）です。そのコレクション、または <code>database:read</code> がある場合は同じデータベースの別のコレクションが対象です。<code>reason</code> は
+                <code>version</code>、<code>mongos</code>、<code>timeseries</code> のいずれかで、ビューの場合は <code>read_only</code> です。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.compact</code><br /><code>collection:read</code></td>
+              <td><code>{ coll? }</code> → <code>{ bytesFreed }</code></td>
+              <td>
+                アプリ専用のダイアログでコレクションを compact します。ダイアログにはプラグインとコレクションの名前が表示され、ユーザーがコレクション名を入力した場合にのみ実行されます。データベースを管理できるユーザーで、読み取り専用でない接続に限ります。時系列コレクション、ビュー、個人データのルールが適用されるコレクションは対象外です。1 つのコレクションの compact は一度に 1 つだけです（<code>busy</code>）。そのページ内でのクリックの直後のみ。<code>ui.use…</code> メソッドと合算されます。ユーザーが続行しない場合は <code>declined</code> または
+                <code>unanswered</code>、2 回拒否された後は <code>blocked</code> です。
+              </td>
+            </tr>
+            <tr>
+              <td><code>shardKey.analyze</code><br /><code>documents:read</code></td>
+              <td><code>{ key }</code> → 分析結果、または <code>{ available: false, reason }</code></td>
+              <td>
+                シャードキー候補の特性です（<code>analyzeShardKey</code>）。<code>key</code> は 1 から 5 個のフィールドで、それぞれ <code>1</code> または <code>"hashed"</code>（hashed は最大 1 つ）です。次の内容を返します。
+                <code
+                  >{ numDocsTotal, numDocsSampled, numDistinctValues, avgDocSizeBytes, isUnique,
+                  mostCommonValues, monotonicity }</code
+                >
+                — 最頻値はデータであり、正規の Extended JSON 形式です。<code>reason</code> は
+                <code>version</code>、<code>standalone</code>、<code>no_index</code> のいずれかです。
+                ビューの場合は <code>read_only</code> です。
+              </td>
+            </tr>
+            <tr>
+              <td><code>searchIndexes.list</code><br /><code>collection:read</code></td>
+              <td>なし → <code>{ supported, reason?, indexes }</code></td>
+              <td>
+                コレクションの検索インデックス（Atlas Search、ベクトル検索）です。それぞれ
+                <code>{ name, type, status, queryable, dynamic, fields }</code> で、フィールドは
+                <code>{ path, type, numDimensions?, similarity? }</code> です。ユーザーから隠されているフィールドは、<code>validation.get</code> と同様に除外されます。隠されている内容を判断できなかった場合は <code>failed</code> です。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.download</code><br />なし</td>
+              <td><code>{ name, type, text? | base64? | html? }</code> → <code>true</code></td>
+              <td>
+                プラグインが作成したファイルを、アプリが保存します（フレームはダウンロードできません）。<code>type</code> は
+                <code>markdown</code>、<code>mermaid</code>、<code>csv</code>、<code>json</code>、
+                <code>text</code>（<code>text</code> を指定）、<code>png</code>（<code>base64</code> を指定。PNG でなければなりません）、<code>html</code>（<code>{ title, css, body }</code> を指定）のいずれかです。<code>html</code> の場合、アプリがページを組み立てます。スクリプトを実行せず何も読み込まないポリシーを先頭に付け、タイトルはテキストとして扱い（最大 200 文字）、スタイルにはマークアップ、エスケープ（<code>\</code>）、<code>@import</code>、
+                <code>@font-face</code>、image set、<code>src()</code>、式、<code>data:</code> 以外のアドレスを含められず、本文は構造要素の許可リストを通します（スクリプト、フォーム、フレーム、画像、<code>svg</code>、MathML、テンプレート、<code>#anchor</code> 以外のリンク、コメント、<code>on…</code> 属性は不可）。テキスト、スタイル、本文はそれぞれ最大 1,000,000 文字です。CSV では、数式のように始まるセル（<code>=</code>、<code>+</code>、
+                <code>-</code>、<code>@</code>、タブ、キャリッジリターンで始まり、数値ではないもの）は、先頭に <code>'</code> を付けて書き出されます。名前からは、パス、予約済みのデバイス名（<code>CON</code>、
+                <code>COM¹</code>、<code>CONIN$</code>…）、隠し文字や反転文字、そしてドット（<code>_</code> に置換）が取り除かれ、拡張子はその種類のものが 1 つだけ付きます。そのページ内でのクリックの直後のみ。<code>ui.use…</code> メソッドと合算されます。アプリの別の場所でのクリックやキー操作の直後は、先にユーザーに確認します（<a href="#limits">制限</a> を参照）。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.importDocuments</code><br />なし</td>
+              <td><code>{ ndjson }</code> → <code>true</code></td>
+              <td>
+                そのコレクション上。アプリのインポートウィザードを、これらのドキュメントをファイルとして開きます。1 行に 1 つの JSON オブジェクトで、最大 1,000,000 文字、メッセージ全体は JSON として最大 1 MB です（引用符やバックスラッシュは 2 文字として数えます）。ユーザーが内容を確認し、マッピングして、自身の権限でインポートを開始します。そのページ内でのクリックの直後のみ。<code>ui.use…</code> メソッドと合算されます。アプリの別の場所でのクリックの直後は先に確認します。アプリでダイアログが開いている間は
+                <code>busy</code>、ユーザーがそこでドキュメントを書き込んでジョブを実行する権限を持たない場合やシステムデータベースの場合は <code>not_permitted</code>、ビューの場合は <code>read_only</code> です。
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <code>documents.find</code>、<code>documents.findIn</code>、<code>ui.useQuery</code> のフィルター、プロジェクション、ソート、および <code>documents.aggregate</code> では、演算子 <code>$where</code>、<code>$function</code>、<code>$accumulator</code>、
+        <code>$out</code>、<code>$merge</code>、<code>$lookup</code>、<code>$graphLookup</code>、
+        <code>$unionWith</code> は、どの深さにあっても拒否されます（前述の、最上位の単純な <code>$lookup</code> を除く）。<code>ui.useAggregation</code> のステージは、ユーザーが自身の権限で実行するため他のコレクションを読み取れますが、<code>$where</code>、
+        <code>$function</code>、<code>$accumulator</code>、<code>$out</code>、<code>$merge</code> を含めることはできません。読み取りは即座に実行されます。<code>ui.useQuery</code> と <code>ui.useAggregation</code> は、作業をユーザーに引き渡すだけです。
+      </p>
+
+      <h3 id="limits">制限</h3>
+      <ul>
+        <li>
+          メッセージはどちらの方向でも最大 1 MB です。それより大きい応答は <code>too_large</code> で失敗します。ドキュメントの件数を減らすか、プロジェクションでフィールドを絞ってください。
+        </li>
+        <li>同時に待機できるリクエストは最大 8 件です（<code>too_many</code>）。</li>
+        <li>
+          フレームごとに、1 分あたり最大 60 回の読み取り（<code>documents.find</code>、<code>.get</code>、
+          <code>.aggregate</code>、<code>.findIn</code>、<code>collections.list</code>、
+          <code>database.model</code>）に加え、それとは別に 120 回の定義の読み取り（<code>indexes.list</code>、<code>validation.get</code>）までです。50 個のコレクションのディクショナリは、1 回のモデル取得と 100 回の定義の読み取りになります。
+        </li>
+        <li>
+          <strong>プラグインのページ内でのクリックの直後。</strong> <code>ui.copy</code>、
+          <code>ui.useQuery</code>、<code>ui.useAggregation</code>、<code>ui.importSql</code>、
+          <code>ui.exportSql</code>、<code>ui.openDocument</code>、<code>ui.download</code>、
+          <code>ui.importDocuments</code>、<code>documents.update</code> は、プラグイン自身のページでのユーザーのクリックまたはキー操作が新しい間のみ受け付けられます。フレームにフォーカスがある必要があるため、アプリの別の場所でのクリックは数えられません。他の処理を await する前に、クリックハンドラー内で直接呼び出してください。そうしないと <code>no_activation</code> で失敗します。<code>ui.copy</code>、<code>ui.use…</code>、SQL ページ、<code>ui.openDocument</code> は、拒否された場合も含めて、試行のたびにそのメソッドの制限にカウントされます。クリックを待って何度も試行するプラグインは、その 1 分間の枠を使い切ります（<code>too_many</code>）。<code>documents.update</code> は、代わりに「一度に 1 つの質問」と「2 回の拒否」で制限されます。フレームはクリックなしでもフォーカスを得られるため、アプリの別の場所でのクリックやキー操作から 5 秒以内（ブラウザーのアクティベーションが続く時間）に要求された <code>ui.copy</code>、
+          <code>ui.download</code>、<code>ui.importDocuments</code> は、プラグインの申告だけでは実行されません。アプリは、プラグイン名と要求内容（文字数とテキストの冒頭部分（隠し文字は明示）、ファイル名とサイズ、どのコレクションに何件のドキュメントか）を示してユーザーに確認し、アプリ自身の
+          <strong>コピー</strong>、<strong>保存</strong>、<strong>開く</strong> のクリックで実行します。プラグインへの応答はそれまで待機します（ユーザーが閉じた場合は <code>declined</code>、応答がない場合は <code>unanswered</code>、待機中は <code>busy</code>）。アプリがプラグインのために行うすべての質問（これらや、変更、配置されるステージ）は、ポインターが当たっていても 150 秒後に終了します。キットはこれらのリクエストを 180 秒待つため、ページが受け取るのは常にアプリの応答であり、自身のタイムアウトではありません。
+        </li>
+        <li>
+          <strong>表示中のみ。</strong> <code>documents.update</code>、<code>ui.openDocument</code> と上記のメソッドは、セルレンダラーから、または別のタブが表示されている間維持されているページからは、<code>not_visible</code> で失敗します。
+        </li>
+      </ul>
+
+      <h3 id="errors">エラー</h3>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>コード</th>
+              <th>意味</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>bad_params</code></td>
+              <td>パラメーターが不足している、型が誤っている、範囲外である、または拒否された演算子を含んでいます。</td>
+            </tr>
+            <tr>
+              <td><code>not_permitted</code></td>
+              <td>プラグインがその権限で承認されていない、またはユーザーにこの操作を行う権限がありません。</td>
+            </tr>
+            <tr>
+              <td><code>unknown_method</code></td>
+              <td>そのようなメソッドはありません。</td>
+            </tr>
+            <tr>
+              <td><code>unavailable</code></td>
+              <td>このメソッドは、この場所では提供されていません。</td>
+            </tr>
+            <tr>
+              <td><code>no_collection</code></td>
+              <td>ページがコレクションなしで開かれました。</td>
+            </tr>
+            <tr>
+              <td><code>not_visible</code></td>
+              <td>フレームが表示されていません（セルレンダラー、バックグラウンドのページ）。</td>
+            </tr>
+            <tr>
+              <td><code>no_activation</code></td>
+              <td>プラグインのページ内でのクリックまたはキー操作の直後ではありません。</td>
+            </tr>
+            <tr>
+              <td><code>too_many</code></td>
+              <td>待機中のリクエストが多すぎる、または直近 1 分間のリクエストが多すぎます。</td>
+            </tr>
+            <tr>
+              <td><code>too_large</code></td>
+              <td>メッセージが 1 MB を超えている、またはユーザーに表示するには変更が長すぎます。</td>
+            </tr>
+            <tr>
+              <td><code>busy</code></td>
+              <td>このフレームのパイプラインがまだ実行中、またはユーザーへの質問が待機中です。</td>
+            </tr>
+            <tr>
+              <td><code>declined</code></td>
+              <td>ユーザーが拒否しました。</td>
+            </tr>
+            <tr>
+              <td><code>unanswered</code></td>
+              <td>
+                ユーザーがアプリの質問に時間内に答えなかったため、何も実行されていません。拒否としては数えられません。
+              </td>
+            </tr>
+            <tr>
+              <td><code>blocked</code></td>
+              <td>ユーザーが 2 回拒否しました。プラグインを開き直す必要があります。</td>
+            </tr>
+            <tr>
+              <td><code>read_only</code></td>
+              <td>ビューであるか、アプリが読み取り専用で動作しています。</td>
+            </tr>
+            <tr>
+              <td><code>not_found</code></td>
+              <td>そのようなドキュメントはありません。</td>
+            </tr>
+            <tr>
+              <td><code>timeout</code></td>
+              <td>時間内に応答がありませんでした（キットのクライアントが 15 秒後に設定します）。</td>
+            </tr>
+            <tr>
+              <td><code>failed</code></td>
+              <td>それ以外のすべて。アプリは内部エラーをそのまま渡すことはありません。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        サーバー自身の拒否も、たとえば <code>forbidden</code>、
+        <code>conflict</code>（その間にドキュメントが変更された）、<code>validation_error</code> のように小文字で届きます。キットの
+        <code>askMessage(error, locale)</code> は、一般的なコードを閲覧者の言語の文に変換します。
+      </p>
+
+      <h2 id="permissions">権限</h2>
+      <p>
+        管理者は、プラグインが列挙する権限を、プラグインページでの名称のとおりに承認します。必要最小限の権限だけを要求してください。権限は 1 つ増えるごとに、管理者が承認を見送る理由になります。
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>権限</th>
+              <th>管理者に表示される内容</th>
+              <th>許可される操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>documents:read</code></td>
+              <td>ドキュメントの読み取り</td>
+              <td>
+                <code>documents.find</code>、<code>.get</code>、<code>.aggregate</code>。ドキュメントアクションとセルレンダラーは、この権限がある場合にのみ提供されます。
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents:write</code></td>
+              <td>ドキュメントの変更（変更ごとに確認）</td>
+              <td>
+                <code>documents.update</code>。変更ごとにユーザーが確認します。この権限の要求は、常にそれ自体が中程度のスキャン結果になります。
+              </td>
+            </tr>
+            <tr>
+              <td><code>collection:read</code></td>
+              <td>このコレクションのインデックスの読み取り</td>
+              <td><code>indexes.list</code>。</td>
+            </tr>
+            <tr>
+              <td><code>database:read</code></td>
+              <td>同じデータベースの他のコレクションの読み取り（名前とドキュメント）</td>
+              <td>
+                <code>collections.list</code>、<code>documents.findIn</code>、単純な <code>$lookup</code>。
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        権限のないプラグインでも、ページの表示、コンテキストと設定の読み取り、<code>ui.*</code> メソッドの使用は可能です。権限がユーザー自身の権限を超えることはありません。コレクションを読み取る権限のないユーザーは、プラグインを介してもそれを読み取れません。
+      </p>
+
+      <h2 id="sandbox">サンドボックス</h2>
+      <p>
+        ページは <code>sandbox="allow-scripts"</code> を指定した <code>iframe</code> に、プラグイン、そのバージョン、承認されたファイル、ユーザーのセッションを示す署名付きアドレスから読み込まれます（封印されたチケット: ページは 10 分以内に読み込まれる必要があり、その他のファイルはセッションが続く間（最大 12 時間）読み込めます。別のタブでのサインインやパスワード変更によってセッションがその場で更新された場合は、それに追従します。サインアウトすると、そのアドレスは何も配信しなくなり、ブラウザーもファイルを一切保持しません）。配信されるすべてのファイルは、承認された SHA-256 と照合されます。ポリシー（Content-Security-Policy）は、<code>X-DNS-Prefetch-Control: off</code> とともに次のとおりです。
+      </p>
+      <pre><code>default-src 'none'; script-src &lt;its files&gt;; style-src &lt;its files&gt;;
+img-src &lt;its files&gt; data: blob: &lt;the origins of its url settings&gt;; font-src &lt;its files&gt;;
+connect-src 'none'; webrtc 'block'; frame-ancestors 'self'; base-uri 'none'; form-action 'none';
+sandbox allow-scripts</code></pre>
+      <p>コードにとっての意味は次のとおりです。</p>
+      <ul>
+        <li>
+          <strong>ネットワークは一切使えません。</strong> プラグイン自身のファイルを含め、どのアドレスにもリクエストできません。読み込む <code>.json</code> ファイルの代わりに、データはスクリプトモジュール（<code>data.js</code>）に入れてください。WebRTC やプリフェッチヒントも使わないでください。すべてのブラウザーがブロックするわけではなく、スキャンも高リスクとして検出します。
+        </li>
+        <li>
+          <strong>インラインのコードやスタイルは使えません。</strong> スクリプトとスタイルはプラグインのファイルからのみ読み込まれます。インラインの <code>&lt;script&gt;</code>、<code>&lt;style&gt;</code> 要素、style 属性、インラインのイベントハンドラー、<code>eval</code> は使えません。スクリプトでプロパティを設定すること（<code
+            >el.style.width = '40px'</code
+          >）は可能です。
+        </li>
+        <li>
+          <strong>不透明なオリジン。</strong> Cookie、<code>localStorage</code>、IndexedDB は使えず、失敗します。状態はメモリに保持してください。管理者が選ぶ設定は、マニフェストの
+          <code>settings</code> から渡されます。
+        </li>
+        <li>
+          <strong>ポップアップ、ダイアログ、フォーム、ダウンロードは使えません。</strong> <code>window.open</code>、
+          <code>alert</code>、<code>confirm</code>、フォーム送信は何も行いません。コピーには
+          <code>ui.copy</code> を使い、ファイルはアプリ自身のインポートとエクスポートを通じてユーザーに渡してください。
+        </li>
+        <li>
+          <strong>アプリには手を出せません。</strong> ページは、アプリのページ、セッション、ストレージを読み取れません。アプリとはメッセージを交換するだけです。
+        </li>
+        <li>
+          <strong>フォントと画像はプラグイン自身のファイルです</strong>（または <code>data:</code> や
+          <code>blob:</code> の画像）。
+        </li>
+      </ul>
+
+      <h2 id="scan">セキュリティスキャン</h2>
+      <p>
+        すべてのプラグインのファイルは、検出またはインストールされたときに、管理者が承認する前にスキャンされます。スキャンは、スクリプト（<code>.js</code>、<code>.mjs</code>、<code>.cjs</code>）、マークアップ（<code>.html</code>、<code>.htm</code>、<code>.svg</code>）、スタイル（<code>.css</code>）のファイルを、コメントも含めて 1 行ずつ読み取り、各結果を重大度、ルール、ファイル、行、抜粋とともに一覧表示します。マークアップファイルは全体としても読み取られるため、複数行にまたがる <code>&lt;script&gt;</code> タグやインラインハンドラーも検出されます。プラグインに同梱されたライブラリは、自分のコードと同様にスキャンされます。スキャンはヒューリスティックであり、テキストから既知のパターンを探すだけです。そのため、検出を逃れるように書かれたコード（たとえば、断片から組み立てた名前）は検出されません。スキャン結果が問題なしでも、安全の証明にはなりません。<strong>高</strong>の結果があるプラグインは、管理者がリスクを受け入れるためにその ID を入力した場合にのみ承認できます。これはサーバーが強制し、監査ログにはスキャンの件数とリスクを受け入れたかどうかが記録されます。高の結果はすべて避け、中の結果は説明できるものだけにとどめてください。
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>重大度</th>
+              <th>ルール</th>
+              <th>検出対象</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>高</td>
+              <td><code>code-from-text</code></td>
+              <td>
+                <code>eval(</code>（<code>eval?.(</code> も）、間接的に到達する <code>eval</code>（<code
+                  >(0, eval)(…)</code
+                >、<code>['eval']</code>）、単独または <code>new</code> 付きで呼び出される <code>Function(</code>（<code>window.Function(</code>, <code>self.</code>, <code>globalThis.</code> または <code>global.Function(</code>, <code>['Function']</code>, <code>Function.call(</code>, <code>.apply(</code> または <code>.bind(</code>, <code>Reflect.apply(Function</code> または <code>Reflect.construct(Function</code> も検出されます。別のオブジェクトの <code>.Function(</code> は検出されません）、および文字列を渡した <code>setTimeout</code> または
+                <code>setInterval</code>。
+              </td>
+            </tr>
+            <tr>
+              <td>高</td>
+              <td><code>html-injection</code></td>
+              <td>
+                代入（<code>=</code>）または追加（<code>+=</code>）される <code>.innerHTML</code> と <code>.outerHTML</code>（角かっこ表記 <code>['innerHTML'] =</code> も）、
+                <code>insertAdjacentHTML(</code>、<code>document.write(</code>、
+                <code>document.writeln(</code>（<code>?.(</code> での呼び出しも）、
+                <code>createContextualFragment(</code>、<code>setHTMLUnsafe(</code>。<code>innerHTML ===</code> のような比較は検出されません。
+              </td>
+            </tr>
+            <tr>
+              <td>高</td>
+              <td><code>remote-code</code></td>
+              <td>
+                <code>src</code> が <code>http</code> または <code>//</code> で始まる <code>&lt;script&gt;</code>（タグが複数行にまたがる場合も）、<code>import("http…")</code>、静的な <code>import … from "https://…"</code> または <code>import "//…"</code>、
+                <code>export … from "https://…"</code>、<code>importScripts(</code>、およびそのようなアドレスへの CSS の
+                <code>@import</code>。
+              </td>
+            </tr>
+            <tr>
+              <td>高</td>
+              <td><code>escape-attempt</code></td>
+              <td>
+                <code>parent.document</code>、<code>parent.location</code>、<code>top.document</code>、
+                <code>top.location</code>、<code>window.opener</code>、<code>self.opener</code>、
+                <code>globalThis.opener</code>、<code>opener.document</code>、<code>opener.location</code>、
+                <code>opener.postMessage</code>、<code>frameElement</code>。<code>opener</code> という名前の変数は検出されません。
+              </td>
+            </tr>
+            <tr>
+              <td>高</td>
+              <td><code>packed-code</code></td>
+              <td><code>eval(atob(</code> または <code>Function(atob(</code>。</td>
+            </tr>
+            <tr>
+              <td>高</td>
+              <td><code>webrtc</code></td>
+              <td>
+                <code>RTCPeerConnection</code>（<code>webkitRTCPeerConnection</code>、
+                <code>mozRTCPeerConnection</code> も）と <code>RTCDataChannel</code> という語。ピア接続は <code>connect-src 'none'</code> をすり抜けて外部に到達します。フレームの <code>webrtc 'block'</code> がそれを止めるのは、そのディレクティブを理解するブラウザーのみです。
+              </td>
+            </tr>
+            <tr>
+              <td>高</td>
+              <td><code>prefetch-hint</code></td>
+              <td>
+                <code>dns-prefetch</code> の全般的な使用、およびリンクの <code>rel</code> に設定された <code>preconnect</code>、<code>prefetch</code>、
+                <code>prerender</code>（マークアップ内、または <code>.rel =</code>、
+                <code>setAttribute('rel', …)</code>、<code>relList.add(…)</code> として）。先行して解決される名前は、どのポリシーからも見えないリクエストであり、データを名前に乗せて送れてしまいます。
+              </td>
+            </tr>
+            <tr>
+              <td>中</td>
+              <td><code>network</code></td>
+              <td>
+                グローバルな <code>fetch(</code>（<code>window.fetch(</code>、<code>self.fetch(</code>、
+                <code>globalThis.fetch(</code> としても。別のオブジェクトの <code>.fetch(</code> は検出されません）と、
+                <code>XMLHttpRequest</code>、<code>WebSocket</code>、<code>EventSource</code>、
+                <code>sendBeacon</code> という語。サンドボックスはこれらをすべてブロックしますが、この結果は意図を示します。
+              </td>
+            </tr>
+            <tr>
+              <td>中</td>
+              <td><code>inline-handler</code></td>
+              <td>
+                マークアップ内の、タグ内の <code>on…=</code> 属性（タグが複数行にまたがる場合も）と、あらゆる場所の
+                <code>javascript:</code>。
+              </td>
+            </tr>
+            <tr>
+              <td>中</td>
+              <td><code>workers</code></td>
+              <td><code>new Worker(</code>、<code>new SharedWorker(</code>、<code>WebAssembly.</code>。</td>
+            </tr>
+            <tr>
+              <td>中</td>
+              <td><code>unusual-encoding</code></td>
+              <td>
+                UTF-16 で保存された（バイトオーダーマークで始まる。スキャンはブラウザーと同じように読み取ります）、または NUL バイトを含むスキャン対象ファイル。
+              </td>
+            </tr>
+            <tr>
+              <td>中</td>
+              <td><code>write-permission</code></td>
+              <td>マニフェストが <code>documents:write</code> を要求しています。</td>
+            </tr>
+            <tr>
+              <td>低</td>
+              <td><code>storage</code></td>
+              <td>
+                <code>localStorage</code>、<code>sessionStorage</code>、<code>indexedDB</code>、
+                <code>document.cookie</code>（サンドボックスでは失敗します）。
+              </td>
+            </tr>
+            <tr>
+              <td>メモ</td>
+              <td><code>minified</code></td>
+              <td>2000 文字を超えるスクリプトの行（ミニファイされた、または生成されたコード）。1 ファイルにつき 1 回。</td>
+            </tr>
+            <tr>
+              <td>メモ</td>
+              <td><code>data-blob</code></td>
+              <td>約 10 KB 以上の base64 の連なり。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>通過させるためのポイントは次のとおりです。</p>
+      <ul>
+        <li>
+          テキストは <code>textContent</code>、<code>append('text')</code>、またはキットの
+          <code>h()</code> ヘルパーで書き込み、要素は <code>document.createElement</code> で組み立てます。要素を空にするには
+          <code>replaceChildren()</code> を使います。これらが検出されることはありません。一方、マークアップの代入や追加（<code>innerHTML =</code> や <code>innerHTML +=</code>）は常に検出されます。
+        </li>
+        <li>ハンドラーは <code>addEventListener</code> で追加し、マークアップ内には書かないでください。</li>
+        <li>
+          <code>setTimeout</code> と <code>setInterval</code> には関数を渡します。アプリへのアクセスは
+          <code>window.parent.postMessage</code> のみを通じて行ってください。
+        </li>
+        <li>すべてのファイルを NUL バイトなしの UTF-8 で保存します（UTF-16 は不可）。</li>
+        <li>
+          使われていなくても、外部に接続するコードを同梱しないでください。ライブラリが何を持ち込むかを確認してください。ミニファイされていないビルドを選ぶか、README で <code>minified</code> の結果を説明し、大きなデータを base64 文字列に入れないようにしてください。
+        </li>
+        <li>
+          コメントもスキャンされることに注意してください。<code>eval(</code> や
+          <code>innerHTML =</code> に言及するコメントも検出されます。
+        </li>
+        <li>
+          残っている各結果がなぜ安全なのかを README に書いてください。どのライブラリのどの行で、なぜ実行されないのか、あるいはなぜサンドボックスが止めるのかを説明します。
+        </li>
+      </ul>
+      <p>
+        スキャンされるのはスクリプト、マークアップ、スタイルのファイルのみです。マニフェストは
+        <code>documents:write</code> について読み取られます（常に中の結果になるため、プラグインがドキュメントを変更する場合にのみ要求してください）。同じルールの結果は 1 ファイルにつき最大 10 件、全体で最大 200 件（重大なものから）が一覧表示されます。件数には常にすべての結果が含まれます。すべてのパターンは線形時間で実行されるため、どんなファイルでもスキャンはすぐに終わります。スキャン自体が失敗した場合、プラグインは動作不良とは見なされません。スキャンがない状態になり、（Mongo Manager 付属のものを除き）高の結果がある場合と同様に、ID を入力した場合にのみ承認できます。Mongo Manager 付属のプラグインのスキャン結果も表示されますが、承認時に ID は求められません。
+      </p>
+
+      <h2 id="ui">UI とテーマ</h2>
+      <p>
+        プラグインは、アプリの一部のように見えるべきです。ユーザーのテーマとアクセントカラーに合わせた、色、書体、余白です。Mongo Manager 自身のプラグインは、<code>packages/plugins/kit</code> のプラグインキットを使っています。
+      </p>
+      <ul>
+        <li>
+          <code>kit/src/ui.css</code>: ライトとダーク、および各アクセントカラーに対応したアプリのデザイントークン（<code>--ds-surface</code>、
+          <code>--ds-fg</code>、<code>--ds-accent</code>...）と、コンポーネント（<code>mm-btn</code>、<code>mm-table</code>、<code>mm-empty</code>、
+          <code>mm-callout</code>...）。フォントは <code>@fontsource</code> パッケージのファイルです。プラグインに同梱するか、<code>@font-face</code> ルールを削除してシステムフォントを使ってください。
+        </li>
+        <li>
+          <code>kit/src/ui.ts</code>: <code>applyLook(theme, accent)</code> は <code>html.dark</code> と
+          <code>html[data-accent]</code> を設定します。<code>h(tag, props, ...children)</code> はテキストが常にテキストとして扱われる形で要素を組み立てます。その他に <code>icon</code>、<code>button</code>、<code>segmented</code>、
+          <code>switchControl</code>、<code>chip</code>、<code>badge</code>、<code>pageHeader</code>、
+          <code>emptyState</code>、<code>skeleton</code>、<code>callout</code>、<code>table</code>、
+          <code>valueView</code>、<code>describeValue</code>、<code>formatNumber</code>、
+          <code>statusLine</code>、<code>setBusy</code>、<code>serialAsk</code> があります。
+        </li>
+        <li>
+          <code>kit/src/client.ts</code>: <code>createClient</code>、<code>AskError</code>、
+          <code>askMessage</code>。
+        </li>
+      </ul>
+      <p>
+        キットは TypeScript で書かれており、バンドルして使うことを想定しています。<code>kit/src</code> を自分のプロジェクトにコピーし、公式プラグインの <code>vite.config.ts</code> のように、インラインスクリプトなしの相対パスで Vite（または別のバンドラー）を使ってビルドします: <code>base: './'</code>、<code>modulePreload: { polyfill: false }</code>、
+        <code>assetsInlineLimit: 0</code>。パッケージ化するのはソースではなくビルド出力です。スターターは、代わりにクライアントと色の短いコピーを、プレーンな JavaScript と CSS で持っています。
+      </p>
+      <pre><code>import './kit/ui.css'
+import { createClient } from './kit/client'
+import { applyLook, h, pageHeader, emptyState, button } from './kit/ui'
+
+const client = createClient()
+client.onContext((locale, theme, accent) =&gt; applyLook(theme, accent))
+client.onReady(async () =&gt; {
+  const context = await client.ask('context.get')
+  applyLook(context.theme, context.accent)
+  document.body.append(
+    h('div', { class: 'mm-page' },
+      pageHeader({ icon: 'table', title: 'Hello', description: context.place?.coll ?? '' }),
+      emptyState({ icon: 'search', title: 'Nothing yet', action: button({ label: 'Load', variant: 'primary' }) }),
+    ),
+  )
+})</code></pre>
+      <p>
+        ページが表示される場所に合わせて設計してください。コレクションタブは広く、ドキュメントアクションはダイアログで、サイドバーページはワークスペース全体を使います。表示するものがない場合や <code>place</code> が <code>null</code> の場合は空の状態を、読み取り中はスケルトンを、拒否された場合はアプリの言葉を表示してください。ボタンなど本物のコントロールを使い、キーボードだけでページを操作できるようにしてください。
+      </p>
+
+      <h2 id="localization">言語</h2>
+      <p>
+        アプリは英語、トルコ語、簡体字中国語、日本語、スペイン語、ブラジルポルトガル語、韓国語、ドイツ語、フランス語、ロシア語に対応しており、<code>context.locale</code> は <code>en</code>、<code>tr</code>、
+        <code>zh</code>、<code>ja</code>、<code>es</code>、<code>pt</code>、<code>ko</code>、<code>de</code>、
+        <code>fr</code>、<code>ru</code> のいずれかです。プラグインは、できるだけ多くの言語に対応し、英語には必ず対応してください。
+      </p>
+      <ul>
+        <li>マニフェストでは、すべてのローカライズされたテキストに、<code>en</code> に加えて用意した各言語を指定します。</li>
+        <li>
+          ページでは、言語ごとの文言の表を保持し、<code>context.locale</code> で選択します（用意していない言語には英語）。<code>document.documentElement.lang</code> には文言が実際に書かれている言語を設定し（英語にフォールバックした場合は <code>en</code>。中国語とポルトガル語には <code>zh-CN</code> と <code>pt-BR</code> を使い、正しい字形が表示されるようにします）、数値も同じ言語で書式設定し、<code>context.changed</code> で再描画します。
+        </li>
+        <li>セルレンダラーは、各バッチが問い合わせられた <code>locale</code> で応答します。</li>
+        <li>
+          数値と日付はその言語の形式で表示します（<code>Intl.NumberFormat</code>、
+          <code>Intl.DateTimeFormat</code>）。
+        </li>
+        <li>
+          言語ごとに、<code>README.md</code> と並べて <code>README.&lt;language&gt;.md</code>（<code>README.tr.md</code>、<code>README.zh.md</code>、…）を追加し、リリースノートも各言語で用意します。
+        </li>
+      </ul>
+
+      <h2 id="readme">README とリリースノート</h2>
+      <p>
+        プラグインの最上位にある <code>README.md</code> は詳細ページに表示され、管理者は承認する前にそれを読みます。<code>README.&lt;language&gt;.md</code>（<code>README.tr.md</code>、<code>README.ja.md</code>、…）は、その言語でアプリを使っている人には代わりにそちらが表示されます。ローカライズされた README は、<code>README.md</code> も存在する場合にのみ表示されます。README は安全な Markdown として表示されます: 見出し、段落、リスト（1 階層）、太字、斜体、インラインコード、コードブロックです。リンク、画像、テーブル、HTML はプレーンテキストとして表示されます。表示されるのは最大 64 KB です。
+      </p>
+      <p>良い README には、次の内容がこの順序で書かれています。</p>
+      <ol>
+        <li>プラグインの機能を、2、3 文で。</li>
+        <li>表示される場所: どのタブ、アクション、ページ、またはセルのテキストか。</li>
+        <li>使い方を、例を交えて手順ごとに。</li>
+        <li>各権限と、それが必要な理由。</li>
+        <li>設定がある場合はその説明。</li>
+        <li>制限: 読み取るドキュメントの件数や、対応していないこと。</li>
+        <li>残っている各スキャン結果と、それが安全である理由。</li>
+      </ol>
+      <p>
+        リリースノートはマニフェストの <code>changelog</code> に、新しいものから順に、バージョンごとに 1 エントリとして、日付とノートを英語と用意した各言語で書きます。詳細ページにはそれが表示され、更新後は、前回以降のバージョンに新着の印が付きます。
+      </p>
+
+      <h2 id="versions">バージョンと承認</h2>
+      <ul>
+        <li>
+          承認は、正確なファイルに対するものです。そのダイジェストは、すべてのファイルのパスと SHA-256 の SHA-256 です。管理者は承認する前にこれを確認できます。
+        </li>
+        <li>
+          アップロードされたプラグインやプラグインフォルダーの<strong>どのファイルであっても変更</strong>（新しいバージョン、README の誤字修正など）があると、管理者があらためて承認するまで無効になります。リリースごとに
+          <code>version</code> を上げ、changelog のエントリを追加して、管理者が何を承認するのかわかるようにしてください。
+        </li>
+        <li>
+          インストール済みの ID のプラグインをアップロードすると置き換えられます。ファイルが承認済みのものとまったく同じ場合にのみ、有効のままになります。新しいマニフェストが同じ型で設定を宣言している限り、設定は保持されます。
+        </li>
+        <li>
+          手動で配置したプラグインフォルダーは手動で管理されます。同じ ID のアップロードは拒否され、アプリで削除してもフォルダーは削除されず、アプリが認識しなくなるだけです。
+        </li>
+        <li>
+          更新後も承認が維持されるのは、Mongo Manager 付属のプラグインだけで、有効であり、かつ更新が新しい権限を要求しない場合に限ります。その場合、管理者には何も求められず、プラグインの詳細ページに承認が維持されたことが表示されます。管理者が手動で承認した更新には、管理者が承認した旨が表示されます。
+        </li>
+      </ul>
+
+      <h2 id="packaging">パッケージ化</h2>
+      <p>
+        プラグインは、gzip 圧縮された tar アーカイブ（<code>.tgz</code>）として配布します。ファイルはアーカイブのルートに置き、<code>mongo-manager-plugin.json</code> もその 1 つです。すべてを含む 1 つの最上位フォルダー（<code>npm pack</code> の
+        <code>package/</code> のようなもの）は許容され、取り除かれます。アーカイブには通常のファイルのみを含めてください（フォルダーは暗黙的に含まれます）。リンク、デバイス、特殊なエントリ、単純でないパス、重複したパスは拒否されます。展開後で最大 500 ファイルと 25 MB、アップロードで最大 30 MB です。
+      </p>
+      <p>スターターの <code>scripts/pack.mjs</code> は、Node.js だけでこれを行います。</p>
+      <pre><code>node scripts/pack.mjs
+Packed 14 files (64.6 KB):
+  README.de.md
+  README.es.md
+  README.fr.md
+  README.ja.md
+  README.ko.md
+  README.md
+  README.pt.md
+  README.ru.md
+  README.tr.md
+  README.zh.md
+  index.html
+  main.js
+  mongo-manager-plugin.json
+  style.css
+
+hello-documents-0.1.0.tgz
+digest (sha256): 9ac77c4a...</code></pre>
+      <p>
+        アプリと同じようにパスと制限を検査し、プラグインに含まれないもの（隠しファイル、<code>scripts/</code>、<code>node_modules/</code>、AI アシスタントのファイル、パッケージファイル、アーカイブ。<code>SKIP</code> リストを編集して調整できます）を除外し、
+        <code>&lt;id&gt;-&lt;version&gt;.tgz</code> を書き出して、管理者に表示されるダイジェストを出力します。バンドラーでビルドする場合は、代わりにビルド出力フォルダーをパッケージ化し、マニフェストを最上位に置いてください。
+      </p>
+
+      <h2 id="github">GitHub での公開</h2>
+      <p>
+        管理者は、許可が設定されたサーバー（<code>MM_PLUGINS_GITHUB=1</code>。既定ではオフ）で、公開 GitHub リポジトリから直接プラグインをインストールできます。プラグインページで、次のいずれかのアドレスを貼り付けます。
+      </p>
+      <ul>
+        <li>
+          <code>https://github.com/&lt;owner&gt;/&lt;repo&gt;</code>、<code>…/releases</code>、
+          <code>…/releases/latest</code>: <strong>最新のリリース</strong>用。
+        </li>
+        <li>
+          <code>https://github.com/&lt;owner&gt;/&lt;repo&gt;/releases/tag/&lt;tag&gt;</code>: 特定のリリース用。
+          タグにはスラッシュを含められます（最大 4 つの部分）。
+        </li>
+      </ul>
+      <p>
+        アドレスにそれ以外のものは含められません。クエリ、フラグメント、ポート、認証情報は不可です。名前が変更されたリポジトリには追従します。リリース自身のページアドレスが、そのリポジトリを示すためです。アプリは、そのリリースのプラグインアーカイブ、つまり名前が <code>.tgz</code> または <code>.tar.gz</code> で終わる唯一のアセットをダウンロードします。そのようなアセットがないリリースや、複数あるリリースは拒否されます。タグとアセットの名前は、表示可能な ASCII でなければなりません。アセットはそのリポジトリのリリースに属している必要があり、サイズは、宣言された値と実際に読み取った値のどちらでも、アップロードの上限（30 MB）を超えてはなりません。
+      </p>
+      <p>
+        アプリが通信するのは <code>github.com</code>、<code>api.github.com</code>、
+        <code>objects.githubusercontent.com</code>、<code>release-assets.githubusercontent.com</code> だけで、https を使い、公開アドレスのみに接続し、サーバーの情報（Cookie、トークン、認証情報）は一切送信しません。リダイレクトは、これらのホスト間に限り最大 4 回まで追従し、リリースの説明は最大 5 MB まで読み取り、インストール全体に 4 分を割り当てます。プラグインは無効の状態でスキャン結果とともにインストールされ、アップロードと同様に承認を待ちます。取得元（リポジトリ、リリース、アーカイブ）が記録され、詳細ページに表示されます。
+      </p>
+      <p>
+        インストールに失敗すると、プラグインページに理由が表示されます。リポジトリに公開済みのリリースがない、GitHub のレート制限に達した、GitHub に拒否された（リポジトリが公開されていない）、サーバーから GitHub に接続できない、リダイレクト先が許可されていないホストだった、リダイレクトが多すぎた、リリースにアーカイブがない・複数ある、またはアーカイブがそのリポジトリのリリースにない、のいずれかです。
+      </p>
+      <ol>
+        <li>
+          <code>version</code> を上げ、<code>changelog</code> のエントリを追加して、<code>publishedAt</code> を設定します。
+        </li>
+        <li><code>node scripts/pack.mjs</code> を実行します。</li>
+        <li>
+          GitHub のリリースを作成し（たとえばタグ <code>v0.1.0</code>）、<code>hello-documents-0.1.0.tgz</code> をそのアセットとして添付します。他の <code>.tgz</code> や
+          <code>.tar.gz</code> ファイルは添付しないでください。
+        </li>
+        <li>
+          最新のリリースとしてマークします。<code>pack.mjs</code> が出力したダイジェストをリリースノートに記載し、管理者がアプリに表示される内容と比較できるようにします。
+        </li>
+      </ol>
+      <p>
+        GitHub からのインストールは、<code>MM_PLUGINS_GITHUB=1</code> を設定しない限りオフです。また、サーバーが GitHub に到達できない場合や、プロキシ経由でしか外部に出られない場合もあります（インストールは GitHub に直接接続し、HTTP プロキシの設定は使いません）。その場合、管理者は <code>.tgz</code> をダウンロードし、<strong>プラグインをアップロード</strong> でアップロードします。
+      </p>
+
+      <p>
+        ほかの人に見つけてもらうには、Awesome Mongo
+        Manager（<code>github.com/mongo-manager/awesome-mongo-manager</code>）にプラグインを掲載してください。そこで README に 1
+        行を追加するプル リクエストを作成します。そのチェックは最新リリースをダウンロードし、GitHub
+        からのインストールと同じように、アプリ自身のコードで確認します。その後、メンテナーがプラグインを読んでから掲載します。
+      </p>
+
+      <h2 id="testing">自分のサーバーでのテスト</h2>
+      <ol>
+        <li>
+          プラグインを有効にして（既定）Mongo Manager を実行し、管理者としてサインインします。データディレクトリを確認してください。<code>MM_DATA_DIR</code> で別の場所が指定されていない限り、<code>~/.mongo-manager</code> です。
+        </li>
+        <li>
+          プラグインを <code>&lt;data-dir&gt;/plugins/&lt;id&gt;</code> にコピーします:
+          <code>node scripts/pack.mjs --folder ~/.mongo-manager/plugins</code>。フォルダー名は ID と同じでなければならず、隠しファイルを含めることはできません（そのため、スクリプトはプラグインのファイルだけをコピーします）。<code>~/</code> はどのシェルでもホームフォルダーを表します。cmd や PowerShell では <code>~\</code> を使うか、引用符で囲んでください（bash と zsh は引用符なしのバックスラッシュを取り除くため、スクリプトは残った部分を拒否します）。スクリプトが置き換えるのは、このプラグインのフォルダーで、コピーできたはずのファイルとフォルダーだけを含み（スクリプト、隠しファイル、リンク、パイプ、ソケットがない）、そこやその中にファイルシステムがマウントされていないものに限られます。新しいコピーを入れ替える方式なので、コピーが途中で止まってもフォルダーは元の状態のままです。対象がプラグイン自身のフォルダー、その内側、またはそれを含む場所である場合は、パスの指定方法（シンボリックリンク、ジャンクション、共有）にかかわらず拒否され、何も書き込まれません。
+        </li>
+        <li>
+          <strong>プラグイン</strong> を開き、<strong>再スキャン</strong> をクリックします。使用できないプラグインには理由（マニフェストのフィールド、パス）が表示されます。詳細を開き、管理者と同じように、スキャン結果、権限、README を確認してください。
+        </li>
+        <li><strong>承認して有効化</strong> をクリックしてから、コレクションを開いて、すべての拡張ポイントを試します。</li>
+        <li>
+          変更するたびに、もう一度コピーし、<strong>再スキャン</strong> をクリックして、あらためて承認し（ファイルが変わったため）、タブ、ページ、ダイアログを開き直します。複数の言語、両方のテーマ、ビュー、ドキュメントのないコレクション、コレクションなしで開いたサイドバーページを試してください。
+        </li>
+        <li>
+          最後に、クリーンなサーバーで、<strong>プラグインをアップロード</strong> から <code>.tgz</code> 自体をアップロードします。ユーザーが行うのと同じ方法です。
+        </li>
+      </ol>
+      <p>
+        ブラウザーの開発者ツールはフレーム内でも動作します。コンソールでプラグインのフレームを選ぶと、そのエラーとメッセージを確認できます。コンソールにポリシー違反が表示された場合は、ページがサンドボックスで禁止されている操作を試みたことを意味します。
+      </p>
+
+      <h2 id="ai-files">AI アシスタントでの開発</h2>
+      <p>
+        スターターには、このページにあるすべての内容を AI コーディングアシスタントに教える指示ファイルが含まれています。マニフェストのルール、ブリッジのメソッドと権限、サンドボックス、スキャン、言語、README、パッケージ化、公開です。プラグインのリポジトリの最上位に置いておいてください。<code>pack.mjs</code> はそれらをアーカイブから除外します。<strong>プラグイン</strong> ページでは、スターターを <code>.zip</code> として、また各ファイルを単独で、すでにあるプラグインに追加できるよう
+        <strong>AI アシスタント向けの指示</strong> の下に保存できます。Copilot 用のファイルは、リポジトリの <code>.github</code> フォルダー用に <code>copilot-instructions.md</code> として保存されます。
+      </p>
+      <ul>
+        <li><code>CLAUDE.md</code>: Claude Code。</li>
+        <li><code>AGENTS.md</code>: OpenAI Codex と、<code>AGENTS.md</code> を読み取るその他のエージェント。</li>
+        <li><code>GEMINI.md</code>: Gemini CLI。</li>
+        <li><code>.github/copilot-instructions.md</code>: GitHub Copilot。</li>
+      </ul>
+      <p>
+        プラグインにさせたいことをアシスタントに伝えてください。スキャンと、下のチェックリストを通過するコードが返ってくるはずです。公開する前に、書かれた内容を必ず読んでください。管理者が信頼するのはあなたです。
+      </p>
+
+      <h2 id="checklist">公開前のチェックリスト</h2>
+      <ul>
+        <li>
+          ID が一意で、フォルダー名と一致している。バージョンを上げ、当日の日付で changelog のエントリを追加した。
+        </li>
+        <li>
+          すべてのローカライズされたテキストに <code>en</code> と <code>tr</code> がある。ページが
+          <code>locale</code> と <code>context.changed</code> に追従する。
+        </li>
+        <li>権限は動作する範囲で最小限であり、README が各権限の必要な理由を説明している。</li>
+        <li>スキャンに高の結果がなく、README がその他すべての結果を説明している。</li>
+        <li>
+          テキストは <code>textContent</code> または <code>h()</code> で書き込んでいる。テキストからマークアップを組み立てていない。
+        </li>
+        <li>
+          ネットワークに接続しない（<code>fetch</code>、WebRTC、プリフェッチヒントを使わない）。ストレージを使わない。ポップアップを開かない。ページから離れない。
+        </li>
+        <li>インラインのスクリプト、スタイル、イベントハンドラーがない。すべてのパスが相対パスである（<code>./main.js</code>）。</li>
+        <li>すべてのファイルが NUL バイトなしの UTF-8 で保存されている。</li>
+        <li>ページがテーマとアクセントカラーに追従し、キーボードで操作できる。</li>
+        <li>
+          <code>place</code> が <code>null</code> の場合、ビュー、空のコレクション、遭遇しうる各エラーコードを処理している。
+        </li>
+        <li>クリックが必要な呼び出しは、クリックハンドラー内で直接行っている。</li>
+        <li>大きな読み取りに上限がある: <code>limit</code>、プロジェクション、パイプラインは一度に 1 つ。</li>
+        <li>
+          <code>README.md</code> とその翻訳がプラグインを説明している。<code>license</code>、
+          <code>author</code>、<code>repository</code> が設定されている。
+        </li>
+        <li>クリーンなサーバーに <code>.tgz</code> をアップロードし、スキャン、承認、動作確認をした。</li>
+        <li>
+          GitHub のリリースにプラグインのアーカイブがちょうど 1 つあり、名前が
+          <code>&lt;id&gt;-&lt;version&gt;.tgz</code> である。
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">このページの内容</p>
+      <ol>
+        <li><a href="#what">プラグインとは</a></li>
+        <li><a href="#quick-start">クイックスタート</a></li>
+        <li><a href="#files">ファイルとフォルダー構成</a></li>
+        <li><a href="#manifest">マニフェスト</a></li>
+        <li><a href="#contributions">拡張ポイント</a></li>
+        <li><a href="#context">コンテキスト</a></li>
+        <li><a href="#bridge">ブリッジ API</a></li>
+        <li><a href="#permissions">権限</a></li>
+        <li><a href="#sandbox">サンドボックス</a></li>
+        <li><a href="#scan">セキュリティスキャン</a></li>
+        <li><a href="#ui">UI とテーマ</a></li>
+        <li><a href="#localization">言語</a></li>
+        <li><a href="#readme">README とリリースノート</a></li>
+        <li><a href="#versions">バージョンと承認</a></li>
+        <li><a href="#packaging">パッケージ化</a></li>
+        <li><a href="#github">GitHub での公開</a></li>
+        <li><a href="#testing">自分のサーバーでのテスト</a></li>
+        <li><a href="#ai-files">AI アシスタントでの開発</a></li>
+        <li><a href="#checklist">公開前のチェックリスト</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

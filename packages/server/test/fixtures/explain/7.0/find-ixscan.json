@@ -1,0 +1,519 @@
+{
+  "version": "7.0.43",
+  "raw": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "shop.items",
+      "indexFilterSet": false,
+      "parsedQuery": {
+        "$and": [
+          {
+            "g": {
+              "$eq": {
+                "$numberInt": "3"
+              }
+            }
+          },
+          {
+            "n": {
+              "$gt": {
+                "$numberInt": "100"
+              }
+            }
+          }
+        ]
+      },
+      "queryHash": "8547E9DF",
+      "planCacheKey": "7532FD85",
+      "optimizationTimeMillis": {
+        "$numberInt": "2"
+      },
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "winningPlan": {
+        "stage": "FETCH",
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "g": {
+              "$numberInt": "1"
+            },
+            "n": {
+              "$numberInt": "-1"
+            }
+          },
+          "indexName": "g_1_n_-1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "g": [],
+            "n": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": {
+            "$numberInt": "2"
+          },
+          "direction": "forward",
+          "indexBounds": {
+            "g": ["[3, 3]"],
+            "n": ["[inf.0, 100)"]
+          }
+        }
+      },
+      "rejectedPlans": [
+        {
+          "stage": "FETCH",
+          "filter": {
+            "n": {
+              "$gt": {
+                "$numberInt": "100"
+              }
+            }
+          },
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "g": {
+                "$numberInt": "1"
+              }
+            },
+            "indexName": "g_1",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "g": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": {
+              "$numberInt": "2"
+            },
+            "direction": "forward",
+            "indexBounds": {
+              "g": ["[3, 3]"]
+            }
+          }
+        }
+      ]
+    },
+    "executionStats": {
+      "executionSuccess": true,
+      "nReturned": {
+        "$numberInt": "415"
+      },
+      "executionTimeMillis": {
+        "$numberInt": "3"
+      },
+      "totalKeysExamined": {
+        "$numberInt": "415"
+      },
+      "totalDocsExamined": {
+        "$numberInt": "415"
+      },
+      "executionStages": {
+        "stage": "FETCH",
+        "nReturned": {
+          "$numberInt": "415"
+        },
+        "executionTimeMillisEstimate": {
+          "$numberInt": "0"
+        },
+        "works": {
+          "$numberInt": "416"
+        },
+        "advanced": {
+          "$numberInt": "415"
+        },
+        "needTime": {
+          "$numberInt": "0"
+        },
+        "needYield": {
+          "$numberInt": "0"
+        },
+        "saveState": {
+          "$numberInt": "0"
+        },
+        "restoreState": {
+          "$numberInt": "0"
+        },
+        "isEOF": {
+          "$numberInt": "1"
+        },
+        "docsExamined": {
+          "$numberInt": "415"
+        },
+        "alreadyHasObj": {
+          "$numberInt": "0"
+        },
+        "inputStage": {
+          "stage": "IXSCAN",
+          "nReturned": {
+            "$numberInt": "415"
+          },
+          "executionTimeMillisEstimate": {
+            "$numberInt": "0"
+          },
+          "works": {
+            "$numberInt": "416"
+          },
+          "advanced": {
+            "$numberInt": "415"
+          },
+          "needTime": {
+            "$numberInt": "0"
+          },
+          "needYield": {
+            "$numberInt": "0"
+          },
+          "saveState": {
+            "$numberInt": "0"
+          },
+          "restoreState": {
+            "$numberInt": "0"
+          },
+          "isEOF": {
+            "$numberInt": "1"
+          },
+          "keyPattern": {
+            "g": {
+              "$numberInt": "1"
+            },
+            "n": {
+              "$numberInt": "-1"
+            }
+          },
+          "indexName": "g_1_n_-1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "g": [],
+            "n": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": {
+            "$numberInt": "2"
+          },
+          "direction": "forward",
+          "indexBounds": {
+            "g": ["[3, 3]"],
+            "n": ["[inf.0, 100)"]
+          },
+          "keysExamined": {
+            "$numberInt": "415"
+          },
+          "seeks": {
+            "$numberInt": "1"
+          },
+          "dupsTested": {
+            "$numberInt": "0"
+          },
+          "dupsDropped": {
+            "$numberInt": "0"
+          }
+        }
+      },
+      "allPlansExecution": [
+        {
+          "nReturned": {
+            "$numberInt": "101"
+          },
+          "executionTimeMillisEstimate": {
+            "$numberInt": "0"
+          },
+          "totalKeysExamined": {
+            "$numberInt": "101"
+          },
+          "totalDocsExamined": {
+            "$numberInt": "101"
+          },
+          "score": {
+            "$numberDouble": "2.0002"
+          },
+          "executionStages": {
+            "stage": "FETCH",
+            "nReturned": {
+              "$numberInt": "101"
+            },
+            "executionTimeMillisEstimate": {
+              "$numberInt": "0"
+            },
+            "works": {
+              "$numberInt": "101"
+            },
+            "advanced": {
+              "$numberInt": "101"
+            },
+            "needTime": {
+              "$numberInt": "0"
+            },
+            "needYield": {
+              "$numberInt": "0"
+            },
+            "saveState": {
+              "$numberInt": "0"
+            },
+            "restoreState": {
+              "$numberInt": "0"
+            },
+            "isEOF": {
+              "$numberInt": "0"
+            },
+            "docsExamined": {
+              "$numberInt": "101"
+            },
+            "alreadyHasObj": {
+              "$numberInt": "0"
+            },
+            "inputStage": {
+              "stage": "IXSCAN",
+              "nReturned": {
+                "$numberInt": "101"
+              },
+              "executionTimeMillisEstimate": {
+                "$numberInt": "0"
+              },
+              "works": {
+                "$numberInt": "101"
+              },
+              "advanced": {
+                "$numberInt": "101"
+              },
+              "needTime": {
+                "$numberInt": "0"
+              },
+              "needYield": {
+                "$numberInt": "0"
+              },
+              "saveState": {
+                "$numberInt": "0"
+              },
+              "restoreState": {
+                "$numberInt": "0"
+              },
+              "isEOF": {
+                "$numberInt": "0"
+              },
+              "keyPattern": {
+                "g": {
+                  "$numberInt": "1"
+                },
+                "n": {
+                  "$numberInt": "-1"
+                }
+              },
+              "indexName": "g_1_n_-1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "g": [],
+                "n": []
+              },
+              "isUnique": false,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": {
+                "$numberInt": "2"
+              },
+              "direction": "forward",
+              "indexBounds": {
+                "g": ["[3, 3]"],
+                "n": ["[inf.0, 100)"]
+              },
+              "keysExamined": {
+                "$numberInt": "101"
+              },
+              "seeks": {
+                "$numberInt": "1"
+              },
+              "dupsTested": {
+                "$numberInt": "0"
+              },
+              "dupsDropped": {
+                "$numberInt": "0"
+              }
+            }
+          }
+        },
+        {
+          "nReturned": {
+            "$numberInt": "87"
+          },
+          "executionTimeMillisEstimate": {
+            "$numberInt": "0"
+          },
+          "totalKeysExamined": {
+            "$numberInt": "101"
+          },
+          "totalDocsExamined": {
+            "$numberInt": "101"
+          },
+          "score": {
+            "$numberDouble": "1.8615861386138612"
+          },
+          "executionStages": {
+            "stage": "FETCH",
+            "filter": {
+              "n": {
+                "$gt": {
+                  "$numberInt": "100"
+                }
+              }
+            },
+            "nReturned": {
+              "$numberInt": "87"
+            },
+            "executionTimeMillisEstimate": {
+              "$numberInt": "0"
+            },
+            "works": {
+              "$numberInt": "101"
+            },
+            "advanced": {
+              "$numberInt": "87"
+            },
+            "needTime": {
+              "$numberInt": "14"
+            },
+            "needYield": {
+              "$numberInt": "0"
+            },
+            "saveState": {
+              "$numberInt": "1"
+            },
+            "restoreState": {
+              "$numberInt": "0"
+            },
+            "isEOF": {
+              "$numberInt": "0"
+            },
+            "docsExamined": {
+              "$numberInt": "101"
+            },
+            "alreadyHasObj": {
+              "$numberInt": "0"
+            },
+            "inputStage": {
+              "stage": "IXSCAN",
+              "nReturned": {
+                "$numberInt": "101"
+              },
+              "executionTimeMillisEstimate": {
+                "$numberInt": "0"
+              },
+              "works": {
+                "$numberInt": "101"
+              },
+              "advanced": {
+                "$numberInt": "101"
+              },
+              "needTime": {
+                "$numberInt": "0"
+              },
+              "needYield": {
+                "$numberInt": "0"
+              },
+              "saveState": {
+                "$numberInt": "1"
+              },
+              "restoreState": {
+                "$numberInt": "0"
+              },
+              "isEOF": {
+                "$numberInt": "0"
+              },
+              "keyPattern": {
+                "g": {
+                  "$numberInt": "1"
+                }
+              },
+              "indexName": "g_1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "g": []
+              },
+              "isUnique": false,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": {
+                "$numberInt": "2"
+              },
+              "direction": "forward",
+              "indexBounds": {
+                "g": ["[3, 3]"]
+              },
+              "keysExamined": {
+                "$numberInt": "101"
+              },
+              "seeks": {
+                "$numberInt": "1"
+              },
+              "dupsTested": {
+                "$numberInt": "0"
+              },
+              "dupsDropped": {
+                "$numberInt": "0"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "command": {
+      "find": "items",
+      "filter": {
+        "g": {
+          "$numberInt": "3"
+        },
+        "n": {
+          "$gt": {
+            "$numberInt": "100"
+          }
+        }
+      },
+      "maxTimeMS": {
+        "$numberInt": "30000"
+      },
+      "$db": "shop"
+    },
+    "serverInfo": {
+      "host": "capture-host",
+      "port": {
+        "$numberInt": "57578"
+      },
+      "version": "7.0.43",
+      "gitVersion": "ef5a7d3480b59feae13d564376129fc4ceee6177"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFacetMaxOutputDocSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceGroupMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryMaxBlockingSortMemoryUsageBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryProhibitBlockingMergeOnMongoS": {
+        "$numberInt": "0"
+      },
+      "internalQueryMaxAddToSetBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFrameworkControl": "forceClassicEngine"
+    },
+    "ok": {
+      "$numberInt": "1"
+    }
+  }
+}

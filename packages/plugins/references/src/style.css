@@ -1,0 +1,155 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 Gokhan OZGEZER */
+/* References (redesigned 2026-10-10): what the kit (kit/src/ui.css) does not already give. */
+.ref-results {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ref-notice {
+  color: var(--ds-danger);
+}
+.ref-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.ref-route {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.ref-field {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12.5px;
+  color: var(--ds-fg);
+}
+.ref-arrow {
+  display: inline-flex;
+  flex: none;
+  color: var(--ds-fg-subtle);
+}
+.ref-target {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent-fg);
+  font-weight: 500;
+}
+.ref-target .mm-icon {
+  flex: none;
+}
+.ref-coll {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ref-share {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ref-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--ds-muted);
+  overflow: hidden;
+}
+.ref-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ds-accent);
+}
+.ref-bar-full .ref-bar-fill {
+  background: var(--ds-success);
+}
+.ref-pct {
+  flex: none;
+  min-width: 40px;
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.ref-count,
+.ref-names,
+.ref-lost {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.ref-names .mm-chip {
+  max-width: 100%;
+}
+.ref-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+}
+.ref-lost {
+  margin-top: 6px;
+}
+
+/* Referenced by (research 2026-10-28): one card per field referring to the document. */
+.rf-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rf-notes:empty {
+  display: none;
+}
+.rf-referrers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rf-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+}
+.rf-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.rf-field {
+  max-width: 100%;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--ds-subtle);
+  border: 1px solid var(--ds-line);
+  color: var(--ds-accent-fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rf-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ds-fg-muted);
+  font-size: 12.5px;
+}
+.rf-actions {
+  display: flex;
+  gap: 6px;
+}

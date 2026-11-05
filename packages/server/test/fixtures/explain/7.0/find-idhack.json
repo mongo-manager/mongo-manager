@@ -1,0 +1,130 @@
+{
+  "version": "7.0.43",
+  "raw": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "shop.items",
+      "indexFilterSet": false,
+      "parsedQuery": {
+        "_id": {
+          "$eq": {
+            "$numberInt": "1"
+          }
+        }
+      },
+      "queryHash": "869CED4F",
+      "planCacheKey": "333C0A17",
+      "optimizationTimeMillis": {
+        "$numberInt": "0"
+      },
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "winningPlan": {
+        "stage": "IDHACK"
+      },
+      "rejectedPlans": []
+    },
+    "executionStats": {
+      "executionSuccess": true,
+      "nReturned": {
+        "$numberInt": "0"
+      },
+      "executionTimeMillis": {
+        "$numberInt": "0"
+      },
+      "totalKeysExamined": {
+        "$numberInt": "0"
+      },
+      "totalDocsExamined": {
+        "$numberInt": "0"
+      },
+      "executionStages": {
+        "stage": "IDHACK",
+        "nReturned": {
+          "$numberInt": "0"
+        },
+        "executionTimeMillisEstimate": {
+          "$numberInt": "0"
+        },
+        "works": {
+          "$numberInt": "1"
+        },
+        "advanced": {
+          "$numberInt": "0"
+        },
+        "needTime": {
+          "$numberInt": "0"
+        },
+        "needYield": {
+          "$numberInt": "0"
+        },
+        "saveState": {
+          "$numberInt": "0"
+        },
+        "restoreState": {
+          "$numberInt": "0"
+        },
+        "isEOF": {
+          "$numberInt": "1"
+        },
+        "keysExamined": {
+          "$numberInt": "0"
+        },
+        "docsExamined": {
+          "$numberInt": "0"
+        }
+      }
+    },
+    "command": {
+      "find": "items",
+      "filter": {
+        "_id": {
+          "$numberInt": "1"
+        }
+      },
+      "maxTimeMS": {
+        "$numberInt": "30000"
+      },
+      "$db": "shop"
+    },
+    "serverInfo": {
+      "host": "capture-host",
+      "port": {
+        "$numberInt": "57578"
+      },
+      "version": "7.0.43",
+      "gitVersion": "ef5a7d3480b59feae13d564376129fc4ceee6177"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFacetMaxOutputDocSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceGroupMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryMaxBlockingSortMemoryUsageBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryProhibitBlockingMergeOnMongoS": {
+        "$numberInt": "0"
+      },
+      "internalQueryMaxAddToSetBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFrameworkControl": "forceClassicEngine"
+    },
+    "ok": {
+      "$numberInt": "1"
+    }
+  }
+}

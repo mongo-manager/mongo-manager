@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": ["vite/client", "node"],
+    "jsx": "preserve",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "allowJs": true,
+    "checkJs": false
+  },
+  "include": ["src", "test", "env.d.ts", "vite.config.ts", "vitest.config.ts", "public/sw-rules.js"]
+}

@@ -1,0 +1,393 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`exportPipeline (phase 2a spec §4.6) > csharp: shows every BSON type as that driver writes it 1`] = `
+"using MongoDB.Bson;
+using MongoDB.Driver;
+
+var client = new MongoClient(Environment.GetEnvironmentVariable("MONGODB_URI"));
+var coll = client.GetDatabase("shop").GetCollection<BsonDocument>("orders");
+var pipeline = new BsonDocument[] {
+  new BsonDocument {
+    { "$match", new BsonDocument {
+      { "_id", ObjectId.Parse("65a1b2c3d4e5f60718293a4b") },
+      { "at", new BsonDateTime(1790503200123) },
+      { "i", 7 },
+      { "plain", 42 },
+      { "big", 9007199254740993L },
+      { "d", 1.0 },
+      { "half", 1.5 },
+      { "dec", new BsonDecimal128(Decimal128.Parse("12.3400")) },
+      { "re", new BsonRegularExpression("^a.c$", "im") },
+      { "bin", new BsonBinaryData(Convert.FromBase64String("AQL/"), (BsonBinarySubType)0) },
+      { "id", new BsonBinaryData(Guid.Parse("0b1c2d3e-4f50-4617-8899-aabbccddeeff"), GuidRepresentation.Standard) },
+      { "ts", new BsonTimestamp(100, 3) },
+      { "lo", BsonMinKey.Value },
+      { "hi", BsonMaxKey.Value },
+      { "none", BsonNull.Value },
+      { "yes", true },
+      { "list", new BsonArray { 1, "two", new BsonDocument { { "three", 3 } } } },
+      { "a.b", 1 },
+      { "with space", 1 },
+    } },
+  },
+  new BsonDocument { { "$limit", 5 } },
+};
+foreach (var doc in coll.Aggregate<BsonDocument>(pipeline).ToEnumerable())
+{
+    Console.WriteLine(doc);
+}
+"
+`;
+
+exports[`exportPipeline (phase 2a spec §4.6) > go: shows every BSON type as that driver writes it 1`] = `
+"package main
+
+import (
+	"encoding/base64"
+	"context"
+	"fmt"
+	"os"
+
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+)
+
+func mustOID(hex string) bson.ObjectID {
+	id, err := bson.ObjectIDFromHex(hex)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
+func mustDecimal(s string) bson.Decimal128 {
+	d, err := bson.ParseDecimal128(s)
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
+
+func mustBase64(s string) []byte {
+	b, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		panic(err)
+	}
+	return b
+}
+
+func main() {
+	ctx := context.Background()
+	client, err := mongo.Connect(options.Client().ApplyURI(os.Getenv("MONGODB_URI")))
+	if err != nil {
+		panic(err)
+	}
+	defer client.Disconnect(ctx)
+	coll := client.Database("shop").Collection("orders")
+	pipeline := mongo.Pipeline{
+	  bson.D{
+	    {Key: "$match", Value: bson.D{
+	      {Key: "_id", Value: mustOID("65a1b2c3d4e5f60718293a4b")},
+	      {Key: "at", Value: bson.DateTime(1790503200123)},
+	      {Key: "i", Value: int32(7)},
+	      {Key: "plain", Value: int32(42)},
+	      {Key: "big", Value: int64(9007199254740993)},
+	      {Key: "d", Value: float64(1)},
+	      {Key: "half", Value: float64(1.5)},
+	      {Key: "dec", Value: mustDecimal("12.3400")},
+	      {Key: "re", Value: bson.Regex{Pattern: "^a.c$", Options: "im"}},
+	      {Key: "bin", Value: bson.Binary{Subtype: 0, Data: mustBase64("AQL/")}},
+	      {Key: "id", Value: bson.Binary{Subtype: 4, Data: mustBase64("CxwtPk9QRheImaq7zN3u/w==")}},
+	      {Key: "ts", Value: bson.Timestamp{T: 100, I: 3}},
+	      {Key: "lo", Value: bson.MinKey{}},
+	      {Key: "hi", Value: bson.MaxKey{}},
+	      {Key: "none", Value: nil},
+	      {Key: "yes", Value: true},
+	      {Key: "list", Value: bson.A{int32(1), "two", bson.D{{Key: "three", Value: int32(3)}}}},
+	      {Key: "a.b", Value: int32(1)},
+	      {Key: "with space", Value: int32(1)},
+	    }},
+	  },
+	  bson.D{{Key: "$limit", Value: int32(5)}},
+	}
+	cursor, err := coll.Aggregate(ctx, pipeline)
+	if err != nil {
+		panic(err)
+	}
+	var results []bson.M
+	if err := cursor.All(ctx, &results); err != nil {
+		panic(err)
+	}
+	for _, doc := range results {
+		fmt.Println(doc)
+	}
+}
+"
+`;
+
+exports[`exportPipeline (phase 2a spec §4.6) > java: shows every BSON type as that driver writes it 1`] = `
+"import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import org.bson.BsonRegularExpression;
+import org.bson.BsonTimestamp;
+import org.bson.Document;
+import org.bson.types.Binary;
+import org.bson.types.Decimal128;
+import org.bson.types.MaxKey;
+import org.bson.types.MinKey;
+import org.bson.types.ObjectId;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+public class Aggregate {
+    public static void main(String[] args) {
+        try (MongoClient client = MongoClients.create(System.getenv("MONGODB_URI"))) {
+            MongoCollection<Document> coll = client.getDatabase("shop").getCollection("orders");
+            List<Document> pipeline = Arrays.asList(
+              new Document("$match", new Document("_id", new ObjectId("65a1b2c3d4e5f60718293a4b"))
+                    .append("at", new Date(1790503200123L))
+                    .append("i", 7)
+                    .append("plain", 42)
+                    .append("big", 9007199254740993L)
+                    .append("d", 1.0)
+                    .append("half", 1.5)
+                    .append("dec", Decimal128.parse("12.3400"))
+                    .append("re", new BsonRegularExpression("^a.c$", "im"))
+                    .append("bin", new Binary((byte) 0, Base64.getDecoder().decode("AQL/")))
+                    .append("id", UUID.fromString("0b1c2d3e-4f50-4617-8899-aabbccddeeff"))
+                    .append("ts", new BsonTimestamp(100, 3))
+                    .append("lo", new MinKey())
+                    .append("hi", new MaxKey())
+                    .append("none", null)
+                    .append("yes", true)
+                    .append("list", Arrays.asList(1, "two", new Document("three", 3)))
+                    .append("a.b", 1)
+                    .append("with space", 1)),
+              new Document("$limit", 5)
+            );
+            for (Document doc : coll.aggregate(pipeline)) {
+                System.out.println(doc.toJson());
+            }
+        }
+    }
+}
+"
+`;
+
+exports[`exportPipeline (phase 2a spec §4.6) > node: shows every BSON type as that driver writes it 1`] = `
+"const {
+  MongoClient, ObjectId, Long, Double, Decimal128, Binary, UUID, Timestamp, BSONRegExp, MinKey, MaxKey,
+} = require("mongodb");
+
+async function main() {
+  const client = new MongoClient(process.env.MONGODB_URI);
+  try {
+    const coll = client.db("shop").collection("orders");
+    const pipeline = [
+      {
+        $match: {
+          _id: new ObjectId("65a1b2c3d4e5f60718293a4b"),
+          at: new Date("2026-09-27T10:00:00.123Z"),
+          i: 7,
+          plain: 42,
+          big: Long.fromString("9007199254740993"),
+          d: new Double(1),
+          half: 1.5,
+          dec: Decimal128.fromString("12.3400"),
+          re: new BSONRegExp("^a.c$", "im"),
+          bin: new Binary(Buffer.from("AQL/", "base64"), 0),
+          id: new UUID("0b1c2d3e-4f50-4617-8899-aabbccddeeff"),
+          ts: new Timestamp({ t: 100, i: 3 }),
+          lo: new MinKey(),
+          hi: new MaxKey(),
+          none: null,
+          yes: true,
+          list: [1, "two", { three: 3 }],
+          "a.b": 1,
+          "with space": 1,
+        },
+      },
+      { $limit: 5 },
+    ];
+    for await (const doc of coll.aggregate(pipeline)) {
+      console.log(doc);
+    }
+  } finally {
+    await client.close();
+  }
+}
+
+main().catch(console.error);
+"
+`;
+
+exports[`exportPipeline (phase 2a spec §4.6) > php: shows every BSON type as that driver writes it 1`] = `
+"<?php
+
+require 'vendor/autoload.php';
+
+$client = new MongoDB\\Client(getenv('MONGODB_URI'));
+$coll = $client->selectCollection("shop", "orders");
+$pipeline = [
+  [
+    "\\$match" => [
+      "_id" => new MongoDB\\BSON\\ObjectId("65a1b2c3d4e5f60718293a4b"),
+      "at" => new MongoDB\\BSON\\UTCDateTime(1790503200123),
+      "i" => 7,
+      "plain" => 42,
+      "big" => new MongoDB\\BSON\\Int64("9007199254740993"),
+      "d" => 1.0,
+      "half" => 1.5,
+      "dec" => new MongoDB\\BSON\\Decimal128("12.3400"),
+      "re" => new MongoDB\\BSON\\Regex("^a.c\\$", "im"),
+      "bin" => new MongoDB\\BSON\\Binary(base64_decode("AQL/"), 0),
+      "id" => new MongoDB\\BSON\\Binary(hex2bin("0b1c2d3e4f5046178899aabbccddeeff"), MongoDB\\BSON\\Binary::TYPE_UUID),
+      "ts" => new MongoDB\\BSON\\Timestamp(3, 100),
+      "lo" => new MongoDB\\BSON\\MinKey(),
+      "hi" => new MongoDB\\BSON\\MaxKey(),
+      "none" => null,
+      "yes" => true,
+      "list" => [1, "two", ["three" => 3]],
+      "a.b" => 1,
+      "with space" => 1,
+    ],
+  ],
+  ["\\$limit" => 5],
+];
+foreach ($coll->aggregate($pipeline) as $doc) {
+    var_dump($doc);
+}
+"
+`;
+
+exports[`exportPipeline (phase 2a spec §4.6) > python: shows every BSON type as that driver writes it 1`] = `
+"import base64
+import datetime
+import os
+import uuid
+
+from bson import Binary, Decimal128, Int64, MaxKey, MinKey, ObjectId, Regex, Timestamp
+from pymongo import MongoClient
+
+client = MongoClient(os.environ["MONGODB_URI"])
+coll = client["shop"]["orders"]
+pipeline = [
+  {
+    "$match": {
+      "_id": ObjectId("65a1b2c3d4e5f60718293a4b"),
+      "at": datetime.datetime(2026, 9, 27, 10, 0, 0, 123000, tzinfo=datetime.timezone.utc),
+      "i": 7,
+      "plain": 42,
+      "big": Int64(9007199254740993),
+      "d": 1.0,
+      "half": 1.5,
+      "dec": Decimal128("12.3400"),
+      "re": Regex("^a.c$", "im"),
+      "bin": Binary(base64.b64decode("AQL/"), 0),
+      "id": Binary.from_uuid(uuid.UUID("0b1c2d3e-4f50-4617-8899-aabbccddeeff")),
+      "ts": Timestamp(100, 3),
+      "lo": MinKey(),
+      "hi": MaxKey(),
+      "none": None,
+      "yes": True,
+      "list": [1, "two", {"three": 3}],
+      "a.b": 1,
+      "with space": 1,
+    },
+  },
+  {"$limit": 5},
+]
+for doc in coll.aggregate(pipeline):
+    print(doc)
+"
+`;
+
+exports[`exportPipeline (phase 2a spec §4.6) > ruby: shows every BSON type as that driver writes it 1`] = `
+"require 'base64'
+require 'mongo'
+
+client = Mongo::Client.new(ENV.fetch('MONGODB_URI'))
+coll = client.use("shop")["orders"]
+pipeline = [
+  {
+    "$match" => {
+      "_id" => BSON::ObjectId.from_string("65a1b2c3d4e5f60718293a4b"),
+      "at" => Time.at(0, 1790503200123, :millisecond).utc,
+      "i" => 7,
+      "plain" => 42,
+      "big" => BSON::Int64.new(9007199254740993),
+      "d" => 1.0,
+      "half" => 1.5,
+      "dec" => BSON::Decimal128.new("12.3400"),
+      "re" => BSON::Regexp::Raw.new("^a.c$", "im"),
+      "bin" => BSON::Binary.new(Base64.decode64("AQL/"), :generic),
+      "id" => BSON::Binary.from_uuid("0b1c2d3e-4f50-4617-8899-aabbccddeeff"),
+      "ts" => BSON::Timestamp.new(100, 3),
+      "lo" => BSON::MinKey.new,
+      "hi" => BSON::MaxKey.new,
+      "none" => nil,
+      "yes" => true,
+      "list" => [1, "two", { "three" => 3 }],
+      "a.b" => 1,
+      "with space" => 1,
+    },
+  },
+  { "$limit" => 5 },
+]
+coll.aggregate(pipeline).each do |doc|
+  puts doc
+end
+"
+`;
+
+exports[`exportPipeline (phase 2a spec §4.6) > rust: shows every BSON type as that driver writes it 1`] = `
+"use futures::stream::TryStreamExt;
+use mongodb::bson::{
+    doc, oid::ObjectId, spec::BinarySubtype, Binary, Bson, DateTime, Decimal128, Document, Regex, Timestamp, Uuid,
+};
+use mongodb::Client;
+
+#[tokio::main]
+async fn main() -> mongodb::error::Result<()> {
+    let uri = std::env::var("MONGODB_URI").expect("set MONGODB_URI");
+    let client = Client::with_uri_str(uri).await?;
+    let coll = client.database("shop").collection::<Document>("orders");
+    let pipeline = vec![
+      doc! {
+        "$match": {
+          "_id": (ObjectId::parse_str("65a1b2c3d4e5f60718293a4b").unwrap()),
+          "at": (DateTime::from_millis(1790503200123)),
+          "i": 7_i32,
+          "plain": 42_i32,
+          "big": 9007199254740993_i64,
+          "d": 1.0_f64,
+          "half": 1.5_f64,
+          "dec": ("12.3400".parse::<Decimal128>().unwrap()),
+          "re": (Regex { pattern: "^a.c$".to_string(), options: "im".to_string() }),
+          "bin": (Binary { subtype: BinarySubtype::from(0), bytes: vec![1, 2, 255] }),
+          "id": (Uuid::parse_str("0b1c2d3e-4f50-4617-8899-aabbccddeeff").unwrap()),
+          "ts": (Timestamp { time: 100, increment: 3 }),
+          "lo": (Bson::MinKey),
+          "hi": (Bson::MaxKey),
+          "none": null,
+          "yes": true,
+          "list": [1_i32, "two", { "three": 3_i32 }],
+          "a.b": 1_i32,
+          "with space": 1_i32,
+        },
+      },
+      doc! { "$limit": 5_i32 },
+    ];
+    let mut cursor = coll.aggregate(pipeline).await?;
+    while let Some(doc) = cursor.try_next().await? {
+        println!("{doc}");
+    }
+    Ok(())
+}
+"
+`;

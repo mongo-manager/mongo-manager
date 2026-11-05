@@ -1,0 +1,135 @@
+{
+  "id": "duplicate-finder",
+  "name": {
+    "en": "Duplicate finder",
+    "tr": "Yinelenen kayıt bulucu",
+    "zh": "重复记录查找器",
+    "ja": "重複ドキュメント検索",
+    "es": "Buscador de duplicados",
+    "pt": "Localizador de duplicados",
+    "ko": "중복 도큐먼트 찾기",
+    "de": "Duplikatsuche",
+    "fr": "Détecteur de doublons",
+    "ru": "Поиск дубликатов"
+  },
+  "version": "1.3.0",
+  "description": {
+    "en": "Finds the documents that share values in fields that should be unique, counted, the most first.",
+    "tr": "Benzersiz olması gereken alanlarda aynı değeri paylaşan belgeleri bulur, sayar, en çoğunu başta gösterir.",
+    "zh": "查找在本应唯一的字段中共有相同值的文档并统计数量，共有最多的排在前面。",
+    "ja": "一意であるべきフィールドで値を共有しているドキュメントを見つけて数え、共有数の多い順に表示します。",
+    "es": "Encuentra los documentos que comparten valores en campos que deberían ser únicos, los cuenta y muestra primero los más repetidos.",
+    "pt": "Encontra os documentos que compartilham valores em campos que deveriam ser únicos, conta e mostra primeiro os mais repetidos.",
+    "ko": "고유해야 하는 필드에서 같은 값을 공유하는 도큐먼트를 찾아 개수를 세고, 많은 순서로 보여 줍니다.",
+    "de": "Findet Dokumente, die in Feldern, die eindeutig sein sollten, dieselben Werte haben, zählt sie und zeigt die häufigsten zuerst.",
+    "fr": "Trouve les documents qui partagent des valeurs dans des champs qui devraient être uniques, les compte et affiche les plus répétés en premier.",
+    "ru": "Находит документы с одинаковыми значениями в полях, которые должны быть уникальными, подсчитывает их и показывает сначала самые частые."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "duplicates",
+        "title": {
+          "en": "Duplicates",
+          "tr": "Yinelenenler",
+          "zh": "重复项",
+          "ja": "重複",
+          "es": "Duplicados",
+          "pt": "Duplicados",
+          "ko": "중복",
+          "de": "Duplikate",
+          "fr": "Doublons",
+          "ru": "Дубликаты"
+        },
+        "icon": "layers"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.3.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Some wording and counts also read better in several languages.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Bazı ifadeler ve sayılar da birçok dilde daha doğru okunuyor.",
+        "zh": "现已与应用一样支持韩语、德语、法语和俄语。部分措辞和计数在多种语言中也更加准确。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語でも使えるようになりました。いくつかの言語で、一部の文言と件数の表記もより正確になりました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, igual que la aplicación. Además, algunos textos y recuentos se leen mejor en varios idiomas.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o app. Além disso, alguns textos e contagens ficaram mais corretos em vários idiomas.",
+        "ko": "이제 앱과 같이 한국어, 독일어, 프랑스어, 러시아어로도 사용할 수 있습니다. 또한 여러 언어에서 일부 문구와 개수 표기가 더 정확해졌습니다.",
+        "de": "Jetzt wie die App auch auf Koreanisch, Deutsch, Französisch und Russisch. Außerdem lesen sich einige Formulierungen und Zählungen in mehreren Sprachen besser.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Certaines formulations et certains décomptes se lisent aussi mieux dans plusieurs langues.",
+        "ru": "Теперь, как и приложение, доступно также на корейском, немецком, французском и русском языках. Кроме того, некоторые формулировки и счетчики теперь точнее на нескольких языках."
+      }
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现已与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルポルトガル語で使えるようになりました。それ以外の変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, igual que la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o app. Nada mais muda.",
+        "ko": "이제 앱과 같이 중국어, 일본어, 스페인어, 브라질 포르투갈어로도 사용할 수 있습니다. 그 외 변경 사항은 없습니다.",
+        "de": "Jetzt wie die App auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь, как и приложение, доступно также на китайском, японском, испанском и бразильском португальском языках. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.1.1",
+      "date": "2026-10-16",
+      "notes": {
+        "en": "Security update of the shared kit: an address that hides a script behind a tab or a line break is refused like any other script address. Nothing else changes.",
+        "tr": "Ortak kitin güvenlik güncellemesi: bir betiği sekme ya da satır sonu arkasına gizleyen adres, diğer betik adresleri gibi reddedilir. Başka bir şey değişmez.",
+        "zh": "共享套件的安全更新：将脚本隐藏在制表符或换行符之后的地址，与其他脚本地址一样会被拒绝。其他内容不变。",
+        "ja": "共有キットのセキュリティ更新: タブや改行の後ろにスクリプトを隠したアドレスも、他のスクリプトアドレスと同様に拒否されます。それ以外の変更はありません。",
+        "es": "Actualización de seguridad del kit compartido: una dirección que oculta un script tras un tabulador o un salto de línea se rechaza como cualquier otra dirección de script. Nada más cambia.",
+        "pt": "Atualização de segurança do kit compartilhado: um endereço que esconde um script atrás de uma tabulação ou quebra de linha é recusado como qualquer outro endereço de script. Nada mais muda.",
+        "ko": "공유 키트 보안 업데이트: 탭이나 줄 바꿈 뒤에 스크립트를 숨긴 주소도 다른 스크립트 주소와 마찬가지로 거부됩니다. 그 외 변경 사항은 없습니다.",
+        "de": "Sicherheitsupdate des gemeinsamen Kits: Eine Adresse, die ein Skript hinter einem Tabulator oder Zeilenumbruch versteckt, wird wie jede andere Skriptadresse abgelehnt. Sonst ändert sich nichts.",
+        "fr": "Mise à jour de sécurité du kit partagé : une adresse qui cache un script derrière une tabulation ou un saut de ligne est refusée comme toute autre adresse de script. Rien d’autre ne change.",
+        "ru": "Обновление безопасности общего набора: адрес, скрывающий скрипт за табуляцией или переводом строки, отклоняется так же, как любой другой адрес скрипта. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "Redesigned in the app's look. Fields are picked as chips with suggestions, the whole collection is searched by default, and each group opens to list its documents. A missing field and a null value now count alike, an invalid date no longer breaks the list, and “200+” is shown only when there are more.",
+        "tr": "Uygulamanın görünümüyle yeniden tasarlandı. Alanlar önerilerle birlikte etiket olarak seçilir, varsayılan olarak tüm koleksiyonda aranır ve her grup açılarak belgelerini listeler. Eksik alan ile null değer artık aynı sayılır, geçersiz bir tarih listeyi bozmaz ve “200+” yalnız daha fazlası olduğunda gösterilir.",
+        "zh": "按应用的外观重新设计。字段以带建议的标签形式选择，默认搜索整个集合，每个分组可展开列出其文档。缺失的字段与 null 值现在视为相同，无效日期不再导致列表出错，仅在确有更多结果时才显示“200+”。",
+        "ja": "アプリの外観に合わせて再設計しました。フィールドは候補付きのチップで選択し、既定ではコレクション全体を検索します。各グループを開くとドキュメントを一覧表示できます。フィールドがない場合と null の値は同じ扱いになり、無効な日付で一覧が壊れることもなくなり、「200+」は実際にそれ以上ある場合のみ表示されます。",
+        "es": "Rediseñado con el aspecto de la aplicación. Los campos se eligen como etiquetas con sugerencias, por defecto se busca en toda la colección y cada grupo se abre para listar sus documentos. Un campo ausente y un valor null cuentan igual, una fecha no válida ya no rompe la lista y «200+» solo aparece cuando hay más.",
+        "pt": "Redesenhado com a aparência do app. Os campos são escolhidos como chips com sugestões, por padrão a busca abrange a coleção inteira e cada grupo se abre para listar seus documentos. Um campo ausente e um valor null agora contam igual, uma data inválida não quebra mais a lista e “200+” só aparece quando há mais.",
+        "ko": "앱의 디자인에 맞춰 새로 설계했습니다. 필드는 추천 항목이 있는 칩으로 선택하고, 기본적으로 컬렉션 전체를 검색하며, 각 그룹을 열면 도큐먼트가 나열됩니다. 필드가 없는 경우와 null 값은 이제 같은 것으로 계산하고, 잘못된 날짜가 있어도 목록이 깨지지 않으며, “200+”는 실제로 더 있을 때만 표시됩니다.",
+        "de": "Im Look der App neu gestaltet. Felder werden als Chips mit Vorschlägen gewählt, standardmäßig wird die gesamte Collection durchsucht, und jede Gruppe lässt sich aufklappen, um ihre Dokumente aufzulisten. Ein fehlendes Feld und ein null-Wert zählen jetzt gleich, ein ungültiges Datum bringt die Liste nicht mehr durcheinander, und „200+“ erscheint nur, wenn es mehr gibt.",
+        "fr": "Repensé dans le style de l’application. Les champs se choisissent sous forme de pastilles avec des suggestions, la collection entière est parcourue par défaut et chaque groupe s’ouvre pour lister ses documents. Un champ absent et une valeur null comptent désormais de la même façon, une date non valide ne casse plus la liste et « 200+ » n’apparaît que s’il y en a davantage.",
+        "ru": "Переработано в стиле приложения. Поля выбираются в виде чипов с подсказками, по умолчанию поиск идет по всей коллекции, а каждая группа раскрывается и показывает свои документы. Отсутствующее поле и значение null теперь считаются одинаково, недопустимая дата больше не ломает список, а «200+» показывается, только когда их действительно больше."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "First release. A Duplicates tab groups the documents by up to five fields you name, suggested from a sample, and lists the values found more than once, the most shared first, up to 200. Letter case can be ignored and documents missing a field left out; a group can be shown in Documents. The grouping runs on the server as a read-only pipeline.",
+        "tr": "İlk sürüm. Yinelenenler sekmesi belgeleri, bir örnekten önerilen ve sizin seçtiğiniz en fazla beş alana göre gruplar; birden fazla kez geçen değerleri, en çok paylaşılan başta olmak üzere en fazla 200 tane listeler. Büyük/küçük harf yok sayılabilir, alanı olmayan belgeler dışarıda bırakılabilir; bir grup Belgeler'de gösterilebilir. Gruplama sunucuda salt okunur bir pipeline olarak çalışır.",
+        "zh": "首个版本。“重复项”标签页按您指定的最多五个字段（可从样本中获得建议）对文档分组，并列出出现多次的值，共有最多的排在前面，最多 200 个。可忽略大小写，也可排除缺少字段的文档；任一分组都可在“文档”中查看。分组在服务器上以只读管道运行。",
+        "ja": "最初のリリースです。「重複」タブは、指定した最大 5 つのフィールド（サンプルから候補を提示）でドキュメントをグループ化し、複数回現れる値を共有数の多い順に最大 200 件まで一覧表示します。大文字と小文字の無視や、フィールドがないドキュメントの除外もでき、グループはドキュメントで表示できます。グループ化はサーバー上で読み取り専用のパイプラインとして実行されます。",
+        "es": "Primera versión. Una pestaña Duplicados agrupa los documentos por hasta cinco campos que indicas, sugeridos a partir de una muestra, y lista los valores que aparecen más de una vez, primero los más compartidos, hasta 200. Se puede ignorar la diferencia entre mayúsculas y minúsculas y omitir los documentos sin un campo; un grupo se puede mostrar en Documentos. La agrupación se ejecuta en el servidor como un pipeline de solo lectura.",
+        "pt": "Primeira versão. Uma aba Duplicados agrupa os documentos por até cinco campos que você indica, sugeridos a partir de uma amostra, e lista os valores que aparecem mais de uma vez, os mais compartilhados primeiro, até 200. Dá para ignorar maiúsculas e minúsculas e omitir documentos sem um campo; um grupo pode ser mostrado em Documentos. O agrupamento é executado no servidor como um pipeline somente leitura.",
+        "ko": "첫 번째 릴리스입니다. 중복 탭은 지정한 최대 5개의 필드(샘플에서 추천)로 도큐먼트를 그룹화하고, 두 번 이상 나타난 값을 공유 수가 많은 순서로 최대 200개까지 나열합니다. 대소문자를 무시하거나 필드가 없는 도큐먼트를 제외할 수 있으며, 그룹은 도큐먼트에서 볼 수 있습니다. 그룹화는 서버에서 읽기 전용 파이프라인으로 실행됩니다.",
+        "de": "Erste Version. Ein Tab „Duplikate“ gruppiert die Dokumente nach bis zu fünf Feldern, die Sie nennen und die aus einer Stichprobe vorgeschlagen werden, und listet die Werte auf, die mehr als einmal vorkommen, die häufigsten zuerst, bis zu 200. Die Groß-/Kleinschreibung lässt sich ignorieren, Dokumente ohne das Feld lassen sich auslassen, und eine Gruppe kann in Dokumenten angezeigt werden. Die Gruppierung läuft auf dem Server als schreibgeschützte Pipeline.",
+        "fr": "Première version. Un onglet Doublons regroupe les documents selon jusqu’à cinq champs que vous indiquez, suggérés à partir d’un échantillon, et liste les valeurs trouvées plus d’une fois, les plus partagées en premier, jusqu’à 200. La casse peut être ignorée et les documents sans un champ exclus ; un groupe peut être affiché dans Documents. Le regroupement s’exécute sur le serveur sous la forme d’un pipeline en lecture seule.",
+        "ru": "Первый выпуск. Вкладка «Дубликаты» группирует документы по не более чем пяти указанным вами полям (подсказки берутся из выборки) и перечисляет значения, встречающиеся более одного раза, по убыванию числа совпадений, до 200 значений. Регистр можно игнорировать, а документы без поля — пропускать; группу можно показать в разделе «Документы». Группировка выполняется на сервере как конвейер только для чтения."
+      }
+    }
+  ]
+}

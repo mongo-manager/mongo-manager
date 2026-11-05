@@ -1,0 +1,17 @@
+{
+  "name": "@mongo-manager/plugin-personal-data",
+  "private": true,
+  "version": "1.2.0",
+  "type": "module",
+  "description": "First-party Mongo Manager plugin: which fields of a collection hold personal data, from a random sample, suggested as personal data rules (research 2026-10-28).",
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "happy-dom": "^21.0.4",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.2"
+  }
+}

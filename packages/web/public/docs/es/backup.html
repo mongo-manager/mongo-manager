@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Copia de seguridad y restauración · Documentación de Mongo Manager</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Documentación de Mongo Manager</a>
+      <details class="lang-menu">
+        <summary>Español</summary>
+        <span class="langs" role="group" aria-label="Idioma">
+          <a lang="en" hreflang="en" href="../backup.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/backup.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/backup.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/backup.html">日本語</a>
+          <strong lang="es">Español</strong>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/backup.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/backup.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/backup.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/backup.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/backup.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Resumen</a>
+      <a href="getting-started.html">Primeros pasos</a>
+      <a href="security.html">Seguridad</a>
+      <a href="deployment.html">Implementación</a>
+      <a href="import-export.html">Importación y exportación</a>
+      <strong>Copia de seguridad y restauración</strong>
+      <a href="watch.html">Observación de cambios</a>
+      <a href="sync.html">Sincronización en vivo</a>
+      <a href="server-admin.html">Administración del servidor</a>
+      <a href="ai.html">Asistente de IA</a>
+      <a href="plugins.html">Complementos</a>
+      <a href="shortcuts.html">Atajos de teclado</a>
+    </nav>
+    <main>
+      <h1>Copia de seguridad y restauración</h1>
+      <p>
+        Haz una copia de seguridad de una colección, de una base de datos o de todo el servidor, y luego
+        descarga el archivo o consérvalo en el servidor durante un tiempo. Restaura cualquiera de tus copias de
+        seguridad, un archivo de mongodump o un zip de una carpeta de mongodump en los espacios de nombres que
+        elijas. Ambas operaciones se ejecutan como tareas en segundo plano que puedes seguir en la lista de
+        tareas.
+      </p>
+      <p>
+        Empieza desde el menú de una colección o de una base de datos en la barra lateral, el menú de la
+        conexión, la pestaña Copias de seguridad de una conexión, la sección Copias de seguridad de una base de datos o de una colección, o desde la paleta de comandos («Hacer copia de seguridad…», «Restaurar una copia
+        de seguridad…»).
+      </p>
+
+      <h2 id="taking-a-backup">Hacer una copia de seguridad</h2>
+      <p>
+        La copia de seguridad se abre en una sola pantalla con la opción recomendada para lo que la abriste:
+        una copia cifrada cuando los datos contienen campos personales, y un archivo comprimido en caso
+        contrario. Las comprobaciones que aparecen junto a ella se actualizan cuando cambias cualquier cosa: el
+        tamaño y el tiempo previstos, tu espacio libre para copias de seguridad, los campos personales que
+        serían legibles en el archivo y todo lo que se deja fuera. Cada comprobación que se puede corregir
+        tiene un botón para hacerlo. «Personalizar…» abre los pasos: ámbito, motor, contenido, protección y un
+        resumen.
+      </p>
+      <p>
+        La copia de seguridad se ejecuta en segundo plano: cierra el cuadro de diálogo cuando quieras. Al empezar, se abre la sección Copias de seguridad de lo que copia: la de la colección, la de la base de datos o la de la conexión. Mientras se ejecuta, la sección Copias de seguridad y la lista de tareas muestran cada espacio de nombres con su
+        propio progreso (cuántos están terminados, el que se está leyendo y la fase). Cuando termina, su aviso
+        ofrece «Descargar» y «Abrir informe».
+      </p>
+      <p>
+        Una copia de seguridad y una restauración necesitan el servidor de la conexión, y solo se muestran
+        mientras Mongo Manager está conectado a él (se han leído sus bases de datos). Mientras se conecta, o
+        mientras no puede (un tiempo de espera agotado, un fallo de red, de DNS o de TLS, un inicio de sesión
+        rechazado, un servidor no disponible), la página de la conexión muestra solo su resumen con el error,
+        Reintentar y Editar: no hay Rendimiento, Observar, Usuarios y roles, Alertas, Datos personales ni
+        Copias de seguridad, ni Nueva base de datos ni shell; la página de una base de datos no muestra Modelo,
+        Observar ni Copias de seguridad. Los menús del árbol y de estas páginas omiten hacer copias de
+        seguridad, restaurar, la sincronización en vivo, el shell, y crear, renombrar y eliminar, y los
+        comandos de la paleta de comandos para el servidor indican que no hay conexión. Una copia de seguridad
+        o una restauración abierta de otra manera lo indica, con Reintentar, y no inicia nada. Una respuesta
+        que no tiene que ver con llegar al servidor (todas sus conexiones ocupadas por un momento, una consulta
+        que superó su límite de tiempo) no oculta nada. Todo vuelve cuando se han leído las bases de datos:
+        Reintentar, Actualizar, una prueba de conexión superada, o por sí solo cuando la causa desaparece por
+        sí sola (la red, un tiempo de espera, el DNS, un servidor no disponible): una página abierta lo vuelve
+        a intentar cada 15 segundos mientras el navegador la muestra. Un inicio de sesión que el servidor
+        rechazó (un nombre de usuario o una contraseña, un inicio de sesión SSH, una clave de host SSH que
+        cambió) se conserva durante cinco minutos, o hasta que se edite la conexión, su persona vuelva a
+        iniciar sesión (una conexión en la que cada persona inicia sesión) o se supere una prueba de conexión:
+        mientras tanto nada en Mongo Manager (páginas, widgets, la comprobación de estado, tareas, el shell)
+        vuelve a iniciar sesión con ella, y mientras se conserva solo los administradores de la conexión pueden
+        volver a probarla, de modo que las reglas de bloqueo de un directorio no bloqueen la cuenta, y el error
+        indica cómo volver a intentarlo.
+      </p>
+
+      <h2 id="formats">Formatos</h2>
+      <ul>
+        <li>
+          <code>.archive</code>: un archivo de mongodump; se abre con <code>mongorestore --archive</code>.
+        </li>
+        <li>
+          <code>.archive.gz</code>: el mismo archivo comprimido con gzip;
+          <code>mongorestore --archive --gzip</code>.
+        </li>
+        <li>
+          <code>.mmbak</code>: comprimido con Zstandard y luego sellado con AES-256-GCM en partes que se
+          verifican cada una al leerse. La contraseña necesita al menos 12 caracteres; «Generar una contraseña
+          segura» te crea una. La contraseña no se guarda en ningún sitio y no se puede recuperar: sin ella, la
+          copia de seguridad no se puede abrir. Ábrela en Mongo Manager, o conviértela en un archivo normal con
+          <code>mongo-manager backup decrypt &lt;file&gt; -o &lt;file.archive&gt;</code>
+          (la contraseña se pide sin eco, o se lee desde una tubería con <code>--password-stdin</code>).
+          <code>mongo-manager backup inspect &lt;file&gt;</code> lista lo que contiene cualquier copia de
+          seguridad.
+        </li>
+      </ul>
+
+      <h2 id="engines">Motores</h2>
+      <ul>
+        <li>
+          Integrado: lee a través de Mongo Manager, por lo que se aplican las reglas de campos personales y el
+          enmascaramiento. Funciona en todas las instalaciones, y sus archivos se abren con mongorestore.
+        </li>
+        <li>
+          mongodump y mongorestore: las propias herramientas de MongoDB, que pueden ser más rápidas con datos
+          muy grandes. Se ofrecen a los administradores de la conexión que ven valores personales, no a través
+          de túneles SSH. Instala las MongoDB Database Tools 100.9 o posterior (100.16 o posterior para MongoDB
+          8.3 y posteriores, algo que las herramientas de la imagen de Docker todavía no cumplen: allí se usa el
+          motor integrado) y define <code>MM_MONGODB_TOOLS_PATH</code>, o usa la imagen de Docker, que las
+          incluye. Las credenciales llegan a las herramientas en un archivo de configuración temporal y
+          privado que se elimina cuando terminan, nunca en la línea de comandos.
+        </li>
+      </ul>
+
+      <h2 id="time-series">Series temporales</h2>
+      <p>
+        Una serie temporal se conserva como la conserva mongodump para la versión del servidor: desde MongoDB
+        8.3 con su propio nombre, que se lee y se escribe a través de él con <code>rawData</code>; antes de la
+        8.3 bajo <code>system.buckets.&lt;name&gt;</code>. El motor integrado restaura ambos tipos, el de Mongo
+        Manager o el de mongodump, en cualquier versión compatible, y una copia de seguridad de la 8.3 también
+        en un servidor más antiguo. mongorestore necesita la 100.16 o posterior para una copia de seguridad o un
+        destino de la 8.3 o posterior, y solo encuentra las series temporales de una copia de seguridad de la
+        8.3 cuando la hizo mongodump 100.16 o posterior, o esta versión de Mongo Manager: para una hecha de otro
+        modo, el plan ofrece en su lugar el motor integrado. Nunca se adivina la versión de un servidor que no
+        la indica: su serie temporal se deja fuera de una copia de seguridad, con el motivo; la restauración de
+        una se rechaza en su plan; y un simulacro de una se detiene antes de escribir ninguno de sus
+        documentos, y su base de datos temporal se elimina. Con el inicio de sesión activado en MongoDB 8.3 y
+        posteriores, la cuenta que hace la copia de seguridad o restaura una serie temporal necesita además el
+        privilegio <code>performRawDataOperations</code> (el rol <code>backup</code> de MongoDB lo tiene; para
+        una restauración, concédelo junto con <code>restore</code>).
+      </p>
+
+      <h2 id="personal-data">Datos personales</h2>
+      <ul>
+        <li>
+          Un usuario que no puede ver valores personales hace copia de <code>***</code> en su lugar: una copia
+          así es siempre anónima. Cualquiera puede elegir una copia de seguridad anónima.
+        </li>
+        <li>
+          Las series temporales con campos personales, y las vistas cuya definición contiene un valor que se
+          enmascararía, se dejan fuera de una copia de seguridad enmascarada. Una colección cuyo validador
+          contiene un valor así conserva sus datos enmascarados, sin el validador. El informe indica qué se dejó
+          fuera y por qué.
+        </li>
+        <li>
+          Una copia de seguridad enmascarada ya no se puede descargar ni restaurar una vez que cambian las
+          reglas de campos personales.
+        </li>
+        <li>
+          Restaurar una copia de seguridad enmascarada sobre documentos existentes necesita una confirmación,
+          ya que <code>***</code> sustituye a los valores almacenados.
+        </li>
+      </ul>
+
+      <h2 id="restoring">Restaurar</h2>
+      <ol>
+        <li>
+          Suelta un archivo, elige uno o elige una de tus copias de seguridad conservadas. Los archivos grandes
+          se suben por partes y se reanudan tras perder la conexión; lo que contiene el archivo se muestra
+          mientras todavía se está subiendo. Una copia de seguridad cifrada pide su contraseña.
+        </li>
+        <li>
+          Elige qué restaurar y dónde: renombra la base de datos para todos los espacios de nombres a la vez,
+          añade <code>_restored</code> a los nombres, o «En una base de datos nueva» (con el nombre de la base
+          de datos de la que se hizo la copia y la fecha, nunca uno que el destino ya tenga; una copia de
+          seguridad de varias bases de datos recibe una base de datos nueva para cada una, de modo que las
+          colecciones del mismo nombre nunca se mezclen). Los destinos que ya existen se marcan con su número
+          de documentos. «Restaurar aquí…» en una colección restaura en ella: una copia de seguridad de una
+          colección va a esa colección sea cual sea su nombre.
+        </li>
+        <li>
+          Elige cómo escribir: añadir (un documento cuyo <code>_id</code> ya existe se rechaza y se enumera),
+          upsert por campos clave, o reemplazar. Un reemplazo restaura en una colección de preparación y la
+          coloca en su lugar solo cuando todo ha llegado, de modo que una restauración fallida o cancelada deja
+          el destino como estaba. Con el motor integrado, lo que un reemplazo no toma de la copia de seguridad
+          (sus índices, o sus opciones y su validador, cuando se dejan fuera) sigue siendo del propio destino:
+          si no se puede reconstruir uno de sus propios índices, o su propio límite conservaría menos
+          documentos de los que se escribieron, no se reemplaza nada. mongorestore no puede conservarlos. Una
+          serie temporal no se puede reemplazar, ni en la copia de seguridad ni en el destino; restáurala en una
+          colección nueva. Una restauración que se vuelve a ejecutar encuentra los documentos que ya escribió
+          tal como estaban, y los cuenta como ya presentes en lugar de rechazarlos, también en una simulación.
+        </li>
+        <li>
+          Confirma lo que haya que confirmar: los índices TTL y la caducidad de colección que tendrá la
+          colección escrita, los de la copia de seguridad o los propios del destino que conserva un reemplazo
+          (el informe, y una simulación, cuentan los documentos eliminados en cuanto se escriben, con sus
+          fechas ya pasadas de la caducidad, incluido el TTL propio del destino), las reglas de campos
+          personales que le faltan al destino (un administrador puede añadirlas) y el nombre de cada destino no
+          vacío que sobrescribe un reemplazo, escrito a mano.
+        </li>
+        <li>
+          Ejecuta una simulación para ver qué pasaría y luego «Restaurar ahora con esta configuración», o
+          inicia la restauración. Se verifica la suma de comprobación de cada espacio de nombres; una
+          discrepancia hace fallar la restauración. Su progreso se muestra por espacio de nombres, y luego los
+          índices y vistas que construye; cuando termina, su aviso y su fila en la lista de tareas abren lo que
+          escribió («Abrir colección», o «Abrir base de datos» si son varias) y su informe.
+        </li>
+      </ol>
+
+      <h2 id="kept-backups">Copias de seguridad conservadas</h2>
+      <p>
+        La sección Copias de seguridad de una conexión, de una base de datos o de una colección enumera tus copias de seguridad (la de una colección, las que la contienen)
+        con su protección, tamaño, antigüedad y cuándo caducan, y tu uso del espacio de copias de seguridad. El
+        menú «…» de una copia de seguridad la descarga, la envía, la restaura o la elimina (con cinco segundos
+        para deshacer). Las copias de seguridad son solo tuyas; se retiran cuando pierdes el acceso a su
+        conexión o cuando los valores personales dejan de ser visibles para ti allí.
+      </p>
+
+      <h2 id="destinations">Destinos</h2>
+      <p>
+        Una copia de seguridad también puede enviarse a otro lugar: una carpeta del servidor, un almacenamiento
+        compatible con S3, Google Drive o un servidor WebDAV. Los administradores definen los destinos en
+        <em>Menú de la cuenta → Destinos de copias de seguridad</em>
+        y eligen quién puede usar cada uno; todos los demás ven solo el nombre de un destino, nunca su
+        dirección ni sus claves. Las claves se guardan cifradas y solo se pueden reemplazar, nunca volver a
+        leer.
+      </p>
+      <ul>
+        <li>
+          <strong>Carpeta del servidor:</strong> una ruta absoluta dentro de una de las carpetas enumeradas en
+          <code>MM_BACKUP_FOLDER_ROOTS</code>, fuera del directorio de datos. Sin ese ajuste no se puede crear
+          ningún destino de carpeta.
+        </li>
+        <li>
+          <strong>Almacenamiento compatible con S3:</strong> un endpoint, una región, un bucket, un id de clave
+          de acceso y un secreto. Los preajustes rellenan lo que pueden para Amazon S3, MinIO, Cloudflare R2 (el
+          id de tu cuenta), Backblaze B2, DigitalOcean Spaces, DigitalOcean Spaces Cold Storage, Wasabi o
+          cualquier otro servicio S3.
+        </li>
+        <li>
+          <strong>Google Drive:</strong> tu propio cliente OAuth de Google Cloud, conectado con un código que se
+          muestra en pantalla, o una cuenta de servicio que escribe en una unidad compartida (consulta más
+          abajo).
+        </li>
+        <li>
+          <strong>WebDAV:</strong> la dirección del servidor, un nombre de usuario y una contraseña de
+          aplicación (Nextcloud, ownCloud o cualquier servidor WebDAV). Nextcloud y ownCloud admiten copias de
+          seguridad grandes en fragmentos reanudables.
+        </li>
+        <li>
+          <strong>Google Cloud Storage:</strong> un bucket, un prefijo opcional, la clase de almacenamiento en
+          la que se escriben las copias de seguridad (Standard, Nearline, Coldline o Archive; todas las clases
+          se leen de inmediato; las más frías facturan un tiempo mínimo) y la clave JSON de una cuenta de
+          servicio con el rol <em>Storage Object User</em> (suficiente: lee, escribe, enumera y elimina
+          objetos) sobre el bucket. La clave se sella en el servidor; solo se muestra la dirección de la cuenta.
+          Las subidas se reanudan tras perder la conexión, y cada copia se comprueba con el MD5 de Google.
+        </li>
+        <li>
+          <strong>Azure Blob Storage:</strong> una cuenta de almacenamiento, un contenedor, un prefijo opcional
+          y el nivel de acceso en el que se escriben las copias de seguridad (el predeterminado de la cuenta,
+          Hot, Cool, Cold o Archive), firmado con un token SAS o con la clave de la cuenta. Un token SAS solo
+          para el contenedor, con permiso para leer, añadir, crear, escribir, eliminar y enumerar, es la
+          concesión más estrecha; deja de funcionar en su fecha de finalización. Solo se aceptan los campos que
+          puede contener un token SAS, y solo se conserva la credencial que usa la forma de firma elegida. Una
+          copia de seguridad pequeña se comprueba entera con su MD5. Las copias grandes se suben en bloques,
+          cada uno comprobado por Azure con su MD5, y el blob terminado se compara por su tamaño (Azure no
+          guarda ninguna suma de comprobación de un blob hecho de bloques); una subida interrumpida se reanuda
+          solo desde sus propios bloques: cada subida marca sus bloques, de modo que los bloques que dejó otro
+          intento nunca se toman por los de esta. Un blob en el nivel Archive se muestra como archivado:
+          <em>Descongelar…</em> lo rehidrata a Cool (donde se queda) con prioridad estándar o alta. Los
+          manifiestos nunca se escriben en Archive. <em>Avanzado</em> admite el endpoint de otra nube de Azure y
+          un certificado de CA.
+        </li>
+        <li>
+          <strong>SFTP:</strong> un servidor, su puerto, un nombre de usuario, una carpeta opcional (la carpeta
+          de inicio de sesión cuando está vacía; debe existir) y una contraseña o una clave privada (con su
+          frase de contraseña). La clave de host del servidor se fija por su huella SHA-256: deja la huella
+          vacía, ejecuta <em>Probar la conexión</em>, compara la clave que muestra con la propia del servidor
+          (por ejemplo <code>ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub</code> en el servidor) y elige
+          <em>Confiar en esta clave y volver a probar</em>. No se envía nada a un servidor cuya clave no sea la
+          de confianza; una clave cambiada vuelve a pedir la contraseña o la clave. Las copias de seguridad se
+          escriben como archivos <code>.part</code>, que se renombran cuando están completos, y una subida
+          interrumpida continúa donde se detuvo, una vez que lo que contiene el archivo parcial se ha vuelto a
+          leer y se ha comprobado que es el comienzo de la copia de seguridad (incluso con la relectura
+          desactivada); un archivo parcial que no lo es empieza de nuevo. SFTP no guarda ninguna suma de
+          comprobación, así que cada copia se vuelve a leer entera salvo que se desactive
+          <em>Verificar leyendo de nuevo</em>. Un manifiesto escrito de nuevo sustituye al anterior de
+          inmediato donde el servidor ofrece <code>posix-rename@openssh.com</code> (OpenSSH lo hace). Se
+          abandona una descarga que no recibe nada durante un minuto. La conexión pasa por las mismas
+          comprobaciones de dirección y por el mismo proxy que los demás destinos.
+        </li>
+      </ul>
+      <p>
+        En <em>Acceso</em>, elige quién más puede usar el destino: <em>Enviar</em> permite que un usuario envíe
+        allí sus propias copias de seguridad y restaure las que envió; <em>Explorar todo</em> le permite leer
+        todas las copias de seguridad que hay allí, incluidas las de otros usuarios. Los administradores
+        siempre pueden usar todos los destinos.
+      </p>
+
+      <h3 id="testing">Probar un destino</h3>
+      <p>
+        El último paso del editor, <em>Probar y guardar</em>, ejecuta <em>Probar la conexión</em> en el destino
+        real y muestra cada paso con su tiempo: <em>Buscar la dirección</em>, <em>Conectar de forma segura</em>,
+        <em>Iniciar sesión</em>, <em>Escribir un archivo de prueba</em>, <em>Leerlo de nuevo</em> y
+        <em>Eliminarlo</em>. Para una carpeta del servidor, los dos primeros dicen <em>En este servidor</em>.
+        Un paso que falla indica el motivo; los pasos posteriores muestran <em>No ejecutado</em>. Un ajuste
+        cambiado después de la prueba exige una nueva. <em>Guardar</em> tras una prueba fallida pregunta antes
+        <em>¿Guardar sin una prueba superada?</em>; <em>Guardar de todos modos</em> conserva el destino tal
+        como está, para corregirlo más adelante. <em>Probar ahora</em> en el menú de un destino vuelve a probar
+        uno guardado. Su tarjeta muestra el resultado: <em>Correcto</em>, <em>Requiere atención</em>,
+        <em>Hay que volver a conectar</em> (Google Drive, consulta más abajo) o <em>Aún sin probar</em>.
+      </p>
+
+      <h3 id="google-drive">Google Drive</h3>
+      <p>
+        Mongo Manager inicia sesión en Drive con tu propio cliente OAuth de Google Cloud, o con una cuenta de
+        servicio de Google Workspace. Solo solicita el ámbito <code>drive.file</code>: ve los archivos y
+        carpetas que él mismo creó y nada más en ese Drive.
+      </p>
+      <p><strong>Con tu cuenta de Google</strong> (<em>Mi cuenta de Google</em> en el editor):</p>
+      <ol>
+        <li>
+          En la consola de Google Cloud, elige o crea un proyecto. En
+          <em>APIs y servicios → Biblioteca</em>, habilita la <em>API de Google Drive</em>.
+        </li>
+        <li>
+          Configura primero la <em>pantalla de consentimiento de OAuth</em> (en las consolas más recientes es
+          <em>Google Auth Platform</em>, con <em>Branding</em> y <em>Audience</em>). En Google Workspace, elige
+          el tipo de usuario <em>Interno</em>: solo pueden conectarse las cuentas de tu organización. En caso
+          contrario, elige <em>Externo</em> y luego <em>Publicar la aplicación</em> para que su estado sea
+          <em>En producción</em>; <code>drive.file</code> es un ámbito no sensible, así que publicarla no
+          requiere revisión de Google. No dejes una aplicación Externa en <em>Pruebas</em>: Google hace que sus
+          inicios de sesión caduquen a los 7 días, y el destino mostrará entonces
+          <em>Hay que volver a conectar</em>.
+        </li>
+        <li>
+          Ve a <em>Credenciales → Crear credenciales → ID de cliente de OAuth</em> y elige el tipo
+          <em>Televisores y dispositivos de entrada limitada</em>. No se necesita ninguna dirección de
+          redirección. Guarda el id de cliente y el secreto de cliente.
+        </li>
+        <li>
+          En el editor, introduce el <em>ID de cliente OAuth</em> y el <em>Secreto de cliente OAuth</em> y
+          elige <em>Conectar cuenta de Google</em>. Abre la dirección que se muestra (google.com/device) e
+          introduce el código con la cuenta de Google que debe contener las copias de seguridad, antes de que
+          termine la cuenta atrás. El editor muestra entonces <em>Conectado como</em> esa cuenta. Las copias de
+          seguridad van a una carpeta que crea la aplicación (<em>Nombre de la carpeta</em>, «Mongo Manager
+          backups» salvo que lo cambies).
+        </li>
+        <li>
+          Cuando Google deja de aceptar la conexión (se retiró su acceso en la cuenta de Google, no se usó
+          durante seis meses o la aplicación se quedó en Pruebas), el destino muestra
+          <em>Hay que volver a conectar</em>. Abre <em>Editar…</em>, elige <em>Volver a conectar</em>,
+          introduce el código nuevo y guarda. Para esto se usa el secreto de cliente almacenado: no lo
+          introduces de nuevo, y nunca vuelve al navegador.
+        </li>
+      </ol>
+      <p>
+        <strong>Con una cuenta de servicio</strong> (Google Workspace, <em>Cuenta de servicio</em> en el
+        editor):
+      </p>
+      <ol>
+        <li>
+          En el mismo proyecto, en <em>IAM y administración → Cuentas de servicio</em>, crea una cuenta de
+          servicio (no necesita ningún rol). En sus <em>Claves</em>, elige
+          <em>Agregar clave → Crear clave nueva</em> de tipo JSON.
+        </li>
+        <li>
+          En Google Drive, abre la unidad compartida que debe contener las copias de seguridad, elige
+          <em>Administrar miembros</em> y añade la dirección de la cuenta de servicio como
+          <em>Administrador de contenido</em> (una cuenta de servicio no tiene almacenamiento propio). El id de
+          la unidad compartida es la última parte de su dirección
+          (<code>drive.google.com/drive/folders/&lt;id&gt;</code>).
+        </li>
+        <li>
+          En el editor, pega la clave o suelta su archivo en <em>Clave de la cuenta de servicio (JSON)</em>, e
+          introduce el <em>ID de la unidad compartida</em>. En pantalla solo permanece la dirección de la
+          cuenta.
+        </li>
+      </ol>
+
+      <h3>Enviar una copia de seguridad</h3>
+      <p>
+        Elige los destinos en <em>Dónde</em> cuando hagas una copia de seguridad, o usa <em>Enviar…</em> en una
+        copia de seguridad conservada. Cada copia aparece en la fila de la copia de seguridad:
+        <em>Enviando a</em> un destino con su progreso, <em>En</em> un destino una vez verificada, o
+        <em>No se envió a</em> uno con el motivo.
+      </p>
+      <ul>
+        <li>
+          Un destino acepta <strong>solo copias de seguridad cifradas</strong> salvo que un administrador lo
+          desactive (el cambio queda auditado).
+        </li>
+        <li>
+          Una copia de seguridad de datos con reglas de campos personales va a un destino solo cuando está
+          cifrada o enmascarada, sea cual sea el ajuste del destino.
+        </li>
+        <li>
+          Una copia cuenta como enviada solo una vez verificada. Todos los destinos comparan el tamaño. El
+          almacenamiento compatible con S3 también comprueba cada parte subida con su SHA-256 a medida que
+          llega, y Google Drive compara la suma de comprobación que informa. Una carpeta del servidor vuelve a
+          leer el archivo entero y compara su SHA-256; WebDAV hace lo mismo cuando
+          <em>Verificar cada subida leyéndola de nuevo</em> está activado (duplica el tráfico). Sin ello,
+          WebDAV comprueba solo el tamaño, y el cuadro de diálogo lo indica. Una copia que falla la
+          verificación se elimina del destino.
+        </li>
+        <li>
+          <em>Eliminar la copia local tras una subida verificada</em> depende de esa verificación: la copia del
+          servidor se elimina solo cuando todos los destinos elegidos han verificado su copia. Si alguno falla,
+          la copia local se conserva 7 días, el tiempo en el que se puede reintentar un envío, y la tarea lo
+          indica; un envío cancelado nunca la elimina.
+        </li>
+        <li>
+          Cada destino ejecuta un número limitado de transferencias a la vez
+          (<code>MM_BACKUP_DEST_TRANSFERS</code>, 2 por defecto, para envíos y descargas juntos). Las demás
+          esperan, y la tarea muestra <em>Esperando a</em> ese destino hasta que queda libre una plaza.
+        </li>
+        <li>
+          <em>Reintentar</em> en una copia que no se envió la envía de nuevo y conserva su opción
+          <em>Eliminar la copia local</em>: una vez que ella y las demás copias enviadas con esa opción están
+          verificadas, la copia local desaparece. <em>Descartar</em> elimina la copia fallida y abandona su
+          subida sin terminar.
+        </li>
+        <li>
+          Un envío interrumpido por el reinicio de un servidor pasa a ser una copia que no se envió, con el
+          motivo «El servidor se reinició mientras se enviaba.»; <em>Reintentar</em> lo continúa desde las
+          partes ya subidas donde el proveedor las conserva (subidas multiparte de S3, fragmentos de
+          Nextcloud).
+        </li>
+      </ul>
+
+      <h3>Qué se almacena allí</h3>
+      <p>
+        Los archivos van bajo <code>mongo-manager/&lt;year&gt;/&lt;month&gt;/</code> en la carpeta o el prefijo
+        del destino, con un nombre formado por la fecha, la hora y un id corto, junto a un pequeño manifiesto
+        <code>.json</code> con el tamaño, el formato y la suma de comprobación, que se escribe el último, una
+        vez verificado el archivo. Ni los nombres ni el manifiesto contienen nombres de bases de datos ni de
+        colecciones.
+      </p>
+
+      <h3>Restaurar desde un destino</h3>
+      <p>
+        Elige la pestaña del destino en la tarjeta Copias de seguridad, o <em>Desde un destino</em> en la hoja
+        de restauración, y elige una copia de seguridad. Restaurar requiere el derecho a escribir en la
+        conexión de destino. El archivo se descarga al servidor y se previsualiza mientras llega; la
+        restauración puede comenzar cuando la descarga está completa y su suma de comprobación coincide con la
+        registrada cuando se envió, o con la del manifiesto. Un archivo cuya suma de comprobación difiere se
+        elimina. Un archivo sin manifiesto (puesto allí por otra herramienta, o a mano) se enumera como
+        <em>De otra instalación</em>: se puede restaurar, pero nada puede verificarlo antes, y la hoja de
+        restauración lo indica.
+      </p>
+      <p>
+        Una descarga que falla conserva lo que recibió: elegir de nuevo la misma copia de seguridad la
+        reanuda. Una descarga cancelada se descarta, y también una cuya parte recibida no sirve de nada (su
+        suma de comprobación difiere, o el archivo ya no existe). La parte ya recibida cuenta para tu espacio
+        de copias de seguridad hasta que se reanuda, se descarta o caduca (<code>MM_BACKUP_TTL_HOURS</code>).
+      </p>
+      <p>
+        En una instalación nueva, define de nuevo el destino con los mismos ajustes: la misma carpeta; el mismo
+        endpoint, bucket y prefijo; la misma dirección y carpeta de WebDAV. Para Google Drive, usa el mismo
+        cliente OAuth (o la misma cuenta de servicio y la misma unidad compartida) y el mismo nombre de
+        carpeta: con <code>drive.file</code>, un cliente ve solo los archivos que él mismo creó. Los
+        administradores ven entonces todas las copias de seguridad que hay allí, incluidas las de la
+        instalación anterior. Cualquier otra persona necesita <em>Explorar todo</em>: <em>Enviar</em> muestra
+        solo las copias de seguridad que ese usuario envió desde esta instalación.
+      </p>
+
+      <h3>Cold Storage y clases de almacenamiento de archivo</h3>
+      <p>
+        DigitalOcean Spaces Cold Storage conserva las copias de seguridad de forma económica y siguen siendo
+        legibles de inmediato, pero cada objeto se factura durante al menos 30 días, y el proveedor puede
+        cobrar las recuperaciones que superen una cuota: eliminar o restaurar poco después de enviar cuesta
+        dinero.
+      </p>
+      <p>
+        La <em>Clase de almacenamiento</em> de un destino S3 (en <em>Avanzado</em>, <code>STANDARD</code> por
+        defecto) se aplica a los archivos de copia de seguridad; los manifiestos se quedan en
+        <code>STANDARD</code>. Los archivos en <code>GLACIER</code> o <code>DEEP_ARCHIVE</code> no se pueden
+        leer hasta que se descongelan: la lista del destino los muestra como archivados con una acción
+        <em>Descongelar…</em>, que pregunta cuánto tiempo permanece legible la copia descongelada (de 1 a 30
+        días) y con qué rapidez trabaja el proveedor (Standard, Bulk —la más barata y la más lenta— o
+        Expedited, no para Deep Archive). El proveedor factura el descongelado y esos días. Mientras se
+        ejecuta, la copia se muestra como descongelándose; una vez descongelada se puede restaurar desde la
+        lista hasta que se agoten los días. Quien puede restaurar desde el destino puede descongelar (un
+        remitente, sus propias copias), como máximo 10 descongelaciones por minuto, cada una auditada.
+        <code>GLACIER_IR</code>, <code>STANDARD_IA</code>, <code>ONEZONE_IA</code> e
+        <code>INTELLIGENT_TIERING</code> se leen de inmediato.
+      </p>
+
+      <h2 id="scheduled">Copias de seguridad programadas</h2>
+      <p>
+        Una programación hace la misma copia de seguridad una y otra vez, envía cada una a los destinos que
+        elijas y conserva tantas como indique su regla de retención. Abre
+        <em>Menú de la cuenta → Copias de seguridad programadas</em>, la paleta de comandos («Abrir las copias
+        de seguridad programadas») o <em>Programar…</em> en la sección Copias de seguridad de una conexión o de
+        una base de datos, que inicia una programación para ella. El editor tiene seis pasos: qué, cuándo,
+        protección, dónde, retención y un resumen con las comprobaciones del servidor.
+      </p>
+
+      <h3 id="scheduled-who">Quién puede programar</h3>
+      <ul>
+        <li>
+          Cualquiera que pueda hacer copias de seguridad de la conexión puede programarla (leer documentos,
+          ejecutar tareas y exportar allí). Cada ejecución toma los derechos del propietario tal como están en
+          ese momento, nunca como estaban cuando se guardó la programación.
+        </li>
+        <li>
+          Un derecho que desaparece pausa la programación antes de que se lea ningún dato, con el motivo en su
+          tarjeta: la cuenta del propietario está deshabilitada, el propietario ya no puede hacer copias de
+          seguridad de la conexión ni enviar a un destino, se eliminó un destino, la clave de copia de
+          seguridad no está activa, el ámbito contiene ahora datos personales para una programación sin cifrar,
+          un destino acepta ahora solo copias de seguridad cifradas, este servidor no puede leer su cadencia o
+          zona horaria (una zona horaria que conocía otra compilación), o las copias que conserva en este
+          servidor llenan tu espacio de copias de seguridad. Reanúdala cuando el motivo haya desaparecido.
+        </li>
+        <li>
+          Los administradores ven todas las programaciones y pueden pausarlas, reanudarlas, ejecutarlas y
+          eliminarlas; no editan la programación de otro usuario. Una programación que pausó un administrador
+          la reanuda un administrador. Un usuario puede tener como máximo 10 programaciones.
+        </li>
+      </ul>
+
+      <h3 id="cadence">Cuándo se ejecuta</h3>
+      <ul>
+        <li><strong>Cada N horas</strong> (de 1 a 24), en un minuto elegido de la hora.</li>
+        <li><strong>Diaria</strong>, a hasta cuatro horas del día.</li>
+        <li><strong>Semanal</strong>, los días que elijas, a una hora.</li>
+        <li>
+          <strong>Mensual</strong>, un día del 1 al 28 o el último día del mes, a una hora.
+        </li>
+        <li>
+          <strong>Avanzada</strong>: una expresión cron de cinco campos (minuto, hora, día del mes, mes, día de
+          la semana), que se lee en palabras mientras escribes. Sigue las reglas clásicas de Vixie: cuando
+          están restringidos tanto el día del mes como el día de la semana, basta con que coincida uno de
+          ellos; un campo que empieza por <code>*</code> cuenta como no restringido. No hay atajos con
+          <code>@</code>, ni segundos, ni <code>L</code>, <code>W</code> o <code>#</code>.
+        </li>
+      </ul>
+      <p>
+        Las ejecuciones deben estar separadas al menos una hora, y una cadencia debe ejecutarse dentro de los
+        próximos cinco años; el editor muestra las próximas ejecuciones en la zona horaria de la programación e
+        indica cuándo se incumple alguna de las dos reglas.
+      </p>
+
+      <h3 id="time-zones">Zonas horarias y horario de verano</h3>
+      <p>
+        Cada programación tiene su propia zona horaria (la tuya por defecto); las horas son horas de reloj allí.
+        Cuando los relojes se adelantan, una hora que ese día no existe se ejecuta en el primer minuto después
+        del cambio. Cuando se atrasan, una hora que ocurre dos veces se ejecuta una vez, en su primera
+        aparición. Una programación horaria pierde una ejecución en la hora que se repite en lugar de ejecutarse
+        dos veces en una hora.
+      </p>
+
+      <h3 id="missed-runs">Ejecuciones perdidas, solapamiento y la cola</h3>
+      <ul>
+        <li>
+          Cuando el servidor estaba detenido a la hora prevista, el siguiente inicio ejecuta una copia de
+          seguridad de recuperación si la última hora perdida no es más antigua que el propio intervalo de la
+          programación (como máximo un día). Cualquier otra hora perdida se registra como perdida; nunca hay más
+          de una recuperación.
+        </li>
+        <li>
+          Una ejecución que vence mientras la anterior sigue ejecutándose, o sigue esperando su turno, se omite y
+          se registra como omitida, indicando cuál de las dos situaciones era.
+        </li>
+        <li>
+          Como máximo <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code> ejecuciones programadas funcionan a la vez
+          (por defecto 2). Las demás esperan por orden de vencimiento hasta seis horas; una ejecución que espera
+          más se omite.
+        </li>
+        <li>
+          Un reloj que salta hacia delante da como máximo una recuperación; un reloj que retrocede no ejecuta
+          nada dos veces.
+        </li>
+      </ul>
+
+      <h3 id="run-history">Ejecutar ahora y el historial de ejecuciones</h3>
+      <p>
+        <em>Ejecutar ahora</em> inicia una ejecución de inmediato sin mover la siguiente; una programación se
+        ejecuta de una en una. Cada tarjeta muestra sus últimas ejecuciones como una tira: verde, correcta;
+        ámbar, parcial (falló un destino); rojo, fallida; gris, omitida; contorno discontinuo, perdida; y una
+        marca parpadeante para la ejecución en curso. El historial de ejecuciones enumera cada ejecución con su
+        resultado, duración y tamaño, adónde fue cada copia, qué eliminó la retención y, para una ejecución que
+        no tuvo éxito, el motivo. Se conservan las últimas 200 ejecuciones de cada programación. Una tarjeta
+        cuya última ejecución terminada falló o fue parcial lo indica, con el motivo. Las tareas iniciadas por
+        una programación llevan su nombre en la lista de tareas, y una programación tuya pausada o que falla
+        marca el menú de la cuenta.
+      </p>
+
+      <h3 id="scheduled-protection">Protección y adónde va</h3>
+      <ul>
+        <li>
+          Por defecto cada ejecución es un <code>.mmbak</code> cifrado y sellado con tu clave de copia de
+          seguridad (consulta <a href="security.html#backup-keys">Claves de copia de seguridad</a>): sin
+          contraseña que escribir, y su kit de recuperación la abre en cualquier lugar. Crea antes una clave en
+          <em>Configuración de la cuenta → Claves de copia de seguridad</em>.
+        </li>
+        <li>
+          Un formato sin cifrar (<code>.archive</code> o <code>.archive.gz</code>) se permite solo cuando el
+          ámbito no contiene datos personales y todos los destinos elegidos aceptan copias de seguridad sin
+          cifrar; ambas condiciones se vuelven a comprobar antes de cada ejecución.
+        </li>
+        <li>
+          Cada ejecución va a los destinos compartidos contigo que elijas, y luego se elimina la copia de este
+          servidor una vez que todos los destinos tienen una copia verificada.
+          <em>Conservar también en el servidor</em> la conserva también aquí, con la misma retención y en tu
+          espacio de copias de seguridad; el editor indica aproximadamente cuánto espacio ocuparán. Al
+          desactivarlo, las copias conservadas hasta ese momento reciben el tiempo de vida normal.
+        </li>
+      </ul>
+
+      <h3 id="restore-drills">Simulacros de restauración</h3>
+      <p>
+        Una copia de seguridad vale tanto como su restauración. «Comprobar que las copias de seguridad se
+        restauran» (en el paso de retención) ejecuta un simulacro de restauración cada cierto número de
+        ejecuciones (de 1 a 30): la copia de seguridad de la ejecución, abierta con tu clave de copia de
+        seguridad, se restaura en una base de datos temporal nueva de la misma conexión
+        (<code>mm_drill_</code> y 12 caracteres aleatorios), cada espacio de nombres se vuelve a leer y se
+        compara con la copia de seguridad (el número de documentos, y cada documento byte a byte), y la base de
+        datos temporal se elimina, sea cual sea el resultado. Mientras existe está cerrada para todos,
+        administradores incluidos: no aparece en el árbol, en la página Rendimiento, en las consultas lentas ni
+        en las operaciones en ejecución (ni se cuenta en el tamaño total de las bases de datos), y ninguna
+        página, solicitud, comando del shell, asistente, feed de cambios, sincronización en vivo, copia,
+        comparación, copia de seguridad o restauración la lee ni escribe en ella: se rechaza una solicitud que
+        la nombre. Dos cosas quedan fuera del alcance de la aplicación: la respuesta de
+        <code>listDatabases</code> en el shell de un administrador de la conexión sigue mostrando su nombre (no
+        se puede abrir), y lo que escribe el simulacro aparece, como toda escritura, en el oplog
+        (<code>local.oplog.rs</code>, solo administradores) y en un change stream de toda la implementación
+        abierto en el shell de un administrador. También lleva las reglas de datos personales de lo que
+        contiene (las de la copia de seguridad, y las de la conexión para esos espacios de nombres), de modo que
+        sus valores quedan ocultos para quien no pueda verlos; estas reglas no se añaden a la lista de la
+        conexión y desaparecen con la base de datos. Las colecciones se restauran sin sus opciones (un validador
+        o un límite lo convertirían en una prueba del destino), y las vistas no se comprueban. La ejecución
+        conserva su copia del servidor hasta que termina el simulacro, y luego la libera como de costumbre. El
+        historial de ejecuciones indica si cada simulacro superó la prueba o falló (y en qué espacios de
+        nombres), el informe del simulacro está en la lista de tareas, y un simulacro fallido genera una
+        alerta. Un simulacro necesita el derecho a crear bases de datos en la conexión; sin él (o en una
+        conexión de solo lectura) el simulacro se omite, nunca la copia de seguridad. Escribe tanto como
+        contiene la copia de seguridad, y las escrituras van al primario sea cual sea el miembro que nombre la
+        conexión: elige un momento tranquilo. Antes de escribir nada comprueba que el usuario de MongoDB de la
+        conexión puede eliminar bases de datos (un simulacro que no puede limpiar falla de inmediato), elige un
+        nombre temporal que ninguna base de datos tenga, y mantiene lo que escribe por debajo de la mitad del
+        espacio libre en disco del servidor (el del fragmento más lleno, a través de un mongos), y por debajo
+        de <code>MM_BACKUP_DRILL_MAX_MB</code> cuando está definido, algo que necesita un servidor que no
+        informa de su espacio libre (niveles compartidos de Atlas); una copia de seguridad mayor hace fallar el
+        simulacro, y se indica así. Un derecho a eliminar que no se puede leer no se da por supuesto: el
+        simulacro no se inicia. Si la base de datos temporal no se puede eliminar al final, el simulacro falla,
+        se genera una alerta de advertencia y el informe nombra la base de datos: los administradores de la
+        conexión la ven en la página de la conexión y la eliminan allí escribiendo su nombre (no mientras se
+        ejecuta algún simulacro). Mientras tanto está cerrada para todos, y un reinicio la elimina.
+      </p>
+
+      <h2 id="retention">Retención</h2>
+      <p>
+        La retención decide qué copias de seguridad conserva una programación en cada ubicación (cada destino, y
+        este servidor cuando conserva copias). Cuatro niveles, contados en la zona horaria de la programación;
+        una copia de seguridad se conserva cuando la conserva cualquier nivel:
+      </p>
+      <ul>
+        <li><strong>Más recientes</strong>: las N copias de seguridad más recientes (de 1 a 100).</li>
+        <li>
+          <strong>Diaria</strong>: la copia de seguridad más reciente de cada día natural, durante ese número de
+          días (de 0 a 90).
+        </li>
+        <li>
+          <strong>Semanal</strong>: la más reciente de cada semana ISO (de lunes a domingo), durante ese número
+          de semanas (de 0 a 52).
+        </li>
+        <li>
+          <strong>Mensual</strong>: la más reciente de cada mes natural, durante ese número de meses (de 0 a
+          60).
+        </li>
+      </ul>
+      <p>
+        Preajustes: <em>A diario durante 30 días</em> (las 7 más recientes y una al día durante 30 días),
+        <em>Estándar</em> (las 7 más recientes, 14 días, 8 semanas y 12 meses), <em>Larga</em> (las 7 más
+        recientes, 30 días, 26 semanas y 60 meses) y <em>Personalizada</em>. El editor dibuja en una línea de
+        tiempo lo que se conserva.
+      </p>
+      <ul>
+        <li>
+          Solo se eliminan las copias completas y verificadas de la propia programación en una ubicación; una
+          copia enviada a mano, aunque sea de una copia de seguridad programada, nunca se elimina. No se elimina
+          nada en un destino que su propietario ya no puede usar.
+        </li>
+        <li>
+          La copia de seguridad más reciente nunca se elimina, y una ejecución que falla no elimina nada.
+        </li>
+        <li>
+          La eliminación en una ubicación ocurre después de que la copia de esta ejecución allí esté completa,
+          con un máximo de 100 eliminaciones por ubicación y ejecución; una eliminación que falla se vuelve a
+          intentar tras la siguiente ejecución. Cada eliminación queda en el registro de auditoría con el
+          nombre del archivo.
+        </li>
+        <li>
+          Un cambio de regla, zona horaria, destinos o de lo que se conserva que eliminaría más de diez copias
+          de seguridad a la vez te pide que confirmes antes el número.
+        </li>
+        <li>
+          DigitalOcean Spaces Cold Storage factura cada objeto durante al menos 30 días: el editor avisa cuando
+          una regla conservaría allí las copias de seguridad durante menos tiempo.
+        </li>
+      </ul>
+
+      <h2 id="opening-scheduled">Abrir una copia de seguridad programada</h2>
+      <ul>
+        <li>
+          En este servidor, restáurala como cualquier otra copia de seguridad: se abre con tu clave de copia de
+          seguridad, incluidas las claves retiradas, y la restauración indica qué clave la abrió.
+        </li>
+        <li>
+          En otro lugar, o cuando ninguna de tus claves la abre, la restauración pide el kit de recuperación de
+          la copia de seguridad (pégalo o elige su archivo). El kit se usa para esa restauración y no se
+          conserva, salvo que marques <em>Importar esta clave</em>, que añade la clave a tus claves de copia de
+          seguridad.
+        </li>
+        <li>
+          Sin la aplicación:
+          <code
+            >mongo-manager backup decrypt &lt;file.mmbak&gt; --key-file &lt;kit.txt&gt; -o
+            &lt;file.archive&gt;</code
+          >
+          escribe el archivo normal, que se abre con <code>mongorestore --archive</code>. Sin
+          <code>--key-file</code>, un archivo que solo se abre con su clave de copia de seguridad lo indica
+          antes de preguntar nada.
+        </li>
+      </ul>
+
+      <h2 id="limits-and-settings">Límites y ajustes</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_QUOTA</code>: espacio de copias de seguridad por usuario, en MiB (por defecto 20 480).
+        </li>
+        <li>
+          <code>MM_BACKUP_TOTAL_QUOTA</code>: espacio de copias de seguridad para todos los usuarios, en MiB
+          (por defecto 102 400).
+        </li>
+        <li>
+          <code>MM_BACKUP_MAX_UPLOAD</code>: el archivo más grande que se puede restaurar, en MiB (por defecto
+          20 480).
+        </li>
+        <li>
+          <code>MM_BACKUP_TTL_HOURS</code>: cuánto tiempo se conservan las copias de seguridad y las subidas
+          (por defecto 24).
+        </li>
+        <li>
+          <code>MM_BACKUP_MAX_JOB_HOURS</code>: lo máximo que puede ejecutarse una copia de seguridad o una
+          restauración (por defecto 12).
+        </li>
+        <li>
+          <code>MM_BACKUP_CHUNK_MB</code>: el tamaño de parte predeterminado de las copias de seguridad
+          cifradas (por defecto 64).
+        </li>
+        <li><code>MM_MONGODB_TOOLS_PATH</code>: la carpeta de mongodump y mongorestore.</li>
+        <li>
+          Como máximo 10 000 espacios de nombres en un archivo; un zip de una carpeta de mongodump debe ocupar
+          menos de 4 GiB.
+        </li>
+        <li>
+          <code>MM_BACKUP_SCHEDULES</code> y <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code>: la programación
+          activada o desactivada, y las ejecuciones programadas a la vez (consulta
+          <a href="deployment.html#scheduled-backups">Implementación</a>).
+        </li>
+      </ul>
+
+      <h2 id="not-covered">Lo que no cubre</h2>
+      <p>
+        Usuarios y roles, el oplog y la restauración a un momento dado. Una copia de seguridad lee colección
+        tras colección, no un único instante: los documentos escritos mientras tanto pueden estar en ella solo
+        en parte. Para una copia de un instante, haz la copia de seguridad de un miembro del conjunto de
+        réplicas en el que se hayan detenido las escrituras, o usa las instantáneas propias de MongoDB.
+      </p>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">En esta página</p>
+      <ol>
+        <li><a href="#taking-a-backup">Hacer una copia de seguridad</a></li>
+        <li><a href="#formats">Formatos</a></li>
+        <li><a href="#engines">Motores</a></li>
+        <li><a href="#time-series">Series temporales</a></li>
+        <li><a href="#personal-data">Datos personales</a></li>
+        <li><a href="#restoring">Restaurar</a></li>
+        <li><a href="#kept-backups">Copias de seguridad conservadas</a></li>
+        <li><a href="#destinations">Destinos</a></li>
+        <li><a href="#scheduled">Copias de seguridad programadas</a></li>
+        <li><a href="#retention">Retención</a></li>
+        <li><a href="#opening-scheduled">Abrir una copia de seguridad programada</a></li>
+        <li><a href="#limits-and-settings">Límites y ajustes</a></li>
+        <li><a href="#not-covered">Lo que no cubre</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

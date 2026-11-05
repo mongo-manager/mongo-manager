@@ -1,0 +1,135 @@
+{
+  "id": "charts",
+  "name": {
+    "en": "Charts",
+    "tr": "Grafikler",
+    "zh": "图表",
+    "ja": "グラフ",
+    "es": "Gráficos",
+    "pt": "Gráficos",
+    "ko": "차트",
+    "de": "Diagramme",
+    "fr": "Graphiques",
+    "ru": "Диаграммы"
+  },
+  "version": "1.3.0",
+  "description": {
+    "en": "Charts a collection's values — bar, line over time, donut, histogram, scatter — with a summary table, within the current query.",
+    "tr": "Bir koleksiyonun değerlerini grafikle gösterir — çubuk, zamana göre çizgi, halka, histogram, saçılım — özet tablosuyla, geçerli sorgu içinde.",
+    "zh": "将集合的值绘制成图表——柱状图、时间趋势线、环形图、直方图、散点图——并附汇总表,范围限于当前查询。",
+    "ja": "コレクションの値をグラフにします。棒、時系列の折れ線、ドーナツ、ヒストグラム、散布図に対応し、集計表も付きます。対象は現在のクエリの範囲内です。",
+    "es": "Grafica los valores de una colección —barras, línea en el tiempo, anillo, histograma, dispersión— con una tabla resumen, dentro de la consulta actual.",
+    "pt": "Cria gráficos com os valores de uma coleção — barras, linha ao longo do tempo, rosca, histograma, dispersão — com uma tabela de resumo, dentro da consulta atual.",
+    "ko": "컬렉션의 값을 차트로 그립니다. 막대, 시간별 꺾은선, 도넛, 히스토그램, 산점도를 지원하며 요약 표가 함께 제공됩니다. 현재 쿼리 범위 내에서 동작합니다.",
+    "de": "Stellt die Werte einer Collection als Diagramm dar – Balken, Linie im Zeitverlauf, Ring, Histogramm, Streudiagramm – mit einer Übersichtstabelle, innerhalb der aktuellen Abfrage.",
+    "fr": "Représente les valeurs d’une collection sous forme de graphique — barres, courbe dans le temps, anneau, histogramme, nuage de points — avec un tableau récapitulatif, dans le cadre de la requête en cours.",
+    "ru": "Строит диаграммы по значениям коллекции — столбчатую, линию по времени, кольцевую, гистограмму, точечную — со сводной таблицей, в пределах текущего запроса."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "charts",
+        "title": {
+          "en": "Charts",
+          "tr": "Grafikler",
+          "zh": "图表",
+          "ja": "グラフ",
+          "es": "Gráficos",
+          "pt": "Gráficos",
+          "ko": "차트",
+          "de": "Diagramme",
+          "fr": "Graphiques",
+          "ru": "Диаграммы"
+        },
+        "icon": "chart"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.3.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Counts of documents, points and values now read right in every language (Russian, French and the rest), and a donut of counts is captioned with a plain word instead of a counter without its number.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Belge, nokta ve değer sayıları her dilde doğru okunuyor (Rusça, Fransızca ve diğerleri); sayım halkası da sayısız bir sayaç yerine düz bir sözcükle başlıklanıyor.",
+        "zh": "现已与应用一样提供韩语、德语、法语和俄语版本。文档、点和值的数量在每种语言中都读起来正确(俄语、法语等),计数环形图的标题也改用普通词语,而不再是缺少数字的量词。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語でも使えるようになりました。ドキュメント、ポイント、値の数がどの言語でも正しく読めるようになり(ロシア語、フランス語など)、件数のドーナツの見出しも、数字のない助数詞ではなく普通の語になりました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Los recuentos de documentos, puntos y valores se leen bien en todos los idiomas (ruso, francés y el resto), y un anillo de recuentos lleva como leyenda una palabra normal en lugar de un contador sin su número.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o aplicativo. As contagens de documentos, pontos e valores são lidas corretamente em todos os idiomas (russo, francês e os demais), e uma rosca de contagens recebe como legenda uma palavra comum em vez de um contador sem o número.",
+        "ko": "이제 앱처럼 한국어, 독일어, 프랑스어, 러시아어로도 사용할 수 있습니다. 도큐먼트, 포인트, 값의 개수가 모든 언어에서 올바르게 표시되며(러시아어, 프랑스어 등), 개수 도넛의 설명도 숫자 없는 단위 대신 일반 단어로 표시됩니다.",
+        "de": "Jetzt wie die App auch auf Koreanisch, Deutsch, Französisch und Russisch. Anzahlen von Dokumenten, Punkten und Werten lesen sich in jeder Sprache richtig (Russisch, Französisch und die übrigen), und ein Ring der Anzahlen trägt als Beschriftung ein einfaches Wort statt eines Zählworts ohne Zahl.",
+        "fr": "Désormais aussi en coréen, en allemand, en français et en russe, comme l’application. Les nombres de documents, de points et de valeurs se lisent correctement dans chaque langue (russe, français et les autres) ; un anneau de nombres porte pour légende un mot simple, et non plus un compteur privé de son nombre.",
+        "ru": "Теперь, как и приложение, доступно также на корейском, немецком, французском и русском. Количества документов, точек и значений правильно читаются на каждом языке (русском, французском и остальных), а кольцевая диаграмма количеств подписана обычным словом, а не счетным словом без числа."
+      }
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现已与应用一样提供中文、日语、西班牙语和巴西葡萄牙语版本。其他方面没有变化。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルのポルトガル語で使えるようになりました。それ以外は変わりません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. No cambia nada más.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o aplicativo. Nada mais muda.",
+        "ko": "이제 앱처럼 중국어, 일본어, 스페인어, 브라질 포르투갈어로도 사용할 수 있습니다. 그 외에는 달라지는 것이 없습니다.",
+        "de": "Jetzt wie die App auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, en japonais, en espagnol et en portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь, как и приложение, доступно также на китайском, японском, испанском и бразильском португальском. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.1.1",
+      "date": "2026-10-16",
+      "notes": {
+        "en": "Security update of the shared kit: an address that hides a script behind a tab or a line break is refused like any other script address. Nothing else changes.",
+        "tr": "Ortak kitin güvenlik güncellemesi: bir betiği sekme ya da satır sonu arkasına gizleyen adres, diğer betik adresleri gibi reddedilir. Başka bir şey değişmez.",
+        "zh": "共享套件的安全更新:将脚本藏在制表符或换行符之后的地址,会像其他脚本地址一样被拒绝。其他方面没有变化。",
+        "ja": "共有キットのセキュリティ更新です。タブや改行の後ろにスクリプトを隠したアドレスも、他のスクリプトアドレスと同様に拒否されます。それ以外は変わりません。",
+        "es": "Actualización de seguridad del kit compartido: una dirección que oculta un script tras una tabulación o un salto de línea se rechaza como cualquier otra dirección de script. No cambia nada más.",
+        "pt": "Atualização de segurança do kit compartilhado: um endereço que esconde um script atrás de uma tabulação ou quebra de linha é recusado como qualquer outro endereço de script. Nada mais muda.",
+        "ko": "공유 키트 보안 업데이트: 탭이나 줄바꿈 뒤에 스크립트를 숨긴 주소도 다른 스크립트 주소와 마찬가지로 거부됩니다. 그 외에는 달라지는 것이 없습니다.",
+        "de": "Sicherheitsupdate des gemeinsamen Kits: Eine Adresse, die ein Skript hinter einem Tabulator oder Zeilenumbruch versteckt, wird wie jede andere Skriptadresse abgelehnt. Sonst ändert sich nichts.",
+        "fr": "Mise à jour de sécurité du kit partagé : une adresse qui cache un script derrière une tabulation ou un saut de ligne est refusée comme toute autre adresse de script. Rien d’autre ne change.",
+        "ru": "Обновление безопасности общего набора: адрес, прячущий скрипт за табуляцией или переводом строки, отклоняется так же, как любой другой адрес со скриптом. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "Redesigned in the app's look, in your accent colour. The chart type is a row of icons, and the chart redraws on every change, with gridlines, value labels and tooltips; values past the top 12 (7 on a donut) are grouped as Other. Fixed flat histograms, bars of dates and _id, negative bars and gaps in charts over time; a chart now waits for the previous one to finish instead of failing.",
+        "tr": "Uygulamanın görünümüyle, sizin vurgu renginizle yeniden tasarlandı. Grafik türü bir simge satırından seçilir; grafik her değişiklikte kılavuz çizgileri, değer etiketleri ve ipuçlarıyla yeniden çizilir. İlk 12 değerin (halkada 7) dışında kalanlar Diğer altında toplanır. Düz çıkan histogramlar, tarih ve _id çubukları, negatif çubuklar ve zamana göre grafiklerdeki boşluklar düzeltildi; bir grafik artık hata vermek yerine öncekinin bitmesini bekler.",
+        "zh": "已按应用的外观并使用您的强调色重新设计。图表类型改为一排图标,每次更改都会重新绘制图表,并带有网格线、数值标签和提示;排在前 12 位(环形图为 7 位)之外的值会归入“其他”。修复了直方图显示为平的、日期和 _id 的柱子、负值柱子以及时间趋势图中出现空缺的问题;图表现在会等待上一个图表完成,而不是直接失败。",
+        "ja": "アプリの見た目に合わせ、アクセントカラーで再設計しました。グラフの種類はアイコンの列から選び、変更するたびにグラフが再描画されます。グリッド線、値ラベル、ツールチップも表示されます。上位 12 件(ドーナツは 7 件)を超える値は「その他」にまとめられます。ヒストグラムが平らになる問題、日付や _id の棒、負の値の棒、時系列グラフの途切れを修正しました。グラフは、前のグラフが終わるまで待つようになり、失敗しなくなりました。",
+        "es": "Rediseñado con el aspecto de la aplicación y con tu color de énfasis. El tipo de gráfico se elige en una fila de iconos y el gráfico se vuelve a dibujar con cada cambio, con líneas de cuadrícula, etiquetas de valores e información emergente; los valores que superan los 12 primeros (7 en un anillo) se agrupan como Otros. Se corrigieron los histogramas planos, las barras de fechas y de _id, las barras negativas y los huecos en los gráficos a lo largo del tiempo; un gráfico ahora espera a que termine el anterior en lugar de fallar.",
+        "pt": "Redesenhado com a aparência do aplicativo e na sua cor de destaque. O tipo de gráfico é escolhido em uma fileira de ícones e o gráfico é redesenhado a cada alteração, com linhas de grade, rótulos de valores e dicas; os valores além dos 12 primeiros (7 em uma rosca) são agrupados como Outros. Corrigidos os histogramas planos, as barras de datas e de _id, as barras negativas e as lacunas nos gráficos ao longo do tempo; um gráfico agora espera o anterior terminar em vez de falhar.",
+        "ko": "앱의 디자인과 사용자의 강조 색상에 맞춰 새로 디자인했습니다. 차트 유형은 아이콘 줄에서 선택하며, 차트는 변경할 때마다 눈금선, 값 레이블, 툴팁과 함께 다시 그려집니다. 상위 12개(도넛은 7개)를 넘는 값은 '기타'로 묶입니다. 평평하게 나오던 히스토그램, 날짜와 _id 막대, 음수 막대, 시간별 차트의 빈 구간을 수정했습니다. 이제 차트는 이전 차트가 끝날 때까지 기다리며 실패하지 않습니다.",
+        "de": "Neu gestaltet im Look der App und in Ihrer Akzentfarbe. Der Diagrammtyp wird in einer Symbolreihe gewählt, und das Diagramm wird bei jeder Änderung neu gezeichnet, mit Gitternetzlinien, Wertbeschriftungen und Tooltips; Werte jenseits der Top 12 (7 beim Ringdiagramm) werden als Sonstige zusammengefasst. Behoben: flache Histogramme, Balken für Datumswerte und _id, negative Balken und Lücken in Diagrammen im Zeitverlauf; ein Diagramm wartet nun, bis das vorherige fertig ist, statt zu scheitern.",
+        "fr": "Repensé dans l’esprit de l’application et dans votre couleur d’accentuation. Le type de graphique se choisit dans une rangée d’icônes, et le graphique se retrace à chaque modification, avec quadrillage, étiquettes de valeurs et info-bulles ; les valeurs au-delà des 12 premières (7 pour un anneau) sont regroupées sous Autres. Correction des histogrammes plats, des barres de dates et d’_id, des barres négatives et des trous dans les graphiques dans le temps ; un graphique attend désormais la fin du précédent au lieu d’échouer.",
+        "ru": "Переработано в стиле приложения и в вашем акцентном цвете. Тип диаграммы выбирается в ряду значков, а диаграмма перестраивается при каждом изменении — с линиями сетки, подписями значений и подсказками; значения за пределами первых 12 (7 для кольцевой) объединяются в «Прочее». Исправлены плоские гистограммы, столбцы дат и _id, отрицательные столбцы и пропуски на диаграммах по времени; диаграмма теперь ждет завершения предыдущей, а не завершается ошибкой."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "First release. A Charts tab on each collection draws a field's values as a bar, over-time, donut, histogram or scatter chart, within the Documents filter or the whole collection. A summary table lists the values, and each row can show its documents in Documents. Fields are offered from a random sample; a chart over time shows the latest 1,000 periods and says so.",
+        "tr": "İlk sürüm. Her koleksiyondaki Grafikler sekmesi, bir alanın değerlerini Belgeler filtresi içinde ya da tüm koleksiyonda çubuk, zamana göre, halka, histogram ya da saçılım grafiği olarak çizer. Özet tablosu değerleri listeler; her satır kendi belgelerini Belgeler'de gösterebilir. Alanlar rastgele bir örnekten önerilir; zamana göre grafik son 1.000 dönemi gösterir ve bunu belirtir.",
+        "zh": "首次发布。每个集合上的“图表”标签页,可在文档筛选范围内或整个集合中,将某个字段的值绘制成柱状图、时间趋势图、环形图、直方图或散点图。汇总表列出各个值,每一行都可以在“文档”中显示它的文档。字段来自随机样本;时间趋势图显示最近的 1,000 个周期,并会注明这一点。",
+        "ja": "初回リリースです。各コレクションの「グラフ」タブで、フィールドの値を棒、時系列、ドーナツ、ヒストグラム、散布図として、ドキュメントのフィルター内またはコレクション全体で描画します。集計表に値が一覧表示され、各行のドキュメントを「ドキュメント」で表示できます。フィールドはランダムなサンプルから提示されます。時系列のグラフは最新の 1,000 期間を表示し、その旨も示します。",
+        "es": "Primera versión. Una pestaña Gráficos en cada colección dibuja los valores de un campo como un gráfico de barras, a lo largo del tiempo, de anillo, histograma o de dispersión, dentro del filtro de Documentos o de toda la colección. Una tabla resumen enumera los valores y cada fila puede mostrar sus documentos en Documentos. Los campos se ofrecen a partir de una muestra aleatoria; un gráfico a lo largo del tiempo muestra los últimos 1000 periodos y lo indica.",
+        "pt": "Primeira versão. Uma aba Gráficos em cada coleção desenha os valores de um campo como gráfico de barras, ao longo do tempo, de rosca, histograma ou de dispersão, dentro do filtro de Documentos ou da coleção inteira. Uma tabela de resumo lista os valores, e cada linha pode mostrar seus documentos em Documentos. Os campos são oferecidos a partir de uma amostra aleatória; um gráfico ao longo do tempo mostra os últimos 1.000 períodos e informa isso.",
+        "ko": "첫 릴리스. 각 컬렉션의 차트 탭에서 필드의 값을 막대, 시간별, 도넛, 히스토그램, 산점도로 그립니다. 범위는 도큐먼트 필터 또는 전체 컬렉션입니다. 요약 표에 값이 나열되며, 각 행의 도큐먼트를 도큐먼트 탭에서 표시할 수 있습니다. 필드는 무작위 샘플에서 제공되며, 시간별 차트는 최근 1,000개 기간을 표시하고 그 사실을 알려 줍니다.",
+        "de": "Erste Version. Ein Tab Diagramme in jeder Collection stellt die Werte eines Felds als Balken-, Zeitverlaufs-, Ring-, Histogramm- oder Streudiagramm dar, innerhalb des Dokumentenfilters oder der gesamten Collection. Eine Übersichtstabelle listet die Werte auf, und jede Zeile kann ihre Dokumente im Tab Dokumente anzeigen. Die Felder werden aus einer zufälligen Stichprobe angeboten; ein Diagramm im Zeitverlauf zeigt die letzten 1.000 Zeiträume und weist darauf hin.",
+        "fr": "Première version. Un onglet Graphiques dans chaque collection trace les valeurs d’un champ en barres, dans le temps, en anneau, en histogramme ou en nuage de points, dans le filtre de Documents ou sur toute la collection. Un tableau récapitulatif énumère les valeurs, et chaque ligne peut afficher ses documents dans Documents. Les champs sont proposés à partir d’un échantillon aléatoire ; un graphique dans le temps affiche les 1 000 dernières périodes et le signale.",
+        "ru": "Первый выпуск. Вкладка «Диаграммы» в каждой коллекции строит значения поля в виде столбчатой, кольцевой диаграммы, гистограммы, точечной диаграммы или диаграммы по времени — в пределах фильтра документов или по всей коллекции. Сводная таблица перечисляет значения, а каждая строка может показать свои документы на вкладке «Документы». Поля предлагаются по случайной выборке; диаграмма по времени показывает последние 1000 периодов и сообщает об этом."
+      }
+    }
+  ]
+}

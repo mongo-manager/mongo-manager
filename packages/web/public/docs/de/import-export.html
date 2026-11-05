@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Import und Export · Mongo Manager-Dokumentation</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager-Dokumentation</a>
+      <details class="lang-menu">
+        <summary>Deutsch</summary>
+        <span class="langs" role="group" aria-label="Sprache">
+          <a lang="en" hreflang="en" href="../import-export.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/import-export.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/import-export.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/import-export.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/import-export.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/import-export.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/import-export.html">한국어</a>
+          <strong lang="de">Deutsch</strong>
+          <a lang="fr" hreflang="fr" href="../fr/import-export.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/import-export.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Überblick</a>
+      <a href="getting-started.html">Erste Schritte</a>
+      <a href="security.html">Sicherheit</a>
+      <a href="deployment.html">Bereitstellung</a>
+      <strong>Import und Export</strong>
+      <a href="backup.html">Sicherung und Wiederherstellung</a>
+      <a href="watch.html">Änderungen beobachten</a>
+      <a href="sync.html">Live-Synchronisierung</a>
+      <a href="server-admin.html">Serververwaltung</a>
+      <a href="ai.html">KI-Assistent</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Tastenkombinationen</a>
+    </nav>
+    <main>
+      <h1>Import und Export</h1>
+      <p>
+        Dateien wandern als Hintergrundaufträge zwischen Ihrem Computer und einer Collection: Sie können den
+        Dialog schließen und sie in der Auftragsliste verfolgen. Öffnen Sie sie über die Symbolleiste der
+        Collection, das Menü der Collection in der Seitenleiste oder die Befehlspalette. SQL-Dumps sind anders:
+        Sie wandern zwischen einer Datei und einer ganzen Datenbank, auf einer eigenen Seite (siehe
+        <a href="#sql">SQL-Import und -Export</a>).
+      </p>
+      <h2 id="formats">Formate</h2>
+      <ul>
+        <li>
+          CSV und TSV (Komma, Semikolon, Tabulator oder senkrechter Strich; UTF-8, UTF-16, Latin-1,
+          Windows-1252, Windows-1254 oder ISO-8859-9).
+        </li>
+        <li>JSON: ein Array von Dokumenten oder ein einzelnes Dokument.</li>
+        <li>
+          NDJSON: ein Dokument pro Zeile, in Extended JSON, sodass jeder BSON-Typ so zurückkommt, wie er war.
+        </li>
+        <li>Excel-Arbeitsmappen (.xlsx), jeweils ein Blatt.</li>
+        <li>Jedes dieser Formate mit gzip komprimiert (.gz).</li>
+      </ul>
+      <h2 id="importing">Importieren</h2>
+      <ol>
+        <li>Wählen Sie eine Datei, legen Sie sie auf dem Dialog ab oder fügen Sie Text ein.</li>
+        <li>
+          Prüfen Sie, wie sie gelesen wird: das Format, das Trennzeichen, die Kodierung, ob die erste Zeile die
+          Felder benennt, und das Blatt einer Arbeitsmappe. Eine Datei wird als UTF-8 gelesen, sofern nicht eine
+          Byte-Reihenfolge-Marke etwas anderes angibt oder Sie eine andere Kodierung wählen. Sind die Bytes in
+          dieser Kodierung kein Text, wird die Kodierung vorgeschlagen, der sie ähneln (UTF-16 ohne
+          Byte-Reihenfolge-Marke, Windows-1254 für türkische Buchstaben, sonst Windows-1252), und ein Klick liest
+          die Datei erneut damit; ein Vorschlag wird nie von selbst angewendet, weil ein falscher falsche
+          Buchstaben schreiben würde. Zeilen, die in der gewählten Kodierung weiterhin kein Text sind, werden
+          abgelehnt, nie mit Ersatzzeichen geschrieben.
+        </li>
+        <li>
+          Ordnen Sie die Felder zu: wohin jedes geht (<code>a.b</code> verschachtelt, <code>a[0]</code> ist ein
+          Array-Element), seinen Typ und was ein leerer oder nicht konvertierbarer Wert wird. Typen werden aus den
+          ersten tausend Datensätzen vorgeschlagen; Werte mit führender Null oder führendem <code>+</code>
+          bleiben Text, damit Codes und Telefonnummern sie behalten. Dieselbe Regel gilt für jeden späteren
+          Datensatz, für einen gewählten Typ und für eine Konstante: Ein Code wird nie als Zahl gelesen und eine
+          Zahl nie als Double, das eine andere Zahl wäre (<code>0.30000000000000004</code> ist ein Double;
+          <code>12345678901234567</code> nicht) – ein solcher Wert wird wie ein nicht konvertierbarer behandelt.
+          Datumsangaben ohne Zeitzone werden als UTC gelesen. Eine CSV-Zeile mit mehr oder weniger Feldern als die
+          Kopfzeile (ein nicht eingeschlossenes Komma in einem Feld) ist ein Zeilenfehler und kommt unverändert
+          in die Datei der abgelehnten Datensätze; eine Zeile nur aus Leerzeichen ist kein Datensatz. Unter jedem
+          Feld werden seine ersten Beispiele so gezeigt, wie sie im gewählten Typ geschrieben würden, oder mit
+          dem Grund, warum sie es nicht können.
+        </li>
+        <li>
+          Fügen Sie auf Wunsch konstante Felder hinzu: in jedem Dokument derselbe Wert, als Importzeitpunkt oder
+          als Zeichenfolge, Zahl (Int32, Int64, Double, Decimal128), Datum, ObjectId, Boolean, JSON oder Null.
+          Eine Konstante wird nach denselben Regeln wie die Werte der Datei konvertiert und abgelehnt, bevor der
+          Import beginnt, wenn das nicht möglich ist.
+        </li>
+        <li>
+          Wählen Sie den Modus und führen Sie auf Wunsch zuerst einen Testlauf aus. Bei Upsert und
+          Zusammenführen warnt der Dialog, wenn kein Index mit einem der Schlüsselfelder beginnt: Jeder
+          Datensatz würde dann durch einen Scan der Collection gefunden.
+        </li>
+      </ol>
+      <h2 id="modes">Modi</h2>
+      <ul>
+        <li>
+          <strong>Einfügen</strong>: Jeder Datensatz wird ein neues Dokument; ein Datensatz, dessen
+          <code>_id</code> existiert, schlägt fehl.
+        </li>
+        <li>
+          <strong>Upsert</strong>: Ein Dokument mit denselben Schlüsselfeldern (standardmäßig <code>_id</code>)
+          wird durch den Datensatz ersetzt; andernfalls wird der Datensatz eingefügt.
+        </li>
+        <li>
+          <strong>Zusammenführen</strong>: Die Felder des Datensatzes werden in das Dokument mit denselben
+          Schlüsselfeldern geschrieben; Felder, die der Datensatz nicht hat, bleiben erhalten, auch in
+          Unterdokumenten. „Nur aktualisieren“ lässt Datensätze aus, die nichts treffen. Ein Datensatz mit einem
+          Feldnamen, der einen Punkt enthält oder mit <code>$</code> beginnt, kann nicht zusammengeführt werden
+          (er würde als Pfad gelesen); verwenden Sie dafür Upsert.
+        </li>
+      </ul>
+      <p>
+        Bei „Überspringen und fortfahren“ werden fehlgeschlagene Datensätze gezählt und aufgelistet; bei „Import
+        abbrechen“ werden die Datensätze vor dem ersten Fehler geschrieben, und der Import hält dort an. Ein
+        Testlauf liest, konvertiert und prüft die gesamte Datei und schreibt nichts. Der Bericht zählt, was
+        geschehen ist, zeigt pro zugeordnetem Feld, wie viele Werte konvertiert wurden und wie viele nicht,
+        listet die ersten Fehler auf und bietet die abgelehnten Datensätze als Datei im ursprünglichen Format
+        an, zum Korrigieren und erneuten Importieren. Würde diese Datei Ihr Speicherlimit überschreiten, wird
+        sie nicht aufbewahrt, und der Bericht sagt es. Schlüsselfelder werden als Werte abgeglichen und dürfen
+        nicht mit <code>$</code> beginnen.
+      </p>
+      <h2 id="exporting">Exportieren</h2>
+      <p>
+        Exportieren Sie die angewendete Abfrage, die ganze Collection oder die Ergebnisse einer Pipeline. CSV und
+        Excel übernehmen die Spalten, die Sie wählen und anordnen. Wird der Dialog über die Seitenleiste, die
+        Befehlspalette oder eine Collection ohne angezeigte Dokumente geöffnet, schlägt er die Spalten aus einer
+        Stichprobe von 100 Dokumenten vor (personenbezogene Felder sind markiert: Sie werden für Benutzer, die
+        sie nicht sehen dürfen, als <code>***</code> geschrieben). Arrays werden als ihr JSON-Text geschrieben,
+        als eine Spalte pro Element (<code>tags.0</code>, <code>tags.1</code>… so viele wie das längste Array
+        unter den ersten Dokumenten, höchstens die von Ihnen festgelegte Zahl; Elemente darüber hinaus werden
+        im Bericht genannt) oder als ihre mit einem von Ihnen gewählten Trennzeichen verbundenen Elemente. Wählen
+        Sie keine, sind die Felder der ersten Dokumente (bis zu 1.000 oder 8 MiB, höchstens 500 Spalten) die
+        Spalten, und ein Feld, das in einem Dokument ein Wert und in einem anderen ein Unterdokument ist, wird
+        eine Spalte mit dem gesamten Wert. Der Bericht nennt mit seinem Pfad alles, was keine Spalte enthält.
+        CSV-Text, der nach etwaigen Leerzeichen mit <code>=</code>, <code>+</code>, <code>-</code>,
+        <code>@</code>, einem Tabulator oder einem Zeilenumbruch beginnt, erhält ein vorangestelltes
+        <code>'</code>, damit eine Tabellenkalkulation ihn nie als Formel ausführt; schalten Sie das für eine
+        Datei aus, die ein anderes Programm oder ein erneuter Import liest. JSON und NDJSON behalten jedes Feld
+        und jeden Typ. Excel fasst höchstens 1.048.575 Zeilen und 32.767 Zeichen pro Zelle: Längere Zellen
+        werden gekürzt und im Bericht gezählt, größere Exporte werden mit dem Vorschlag abgelehnt, CSV oder
+        NDJSON zu verwenden. Ist der Auftrag abgeschlossen, laden Sie die Datei aus der Auftragsliste herunter;
+        sie nennt, bis wann die Datei aufbewahrt wird (standardmäßig 24 Stunden,
+        <code>MM_TRANSFER_TTL_HOURS</code>), und nach dem Ablauf muss der Export erneut laufen.
+      </p>
+      <h2 id="sql">SQL-Import und -Export</h2>
+      <p>
+        SQL-Import und -Export gehören zum mitgelieferten Plugin <strong>SQL → MongoDB</strong>. Bis ein Administrator es unter <a href="plugins.html">Plugins</a> freigibt und einschaltet, werden die Seite, ihr Eintrag in der Seitenleiste, ihre Befehle in der Befehlspalette und die unten beschriebenen Einträge im Datenbankmenü nicht angezeigt, und der Server lehnt SQL-Importe und -Exporte ab, auch den Export einer Collection als SQL und die SQL-Exporte des Assistenten.
+      </p>
+      <p>
+        SQL wird nicht aus einer Collection importiert oder exportiert: Weder die Symbolleiste Dokumente noch
+        der Export-Dialog einer Collection bietet es an. Es hat eine eigene Seite, <strong>SQL ↔ MongoDB</strong>
+        in der Seitenleiste. Die Seite zeigt immer die Verbindung und die Datenbank, in der sie arbeitet. Beide
+        werden oben gewählt und in der Adresse der Seite gehalten
+        (<code>/sql/import/&lt;connection&gt;/&lt;database&gt;</code> oder <code>/sql/export/…</code>), sodass
+        ein Neuladen oder ein geteilter Link denselben Ort öffnet. In der Baumansicht der Seitenleiste bietet
+        das Menü einer Datenbank „SQL-Dump importieren…“ und „Als SQL exportieren…“ an, die die Seite für diese
+        Datenbank öffnen. In der Befehlspalette öffnet „SQL ↔ MongoDB“ die Seite dort, wo sie verlassen wurde,
+        und „Als SQL exportieren“ öffnet ihren Export für die Datenbank des Tabs, in dem Sie sich befinden.
+        Import und Export arbeiten jeweils in einer Datenbank. Die Seite bleibt geöffnet, während Sie andere
+        Tabs oder ihren anderen Teil ansehen: Eine vorbereitete Datei oder ein laufender Auftrag geht nicht
+        verloren, und ein noch laufender Export wird beim Zurückkehren wieder angezeigt. Das Schließen der
+        Seite oder das Verlassen der App mit einer vorbereiteten Datei oder einem laufenden Import fragt
+        zuvor nach. Solange der Fortschritt eines Auftrags auf der sichtbaren Seite steht, wird dort gesagt,
+        wie er endete, ohne weitere Benachrichtigung.
+      </p>
+      <h3>Einen SQL-Dump importieren (SQL → MongoDB)</h3>
+      <ol>
+        <li>
+          Wählen Sie eine MySQL-Datei (mysqldump), PostgreSQL-Datei (pg_dump) oder SQLite-Datei
+          (<code>.dump</code>) oder legen Sie sie ab, unkomprimiert oder mit gzip komprimiert (.gz). Es werden
+          nur Tabellendefinitionen und Zeilen gelesen; nichts in der Datei wird ausgeführt. Andere Anweisungen
+          werden als übersprungen aufgelistet.
+        </li>
+        <li>
+          Prüfen Sie die Tabellen, die der Dump enthält: Jede zeigt ihre Spalten, ihre Zeilenzahl, ihren
+          Primärschlüssel und einige Beispielzeilen. Wählen Sie die zu importierenden Tabellen und benennen Sie
+          die Collection, in die jede geht; der Name ist als neu oder vorhanden markiert. Mehrere Tabellen
+          dürfen beim Einfügen in eine Collection gehen; bei Upsert und Zusammenführen geht jede Tabelle in ihre
+          eigene, da Zeilen zweier Tabellen mit demselben Schlüssel einander ersetzen würden.
+        </li>
+        <li>
+          Wählen Sie die Optionen. „Primärschlüssel als _id“ macht einen einspaltigen Primärschlüssel zur
+          <code>_id</code> des Dokuments; ein zusammengesetzter Schlüssel bleibt als Felder erhalten. Der Modus
+          ist Einfügen, Upsert oder Zusammenführen, wie bei einer Datei (Upsert und Zusammenführen gleichen über
+          <code>_id</code> ab, daher kann eine Tabelle ohne einspaltigen Primärschlüssel sie nicht verwenden).
+          Wenn eine Zeile nicht geschrieben werden kann: „Überspringen und fortfahren“ oder „Import abbrechen“.
+        </li>
+        <li>
+          Führen Sie auf Wunsch einen Testlauf aus: Er liest und prüft jede gewählte Zeile und schreibt nichts.
+          Starten Sie dann den Import. Er läuft als Hintergrundauftrag, auf einer eigenen Seite getrennt von den
+          Formularen verfolgt: sein Fortschritt und dann sein Bericht, und „Stoppen“ beendet ihn. Ein gestoppter,
+          fehlgeschlagener oder unterbrochener Import sagt das und berichtet, was er vor seinem Ende geschrieben
+          hat.
+        </li>
+      </ol>
+      <p>
+        Der Import geht in eine vorhandene Datenbank oder in eine neue, die Sie auf der Seite benennen, nie in
+        <code>admin</code>, <code>local</code> oder <code>config</code>. Ein neuer Name, der sich von einer
+        vorhandenen Datenbank nur durch die Groß-/Kleinschreibung unterscheidet, wird abgelehnt, wie MongoDB es
+        ablehnt. Das Wählen einer anderen Datenbank behält die vorbereitete Datei (ein Testlauf wird verworfen,
+        da er über die Datenbank berichtet, auf der er lief); eine andere Verbindung fragt zuvor nach, wie
+        immer sie angefordert wird (Liste, Baumansicht, Palette, ein Plugin, die Zurück-Taste des Browsers), da
+        die gelesene Datei zur Verbindung gehört, und das Ablehnen lässt die Seite, wo sie war. Er benötigt die
+        Rechte zum Schreiben von Dokumenten und zum Ausführen von Hintergrundaufträgen auf der Verbindung, und
+        weder die Verbindung noch der Server dürfen schreibgeschützt sein.
+      </p>
+      <p>
+        Import und Export gehen Schritt für Schritt, nie als eine lange Seite: Die Schritte oben (Datei,
+        Tabellen, Optionen, Fortschritt bei einem Import; Collections, Optionen, Fortschritt bei einem Export)
+        zeigen, wo Sie sind. Zu den nach der Datei passierten Schritten kann zurückgegangen werden, das
+        Gewählte bleibt erhalten; „Andere Datei wählen“ beginnt mit einer anderen Datei von vorn. Ein Testlauf
+        berichtet über das, was er geprüft hat: Das Ändern einer Tabelle, einer Collection oder einer Option
+        oder der Datenbank verwirft ihn (ein noch laufender Testlauf wird gestoppt). Sobald ein Import läuft,
+        kann das, was ihm gegeben wurde, nicht mehr geändert werden: Seine Seite bleibt bis zu seinem Ende,
+        dann beginnt „Weitere Datei importieren“ von vorn.
+      </p>
+      <h3>Als SQL exportieren (MongoDB → SQL)</h3>
+      <p>
+        Wählen Sie die Datenbank (nie <code>admin</code>, <code>local</code> oder <code>config</code>), dann
+        die zu exportierenden Collections, Views und Time-Series-Collections: zunächst alle, höchstens 500. Ein
+        Hintergrundauftrag schreibt sie in eine SQL-Datei, mit je einem CREATE TABLE und seinen INSERTs; die
+        Datei erstellt keine eigene Datenbank und kein eigenes Schema, sodass sie in die von Ihnen gewählte
+        Datenbank lädt. Würden zwei Tabellennamen kollidieren, etwa Namen, die sich nur durch die
+        Groß-/Kleinschreibung unterscheiden, wird einer eindeutig gemacht, und der Bericht sagt es. Die
+        Optionen sind der Dialekt (PostgreSQL, MySQL oder SQLite), die Zeilen pro INSERT (1 bis 1000), eine
+        Transaktion pro Tabelle und gzip-Komprimierung; bei MySQL können verschachtelte Werte für ältere
+        Werkzeuge wie phpMyAdmin vor 4.7 als <code>LONGTEXT</code> (derselbe JSON-Text) statt als
+        <code>JSON</code> geschrieben werden. Eine MySQL-Decimal-Spalte übernimmt die Nachkommastellen, mit denen
+        die Werte der ersten Dokumente geschrieben sind (<code>234.20</code>: zwei; mehr als zwei nachgestellte
+        Nullen sind Auffüllung, sodass ein aus einer <code>DECIMAL(65,30)</code>-Spalte zurückgelesener Wert
+        seine eigenen Nachkommastellen behält), nie 30 Nullen bei jedem Betrag. Ein späterer Wert mit mehr
+        Nachkommastellen erweitert die Spalte mit <code>ALTER TABLE … MODIFY</code> (MySQL schreibt die Zeilen
+        davor fest, sodass danach eine Transaktion neu beginnt). Ein Wert, den keine Decimal-Spalte zusammen mit
+        den vorherigen Werten aufnehmen kann, mit mehr als 30 Nachkommastellen oder insgesamt mehr als 65
+        Ziffern, wird als NULL geschrieben und gezählt, nie gerundet. Die Spalten stammen aus den ersten
+        Dokumenten jeder Collection: Nur in späteren Dokumenten gesehene Felder bleiben außen vor, und der
+        Bericht listet sie pro Tabelle auf, mit den Werten, die als NULL geschrieben wurden, weil sie zu groß
+        oder kein SQL-Typ sind. Eine von der App geschriebene Datei wird als die Dokumente zurückimportiert, die
+        sie enthielt: ihre <code>CHAR(24)</code>-Spalten als ObjectIds, ihre <code>"sub.a"</code>-Spalten als
+        verschachtelte Felder (ein NULL dort als ein Feld, das das Dokument nicht hatte) und ihre Bytes als
+        Binärdaten. Fortschritt, Bericht und Download erscheinen auf einer eigenen Seite; „Stoppen“ beendet
+        einen laufenden Export, und „Erneut exportieren“ geht zurück zu den Optionen.
+      </p>
+      <p>
+        Das Exportieren als SQL benötigt das Exportrecht der Verbindung. Ein Benutzer, der personenbezogene
+        Daten nicht sehen darf, erhält <code>***</code>, wo ein Wert verborgen ist, wie bei jedem Export.
+      </p>
+      <h2 id="copy-compare-and-sync">Kopieren, Vergleichen und Synchronisieren</h2>
+      <p>
+        Kopieren Sie eine Collection (die ganze Collection, die angewendete Abfrage, einen im Kopierdialog
+        eingegebenen Filter oder die Ergebnisse einer Pipeline – „Ergebnisse kopieren…“ im Aggregations-Builder)
+        oder die gewählten Collections einer Datenbank auf dieselbe oder eine andere Verbindung. Der erste
+        Schritt zeigt die geschätzte Größe der Quelle; sobald das Ziel gewählt oder eingegeben wird, prüft der
+        Dialog es sofort: ob es existiert und wie viele Dokumente es enthält, was der gewählte Modus damit
+        macht, Ihre Rolle dort und alles, was die Kopie ablehnen würde. Während eine Datenbankkopie läuft, zeigt
+        die Auftragsliste jede Collection mit eigenem Fortschritt. Einfügen, Upsert und Zusammenführen arbeiten
+        wie bei Importen und behalten, was vor einem Fehler geschrieben wurde; „Ziel ersetzen“ baut die Kopie in
+        einer Staging-Collection auf und setzt sie erst an die Stelle, wenn jedes Dokument geschrieben wurde: Ein
+        abgelehntes Dokument, ein Fehler oder ein Abbruch lässt das Ziel, wie es war. Der Validator wird gesetzt,
+        nachdem die Dokumente geladen sind, wie bei der eigenen Kopie von MongoDB, sodass auch vor ihm
+        gespeicherte Dokumente kopiert werden – es sei denn, der Benutzer des Ziels darf keinen Validator ändern
+        (die Rolle readWrite); dann wird er zuerst gesetzt, und der Bericht sagt es. Indizes, der Validator und
+        Collection-Optionen (Capped, Collation, Time Series, Clustered) lassen sich ebenfalls kopieren; eine
+        Datenbankkopie erstellt ihre Views zuletzt, in Abhängigkeitsreihenfolge, und ihre Views lassen sich
+        einzeln wählen. Verschlüsselte Collections (Queryable Encryption) und ihre Metadaten-Collections werden
+        nicht kopiert. Auf einer Verbindung, wenn nichts zu maskieren ist, kopiert MongoDB selbst ($out oder
+        $merge), und die Daten laufen nie durch Mongo Manager.
+      </p>
+      <p>
+        Kopien, die durch Mongo Manager laufen, schreiben jedes Dokument so, wie der Node.js-MongoDB-Treiber es
+        liest: Die veralteten BSON-Typen undefined und DBPointer kommen als null und als DBRef-Dokument an.
+        Kopien, die MongoDB selbst anfertigt, behalten sie.
+      </p>
+      <p>
+        Die Zusammenfassung zeigt vor jedem Schreiben jedes Ziel, ob es existiert und wie es kopiert wird.
+        TTL-Indizes, die Zieldokumente löschen, benötigen eine Bestätigung. Hat die Quelle Regeln für
+        personenbezogene Felder, die dem Ziel fehlen, benötigt die Kopie eine Bestätigung, dass personenbezogene
+        Werte dort sichtbar sein werden; ein Administrator des Ziels kann stattdessen die Regeln hinzufügen.
+        Personenbezogene Felder werden so gefunden, wie eine Abfrage sie findet, über Views und über Felder,
+        die eine Pipeline verschiebt oder nachschlägt. Sind personenbezogene Felder auf der Quelle vor Ihnen
+        verborgen, enthält die Kopie an ihrer Stelle *** und ist immer anonym; „Anonyme Kopie“ schreibt ***
+        für alle. Eine personenbezogene _id kann nicht maskiert kopiert werden. Lässt sich das Ziel nicht von
+        der Quelle unterscheiden, sagt die Zusammenfassung, dass es die Quelle selbst sein könnte.
+      </p>
+      <p>
+        Vergleichen liest beide Seiten in _id-Reihenfolge und zählt die Dokumente nur in der Quelle, nur im Ziel,
+        verschiedene und gleiche, mit Stichproben und einem Unterschied Feld für Feld. Ein Filter gilt für beide
+        Seiten, und gewählte Felder lassen sich ignorieren. Sind personenbezogene Felder auf einer der beiden
+        Seiten vor Ihnen verborgen, werden beide als *** verglichen, und eine personenbezogene _id kann nicht
+        verglichen werden. Synchronisieren wendet einen abgeschlossenen Vergleich an: Es fügt die fehlenden
+        Dokumente ein und ersetzt die verschiedenen, überschreibt aber nie ein Dokument, das nach dem Lesen
+        geändert wurde. Wie eine Kopie benötigt es eine Bestätigung, wenn dem Ziel die Regeln für
+        personenbezogene Felder der Quelle fehlen. Das Löschen der überzähligen Dokumente des Ziels ist
+        standardmäßig aus, erfordert die Eingabe des Namens des Ziels, wird abgelehnt, wenn die Quelle keine
+        Dokumente liest, und stoppt, sobald es mehr löschen würde, als der Vergleich gefunden hat, plus einer
+        Marge (10 % dieser Zahl, mindestens 100). Mit einem Filter wird ein Zieldokument, dessen Quelle noch
+        existiert, aber dem Filter nicht mehr entspricht, behalten, nie gelöscht, und im Bericht gezählt.
+        Berichte werden zurückgezogen, wenn sich die Regeln für personenbezogene Felder ändern, wenn Sie den
+        Zugriff auf eine der beiden Verbindungen verlieren oder wenn personenbezogene Felder vor Ihnen
+        verborgen werden.
+      </p>
+      <h2 id="saved-settings">Gespeicherte Einstellungen</h2>
+      <p>
+        Zuordnungen, Export-Einstellungen und Kopier-Einstellungen lassen sich unter einem Namen speichern und
+        wieder laden, in dieser oder einer anderen Collection. Sie werden wie gespeicherte Abfragen
+        verschlüsselt aufbewahrt.
+      </p>
+      <h2 id="what-is-kept">Was eine Datei behält und was nicht</h2>
+      <ul>
+        <li>
+          CSV und Excel enthalten Text, Zahlen, Boolesche Werte und Datumsangaben. Weitere Typen eines Dokuments
+          (ObjectId, Long, Decimal128, Binärdaten, verschachtelte Dokumente und Arrays) verlassen es als Text
+          oder als ihr Extended JSON, und eine zurückgelesene CSV gibt ihnen die Typen, die ihre Zuordnung
+          nennt. Für eine Datei, die exakt zurückkommt, exportieren Sie JSON oder NDJSON (Extended JSON).
+        </li>
+        <li>
+          Ein SQL-Export flacht Dokumente zu Spalten ab; ein von dieser App erstellter Dump wird mit seinen
+          ObjectIds, verschachtelten Feldern und Binärwerten zurückgelesen, ein Dump von anderswo mit den Typen,
+          die seine Spalten nennen.
+        </li>
+        <li>
+          Datumsangaben behalten Millisekunden, wie MongoDB: Mikrosekunden in einem SQL-Dump entfallen. Das
+          <code>0000-00-00</code> („kein Datum“) von MySQL wird als <code>null</code> gelesen. Eine ganze Zahl in
+          einem SQL-Dump, die länger ist, als ein Decimal128 fasst (34 Ziffern), wird exakt als Text behalten.
+        </li>
+        <li>
+          In Excel wird eine Zelle, die ein Datum zeigt, als dieses Datum samt Uhrzeit wie geschrieben in UTC
+          gelesen (da eine Zelle keine Zeitzone enthält); eine Zelle, die nur eine Tageszeit zeigt, wird als Text
+          gelesen, <code>HH:MM:SS</code> (mit den Sekundenbruchteilen, die das Format zeigt), und als Datum mit
+          Uhrzeit, wenn sie auch ein Datum enthält. Eine Dauer (<code>[h]:mm</code>) wird als Text gelesen, ihre
+          Stunden über einen Tag hinaus gezählt.
+        </li>
+        <li>
+          Ein Export liest die Collection fortlaufend, nicht als Momentaufnahme: In der Zwischenzeit
+          geschriebene Dokumente können enthalten sein oder nicht.
+        </li>
+        <li>
+          Ein Import, der stoppt, fehlschlägt oder abgebrochen wird, behält, was er geschrieben hat; sein
+          Bericht nennt, wie viele Datensätze das waren. Mit Einfügen erneut ausgeführt, werden diese Datensätze
+          doppelt geschrieben: Verwenden Sie Upsert oder Zusammenführen mit einem Schlüssel oder entfernen Sie
+          sie zuerst. Die hochgeladene Datei wird nach jedem Lauf gelöscht; laden Sie sie für einen weiteren
+          Lauf erneut hoch.
+        </li>
+        <li>
+          Zusammenführen setzt die Felder des Datensatzes und lässt die übrigen; ein leeres Unterdokument in
+          einem Datensatz ändert nichts Gespeichertes und wird nur für ein neues Dokument angelegt. „Nur
+          aktualisieren“ gilt für Upsert und Zusammenführen gleichermaßen.
+        </li>
+        <li>
+          Abgelehnte Datensätze kommen im Format und mit dem Trennzeichen der Quelle zurück, wobei Bytes, die
+          kein Text waren, als <code>�</code> gezeigt werden, damit die Zeile gefunden und korrigiert werden
+          kann.
+        </li>
+      </ul>
+      <h2 id="limits-and-safety">Limits und Sicherheit</h2>
+      <ul>
+        <li>
+          Dateien werden 24 Stunden auf dem Server aufbewahrt, mit einem Speicherlimit pro Benutzer;
+          Administratoren können beides ändern (siehe <a href="deployment.html">Bereitstellung</a>).
+        </li>
+        <li>
+          Aus Sicherheitsgründen abgelehnt: Arbeitsmappen mit Makros und passwortgeschützte Arbeitsmappen, alte
+          .xls-Dateien, Dateien, die sich beim Dekomprimieren zu stark ausdehnen, XML mit einer DTD sowie
+          Feldnamen, die mit <code>$</code> beginnen, Punkte enthalten oder <code>__proto__</code> heißen,
+          sofern Sie ungewöhnliche Namen nicht erlauben. Eine mit gzip komprimierte Arbeitsmappe wird einmal
+          dekomprimiert, wenn sie zum ersten Mal gelesen wird, und hat danach die Größe der Arbeitsmappe; ihr
+          Inhalt darf sich nicht stärker ausdehnen als der einer einfachen Arbeitsmappe.
+        </li>
+        <li>
+          Benutzer, die personenbezogene Daten nicht sehen dürfen, exportieren Dateien mit <code>***</code>
+          anstelle personenbezogener Werte, können personenbezogene Felder nicht zuordnen oder abgleichen und
+          können keine ganzen Dokumente ersetzen, wo personenbezogene Felder existieren. Eine Datei, die vor der
+          Änderung der Regeln für personenbezogene Felder erstellt wurde, kann nicht mehr heruntergeladen
+          werden; exportieren Sie erneut.
+        </li>
+        <li>Betrachter exportieren nur, wenn ein Administrator es für die Verbindung erlaubt.</li>
+        <li>
+          Ihre Import- und Export-Aufträge werden nur Ihnen und Administratoren angezeigt. Die Vorschau zeigt
+          lange Werte gekürzt; eine sehr breite Datei wird mit weniger Zeilen als Stichprobe gelesen.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Auf dieser Seite</p>
+      <ol>
+        <li><a href="#formats">Formate</a></li>
+        <li><a href="#importing">Importieren</a></li>
+        <li><a href="#modes">Modi</a></li>
+        <li><a href="#exporting">Exportieren</a></li>
+        <li><a href="#sql">SQL-Import und -Export</a></li>
+        <li><a href="#copy-compare-and-sync">Kopieren, Vergleichen und Synchronisieren</a></li>
+        <li><a href="#saved-settings">Gespeicherte Einstellungen</a></li>
+        <li><a href="#what-is-kept">Was eine Datei behält und was nicht</a></li>
+        <li><a href="#limits-and-safety">Limits und Sicherheit</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

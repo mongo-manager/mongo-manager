@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Sincronización en vivo · Documentación de Mongo Manager</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Documentación de Mongo Manager</a>
+      <details class="lang-menu">
+        <summary>Español</summary>
+        <span class="langs" role="group" aria-label="Idioma">
+          <a lang="en" hreflang="en" href="../sync.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/sync.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/sync.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/sync.html">日本語</a>
+          <strong lang="es">Español</strong>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/sync.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/sync.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/sync.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/sync.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/sync.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Resumen</a>
+      <a href="getting-started.html">Primeros pasos</a>
+      <a href="security.html">Seguridad</a>
+      <a href="deployment.html">Implementación</a>
+      <a href="import-export.html">Importación y exportación</a>
+      <a href="backup.html">Copia de seguridad y restauración</a>
+      <a href="watch.html">Observación de cambios</a>
+      <strong>Sincronización en vivo</strong>
+      <a href="server-admin.html">Administración del servidor</a>
+      <a href="ai.html">Asistente de IA</a>
+      <a href="plugins.html">Complementos</a>
+      <a href="shortcuts.html">Atajos de teclado</a>
+    </nav>
+    <main>
+      <h1>Sincronización en vivo</h1>
+      <p>
+        Una sincronización en vivo copia una colección o una base de datos de una conexión a otra y después
+        aplica cada cambio hecho en el origen en el momento en que ocurre. Se ejecuta en el servidor, sobrevive
+        a los reinicios y continúa hasta que la detengas o la finalices. Úsala de dos maneras:
+      </p>
+      <ul>
+        <li>
+          <strong>Como espejo</strong>: una copia de preparación, de informes o de reserva que se mantiene
+          actualizada durante meses.
+        </li>
+        <li>
+          <strong>Para mover datos</strong>: copia, deja que se ponga al día, verifica y finaliza en el momento
+          que elijas (el cambio definitivo o cutover) y apunta tus aplicaciones al destino.
+        </li>
+      </ul>
+      <p>
+        Abre <strong>Sincronizaciones en vivo</strong> desde el menú de la cuenta o la paleta de comandos
+        (Ctrl+K). Inicia una desde el menú de una colección o de una base de datos en el árbol
+        (<strong>Sincronización en vivo…</strong>), desde la paleta mientras hay una colección abierta
+        («Mantener esta colección sincronizada…») o desde el resumen del asistente de copia
+        (<strong>Copiar y mantener sincronizado…</strong>).
+      </p>
+
+      <h2 id="requirements">Qué se puede sincronizar</h2>
+      <ul>
+        <li>
+          Una colección con una colección, o una base de datos con una base de datos (todas sus colecciones, o
+          las que marques).
+        </li>
+        <li>
+          El origen debe ser un conjunto de réplicas, un clúster particionado o una implementación con
+          balanceo de carga que ejecute MongoDB 6.0 o posterior (MongoDB Atlas siempre lo es): una
+          sincronización en vivo lee los change streams de MongoDB. Un conjunto de réplicas de un solo nodo
+          basta para desarrollo. El destino puede ser cualquier implementación.
+        </li>
+        <li>
+          La sincronización de todas las colecciones de una base de datos también puede seguir a las
+          colecciones creadas después: se crean en el destino con las opciones del origen, y sus documentos
+          las siguen. Las vistas se copian solo con la copia inicial.
+        </li>
+        <li>
+          Una sincronización de colección puede llevar solo los documentos que coinciden con un filtro
+          (<em>Solo los documentos que coincidan con un filtro</em>, escrito como en el shell). Un evento de
+          cambio por sí solo no puede indicar que una actualización sacó un documento del filtro, así que
+          decide el origen: para cada lote se le pregunta cuáles de los documentos modificados coinciden ahora;
+          esos se escriben tal como están ahora, y los demás se eliminan del destino. La copia inicial toma
+          solo los documentos que coinciden. Una sincronización enmascarada o anónima rechaza un filtro que
+          lee un campo oculto, un campo situado por encima de uno, o que usa una expresión. Un filtro que
+          ejecuta JavaScript en el servidor de MongoDB (<code>$where</code>, <code>$function</code>) solo se
+          acepta mientras el servidor lo permite; se vuelve a evaluar en cada inicio y antes de cada lote, y la
+          sincronización espera («Su filtro ejecuta JavaScript…») cuando se desactiva el ajuste. La
+          sincronización de una base de datos lleva colecciones completas.
+        </li>
+        <li>
+          Se rechazan, con el motivo: <code>admin</code>, <code>local</code>, <code>config</code> y
+          <code>system.*</code> como origen o como destino; un origen de series temporales; una vista como
+          origen (no tiene change stream propio: sincroniza la colección que hay detrás); un destino limitado
+          (capped) (no admite eliminaciones); un destino que es, o puede ser, el propio origen; y una
+          sincronización que cerraría un bucle (A a B mientras B va a A, o una cadena más larga). Una
+          implementación que no se puede distinguir de otra cuenta como la misma para estas comprobaciones.
+        </li>
+      </ul>
+
+      <h2 id="start">Inicio</h2>
+      <p>El asistente pregunta cómo empieza la sincronización:</p>
+      <ul>
+        <li>
+          <strong>Copiar primero</strong> (predeterminado): el destino debe no existir o estar vacío; se copia
+          todo y después siguen los cambios.
+        </li>
+        <li>
+          <strong>Reemplazar el destino</strong>: el destino se reconstruye aparte y se intercambia (escribes
+          su nombre para confirmar). Necesita el permiso para crear y eliminar colecciones, y se rechaza para
+          un destino particionado.
+        </li>
+        <li>
+          <strong>Combinar en el destino</strong>: los documentos se insertan o actualizan (upsert) por
+          <code>_id</code> sobre lo que hay.
+        </li>
+        <li>
+          <strong>Desde ahora</strong>: el destino ya tiene los datos; solo se aplican los cambios a partir de
+          ahora.
+        </li>
+      </ul>
+      <p>
+        La copia inicial se ejecuta como una tarea de copia (aparece en la bandeja de tareas). No se pierde
+        nada entre la copia y los cambios: antes de que empiece la copia, la sincronización anota el cluster
+        time del origen y, cuando la copia termina, aplica cada cambio hecho desde entonces. Aplicar es
+        idempotente, de modo que un documento copiado después de cambiar, o que cambió de nuevo más tarde,
+        acaba igual que el origen.
+      </p>
+      <h3 id="scheduled">Iniciar más tarde</h3>
+      <p>
+        <em>Iniciar a la hora que elija</em> programa el inicio entre un minuto y 30 días después (una noche
+        tranquila, por ejemplo). La sincronización se crea de inmediato, con el resumen que confirmaste, y
+        espera como <strong>En pausa</strong>: <em>Comienza …; no se copia ni se lee nada hasta entonces</em>.
+        A su hora se planifica de nuevo como su propietario (permisos, reglas, bucles, el destino,
+        enmascaramiento, con las confirmaciones que diste), se lee su cluster time y empieza su copia. Si el
+        plan ya no se sostiene (el destino se llenó entretanto, se perdió un permiso), espera en
+        <strong>Requiere atención</strong> con los motivos, y <em>Empezar de nuevo</em> la planifica otra vez.
+        Su propietario puede pulsar <em>Iniciar ahora</em> antes; un administrador puede detenerla pero no
+        iniciarla (se inicia como su propietario). Un reinicio la mantiene en espera.
+      </p>
+      <p>
+        A su hora, y con <em>Iniciar ahora</em>, primero se comprueba todo lo que una sincronización en
+        ejecución comprueba antes de cada lote: su propietario debe seguir pudiendo leer y exportar desde el
+        origen, las conexiones no deben haber cambiado, y las reglas de datos personales deben ser las
+        vigentes cuando se programó. Las reglas añadidas desde entonces la detienen para una revisión
+        (<em>Revisar…</em>): se inicia cuando su propietario las ha confirmado. Una sincronización que tiene
+        que copiar también espera a que haya hueco entre las transferencias en ejecución de su propietario: a
+        su hora lo intenta de nuevo un poco más tarde; <em>Iniciar ahora</em> lo indica. Una vez corregida la
+        causa, <em>Reintentar</em> inicia una sincronización programada que nunca llegó a iniciarse (se
+        planifica entonces).
+      </p>
+      <h3 id="oplog">La ventana del oplog</h3>
+      <p>
+        Los cambios hechos durante la copia esperan en el historial de cambios del origen (su oplog). El
+        resumen estima cuánto tarda la copia y, donde el usuario de la conexión puede leerlo, cuánto tiempo
+        conserva el origen sus cambios. Una copia que se prevé que dure más de la mitad de esa ventana debe
+        confirmarse: si el historial se agota antes de que la copia termine, la sincronización no puede
+        ponerse al día y termina como <em>Fallida</em> con «Empezar de nuevo». Cuando no se puede leer la
+        ventana, el resumen lo indica.
+      </p>
+
+      <h2 id="applying">Cómo se aplican los cambios</h2>
+      <ul>
+        <li>
+          Una inserción, actualización o reemplazo escribe el documento tal como está ahora en el origen (por
+          <code>_id</code>, creándolo si hace falta); una eliminación elimina por <code>_id</code>. Dentro de
+          un lote (como máximo 1000 cambios u 8 MB) solo se escribe el último cambio de cada documento.
+        </li>
+        <li>
+          Después de cada lote que el destino aceptó, la sincronización guarda su posición. Un reinicio la
+          reanuda justo después; como máximo se vuelve a aplicar el último lote, lo cual no cambia nada.
+        </li>
+        <li>
+          <strong>Una sincronización en vivo es unidireccional.</strong> Las escrituras que otra persona haga
+          en el destino no se detectan: el siguiente cambio de ese documento en el origen lo sobrescribe. El
+          asistente te pide que lo confirmes.
+        </li>
+        <li>
+          Los índices nuevos y los eliminados se propagan. Las nuevas opciones de colección o validadores no:
+          la sincronización espera con «Las opciones o el validador de la colección de origen cambiaron», y
+          eliges <strong>Aplicar las opciones del origen</strong> (su validador y su configuración de
+          validación se establecen en el destino) o <strong>Ignorar</strong>.
+        </li>
+        <li>
+          Una colección de origen eliminada o renombrada nunca elimina el destino: la sincronización te espera,
+          y tú la detienes o la inicias de nuevo.
+        </li>
+      </ul>
+
+      <h2 id="verify">Verificar</h2>
+      <p>
+        <strong>Verificar</strong> compara el origen y el destino documento por documento mientras la
+        sincronización sigue ejecutándose. Los documentos que resultan distintos, ausentes o sobrantes se leen
+        de nuevo una vez que la sincronización ha aplicado todo hasta el final de la comparación, de modo que
+        los cambios que aún están en camino no se notifican como diferencias (hasta 10 000 documentos de ese
+        tipo por colección; por encima de eso, el informe indica cuántos no se volvieron a comprobar). La
+        tarjeta muestra el resultado, por ejemplo «Verificada 12:40 — 1.204.331 iguales, 0 distintos»; los
+        detalles enumeran los <code>_id</code> que siguen siendo distintos. Una sincronización enmascarada se
+        verifica contra el origen enmascarado.
+      </p>
+      <p>
+        <em>Mostrar qué difiere</em>, en los detalles, abre la comparación tal como la muestra la vista de
+        comparación: para cada grupo (distintos, solo en el origen, solo en el destino) hasta 10 documentos
+        por colección, y para uno distinto, los campos que cambiaron del destino al origen. Las muestras son
+        solo del propietario de la sincronización (un administrador ve los recuentos), se entregan solo
+        mientras el propietario puede leer ambos lados y desde entonces no se le oculta nada allí, y no una
+        vez que cambiaron las reglas de campos personales: vuelve a verificar entonces.
+      </p>
+
+      <h2 id="finish">Finalizar (el cambio definitivo)</h2>
+      <ol>
+        <li>
+          Detén las aplicaciones que escriben en el origen. Mongo Manager no puede detener a otros clientes.
+        </li>
+        <li>
+          Elige <strong>Finalizar…</strong> y confirma. La sincronización anota el cluster time del origen en
+          ese momento y aplica todos los cambios hechos antes de él, y después termina. Puede que aún se
+          aplique un cambio hecho después (puede llegar en el mismo lote), por lo que primero se detienen las
+          escrituras.
+        </li>
+        <li>Verifica (activado de forma predeterminada; puedes desmarcarlo).</li>
+        <li>
+          Termina como <em>Completada</em> con sus recuentos finales. Si la verificación encontró diferencias,
+          el informe las muestra: los datos quedan a tu criterio.
+        </li>
+      </ol>
+
+      <h2 id="two-way">Sincronización bidireccional</h2>
+      <p>
+        <em>Bidireccional</em> (una sincronización de colección) también devuelve al origen los cambios del
+        destino. Son dos sincronizaciones enlazadas, una en cada sentido, mostradas como dos tarjetas
+        (<em>en este sentido</em> y <em>en el sentido inverso</em>) que se pausan, reanudan, detienen y
+        eliminan juntas; no tiene cambio definitivo. Úsala con cuidado: sirve para dos sitios que escriben en
+        la misma colección, no para una migración.
+      </p>
+      <ul>
+        <li>
+          Empieza desde ahora: ambas colecciones ya deben contener los mismos documentos (cópialos, o finaliza
+          antes una sincronización unidireccional). Lleva colecciones completas (sin filtro), no puede
+          enmascarar (ambos lados necesitan las mismas reglas de campos personales, y nadie restringido en
+          ninguno de los dos lados), necesita colecciones sin particionar, y se pausa ante un documento
+          rechazado. Cuenta como dos sincronizaciones a efectos de los límites.
+        </li>
+        <li>
+          Ambas colecciones necesitan <strong>preimágenes y posimágenes</strong>
+          (<code>changeStreamPreAndPostImages</code>, MongoDB 6.0+): <em>Activar las preimágenes y
+          posimágenes en ambas colecciones</em> lo hace con <code>collMod</code> al iniciar la
+          sincronización. Cuestan almacenamiento en ambos servidores.
+        </li>
+        <li>
+          <strong>Nada vuelve al lugar de donde vino.</strong> Cada lado escribe los cambios del otro en
+          transacciones de una sesión propia; MongoDB marca con la sesión los eventos de cambio de esas
+          escrituras, y el sentido inverso los omite. Los documentos no se tocan para esto.
+        </li>
+        <li>
+          <strong>Conflictos: gana la última escritura.</strong> Un cambio solo se aplica donde el otro lado
+          aún contiene lo que el cambio encontró (su preimagen). Cuando ambos lados cambiaron el mismo
+          documento antes de que llegara cualquiera de los cambios, gana en ambos lados el cambio con la hora
+          de reloj posterior; el otro se pierde. Cada conflicto se enumera en la actividad (su
+          <code>_id</code> y qué lado ganó, nunca un valor), se cuenta en la tarjeta y se emite como evento de
+          la aplicación para las alertas. Cuando el otro lado contiene algo distinto y no llega ningún cambio
+          propio, el cambio se aplica y se enumera como tal: se escribe solo donde el otro lado aún contiene lo
+          que contenía cuando se leyó; si cambió de nuevo entretanto, se espera ese cambio más reciente y se
+          resuelve como conflicto. Los documentos se comparan y se escriben con los tipos de sus valores: un
+          Double que contiene un entero no es el Int32, y toda sincronización (también la unidireccional)
+          escribe un Double, un Long o un Decimal128 tal como lo almacena el origen.
+        </li>
+        <li>
+          <strong>Relojes.</strong> Si queda por llegar un cambio del otro lado se decide con el cluster time
+          de ese mismo lado: la discrepancia se lee en una instantánea de lo que contiene una mayoría de sus
+          miembros, y el cambio espera hasta que el change stream del sentido inverso haya leído más allá de
+          ese momento. El reloj del equipo que ejecuta Mongo Manager no interviene, ni tampoco una confirmación
+          por mayoría lenta: un cambio espera en lugar de sobrescribir otro que aún no ha llegado. Cuál de dos
+          cambios en conflicto gana sigue comparando los relojes de pared de ambos servidores: mantenlos en
+          hora (NTP). Si se desfasan, el lado cuyo reloj va adelantado gana conflictos que debería haber
+          perdido: ambos lados siguen conteniendo el mismo documento, pero puede ser el cambio más antiguo. En
+          un servidor tranquilo, el stream del sentido inverso avanza aproximadamente cada 10 segundos, de modo
+          que un cambio en el que el otro lado solo difería puede tardar ese tiempo.
+        </li>
+        <li>
+          <strong>Cuando un sentido se detiene, se detiene el otro.</strong> Un sentido que se detiene por una
+          persona (un documento rechazado, permisos perdidos, un cambio de opciones) o que falla pausa al otro
+          («En pausa porque el otro sentido se detuvo»): dejado solo, retendría sus cambios esperando un
+          stream que no avanza, mientras su posición, y el oplog que necesita, quedarían atrás. Reanudar
+          cualquiera de los dos sentidos reanuda ambos. Un sentido también se detiene («Demasiados de sus
+          cambios están esperando…») cuando más de 10 000 de sus cambios esperan al otro lado, o cuando el
+          oplog del origen, casi lleno, está a punto de sobrepasar la posición que conserva. Al reanudarlo
+          entonces se inicia primero el otro sentido; este espera («Esperando a que el otro sentido … se ponga
+          al día») y continúa solo cuando aquel está en vivo.
+        </li>
+        <li>
+          <strong>Un documento rechazado.</strong> Cuando un lado rechaza un cambio (un validador, un índice
+          único), el sentido se detiene y nombra el <code>_id</code> del documento. Corrige la causa y
+          <em>Reintentar</em>, o <em>Omitir este documento</em>: ese cambio se deja fuera definitivamente y se
+          recuerda como perdido, de modo que los dos lados pueden diferir en ese documento hasta que vuelva a
+          cambiar; compruébalo y cópialo a mano si hace falta.
+        </li>
+        <li>
+          Si las preimágenes y posimágenes se desactivan en cualquiera de las colecciones, su sentido se
+          detiene («Se desactivaron las preimágenes y posimágenes»): sin ellas, cada cambio sobrescribiría el
+          otro lado sin comprobación. Vuelve a activarlas (la página Observar cambios lo ofrece), pasa por alto
+          el cambio de opciones y después <em>Reintentar</em>.
+        </li>
+        <li>
+          Un reinicio en medio vuelve a leer desde antes de cualquier cambio que aún se esté resolviendo; los
+          cambios ya aplicados se reconocen y un cambio que perdió no vuelve.
+        </li>
+      </ul>
+
+      <h2 id="states">Estados y qué hacer</h2>
+      <ul>
+        <li>
+          <strong>Copiando</strong>: se ejecuta la copia inicial; la tarjeta muestra su progreso.
+        </li>
+        <li>
+          <strong>Poniéndose al día</strong>: aplicando cambios, con más de 2 segundos de retraso; la tarjeta
+          indica cuánto.
+        </li>
+        <li>
+          <strong>En vivo</strong>: menos de 2 segundos de retraso. La tarjeta dibuja cuánto retraso tuvo en
+          los últimos 10 minutos; el servidor conserva ese historial durante un día (el mayor retraso de cada
+          10 segundos), de modo que sobrevive a una recarga y a un reinicio, y los detalles de la
+          sincronización grafican la última hora, 6 horas o 24 horas.
+        </li>
+        <li>
+          <strong>En pausa</strong>: por su propietario o un administrador. Se conserva su posición;
+          Reanudar continúa.
+        </li>
+        <li>
+          <strong>Requiere atención</strong>: se detuvo por un motivo que una persona debe examinar: el destino
+          rechazó un documento (Omitir este documento, o Reintentar tras corregirlo), nuevas opciones en el
+          origen, un origen eliminado, reglas de datos personales modificadas o una conexión editada (Revisar
+          el resumen), permisos perdidos, modo de solo lectura, el interruptor desactivado, o un error del
+          change stream que esperar no resolverá (un cambio mayor de 16 MB, un permiso que perdió el usuario
+          del origen: corrígelo y después Reintentar). Una colección de destino eliminada a espaldas de la
+          sincronización, o una edición que apunta una conexión a otro servidor, pide
+          <strong>Empezar de nuevo</strong>. La pausa de un administrador la levanta un administrador.
+        </li>
+        <li>
+          <strong>Reintentando</strong>: no se puede alcanzar una conexión; lo intenta de nuevo tras 1
+          segundo, y después con intervalos más largos, hasta 5 minutos.
+        </li>
+        <li><strong>Finalizando</strong> y después <strong>Completada</strong>: el cambio definitivo.</li>
+        <li>
+          <strong>Fallida</strong>: no puede continuar desde su posición, normalmente porque el historial del
+          origen ya no llega hasta ella. <strong>Empezar de nuevo</strong> crea una sincronización nueva con
+          la misma configuración que se combina con lo que el destino ya contiene, en lugar de la antigua (que
+          entonces deja de contar para los límites).
+        </li>
+        <li>
+          <strong>Detenida</strong>: por su propietario o un administrador. El destino conserva lo que tiene.
+        </li>
+      </ul>
+      <p>
+        Cuando el destino rechaza un documento (una clave duplicada en otro índice único, la validación, el
+        tamaño), se aplica la opción del asistente: <strong>Pausar y preguntar</strong> (predeterminada) nombra
+        el <code>_id</code> del documento y el error; <strong>Omitir y registrar</strong> lo omite, lo
+        enumera en el registro de actividad (su <code>_id</code> y el código de error, nunca su contenido) y
+        pausa tras 1000.
+      </p>
+      <p>
+        Con <strong>Omitir y registrar</strong>, los propios documentos rechazados se conservan en un archivo,
+        uno por línea en Extended JSON, exactamente como la sincronización intentó escribirlos
+        (enmascarados cuando la sincronización enmascara); los detalles de la sincronización se lo ofrecen a
+        su propietario como <em>Descargar los documentos rechazados</em>. Un reinicio del servidor lo
+        conserva, y sigue creciendo cuando la sincronización se ejecuta de nuevo. El archivo cuenta para el
+        espacio de transferencia del propietario; cuando este se llena, los documentos se siguen omitiendo y
+        registrando pero ya no se conservan, y el registro de actividad lo indica. Solo se entrega mientras el
+        propietario aún puede leer y exportar desde el origen: no cuando se le ocultan allí los valores
+        personales (en una sincronización que no enmascaraba), ni después de que cambiaran las reglas del
+        origen (en una que sí enmascaraba). Eliminar la sincronización lo elimina.
+      </p>
+
+      <h2 id="personal-data">Datos personales</h2>
+      <ul>
+        <li>
+          Si no puedes ver datos personales en el origen, o marcas <strong>Enmascarar datos personales</strong>,
+          cada documento que escribe la sincronización (la copia y cada cambio) se enmascara con las reglas del
+          origen (<code>***</code>). No se construyen los índices únicos sobre campos enmascarados.
+        </li>
+        <li>
+          Si no puedes ver datos personales en el destino y este tiene reglas, la sincronización se rechaza:
+          escribe documentos completos, que no pueden respetar tus reglas campo por campo.
+        </li>
+        <li>
+          Una sincronización sin enmascarar hacia un destino sin las mismas reglas necesita tu confirmación, o
+          «Añadir primero estas reglas al destino» (para los administradores de la conexión de destino). Ambas
+          opciones quedan registradas en el registro de auditoría.
+        </li>
+        <li>
+          Si las reglas cambian en cualquiera de los lados, la sincronización espera: los valores ya escritos
+          pueden ser ahora personales. Revisa el resumen para continuar, o empieza de nuevo.
+        </li>
+      </ul>
+
+      <h2 id="limits">Permisos, límites y configuración</h2>
+      <ul>
+        <li>
+          Necesitas el permiso para exportar desde el origen y para escribir documentos, crear colecciones e
+          índices y ejecutar tareas en el destino. Estos permisos se leen de nuevo antes de cada lote: perder
+          uno, o tu cuenta, detiene la sincronización de inmediato. Cerrar sesión no la detiene.
+        </li>
+        <li>
+          Editar una conexión que usa una sincronización la detiene hasta que revises el resumen (la conexión
+          puede apuntar ahora a otro servidor); eliminar la conexión la detiene para siempre.
+        </li>
+        <li>
+          Cada usuario puede tener 3 sincronizaciones en vivo que no hayan terminado; un servidor ejecuta como
+          máximo <code>MM_LIVE_SYNC_MAX</code> (10 de forma predeterminada). <code>MM_LIVE_SYNC=0</code>
+          desactiva la función: las sincronizaciones en ejecución esperan y continúan cuando se vuelve a
+          activar. Consulta <a href="deployment.html#live-sync">Implementación</a>.
+        </li>
+        <li>
+          Los administradores ven todas las sincronizaciones y pueden pausarlas, reanudarlas, verificarlas,
+          detenerlas y eliminarlas; solo el propietario la finaliza o confirma una revisión.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">En esta página</p>
+      <ol>
+        <li><a href="#requirements">Qué se puede sincronizar</a></li>
+        <li><a href="#start">Inicio</a></li>
+        <li><a href="#applying">Cómo se aplican los cambios</a></li>
+        <li><a href="#verify">Verificar</a></li>
+        <li><a href="#finish">Finalizar (el cambio definitivo)</a></li>
+        <li><a href="#two-way">Sincronización bidireccional</a></li>
+        <li><a href="#states">Estados y qué hacer</a></li>
+        <li><a href="#personal-data">Datos personales</a></li>
+        <li><a href="#limits">Permisos, límites y configuración</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

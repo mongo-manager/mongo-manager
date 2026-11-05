@@ -1,0 +1,90 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 Gokhan OZGEZER */
+/* Validation check: what the kit (kit/src/ui.css) does not already give. */
+.vi-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.vi-summary:empty {
+  display: none;
+}
+.vi-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vi-notes:empty {
+  display: none;
+}
+.vi-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vi-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.vi-card {
+  --vi-tone: var(--ds-success);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px 12px 16px;
+  overflow: hidden;
+}
+/* Broken or not as a stripe along the card's edge; the badge says it in words. */
+.vi-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--vi-tone);
+}
+.vi-broken {
+  --vi-tone: var(--ds-danger);
+}
+.vi-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.vi-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.vi-detail {
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--ds-subtle);
+  border: 1px solid var(--ds-line);
+  color: var(--ds-fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vi-meter {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--ds-subtle);
+  overflow: hidden;
+}
+.vi-meter-fill {
+  display: block;
+  height: 100%;
+  background: var(--vi-tone);
+}
+.vi-card-actions {
+  display: flex;
+  gap: 6px;
+}

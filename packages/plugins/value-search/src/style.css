@@ -1,0 +1,94 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 Gokhan OZGEZER */
+/* Value search (redesigned 2026-10-10): what the kit (kit/src/ui.css) does not already give. */
+.vs-scope {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.vs-filter {
+  max-width: 420px;
+}
+.vs-facets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.vs-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--ds-line);
+  border-radius: 10px;
+  background: var(--ds-raised);
+  overflow: hidden;
+}
+.vs-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ds-line);
+}
+.vs-row:last-child {
+  border-bottom: 0;
+}
+.vs-row:hover {
+  background: color-mix(in srgb, var(--ds-subtle) 70%, transparent);
+}
+.vs-doc,
+.vs-hits {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.vs-id {
+  color: var(--ds-v-oid);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vs-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  min-width: 0;
+}
+.vs-preview .mm-kv {
+  max-width: 100%;
+  overflow: hidden;
+}
+.vs-preview .mm-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vs-hit {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.vs-path {
+  flex: none;
+  color: var(--ds-accent-fg);
+}
+.vs-hit-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.vs-actions {
+  display: flex;
+  align-items: center;
+}
+@media (max-width: 720px) {
+  .vs-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .vs-hits {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}

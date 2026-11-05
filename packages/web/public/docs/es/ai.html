@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Asistente de IA · Documentación de Mongo Manager</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Documentación de Mongo Manager</a>
+      <details class="lang-menu">
+        <summary>Español</summary>
+        <span class="langs" role="group" aria-label="Idioma">
+          <a lang="en" hreflang="en" href="../ai.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/ai.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/ai.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/ai.html">日本語</a>
+          <strong lang="es">Español</strong>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/ai.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/ai.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/ai.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/ai.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/ai.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Resumen</a>
+      <a href="getting-started.html">Primeros pasos</a>
+      <a href="security.html">Seguridad</a>
+      <a href="deployment.html">Implementación</a>
+      <a href="import-export.html">Importación y exportación</a>
+      <a href="backup.html">Copia de seguridad y restauración</a>
+      <a href="watch.html">Observación de cambios</a>
+      <a href="sync.html">Sincronización en vivo</a>
+      <a href="server-admin.html">Administración del servidor</a>
+      <strong>Asistente de IA</strong>
+      <a href="plugins.html">Complementos</a>
+      <a href="shortcuts.html">Atajos de teclado</a>
+    </nav>
+    <main>
+      <h1>Asistente de IA</h1>
+      <p>
+        El asistente de IA convierte tus palabras en una consulta, un pipeline o un validador, explica una
+        consulta, sugiere cómo hacerla más rápida y describe una colección. Él escribe; tú revisas y
+        ejecutas. Nunca ejecuta nada por su cuenta.
+      </p>
+      <p>
+        Abre una colección y elige <strong>Preguntar a la IA</strong> junto a sus secciones, o pulsa
+        <kbd>Ctrl</kbd> + <kbd>I</kbd> (<kbd>⌘</kbd> + <kbd>I</kbd> en un Mac). La paleta también ofrece
+        «Preguntar a la IA sobre esta colección…».
+      </p>
+
+      <h2 id="actions">Qué hace</h2>
+      <ul>
+        <li>
+          <strong>Escribir una consulta</strong> (Documentos): un filtro, y una proyección y un orden cuando
+          los pides.
+        </li>
+        <li>
+          <strong>Escribir un pipeline</strong> (Agregaciones): las etapas, colocadas como tarjetas.
+        </li>
+        <li>
+          <strong>Explicarla</strong>: qué hace la consulta o el pipeline actual, paso a paso.
+        </li>
+        <li>
+          <strong>Hacerla más rápida</strong> (Explain): por qué puede ser lenta, a partir de su plan de
+          consulta y de los índices, con sugerencias de índices que abren el cuadro de diálogo de índices ya
+          rellenado — no se crea nada hasta que confirmes.
+        </li>
+        <li>
+          <strong>Escribir un validador</strong> (Validación): un <code>$jsonSchema</code> colocado como
+          borrador; no se guarda nada hasta que guardes.
+        </li>
+        <li>
+          <strong>Describir la colección</strong> (Esquema): qué contiene, campos destacables, rarezas.
+        </li>
+      </ul>
+      <p>
+        La respuesta aparece a medida que se escribe. Una consulta, un pipeline o un validador se muestra
+        junto a lo que contiene el editor; <strong>Insertar</strong> lo coloca en el editor (preguntando
+        antes cuando el editor contiene trabajo). Un pipeline que escribe (<code>$out</code>,
+        <code>$merge</code>) o que ejecuta JavaScript se marca; ejecutarlo pide las mismas confirmaciones de
+        siempre. Cuando el servidor no permite JavaScript del lado del servidor, una respuesta así no se puede
+        insertar.
+      </p>
+
+      <h2 id="providers">Proveedores</h2>
+      <p>
+        Un administrador añade proveedores en <strong>Configuración → Asistente de IA</strong> (el menú de la
+        cuenta): Anthropic (Claude; <code>claude-sonnet-5</code> de forma predeterminada), Google Gemini (una
+        clave de Google AI Studio y un nombre de modelo como <code>gemini-2.5-pro</code>), cualquier servidor
+        compatible con OpenAI, u Ollama. Uno es el predeterminado; las personas pueden elegir entre los demás.
+        La clave se almacena cifrada en el servidor, no se vuelve a mostrar y nunca se envía a un navegador;
+        cambiar la dirección de un proveedor pide de nuevo su clave, porque la clave pertenecía a la
+        dirección anterior. <strong>Probar</strong> envía una solicitud de una línea e indica qué ocurrió.
+      </p>
+      <p>
+        Las solicitudes van del servidor al proveedor, nunca del navegador. Cada tarjeta indica si el
+        proveedor respondió desde una red local o privada («Local») o desde fuera («Nube»).
+      </p>
+
+      <h2 id="offline">Sin conexión, con un modelo local</h2>
+      <p>
+        Con Ollama (o cualquier servidor compatible con OpenAI) en tu propia red, el asistente funciona sin
+        acceso a internet. Las direcciones locales y privadas deben figurar en
+        <code>MM_AI_PRIVATE_NETWORKS</code> (por ejemplo <code>10.0.0.0/8</code>); en el modo local, el equipo
+        en el que se ejecuta Mongo Manager siempre está permitido, así que <code>http://localhost:11434</code>
+        funciona tal cual. El <code>http</code> sin cifrar solo se permite a las redes de la lista.
+      </p>
+
+      <h2 id="chat">Chat</h2>
+      <p>
+        El <strong>Asistente</strong> (el botón flotante de abajo a la derecha, o <kbd>Ctrl / ⌘</kbd> +
+        <kbd>.</kbd>) es una conversación en una ventana sobre tu trabajo: la página mantiene su ancho.
+        Cámbiale el tamaño desde sus bordes izquierdo y superior, amplíala o ciérrala — conserva lo que
+        estabas escribiendo; en un teléfono ocupa toda la pantalla. En una pestaña de colección, cada mensaje
+        lleva el contexto de esa colección, leído por el servidor como en las acciones de una sola vez: el
+        resumen del esquema y — según elijas con los chips situados sobre el cuadro de mensaje — la consulta
+        o el pipeline actual, los índices, el validador y, con tu consentimiento para ese mensaje, documentos
+        de muestra. En otros lugares un mensaje no lleva datos y el asistente da ayuda general sobre MongoDB.
+        Cuando pasas a otra colección, la conversación muestra dónde cambió.
+      </p>
+      <ul>
+        <li>
+          Solo el último mensaje lleva datos. Los mensajes anteriores viajan como la conversación hasta ese
+          momento — como máximo los últimos 20 intercambios o 24 KB — y solo las respuestas que terminaron.
+          Un mensaje anterior se omite, y el panel lo indica, cuando su conexión ya no existe, ya no puedes
+          leerla, su asistente está ahora desactivado, sus reglas de datos personales han cambiado desde
+          entonces, o procedía de una conexión que permite solo proveedores locales y el proveedor responde
+          desde fuera. Una respuesta escrita a partir de un mensaje así se omite junto con él.
+        </li>
+        <li>
+          Cada bloque de código de una respuesta tiene una acción (una sugerencia de índice, una por índice),
+          que se usa en la colección que nombra el bloque — un bloque que no nombra ninguna toma la que nombra
+          la respuesta — o sobre la que trataba el mensaje, preguntando antes cuando el editor contiene
+          trabajo. Un bloque que nombra una colección que no se dio al asistente no va a ninguna parte.
+          <strong>Ejecutar</strong> coloca una consulta en la barra de consultas, o un pipeline en la sección
+          Agregaciones, y la ejecuta; un pipeline que escribe (<code>$out</code>, <code>$merge</code>) solo
+          se coloca allí, para que lo ejecutes tú. Un validador va al borrador de validación; una sugerencia
+          de índice abre el cuadro de diálogo Crear índice. Una etapa suelta (un <code>$match</code> para
+          añadir a un pipeline) se muestra solo como código. Pide el resultado como archivo («descárgalo como
+          Excel») y el bloque ofrece <strong>Descargar como Excel</strong>, CSV o JSON, donde la conexión
+          permita exportaciones: la exportación se abre con la consulta o el pipeline y el formato ya
+          establecidos, y tú la inicias. El código que ejecuta JavaScript del servidor se consulta antes. No
+          se ejecuta nada sin tu clic.
+        </li>
+        <li>
+          Los chats son tuyos: ninguna ruta permite que otra persona — incluido un administrador — los lea, a
+          menos que compartas un turno de uno desde tu historial de IA. Se conservan cifrados en el servidor
+          durante <code>MM_AI_CHAT_DAYS</code> días tras su último mensaje (30 de forma predeterminada); con
+          <code>0</code> viven solo en la memoria del servidor, durante 12 horas, y no se escribe nada en
+          disco. Conservas como máximo 50 chats de 200 mensajes; más allá de eso se eliminan primero los más
+          antiguos. El historial del panel elimina un chat o todos; eliminar un usuario elimina sus chats.
+        </li>
+      </ul>
+
+      <h2 id="agent">Modo agente</h2>
+      <p>
+        Activa el <strong>Modo agente</strong> en el panel Asistente y el asistente trabaja con tus
+        conexiones por ti: «añade una colección nueva llamada users a la conexión Sales Mongo y añade un usuario
+        de demostración» encuentra Sales Mongo, usa su base de datos predeterminada (y lo dice — si no tiene
+        ninguna, pregunta cuál), propone la colección, luego el usuario de demostración, y te cuenta lo que
+        hizo. El interruptor es solo tuyo y se conserva con tu cuenta — en el panel Asistente y en Cuenta →
+        Preferencias; desactivado, el asistente es el descrito más arriba. Un administrador establece lo que
+        el agente puede hacer para todos en <strong>Configuración → Asistente de IA → Modo agente en este
+        servidor</strong>: <em>Desactivado</em> (nadie puede activarlo), <em>Solo lectura</em> (lee, cuenta,
+        explica y abre lo que le pediste, pero no propone ningún cambio, copia de seguridad ni programación)
+        o <em>Completo</em> (el valor predeterminado). Un cambio de esto se aplica al instante, a un turno que
+        ya esté en marcha y a un cambio que ya esté esperando en su tarjeta.
+      </p>
+      <ul>
+        <li>
+          <strong>Conoce tus conexiones por su nombre</strong>: cada conexión en la que puedes usar el
+          asistente, con tu acceso en ella, si es de solo lectura y si el agente puede proponer cambios en
+          ella — nunca su dirección, nombre de usuario ni contraseña. Una conexión cuya política de IA es
+          <em>Desactivado</em> se deja fuera por completo; una con <em>Solo proveedores locales</em> se nombra
+          solo a un proveedor del que se comprueba que responde desde las redes de tu lista, y entonces toda
+          la solicitud solo puede llegar a esas redes. También se le indica la pestaña que estás mirando, por
+          su nombre — una colección, una sección de una conexión como Rendimiento o Usuarios y roles, o una
+          página como Copias de seguridad programadas o Tareas en segundo plano —, de modo que «esta» y
+          «aquí» signifiquen eso. Un mensaje posterior del mismo chat lleva lo que hicieron los pasos
+          anteriores, solo con nombres y recuentos («la eliminó», «encontró 2»), de modo que «lo mismo en
+          Prod» o «elimínala» funcionan sin repetirte.
+        </li>
+        <li>
+          <strong>Las lecturas se ejecutan al instante</strong>: enumerar conexiones, bases de datos,
+          colecciones y destinos de copias de seguridad; las estadísticas, el esquema (nombres, tipos y
+          proporciones) y los índices de una colección; contar; explicar una consulta (no se ejecuta nada);
+          buscar documentos y ejecutar una agregación de solo lectura (como máximo 10 resultados;
+          <code>$out</code>, <code>$merge</code> y el JavaScript del servidor se rechazan). También puede abrir
+          por ti una conexión, una base de datos o la sección de una colección, y comprobar que una conexión
+          responde — abriéndola como lo harías tú, de modo que la aplicación la muestre conectada, o indicando
+          el tipo de fallo (la red, un nombre no encontrado, sus credenciales, un inicio de sesión que debes
+          hacer tú, ofrecido desde el paso; nunca una dirección). Un inicio de sesión rechazado se intenta una
+          vez y se recuerda, de modo que no se vuelve a intentar durante un tiempo (el agente no bloquea
+          ninguna cuenta), y una clave de host SSH nueva que nadie ha revisado nunca se acepta. De los valores
+          distintos de un campo («¿qué estados hay?») se le indica cuántos hay (cada elemento de un arreglo
+          cuenta uno, como los cuenta MongoDB); los valores en sí, los más frecuentes primero, llegan al
+          proveedor solo con tu consentimiento para ese mensaje (<strong>Documentos</strong>), y nunca para un
+          campo personal, ni a través de un filtro sobre uno. Si le pides un archivo («exporta los pedidos de
+          envío como CSV»), propone una exportación en una tarjeta, como propone un cambio (confirmada por ti;
+          no donde el agente no puede proponer cambios, ni bajo una política de solo lectura) — CSV, JSON,
+          NDJSON, Excel o SQL (PostgreSQL, MySQL o SQLite), comprimida o no; toda una colección, un find o un
+          pipeline de solo lectura. La tarjeta muestra el find o el pipeline que se envía y, para un find,
+          cuántos documentos; al hacer clic es tu propia exportación (tus derechos, tus campos ocultos
+          ocultos), que se descarga desde su paso (<strong>Descargar</strong>) cuando su tarea termina, o
+          desde Tareas en segundo plano, y ningún valor llega al proveedor. Un paso de find o de agregación
+          ofrece <strong>Mostrar documentos</strong>: la misma lectura, hecha de nuevo como tú a través de la
+          aplicación (tus derechos, tus campos ocultos ocultos), mostrada solo en el paso — nunca enviada al
+          proveedor, nunca una de tus consultas recientes, y no se ofrece en una página del historial de IA.
+          Si le pides que muestre documentos («los pedidos de Demo que se están enviando»), abre la colección
+          con esa consulta ejecutada allí, o un pipeline en su constructor: la aplicación lo ejecuta como lo
+          harías tú, y ningún valor llega al proveedor. Pregunta antes de reemplazar una consulta que estabas
+          escribiendo; un pipeline que escribe solo se coloca en el constructor, y solo donde el agente puede
+          proponer cambios. Una consulta de su respuesta se ejecuta en la colección que nombra (una que
+          usó), si no donde lo nombró el bloque anterior, si no la primera posterior, si no la que usó por
+          última vez; si no hay ninguna, no se ejecuta — nunca en la pestaña que esté abierta.
+        </li>
+        <li>
+          <strong>Todo cambio espera a que tú lo confirmes.</strong> Crear una base de datos o una colección,
+          insertar, actualizar o eliminar documentos, crear o eliminar un índice, eliminar una colección o una
+          base de datos, establecer las reglas de validación de una colección (la tarjeta muestra las reglas
+          reemplazadas e indica cuántos documentos incumplen ahora las nuevas; conserva su nivel y acción
+          salvo que se pida otra cosa, solo guarda sobre las reglas a partir de las que se creó, nunca en una
+          serie temporal ni donde esté activado el cifrado del lado del cliente — allí las reglas son las
+          propias del cifrado), crear un índice de búsqueda (donde el servidor tenga búsqueda, nunca donde se
+          apliquen reglas de datos personales: copiaría sus valores), renombrar una colección (con su nombre
+          escrito; nunca sobre un nombre ya existente, ni donde reglas de datos personales la nombren — se
+          quedarían con el nombre antiguo; nunca una vista, una serie temporal, ni donde esté activado el
+          cifrado del lado del cliente; se indican las vistas que la leen), copiar una colección como lo hace
+          Copiar de la colección (a partir de tu propio plan, con sus rechazos dichos primero con sus propias
+          palabras; un filtro o un pipeline mostrado y contado, sin elegir nunca por un campo personal; todo
+          modo que cambie los documentos del destino requiere escribir su nombre; seguido en Tareas en segundo
+          plano), una copia de seguridad y una programación de copias de seguridad aparecen como una tarjeta
+          en la conversación: dónde actúa, exactamente qué se enviará y qué encontró la vista previa propia de
+          la aplicación (cuántos documentos coinciden con una actualización o una eliminación, cuántos pierde
+          un drop, las próximas ejecuciones de una programación). <strong>Confirmar</strong> sigue las reglas
+          de confirmación de la aplicación — solo se puede pulsar tras un breve momento, y un doble clic nunca
+          sale adelante — y un drop, o un cambio de todos los documentos, pide escribir el nombre como lo hacen
+          los cuadros de diálogo de la aplicación. Un cambio que pierde datos — un drop, una actualización o
+          una eliminación, una restauración o una copia sobre lo que ya hay — ofrece <strong>Hacer copia de
+          seguridad primero</strong>: una copia de seguridad cifrada de lo que perdería, con su contraseña
+          pedida dos veces en la tarjeta, hecha a través de la ruta de copias de seguridad antes de poder
+          confirmar el cambio (Confirmar espera a que termine; el paso indica entonces que se hizo copia de
+          seguridad y abre su tarea). El agente lee tus alertas — umbrales que se disparan, eventos recientes,
+          la ejecución de un informe con sus recuentos — y, para un administrador, las reglas de alertas y los
+          informes programados; crea, cambia, pospone y elimina la regla de una conexión, y crea, cambia,
+          ejecuta y elimina un informe, cada uno en una tarjeta a través de las rutas de Alertas (los canales
+          por sus nombres — nunca la dirección de un webhook — correo electrónico solo donde haya un servidor
+          de correo configurado; los recuentos de un informe nunca por un campo personal ni de una vista).
+          Una lectura sobre una colección grande (100 000 documentos o más) se explica antes: una que ningún
+          índice atiende — lee toda la colección, o puede hacerlo — se indica en su paso mientras se ejecuta
+          y después, y se le dice al agente para que pueda ofrecer un índice (un vistazo a los primeros
+          documentos nunca lo es). Varios cambios pedidos a la vez (hasta ocho) llegan primero como un
+          <strong>plan</strong>: su lista, en orden, cada uno después en su propia tarjeta, confirmados uno a
+          uno — el plan muestra cómo fue cada uno; un cambio rechazado o denegado detiene el resto, y un turno
+          que termina antes del último lo indica. Una copia de seguridad cifrada pide su contraseña dos veces
+          en la tarjeta, con el medidor de fortaleza y el generador del cuadro de diálogo de copias de
+          seguridad; va solo a la copia de seguridad. La tarjeta también la ofrece sin contraseña, como un
+          archivo comprimido (que se abre con <code>mongorestore --archive --gzip</code>) — elección tuya,
+          nunca del agente, y ofrecida solo donde esa copia de seguridad se pueda hacer (no a un destino que
+          admite únicamente copias de seguridad cifradas, ni con datos personales que no pueden salir del
+          servidor sin cifrar); una que contendría datos personales en claro lo indica. Cuando la copia de
+          seguridad está hecha, su paso ofrece <strong>Descargar</strong>. La tarjeta de una copia de
+          seguridad indica cuándo se elimina la copia conservada en el servidor y adónde se envía; cuando
+          empieza, su paso abre esa tarea en Tareas en segundo plano, y el agente la sigue allí («¿ha
+          terminado la copia de seguridad?») — también una copia de seguridad enviada a destinos mediante su
+          tarea de envío — y enumera tus propias tareas y copias de seguridad conservadas, de las conexiones
+          de las que se le informa: estados, nombres y el estado de cada copia, un tamaño oculto donde se
+          apliquen reglas de datos personales, nunca las palabras propias de un error. Una programación («configura
+          una copia de seguridad semanal») se comprueba antes de su tarjeta como se comprobaría al guardarla —
+          menos programaciones de las que puedes tener, un destino que puedas usar (una copia de seguridad sin
+          cifrar solo donde pueda ir), tu clave de copia de seguridad para una cifrada, ejecuciones separadas
+          al menos una hora — y el agente no propone ninguna donde el servidor desactiva las copias de
+          seguridad programadas. Su tarjeta indica cuándo se ejecuta, en la zona horaria de tu navegador salvo
+          que nombres otra (se indica la zona), y qué conserva; sin ningún destino, a un administrador se le
+          ofrece Destinos de copias de seguridad. Una copia de seguridad también se restaura desde el chat
+          («restaura la copia de seguridad de anoche en orders_copy»): mediante el plan de restauración, en una
+          tarjeta que nombra el destino — con su nombre escrito — que indica cuántas colecciones escribe,
+          cuántas existen ya y cuántos documentos sobrescribe, cuándo se hizo la copia de seguridad y qué
+          destinos son limitados (capped) (escribir en uno puede eliminar sus documentos más antiguos); la
+          contraseña de una copia de seguridad cifrada se pide en la tarjeta, una vez, como se hizo la copia, y
+          el plan se vuelve a hacer con ella al hacer clic: si los destinos cambiaron desde la tarjeta, no
+          empieza nada. Nunca restaura en las bases de datos propias de MongoDB, y una copia de seguridad de
+          todo un servidor, o lo que el plan pide confirmar (índices TTL, datos personales, una copia de
+          seguridad enmascarada), se restaura desde Copias de seguridad. Tus propias programaciones se pueden
+          enumerar («¿cuáles son mis programaciones?»), ejecutar ahora, pausar, reanudar, cambiar y eliminar
+          desde el chat, cada una por su nombre y en su tarjeta: la tarjeta de un cambio indica las copias de
+          seguridad que su nueva retención, zona o destinos eliminan ahora, y ese recuento es lo que
+          confirmas; eliminar una requiere escribir su nombre, y sus copias de seguridad permanecen. La pausa
+          de un administrador solo la puede levantar un administrador. El estado del servidor también se lee
+          desde el chat, como lo lee la pestaña Rendimiento (con su derecho de monitorización): su estado, el
+          conjunto de réplicas (miembros por número, nunca sus hosts), las colecciones más activas, las
+          consultas lentas, consejos de índices para una base de datos y las operaciones en ejecución — con
+          números, nombres y tipos, nunca un comando ni un valor. Una operación en ejecución se detiene en una
+          tarjeta que requiere escribir su opid, para quienes pueden detener operaciones — nunca una de las
+          bases de datos propias de MongoDB, ni una de las propias de Mongo Manager (una tarea, una solicitud
+          a través de la aplicación). Los usuarios y los roles personalizados de MongoDB también se enumeran
+          desde el chat, por nombres y roles (con el derecho de gestionarlos); un usuario se crea con roles en
+          una tarjeta donde escribes su contraseña — el asistente nunca da, ve ni conserva una, y nunca
+          concede un rol sobre toda la implementación — y se elimina (drop) en una tarjeta que requiere
+          escribir su nombre; nunca la cuenta con la que inicia sesión la conexión. Los roles sobre toda la
+          implementación nunca se conceden desde el chat: los demás roles integrados de la base de datos admin
+          (solo para administradores), cualquier rol de <code>local</code> o <code>config</code>, y los roles
+          personalizados que contengan tales derechos; tampoco se crean usuarios en <code>local</code> ni en
+          <code>config</code>. Solo una persona que administra las bases de datos de la conexión y ve sus
+          datos personales enumera o cambia usuarios. No se escribe nada hasta que hagas clic;
+          <strong>Rechazar</strong> se lo comunica al asistente, y no cambia nada. Se propone un cambio a la
+          vez; un cambio sin responder en 10 minutos, o un mensaje que detienes, no cambia nada. Cuando
+          confirmas, se vuelve a comprobar lo que permitió el cambio: si el modo agente, el asistente de la
+          conexión o los cambios del agente en ella se desactivaron entretanto, no se escribe nada; una
+          actualización o una eliminación se previsualiza de nuevo, y un recuento que cambió desde la tarjeta
+          se indica, no se ejecuta. Un índice TTL (uno que elimina documentos pasada una edad) es también un
+          cambio destructivo: la tarjeta indica cuántos documentos eliminaría en un minuto, y pide el nombre de
+          la colección.
+        </li>
+        <li>
+          <strong>Como tú, a través de la aplicación.</strong> Cada paso llama a las rutas propias de la
+          aplicación con tu sesión: tus derechos, las conexiones de solo lectura, las máscaras de datos
+          personales y las reglas de JavaScript del lado del servidor se aplican exactamente como en pantalla,
+          y cada escritura figura en el registro de auditoría como tuya — marcada como del asistente, con el
+          turno y el paso para el que se hizo: <strong>Mostrar este turno</strong> en los detalles de una
+          entrada enumera juntas las llamadas a herramientas de ese turno, tus respuestas y lo que hizo la
+          aplicación por ellas. Un administrador puede desactivar los cambios del agente por conexión
+          (<strong>Permitir que el agente proponga cambios aquí</strong> en el formulario de la conexión); la
+          lectura sigue disponible. El interruptor está activado en todas las conexiones, también en las
+          creadas antes de esta versión: cada cambio sigue esperando tu clic. Una conexión desactivada para el
+          asistente, o convertida en solo local, a mitad de un mensaje detiene el paso siguiente.
+        </li>
+        <li>
+          <strong>Qué envió cada paso.</strong> Los pasos se enumeran a medida que se ejecutan, cada uno con
+          dónde actuó, qué encontró, un enlace para abrir lo que tocó y lo que envió al proveedor: nombres,
+          recuentos, un esquema sin valores, claves de índices, un plan sin valores, o el resultado de un
+          cambio. Los valores de los documentos solo se envían cuando permites <strong>Documentos</strong> para
+          ese mensaje y el proveedor puede recibir muestras; los campos personales están ocultos en ellos para
+          todos, y una consulta cuya salida las reglas no pueden seguir no envía ningún valor. Un filtro, una
+          ordenación, un pipeline o un índice que nombra un campo personal se rechaza antes de ejecutarse —
+          incluso un recuento respondería sobre sus valores. Las colecciones propias de MongoDB nunca se leen
+          para el asistente: ni directamente, ni mediante <code>$lookup</code>, <code>$graphLookup</code>,
+          <code>$unionWith</code> o <code>$facet</code> de un pipeline, ni mediante una vista. Las etapas de
+          diagnóstico que muestran las consultas de otros clientes, el catálogo o la dirección del servidor
+          (<code>$planCacheStats</code>, <code>$queryStats</code>, <code>$listCatalog</code>,
+          <code>$currentOp</code>, <code>$indexStats</code>, <code>$collStats</code> y similares) nunca se
+          ejecutan para el agente, a ninguna profundidad.
+        </li>
+        <li>
+          <strong>Límites.</strong> Como máximo 10 solicitudes al proveedor y 20 acciones por mensaje, y 30
+          acciones por minuto y persona. La primera solicitud de un mensaje al proveedor cuenta para los
+          límites del asistente que se indican más abajo; las siguientes, para un minuto propio (30 de forma
+          predeterminada, <code>MM_AI_AGENT_PER_MINUTE</code>) y el mismo día, y cada una ocupa de inmediato un
+          lugar mientras responde. Una vez realizado un cambio, la solicitud de cierre espera a su minuto en
+          lugar de terminar el mensaje sin decir lo que se hizo.
+        </li>
+        <li>
+          Anthropic, Gemini, los servidores compatibles con OpenAI y Ollama pueden usar herramientas. Un modelo
+          que no puede (algunos modelos locales) responde como el asistente de solo lectura, y el panel lo
+          indica.
+        </li>
+      </ul>
+
+      <h2 id="what-is-sent">Qué se envía</h2>
+      <ul>
+        <li>
+          Un <strong>resumen del esquema</strong> de hasta 200 documentos muestreados: nombres de campos, sus
+          tipos y con qué frecuencia aparecen. Nunca valores, rangos, histogramas ni los valores más comunes.
+        </li>
+        <li>
+          Tus palabras, y la consulta o el pipeline actual (leído y formateado por el servidor).
+        </li>
+        <li>
+          Para «Hacerla más rápida»: el plan de consulta (etapas e índices, sin los valores de la consulta) y
+          los índices.
+        </li>
+        <li>Para «Escribir un validador»: el validador actual.</li>
+        <li>
+          <strong>Documentos de muestra</strong>, solo cuando los activas para esa solicitud y el proveedor
+          puede recibirlos: de 1 a 5 documentos, cada uno recortado a 4 KB.
+        </li>
+      </ul>
+      <p>
+        «Qué se envió» en la hoja muestra exactamente lo que salió del servidor. Todo está limitado a 48 KB;
+        lo que se dejó fuera se nombra allí. Las colecciones propias de MongoDB (<code>system.*</code>) nunca
+        se envían, ni nada de otra colección.
+      </p>
+
+      <h2 id="personal-data">Datos personales</h2>
+      <p>
+        Las reglas de datos personales de la conexión se aplican a todo lo que se envía a un proveedor, para
+        todos — también para quienes pueden ver los valores en pantalla — porque los datos salen del
+        servidor. Los campos personales aparecen en el resumen del esquema solo por su nombre; en las
+        muestras y en las consultas sus valores se sustituyen por <code>***</code>. Puedes ocultar más campos
+        para una solicitud («Ocultar estos campos»). Las claves que parecen contraseñas o tokens siempre se
+        ocultan.
+      </p>
+
+      <h2 id="policy">La política de IA de una conexión</h2>
+      <p>
+        En el formulario de una conexión, <strong>Asistente de IA</strong> es <em>Cualquier proveedor</em> (el
+        valor predeterminado), <em>Solo proveedores locales</em> o <em>Desactivado</em>. «Solo proveedores
+        locales» permite que una solicitud salga únicamente hacia una dirección dentro de las redes de la
+        lista — comprobada donde se establece la conexión, no a partir del nombre escrito. «Desactivado»
+        oculta el asistente en las pantallas de esa conexión, y el agente nunca llega a saber de ella.
+        <strong>Permitir que el agente proponga cambios aquí</strong> (activado de forma predeterminada) se
+        puede desactivar para limitar al agente a leer en esa conexión. En <strong>Las herramientas del
+        agente</strong>, un administrador desactiva allí herramientas individuales — la lectura y la
+        visualización por separado de los cambios, como las herramientas desactivadas del servidor MCP de
+        MongoDB: una desactivada se rechaza antes de que lea o proponga nada en esa conexión (una copia hacia
+        ella, una restauración desde ella, una programación suya encontrada por su nombre, una tarea o una
+        copia de seguridad suya enumerada — incluidas), un cambio que ya esté esperando en su tarjeta para
+        ella se rechaza al confirmarse, no se ofrece una copia de seguridad previa donde las copias de
+        seguridad están desactivadas, y al agente se le indican cuáles están desactivadas. Solo se enumeran
+        las herramientas que actúan sobre una conexión; una que añada una versión posterior empieza
+        activada. Viajan con la exportación y la importación de la conexión (los nombres que una versión no
+        conoce se descartan).
+      </p>
+
+      <h2 id="limits">Límites</h2>
+      <ul>
+        <li>
+          10 solicitudes por minuto y 200 al día por persona (<code>MM_AI_PER_MINUTE</code>,
+          <code>MM_AI_PER_DAY</code>).
+        </li>
+        <li>
+          2 a la vez por persona, 8 a la vez en el servidor (<code>MM_AI_MAX_CONCURRENT</code>).
+        </li>
+        <li>
+          Una respuesta se detiene tras 3 minutos o 512 KB; cada proveedor tiene su propia respuesta máxima
+          en tokens.
+        </li>
+        <li>
+          Quién puede preguntar: administradores y editores (el derecho <code>ai:use</code>), en colecciones
+          que puedan leer.
+        </li>
+      </ul>
+
+      <h2 id="safety">Seguridad</h2>
+      <ul>
+        <li>
+          Sin el modo agente, el asistente no tiene herramientas: no puede leer nada más ni ejecutar nada. En
+          un chat ve la conversación hasta ese momento, nada más. En el
+          <a href="#agent">modo agente</a>, sus herramientas actúan solo a través de las rutas de la
+          aplicación, como tú, y todo cambio espera a tu clic.
+        </li>
+        <li>
+          Los datos de tus colecciones podrían intentar dar instrucciones al modelo. Todo lo que escribe solo
+          se convierte en texto de un editor, analizado por el mismo analizador seguro que la barra de
+          consultas; no se ejecuta nada hasta que lo ejecutes. En el modo agente, los resultados de las
+          herramientas se entregan al modelo marcados como datos, nunca como instrucciones; incluso cuando
+          los datos convencen a un modelo de proponer un cambio, el cambio es solo una tarjeta hasta que lo
+          confirmes.
+        </li>
+        <li>
+          Las respuestas se muestran como texto sin formato con un formato sencillo: sin imágenes ni enlaces
+          activos, de modo que una respuesta no pueda hacer que tu navegador cargue nada.
+        </li>
+        <li>
+          Cada solicitud se conserva en tu historial de IA (Historial de IA en la barra lateral), sellada con
+          la clave del servidor, durante 90 días de forma predeterminada; un administrador establece los días,
+          y si se conservan en absoluto las palabras preguntadas y respondidas. Un chat es una entrada, con sus
+          turnos en orden — los normales, los de una colección y los del agente — todos mostrados en su
+          página, con un botón que vuelve a abrir el chat. Un turno se comparte por sí solo, nunca el chat
+          entero: un compañero lee el turno compartido, y solo donde puede leer aquello en lo que se basó. Un
+          turno del agente también muestra lo que hizo el agente, paso a paso — cada herramienta, dónde
+          trabajó y cómo terminó, con los cambios que propuso entre ellos — como lo hace su chat, nunca un
+          valor. Solo tú lees tus solicitudes, a menos que compartas una con el equipo: entonces la leen, en
+          solo lectura, los compañeros que pueden leer todas las conexiones en las que se basó (para un turno
+          del agente, todas las conexiones que nombran sus pasos). Los chats se conservan como se describe en
+          <a href="#chat">Chat</a>. El registro de auditoría anota quién preguntó, qué acción o chat,
+          proveedor y colección, cuántas muestras, el número de tokens y el resultado — nunca las palabras,
+          lo que se envió ni la respuesta. En el modo agente también se anota cada paso (la herramienta, la
+          conexión y el espacio de nombres, cómo terminó, y tu respuesta a un cambio), nunca sus argumentos ni
+          lo que leyó.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">En esta página</p>
+      <ol>
+        <li><a href="#actions">Qué hace</a></li>
+        <li><a href="#providers">Proveedores</a></li>
+        <li><a href="#offline">Sin conexión, con un modelo local</a></li>
+        <li><a href="#chat">Chat</a></li>
+        <li><a href="#agent">Modo agente</a></li>
+        <li><a href="#what-is-sent">Qué se envía</a></li>
+        <li><a href="#personal-data">Datos personales</a></li>
+        <li><a href="#policy">La política de IA de una conexión</a></li>
+        <li><a href="#limits">Límites</a></li>
+        <li><a href="#safety">Seguridad</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

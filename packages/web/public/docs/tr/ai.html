@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>AI asistanı · Mongo Manager belgeleri</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager belgeleri</a>
+      <details class="lang-menu">
+        <summary>Türkçe</summary>
+        <span class="langs" role="group" aria-label="Dil">
+          <a lang="en" hreflang="en" href="../ai.html">English</a>
+          <strong lang="tr">Türkçe</strong>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/ai.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/ai.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/ai.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/ai.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/ai.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/ai.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/ai.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/ai.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Genel bakış</a>
+      <a href="getting-started.html">Başlarken</a>
+      <a href="security.html">Güvenlik</a>
+      <a href="deployment.html">Kurulum ve dağıtım</a>
+      <a href="import-export.html">İçe ve dışa aktarma</a>
+      <a href="backup.html">Yedekleme ve geri yükleme</a>
+      <a href="watch.html">Değişiklikleri izleme</a>
+      <a href="sync.html">Canlı senkron</a>
+      <a href="server-admin.html">Sunucu yönetimi</a>
+      <strong>AI asistanı</strong>
+      <a href="plugins.html">Eklentiler</a>
+      <a href="shortcuts.html">Klavye kısayolları</a>
+    </nav>
+    <main>
+      <h1>AI asistanı</h1>
+      <p>
+        AI asistanı sözlerinizi bir sorguya, bir pipeline'a ya da bir doğrulayıcıya çevirir, bir sorguyu
+        açıklar, nasıl hızlanacağını önerir ve bir koleksiyonu anlatır. O yazar; siz inceler ve
+        çalıştırırsınız. Kendi başına hiçbir şey çalıştırmaz.
+      </p>
+      <p>
+        Bir koleksiyon açın ve bölümlerinin yanındaki <strong>AI'ya sor</strong>'u seçin ya da
+        <kbd>Ctrl</kbd> + <kbd>I</kbd> (Mac'te <kbd>⌘</kbd> + <kbd>I</kbd>) tuşlarına basın. Komut paleti de
+        "Bu koleksiyon hakkında AI'ya sor…" seçeneğini sunar.
+      </p>
+
+      <h2 id="actions">Ne yapar</h2>
+      <ul>
+        <li><strong>Sorgu yaz</strong> (Belgeler): bir filtre; isterseniz projeksiyon ve sıralama.</li>
+        <li><strong>Pipeline yaz</strong> (Aggregation'lar): aşamalar, kartlar olarak.</li>
+        <li><strong>Açıkla</strong>: şu anki sorgunun ya da pipeline'ın adım adım ne yaptığı.</li>
+        <li>
+          <strong>Hızlandır</strong> (Explain): sorgu planından ve indekslerden neden yavaş olabileceği;
+          indeks önerileri indeks penceresini dolu açar — siz onaylamadan hiçbir şey oluşturulmaz.
+        </li>
+        <li>
+          <strong>Doğrulayıcı yaz</strong> (Doğrulama): taslak olarak bir <code>$jsonSchema</code>; siz
+          kaydedene kadar kaydedilmez.
+        </li>
+        <li><strong>Koleksiyonu anlat</strong> (Şema): ne tuttuğu, öne çıkan alanlar, tuhaflıklar.</li>
+      </ul>
+      <p>
+        Yanıt yazıldıkça görünür. Bir sorgu, pipeline ya da doğrulayıcı editördekinin yanında gösterilir;
+        <strong>Ekle</strong> onu editöre koyar (editörde çalışma varsa önce sorar). Yazan bir pipeline
+        (<code>$out</code>, <code>$merge</code>) ya da JavaScript çalıştıran bir yanıt işaretlenir;
+        çalıştırmak her zamanki onayları ister. Sunucu sunucu tarafı JavaScript'e izin vermiyorsa böyle bir
+        yanıt eklenemez.
+      </p>
+
+      <h2 id="providers">Sağlayıcılar</h2>
+      <p>
+        Bir yönetici sağlayıcıları <strong>Ayarlar → AI asistanı</strong>'ndan (hesap menüsü) ekler: Anthropic
+        (Claude; varsayılan <code>claude-sonnet-5</code>), Google Gemini (Google AI Studio'dan bir anahtar ve
+        <code>gemini-2.5-pro</code> gibi bir model adı), OpenAI uyumlu herhangi bir sunucu ya da Ollama. Biri
+        varsayılandır; kullanıcılar diğerleri arasından seçebilir. Anahtar sunucuda şifreli saklanır, bir daha
+        gösterilmez ve hiçbir tarayıcıya gönderilmez; bir sağlayıcının adresini değiştirmek anahtarını yeniden
+        ister, çünkü anahtar eski adrese aitti. <strong>Sına</strong> tek satırlık bir istek gönderir ve ne
+        olduğunu söyler.
+      </p>
+      <p>
+        İstekler tarayıcıdan değil, sunucudan sağlayıcıya gider. Her kart sağlayıcının yerel ya da özel bir
+        ağdan mı ("Yerel") yoksa dışarıdan mı ("Bulut") yanıt verdiğini söyler.
+      </p>
+
+      <h2 id="offline">Çevrimdışı, yerel bir modelle</h2>
+      <p>
+        Kendi ağınızdaki Ollama (ya da OpenAI uyumlu herhangi bir sunucu) ile asistan internet olmadan
+        çalışır. Yerel ve özel adresler <code>MM_AI_PRIVATE_NETWORKS</code> içinde listelenmelidir (örneğin
+        <code>10.0.0.0/8</code>); yerel modda Mongo Manager'ın çalıştığı makineye her zaman izin verilir, yani
+        <code>http://localhost:11434</code> olduğu gibi çalışır. Düz <code>http</code>'ye yalnızca listelenen
+        ağlarda izin verilir.
+      </p>
+
+      <h2 id="chat">Sohbet</h2>
+      <p>
+        <strong>Asistan</strong> (sağ altta süzülen düğme ya da <kbd>Ctrl / ⌘</kbd> + <kbd>.</kbd>)
+        çalışmanızın üzerinde açılan bir penceredeki sohbettir: sayfa daralmaz. Sol ve üst kenarlarından
+        boyutlandırabilir, büyütebilir ya da kapatabilirsiniz — yazdıklarınız kalır; telefonda tüm ekranı
+        kaplar. Bir koleksiyon sekmesindeyken her mesaj, tek seferlik eylemlerdeki
+        gibi sunucunun okuduğu o koleksiyonun bağlamını taşır: şema özeti ve — mesaj kutusunun üstündeki
+        düğmelerle seçtiğiniz kadarıyla — geçerli sorgu ya da pipeline, indeksler, doğrulayıcı ve o mesaj için
+        onay verirseniz örnek belgeler. Başka yerlerde mesaj veri taşımaz; asistan genel MongoDB yardımı
+        verir. Başka bir koleksiyona geçtiğinizde sohbet nerede değiştiğini gösterir.
+      </p>
+      <ul>
+        <li>
+          Yalnızca son mesaj veri taşır. Önceki mesajlar sohbetin kendisi olarak gider — en çok son 20
+          karşılıklı mesaj ya da 24 KB — ve yalnızca tamamlanmış yanıtlar. Önceki bir mesaj şu durumlarda
+          dışarıda kalır ve panel bunu söyler: bağlantısı silinmişse, artık okuyamıyorsanız, asistan orada
+          kapatılmışsa, kişisel veri kuralları o zamandan beri değişmişse ya da yalnızca yerel sağlayıcılara
+          izin veren bir bağlantıdan geliyor ve sağlayıcı dışarıdan yanıt veriyorsa. Böyle bir mesajdan
+          yazılmış bir yanıt da onunla birlikte dışarıda kalır.
+        </li>
+        <li>
+          Yanıttaki her kod bloğunun tek bir eylemi vardır (indeks önerisinde her indeks için bir tane);
+          bloğun adlandırdığı koleksiyonda — hiçbirini adlandırmayan blok, yanıtın adlandırdığını alır — ya da
+          mesajın ilgili olduğu koleksiyonda kullanılır, editörde çalışma varsa önce sorar. Asistana
+          verilmeyen bir koleksiyonu adlandıran blok hiçbir yere gitmez. <strong>Çalıştır</strong> sorguyu
+          sorgu çubuğuna ya da pipeline'ı Aggregation bölümüne koyar ve çalıştırır; yazan bir pipeline
+          (<code>$out</code>, <code>$merge</code>) yalnızca oraya konur, çalıştırmak size kalır. Doğrulayıcı
+          doğrulama taslağına gider; indeks önerisi İndeks oluştur iletişim kutusunu açar. Tek başına bir
+          aşama (bir pipeline'a eklenecek <code>$match</code>) yalnızca kod olarak gösterilir. Sonucu dosya
+          olarak isterseniz (“Excel olarak indir”) blok, bağlantı dışa aktarmaya izin veriyorsa
+          <strong>Excel olarak indir</strong>, CSV ya da JSON düğmesi sunar: dışa aktarma, sorgu ya da
+          pipeline ve biçim hazır açılır, siz başlatırsınız. Sunucuda JavaScript çalıştıran kod için önce
+          sorulur. Tıklamanız olmadan hiçbir şey çalışmaz.
+        </li>
+        <li>
+          Sohbetler sizindir: AI geçmişinizden birinin bir adımını paylaşmadıkça hiçbir yol, bir yönetici
+          dahil başka birinin onları okumasına izin vermez. Sunucuda şifreli olarak, son mesajlarından sonra
+          <code>MM_AI_CHAT_DAYS</code> gün (varsayılan 30) tutulur; <code>0</code> ile yalnızca sunucunun
+          belleğinde 12 saat yaşarlar ve diske hiçbir şey yazılmaz. En çok 200 mesajlık 50 sohbet tutulur;
+          ötesinde en eskiler önce silinir. Paneldeki Geçmiş bir sohbeti ya da hepsini siler; bir kullanıcıyı
+          silmek sohbetlerini de siler.
+        </li>
+      </ul>
+
+      <h2 id="agent">Ajan modu</h2>
+      <p>
+        Asistan panelinde <strong>Ajan modu</strong>'nu açtığınızda asistan bağlantılarınızla sizin için
+        çalışır: "Sales Mongo bağlantısına users adlı yeni bir koleksiyon ekle ve bir demo kullanıcı ekle"
+        dediğinizde Sales Mongo'yu bulur, varsayılan veritabanını kullanır (ve bunu söyler; varsayılan
+        veritabanı yoksa hangi veritabanını kullanacağını sorar), önce koleksiyonu, sonra demo kullanıcıyı
+        önerir ve ne yaptığını anlatır. Bu anahtar yalnızca sizindir ve hesabınızla saklanır — Asistan
+        panelinde ve Hesap → Tercihler'de; kapalıyken asistan yukarıda anlatıldığı gibidir. Ajanın herkes
+        için neler yapabileceğini bir yönetici <strong>Ayarlar → AI asistanı → Bu sunucuda ajan modu</strong>
+        bölümünden belirler: <em>kapalı</em> (kimse açamaz), <em>yalnızca okuma</em> (okur, sayar, açıklar
+        ve isteneni açar ama hiçbir değişiklik, yedek ya da zamanlama önermez) ya da <em>tam</em>
+        (varsayılan). Değişiklik hemen geçerli olur: çalışmakta olan bir tura da, kartında bekleyen bir
+        değişikliğe de.
+      </p>
+      <ul>
+        <li>
+          <strong>Bağlantılarınızı adlarıyla bilir</strong>: asistanı kullanabildiğiniz her bağlantıyı,
+          oradaki erişiminizle, salt okunur olup olmadığıyla ve ajanın orada değişiklik önerip
+          öneremeyeceğiyle — adresini, kullanıcı adını ya da parolasını asla. AI politikası
+          <em>Kapalı</em> olan bir bağlantı hiç anılmaz; <em>Yalnızca yerel sağlayıcılar</em> olan bir
+          bağlantı yalnızca listelenen ağlarınızdan yanıt verdiği görülen bir sağlayıcıya söylenir ve o zaman
+          bütün istek yalnızca o ağlara gidebilir. Baktığınız sekme de adıyla söylenir — bir koleksiyon, bir
+          bağlantının Performans ya da Kullanıcılar ve roller gibi bir bölümü ya da Zamanlanmış yedekler veya
+          Arka plan işleri gibi bir sayfa; böylece "bu" ve "burada" onu anlatır. Aynı sohbetteki sonraki bir
+          ileti, önceki adımların ne yaptığını yalnızca adlar ve sayılarla taşır; böylece "aynısını Prod'da yap"
+          ya da "onu sil" kendinizi yinelemeden çalışır.
+        </li>
+        <li>
+          <strong>Okuma hemen çalışır</strong>: bağlantıları, veritabanlarını, koleksiyonları ve yedek
+          hedeflerini listelemek; bir koleksiyonun istatistiklerini, şemasını (adlar, türler ve oranlar) ve
+          indekslerini görmek; saymak; bir sorguyu açıklamak (hiçbir şey çalışmaz); belge bulmak ve salt
+          okunur bir toplama çalıştırmak (en çok 10 sonuç; <code>$out</code>, <code>$merge</code> ve sunucu
+          JavaScript'i reddedilir). Sizin için bir bağlantıyı, bir veritabanını ya da bir koleksiyonun bir
+          bölümünü de açabilir ve bir bağlantının yanıt verdiğini kontrol edebilir. Kontrol ederken bağlantıyı
+          sizin gibi açar, böylece uygulama onu bağlı gösterir; açamazsa yalnızca hatanın türünü söyler (ağ,
+          bulunamayan bir ad, kimlik bilgileri ya da adımdan önerilen, sizin yapmanız gereken bir giriş),
+          adresi asla söylemez. Reddedilen bir girişi bir kez dener ve bunu hatırlar, bir süre yeniden
+          denemez (ajan hesabınızı kilitletmez); kimsenin bakmadığı yeni bir SSH sunucu anahtarını hiç kabul etmez. Bir alanın farklı değerleri için ("hangi durumlar var?") kaç tane oldukları söylenir (MongoDB'nin
+          saydığı gibi, bir dizinin her öğesi ayrı bir değer); değerlerin kendileri, en sık olandan başlayarak,
+          sağlayıcıya yalnızca o ileti için onay verdiğinizde (<strong>Belgeler</strong>) gider; kişisel bir
+          alanınki ve kişisel bir alana göre süzülenler asla. Bir dosya istendiğinde ("kargodaki siparişleri CSV olarak dışa aktar") bir değişiklik
+          önerir gibi bir kartla dışa aktarma önerir (onayınızla; ajanın değişiklik öneremediği yerde ya da
+          salt okunur bir politikada asla) — CSV, JSON, NDJSON, Excel ya da SQL (PostgreSQL, MySQL ya da SQLite),
+          sıkıştırılmış ya da değil; bir koleksiyonun tamamı, bir bulma ya da salt okunur bir boru hattı. Kart
+          giden bulmayı ya da boru hattını ve, bir bulmada, kaç belgenin gideceğini gösterir; tıkladığınızda bu sizin kendi dışa aktarmanızdır
+          (yetkileriniz geçerli, gizli alanlarınız gizli kalır), işi bitince adımından (<strong>İndir</strong>)
+          ya da Arka plan işlerinden indirilir ve sağlayıcıya
+          hiçbir değer gitmez. Bir bulma ya da toplama adımı
+          <strong>Belgeleri göster</strong> sunar: aynı okuma uygulama üzerinden sizin adınıza yeniden yapılır
+          (yetkileriniz geçerli, gizli alanlarınız gizli kalır) ve yalnızca adımda gösterilir — sağlayıcıya
+          asla gönderilmez, son sorgularınıza eklenmez ve yapay zekâ geçmişinin sayfalarında sunulmaz. Belge göstermesi
+          istendiğinde
+          ("Demo'daki orders'ta shipping olanlar")
+          koleksiyonu o sorgu çalışmış olarak, ya da bir pipeline'ı oluşturucusunda açar: uygulama onu sizin
+          gibi çalıştırır, sağlayıcıya hiçbir değer gitmez. Yazmakta olduğunuz bir sorgunun yerine koymadan
+          önce sorar; yazan bir pipeline yalnızca oluşturucuya ve yalnızca ajanın değişiklik önerebildiği
+          yerde konur. Yanıtındaki bir sorgu adını verdiği (kullandığı) koleksiyonda, yoksa kendinden önceki
+          bloğun adını verdiği yerde, yoksa kendinden sonraki ilk bloğun adını verdiği yerde, yoksa en son
+          kullandığı koleksiyonda çalışır; hiçbiri yoksa çalışmaz —
+          asla o an açık olan sekmede değil.
+        </li>
+        <li>
+          <strong>Her değişiklik sizi bekler.</strong> Veritabanı ya da koleksiyon oluşturmak, belge eklemek,
+          güncellemek ya da silmek, indeks oluşturmak ya da kaldırmak, bir koleksiyonu ya da veritabanını
+          kaldırmak, bir koleksiyonun doğrulama kurallarını ayarlamak (kart değiştirilen kuralları gösterir ve
+          oradaki kaç belgenin yenilerine şu anda uymadığını söyler; istenmedikçe düzeyi ve eylemi korur,
+          yalnızca kartın yapıldığı kuralların üzerine kaydeder; zaman serisinde ve istemci tarafı şifrelemenin
+          açık olduğu yerde asla — orada kurallar şifrelemenin kendi şemasıdır), arama indeksi oluşturmak
+          (sunucuda arama varsa; kişisel veri kurallarının geçerli olduğu yerde asla, çünkü değerleri
+          kopyalar), bir koleksiyonu yeniden adlandırmak (adı yazılarak; alınmış bir adın üzerine ya da
+          kişisel veri kuralları onu adıyla andığında asla — kurallar eski adda kalırdı), bir koleksiyonu
+          koleksiyonun Kopyala bölümünün yaptığı gibi kopyalamak (sizin planınızdan, reddettikleri önce
+          kendi sözcükleriyle söylenerek; bir filtre ya da pipeline gösterilip sayılarak, asla kişisel bir
+          alana göre seçmeden; hedefin belgelerini değiştiren her kipte hedefin adı yazılarak; Arka plan
+          işlerinde izlenir; yeniden adlandırma görünümde, zaman serisinde ve istemci tarafı şifrelemenin
+          açık olduğu yerde asla, onu okuyan görünümler söylenerek), yedek almak ve yedekleme zamanlaması konuşmada
+          bir kart olarak görünür: nerede
+          yapılacağı, tam olarak ne gönderileceği ve uygulamanın kendi önizlemesinin ne bulduğu (bir
+          güncellemenin ya da silmenin kaç belgeyle eşleştiği, bir kaldırmada kaç belgenin gideceği, bir
+          zamanlamanın sonraki çalışmaları). <strong>Onayla</strong> uygulamanın onay kurallarına uyar — kısa
+          bir süre geçmeden basılamaz ve çift tıklama asla geçmez — ve bir kaldırma ya da bütün belgeleri
+          etkileyen bir değişiklik, uygulamanın kendi pencerelerinde olduğu gibi adın yazılmasını ister.
+          Veri kaybettiren bir değişiklik — kaldırma, güncelleme ya da silme, var olanın üzerine geri yükleme
+          ya da kopyalama — <strong>Önce yedekle</strong> seçeneğini sunar: kaybettireceklerinin şifreli bir
+          yedeği, parolası kartta iki kez sorularak, değişiklik onaylanmadan önce yedekleme rotasıyla alınır
+          (Onayla onu bekler; adım ardından yedeklendiğini söyler ve işini açar). Ajan uyarılarınızı — eşiği aşanları, son olayları, bir raporun sayımlarıyla çalışmasını — ve bir
+          yöneticiye uyarı kurallarını ve zamanlanmış raporları okur; bir bağlantının kuralını oluşturur,
+          değiştirir, erteler ve siler, bir raporu oluşturur, değiştirir, çalıştırır ve siler — her biri Uyarılar
+          rotalarından bir kartta (kanallar adlarıyla, bir webhook'un adresi asla; e-posta yalnızca bir posta
+          sunucusu ayarlıysa; bir raporun sayımları asla kişisel bir alana göre değil, bir görünümün değil).
+          Büyük bir koleksiyonda (100.000 belge ya da daha fazla) bir okuma önce açıklanır: bir indeksin
+          karşılamadığı — koleksiyonun tamamını tarayan ya da tarayabilecek — okuma adımında çalışırken ve
+          sonra söylenir; ajana da bir indeks önerebilsin diye bildirilir (ilk belgelere bir bakış asla). Birlikte istenen birkaç
+          değişiklik (en fazla sekiz) önce bir <strong>plan</strong> olarak gelir: sırasıyla listesi, ardından
+          her biri kendi kartında tek tek onaylanır — plan her birinin nasıl gittiğini gösterir; reddedilen ya
+          da yapılamayan bir değişiklik geri kalanını durdurur, sonuncusundan önce biten bir tur bunu söyler.
+          Şifreli bir yedek parolasını kartta iki kez, yedek penceresindeki güç göstergesi ve parola
+          üreticisiyle ister; parola yalnızca yedeğe gider. Kart yedeği parolasız, sıkıştırılmış bir arşiv
+          olarak da sunar (<code>mongorestore --archive --gzip</code> ile açılır) — seçim ajanın değil
+          sizindir ve yalnızca o yedeğin alınabildiği yerde sunulur (yalnızca şifreli yedek kabul eden bir
+          hedefe, ya da sunucudan şifresiz çıkamayan kişisel verilerle değil); kişisel verileri açık hâlde
+          içerecek olan bunu söyler. Yedek alındığında adımı <strong>İndir</strong> sunar. Bir yedeğin kartı sunucuda tutulan kopyanın ne
+          zaman silineceğini ve nereye gönderileceğini söyler; başladığında adımı o işi Arka plan işleri'nde
+          açar, ajan da onu orada izler ("yedek bitti mi?") — hedeflere gönderilen bir yedeği gönderim işiyle
+          birlikte — ve kendisine bildirilen bağlantılardaki kendi işlerinizi ve tutulan yedeklerinizi
+          listeler: durumlar, adlar ve her kopyanın durumu; kişisel veri kuralı olan yerde boyut gizli; bir
+          hatanın kendi metni asla. Bir zamanlama ("haftalık yedek kur") kartından önce, kaydedildiğinde
+          olacağı gibi denetlenir — sahip olabileceğinizden az zamanlama, kullanabileceğiniz bir hedef
+          (şifresiz yedek yalnızca gidebileceği yere), şifreli olan için yedek anahtarınız, en az bir saat
+          arayla çalışacak bir sıklık — ve sunucu zamanlanmış yedekleri kapattıysa ajan hiç önermez. Kartı ne
+          zaman çalışacağını (başka bir dilim söylemedikçe tarayıcınızın saat diliminde, dilimin adıyla) ve
+          neyi tutacağını söyler; hiç hedef yoksa bir yöneticiye Yedek hedefleri sayfası önerilir. Bir yedek
+          de sohbetten geri yüklenir ("dün geceki yedeği orders_copy'ye geri yükle"): geri yükleme planıyla,
+          hedefi adlandıran — adı yazılan — ve kaç koleksiyon yazacağını, kaçının zaten var olduğunu ve kaç
+          belgenin üzerine yazacağını, yedeğin ne zaman alındığını ve hangi hedeflerin sınırlı (capped)
+          olduğunu (birine yazmak en eski belgelerini silebilir) söyleyen bir kartta. Şifreli bir yedeğin
+          parolası kartta, yedek
+          oluşturulurken verildiği gibi bir kez sorulur ve tıklamada plan onunla yeniden yapılır: hedefler
+          kartından bu yana değiştiyse hiçbir şey başlamaz. MongoDB'nin kendi veritabanlarına asla geri
+          yüklemez; tüm bir sunucunun yedeği ya da planın onay istediği şeyler (TTL indeksleri, kişisel
+          veri, değerleri gizlenmiş bir yedek) Yedekler sayfasından geri yüklenir. Kendi
+          zamanlamalarınız sohbetten listelenebilir ("zamanlamalarım neler?"), şimdi çalıştırılabilir,
+          duraklatılıp sürdürülebilir, değiştirilip silinebilir; her biri adıyla ve kendi kartıyla. Bir
+          değişikliğin kartı, yeni saklama kuralının, dilimin ya da hedeflerin şimdi sileceği yedekleri
+          söyler ve onayladığınız bu sayıdır; silmek için adı yazılır, yedekleri kalır. Bir yöneticinin
+          duraklattığını yalnızca bir yönetici sürdürebilir. Sunucunun sağlığı da sohbetten, Performans
+          sekmesinin okuduğu gibi (izleme yetkisiyle) okunur: durumu, replica set (üyeler numarayla,
+          adresleri asla), en yoğun koleksiyonlar, yavaş sorgular, bir veritabanı için indeks önerileri ve
+          çalışan işlemler — sayılar, adlar ve türlerle; bir komut ya da değer asla. Çalışan bir işlem,
+          işlemleri durdurabilenler için opid'i yazılan bir kartla durdurulur; MongoDB'nin kendi
+          veritabanlarındaki ya da Mongo Manager'ın kendi işlemleri asla. MongoDB'nin kullanıcıları ve
+          özel rolleri de sohbetten adları ve rolleriyle listelenir (yönetme yetkisiyle); bir kullanıcı,
+          parolasını sizin yazdığınız bir kartla rolleriyle oluşturulur — asistan parolayı asla vermez,
+          görmez ya da saklamaz ve tüm dağıtım üzerinde yetki veren bir rol asla vermez — ve adı yazılan
+          bir kartla silinir; bağlantının oturum açtığı hesap asla. Tüm dağıtım üzerinde yetki veren roller
+          sohbetten asla verilmez: admin veritabanının yalnızca orada bulunan diğer hazır rolleri, <code>local</code> ya da
+          <code>config</code> veritabanının her rolü ve böyle yetkiler taşıyan özel roller; <code>local</code> ya da
+          <code>config</code> veritabanında kullanıcı da oluşturulmaz. Kullanıcıları yalnızca bağlantının veritabanlarını
+          yöneten ve kişisel verilerini gören biri listeler ya da değiştirir. Siz
+          tıklamadan hiçbir şey
+          yazılmaz; <strong>Reddet</strong> asistana bildirilir ve hiçbir şey değişmez. Her seferinde tek
+          değişiklik önerilir; 10 dakika içinde yanıtlanmayan bir değişiklik ya da durdurduğunuz bir mesaj
+          hiçbir şeyi değiştirmez. Onayladığınızda değişikliğe izin veren her şey yeniden denetlenir: bu arada
+          ajan modu, bağlantının asistanı ya da ajanın oradaki değişiklikleri kapatıldıysa hiçbir şey
+          yazılmaz; bir güncelleme ya da silme yeniden önizlenir ve kart gösterildiğinden beri değişen bir
+          sayı uygulanmaz, söylenir. Bir TTL indeksi (belgeleri belli bir yaştan sonra silen indeks) de yıkıcı
+          bir değişikliktir: kart, bir dakika içinde kaç belgeyi sileceğini söyler ve koleksiyonun adını
+          ister.
+        </li>
+        <li>
+          <strong>Sizin adınıza, uygulama üzerinden.</strong> Her adım uygulamanın kendi yollarını sizin
+          oturumunuzla çağırır: yetkileriniz, salt okunur bağlantılar, kişisel veri maskeleri ve sunucu
+          JavaScript kuralları ekranda olduğu gibi aynen uygulanır ve her yazma denetim kaydında sizin adınıza
+          görünür — asistanın yaptığı olarak işaretli, yapıldığı tur ve adımla: bir kaydın ayrıntılarındaki
+          <strong>Bu turu göster</strong>, o turun araç çağrılarını, verdiğiniz yanıtları ve uygulamanın bunlar
+          için yaptıklarını bir arada listeler. Bir yönetici ajanın değişikliklerini bağlantı bazında kapatabilir (bağlantı formunda
+          <strong>Ajan burada değişiklik önerebilir</strong>); okuma açık kalır. Bu anahtar, bu sürümden önce
+          kurulanlar da dahil her bağlantıda açıktır: her değişiklik yine tıklamanızı bekler. Bir mesaj
+          sürerken asistanı kapatılan ya da yalnızca yerel yapılan bir bağlantı sonraki adımı durdurur.
+        </li>
+        <li>
+          <strong>Her adımın ne gönderdiği.</strong> Adımlar çalıştıkça listelenir; her birinde nerede
+          çalıştığı, ne bulduğu, dokunduğu yeri açan bir bağlantı ve sağlayıcıya ne gönderdiği yazar: adlar,
+          sayılar, değerleri olmayan bir şema, indeks anahtarları, değerleri olmayan bir plan ya da bir
+          değişikliğin sonucu. Belge değerleri yalnızca o mesaj için <strong>Belgeler</strong>'e izin
+          verdiğinizde ve sağlayıcı örnek alabildiğinde gider; içlerindeki kişisel alanlar herkes için
+          gizlenir ve çıktısını kuralların izleyemediği bir sorgu hiçbir değer göndermez. Kişisel bir alanı
+          anan bir filtre, sıralama, işlem hattı ya da indeks çalışmadan önce reddedilir — bir sayım bile
+          değerleri hakkında bilgi verirdi. MongoDB'nin kendi koleksiyonları asistan için asla okunmaz: ne
+          doğrudan, ne bir işlem hattının <code>$lookup</code>, <code>$graphLookup</code>,
+          <code>$unionWith</code> ya da <code>$facet</code> aşamasıyla, ne de bir görünüm üzerinden. Başka
+          istemcilerin sorgularını, kataloğu ya da sunucunun adresini gösteren tanılama aşamaları
+          (<code>$planCacheStats</code>, <code>$queryStats</code>, <code>$listCatalog</code>,
+          <code>$currentOp</code>, <code>$indexStats</code>, <code>$collStats</code> ve benzerleri) ajan için
+          hiçbir derinlikte çalıştırılmaz.
+        </li>
+        <li>
+          <strong>Sınırlar.</strong> Mesaj başına sağlayıcıya en çok 10 istek ve 20 işlem, kişi başına
+          dakikada 30 işlem. Bir mesajın sağlayıcıya ilk isteği aşağıdaki asistan sınırlarına sayılır; sonraki
+          istekleri kendine ait bir dakikaya (varsayılan 30, <code>MM_AI_AGENT_PER_MINUTE</code>) ve aynı güne
+          sayılır ve her biri yanıt verirken aynı anda çalışabilecek yerlerden birini tutar. Bir değişiklik
+          yapıldıktan sonra kapanış isteği, mesajı ne yapıldığını söylemeden bitirmek yerine kendi dakikasını
+          bekler.
+        </li>
+        <li>
+          Anthropic, Gemini, OpenAI uyumlu sunucular ve Ollama araç kullanabilir. Kullanamayan bir model (bazı
+          yerel modeller) salt okunur asistan gibi yanıt verir ve panel bunu söyler.
+        </li>
+      </ul>
+
+      <h2 id="what-is-sent">Ne gönderilir</h2>
+      <ul>
+        <li>
+          En çok 200 örnek belgeden bir <strong>şema özeti</strong>: alan adları, türleri ve ne sıklıkla
+          geçtikleri. Hiçbir zaman değerler, aralıklar, histogramlar ya da en sık değerler değil.
+        </li>
+        <li>Sözleriniz ve şu anki sorgu ya da pipeline (sunucu tarafından okunup biçimlendirilmiş).</li>
+        <li>
+          "Hızlandır" için: sorgu planı (sorgunun değerleri olmadan aşamalar ve indeksler) ve indeksler.
+        </li>
+        <li>"Doğrulayıcı yaz" için: şu anki doğrulayıcı.</li>
+        <li>
+          <strong>Örnek belgeler</strong>, yalnızca o istek için açtığınızda ve sağlayıcı alabiliyorsa: her
+          biri 4 KB'a kısaltılmış 1 ile 5 belge.
+        </li>
+      </ul>
+      <p>
+        Sayfadaki "Gönderilenler" sunucudan tam olarak neyin çıktığını gösterir. Her şey 48 KB ile sınırlıdır;
+        dışarıda kalan orada belirtilir. MongoDB'nin kendi koleksiyonları (<code>system.*</code>) ve başka bir
+        koleksiyondan hiçbir şey asla gönderilmez.
+      </p>
+
+      <h2 id="personal-data">Kişisel veriler</h2>
+      <p>
+        Bağlantının kişisel veri kuralları bir sağlayıcıya gönderilen her şeye herkes için uygulanır —
+        değerleri ekranda görebilenler için de — çünkü veri sunucudan çıkar. Kişisel alanlar şema özetinde
+        yalnızca adlarıyla yer alır; örneklerde ve sorgularda değerleri <code>***</code> olur. Tek bir istek
+        için başka alanları da gizleyebilirsiniz ("Bu alanları gizle"). Parola ya da token'a benzeyen
+        anahtarlar her zaman gizlenir.
+      </p>
+
+      <h2 id="policy">Bir bağlantının AI politikası</h2>
+      <p>
+        Bağlantı formunda <strong>AI asistanı</strong>: <em>Her sağlayıcı</em> (varsayılan),
+        <em>Yalnızca yerel sağlayıcılar</em> ya da <em>Kapalı</em>. "Yalnızca yerel sağlayıcılar" bir isteğin
+        yalnızca listelenen ağlardaki bir adrese çıkmasına izin verir — yazılan addan değil, bağlantının
+        kurulduğu yerde denetlenir. "Kapalı" asistanı o bağlantının ekranlarında gizler ve ajan o bağlantıyı
+        hiç duymaz. <strong>Ajan burada değişiklik önerebilir</strong> (varsayılan olarak açık) kapatılarak
+        ajan o bağlantıda yalnızca okumayla sınırlanabilir. <strong>Ajanın araçları</strong> altında bir
+        yönetici orada tek tek araçları kapatır — MongoDB MCP sunucusunun kapalı araçları gibi, okuma ve
+        gösterme değişikliklerden ayrı: kapatılan bir araç o bağlantıda bir şey okumadan ya da önermeden
+        reddedilir (ona bir kopya, ondan bir geri yükleme, adıyla bulunan zamanlaması, listelenen işleri
+        ve yedekleri de), onun için kartında bekleyen bir değişiklik onaylandığında reddedilir, yedekleme
+        kapalıysa önce yedek önerilmez ve ajana hangilerinin kapalı olduğu söylenir. Yalnızca bir bağlantıda
+        iş gören araçlar listelenir; sonraki bir sürümün eklediği açık başlar. Bağlantının dışa ve içe
+        aktarılmasıyla birlikte taşınırlar (sürümün tanımadığı adlar düşer).
+      </p>
+
+      <h2 id="limits">Sınırlar</h2>
+      <ul>
+        <li>
+          Kişi başına dakikada 10, günde 200 istek (<code>MM_AI_PER_MINUTE</code>,
+          <code>MM_AI_PER_DAY</code>).
+        </li>
+        <li>Kişi başına aynı anda 2, sunucuda aynı anda 8 istek (<code>MM_AI_MAX_CONCURRENT</code>).</li>
+        <li>
+          Bir yanıt 3 dakika ya da 512 KB sonra durur; her sağlayıcının token cinsinden kendi en uzun yanıtı
+          vardır.
+        </li>
+        <li>
+          Kim sorabilir: yöneticiler ve editörler (<code>ai:use</code> hakkı), okuyabildikleri
+          koleksiyonlarda.
+        </li>
+      </ul>
+
+      <h2 id="safety">Güvenlik</h2>
+      <ul>
+        <li>
+          Ajan modu kapalıyken asistanın aracı yoktur: başka hiçbir şeyi okuyamaz, bir şey çalıştıramaz. Bir
+          sohbette yalnızca o ana kadarki konuşmayı görür. <a href="#agent">Ajan modunda</a> araçları yalnızca
+          uygulamanın yolları üzerinden, sizin adınıza çalışır ve her değişiklik sizin tıklamanızı bekler.
+        </li>
+        <li>
+          Koleksiyonlarınızdaki veriler modele talimat vermeye çalışabilir. Ne yazarsa yazsın yalnızca bir
+          editördeki metin olur ve sorgu çubuğuyla aynı güvenli ayrıştırıcıdan geçer; siz çalıştırana kadar
+          hiçbir şey çalışmaz. Ajan modunda araç sonuçları modele talimat olarak değil veri olarak işaretlenip
+          verilir; veriler bir modeli bir değişiklik önermeye ikna etse bile, siz onaylayana kadar o
+          değişiklik yalnızca bir karttır.
+        </li>
+        <li>
+          Yanıtlar basit biçimlendirmeyle düz metin olarak gösterilir: resim ve canlı bağlantı yoktur; bir
+          yanıt tarayıcınıza hiçbir şey yükletemez.
+        </li>
+        <li>
+          Her istek AI geçmişinizde (kenar çubuğunda AI geçmişi), sunucunun anahtarıyla mühürlenmiş olarak
+          varsayılan 90 gün tutulur; günleri ve sorulan ile yanıtlanan sözlerin hiç tutulup tutulmayacağını
+          bir yönetici belirler. Bir sohbet tek bir giriştir ve turları sırayla — düz olanlar, bir
+          koleksiyon hakkındakiler ve ajanınkiler — sayfasında birlikte görünür; sohbeti yeniden açan bir
+          düğme vardır. Bir tur tek başına paylaşılır, bütün sohbet asla: takım arkadaşı paylaşılan turu,
+          yalnızca dayandığını okuyabildiği yerde okur.
+          Bir ajan turu, ajanın yaptıklarını da adım adım gösterir — her
+          aracı, nerede çalıştığını ve nasıl bittiğini, önerdiği değişiklikler dahil — sohbetinin gösterdiği
+          gibi, hiçbir değer olmadan. İsteklerinizi yalnızca siz okursunuz; birini ekiple paylaşırsanız,
+          dayandığı her bağlantıyı (bir ajan turunda, adımlarının adını verdiği her bağlantıyı) okuyabilen
+          takım arkadaşları onu salt okunur olarak okur. Sohbetler
+          <a href="#chat">Sohbet</a>
+          bölümünde anlatıldığı gibi tutulur. Denetim kaydı kimin sorduğunu, hangi eylemi ya da sohbeti,
+          sağlayıcıyı ve koleksiyonu, kaç örnek gönderildiğini, token sayılarını ve sonucu tutar — sözleri,
+          gönderilenleri ya da yanıtı asla. Ajan modunda her adım da kaydedilir (araç, bağlantı ve ad alanı,
+          nasıl bittiği ve bir değişikliğe verdiğiniz yanıt); bağımsız değişkenleri ya da okuduğu şeyler asla.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Bu sayfada</p>
+      <ol>
+        <li><a href="#actions">Ne yapar</a></li>
+        <li><a href="#providers">Sağlayıcılar</a></li>
+        <li><a href="#offline">Çevrimdışı, yerel bir modelle</a></li>
+        <li><a href="#chat">Sohbet</a></li>
+        <li><a href="#agent">Ajan modu</a></li>
+        <li><a href="#what-is-sent">Ne gönderilir</a></li>
+        <li><a href="#personal-data">Kişisel veriler</a></li>
+        <li><a href="#policy">Bir bağlantının AI politikası</a></li>
+        <li><a href="#limits">Sınırlar</a></li>
+        <li><a href="#safety">Güvenlik</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

@@ -1,0 +1,105 @@
+{
+  "id": "search-playground",
+  "name": {
+    "en": "Search playground",
+    "tr": "Arama alanı",
+    "zh": "搜索实验台",
+    "ja": "検索プレイグラウンド",
+    "es": "Zona de pruebas de búsqueda",
+    "pt": "Playground de busca",
+    "ko": "검색 플레이그라운드",
+    "de": "Such-Playground",
+    "fr": "Bac à sable de recherche",
+    "ru": "Песочница поиска"
+  },
+  "version": "1.2.0",
+  "description": {
+    "en": "Tries a collection's search indexes: full-text search on a field or all of them, with typos allowed and highlights, or vector search with a pasted vector or one of the collection's documents — results with their score, the pipeline handed to Aggregations.",
+    "tr": "Bir koleksiyonun arama indekslerini dener: bir alanda ya da hepsinde yazım hatasına izin veren, vurgulu tam metin araması ya da yapıştırılan bir vektörle veya bir belgeyle vektör araması; sonuçlar skorlarıyla, boru hattı Aggregations'a verilir.",
+    "zh": "试用集合的搜索索引：在某个字段或所有字段上进行允许拼写错误并带高亮的全文搜索，或使用粘贴的向量或集合中的某个文档进行向量搜索；结果附带得分，管道可发送到聚合。",
+    "ja": "コレクションの検索インデックスを試します。1 つまたはすべてのフィールドでの誤字を許容しハイライト付きの全文検索、貼り付けたベクトルやコレクションのドキュメントによるベクトル検索。結果はスコア付きで、パイプラインは集計に渡されます。",
+    "es": "Prueba los índices de búsqueda de una colección: búsqueda de texto completo en un campo o en todos, con errores tipográficos permitidos y resaltados, o búsqueda vectorial con un vector pegado o un documento de la colección. Resultados con su puntuación y el pipeline pasa a Agregaciones.",
+    "pt": "Testa os índices de busca de uma coleção: busca de texto completo em um campo ou em todos, com erros de digitação permitidos e destaques, ou busca vetorial com um vetor colado ou um documento da coleção. Resultados com sua pontuação e o pipeline vai para Agregações.",
+    "ko": "컬렉션의 검색 인덱스를 시험합니다. 한 필드 또는 모든 필드에서 오타를 허용하고 강조 표시를 지원하는 전체 텍스트 검색, 또는 붙여넣은 벡터나 컬렉션의 도큐먼트로 하는 벡터 검색을 실행하며, 결과에는 점수가 표시되고 파이프라인은 집계로 보낼 수 있습니다.",
+    "de": "Testet die Suchindizes einer Collection: Volltextsuche in einem Feld oder in allen, mit erlaubten Tippfehlern und Hervorhebungen, oder Vektorsuche mit einem eingefügten Vektor oder einem Dokument der Collection. Die Ergebnisse zeigen ihren Score, die Pipeline geht an Aggregationen.",
+    "fr": "Teste les index de recherche d’une collection : recherche en texte intégral dans un champ ou dans tous, avec fautes de frappe tolérées et surlignages, ou recherche vectorielle avec un vecteur collé ou un document de la collection. Résultats avec leur score ; le pipeline passe à Agrégations.",
+    "ru": "Позволяет опробовать поисковые индексы коллекции: полнотекстовый поиск по одному полю или по всем с допустимыми опечатками и подсветкой либо векторный поиск по вставленному вектору или документу коллекции. Результаты показывают оценку, конвейер передается в агрегации."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read", "collection:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "search",
+        "title": {
+          "en": "Search",
+          "tr": "Arama",
+          "zh": "搜索",
+          "ja": "検索",
+          "es": "Búsqueda",
+          "pt": "Busca",
+          "ko": "검색",
+          "de": "Suche",
+          "fr": "Recherche",
+          "ru": "Поиск"
+        },
+        "icon": "wand"
+      }
+    ]
+  },
+  "author": {
+    "name": "Gokhan OZGEZER"
+  },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Counts of results, fields and dimensions also follow each language’s plural rules.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Sonuç, alan ve boyut sayıları da her dilin çoğul kurallarına uyar.",
+        "zh": "现在与应用一样也支持韩语、德语、法语和俄语。结果、字段和维度的数量也遵循各语言的复数规则。",
+        "ja": "アプリと同様に、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。結果、フィールド、次元の数も各言語の複数形の規則に従います。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Los recuentos de resultados, campos y dimensiones también siguen las reglas de plural de cada idioma.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o app. As contagens de resultados, campos e dimensões também seguem as regras de plural de cada idioma.",
+        "ko": "앱과 마찬가지로 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 결과, 필드, 차원의 개수도 각 언어의 복수형 규칙을 따릅니다.",
+        "de": "Jetzt wie die App auch auf Koreanisch, Deutsch, Französisch und Russisch. Die Anzahlen von Ergebnissen, Feldern und Dimensionen folgen außerdem den Pluralregeln jeder Sprache.",
+        "fr": "Désormais aussi en coréen, en allemand, en français et en russe, comme l’application. Les nombres de résultats, de champs et de dimensions suivent aussi les règles de pluriel de chaque langue.",
+        "ru": "Теперь, как и приложение, также на корейском, немецком, французском и русском. Количества результатов, полей и измерений теперь тоже следуют правилам множественного числа каждого языка."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同様に、中国語、日本語、スペイン語、ブラジルポルトガル語に対応しました。ほかに変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o app. Nada mais muda.",
+        "ko": "앱과 마찬가지로 중국어, 일본어, 스페인어, 브라질 포르투갈어를 지원합니다. 그 외 변경 사항은 없습니다.",
+        "de": "Jetzt wie die App auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, en japonais, en espagnol et en portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь, как и приложение, на китайском, японском, испанском и бразильском португальском. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-27",
+      "notes": {
+        "en": "First release. A Search tab lists the collection's Atlas Search and Vector Search indexes with their state. Full text: what to search for, in one field or all the index maps, one or two letters of typos allowed, highlights. Vector: a pasted query vector, or one of the collection's documents to find those like it, its dimensions checked, candidates, a filter. Results show their score, highlights (as text) and fields; the pipeline goes to Aggregations on a click. Where search is not enabled (Community without mongot), or the collection has no search index, it says so.",
+        "tr": "İlk sürüm. Arama sekmesi koleksiyonun Atlas Search ve Vector Search indekslerini durumlarıyla listeler. Tam metin: aranan, tek bir alanda ya da indeksin eşlediği tüm alanlarda, bir ya da iki harflik yazım hatasına izin vererek, vurgularla. Vektör: yapıştırılan bir sorgu vektörü ya da benzerlerini bulmak için koleksiyonun bir belgesi; boyutları denetlenir, adaylar, bir filtre. Sonuçlar skorlarını, vurgularını (metin olarak) ve alanlarını gösterir; boru hattı bir tıklamayla Aggregations'a gider. Arama etkin değilse (mongot'suz Community) ya da koleksiyonda arama indeksi yoksa bunu söyler.",
+        "zh": "首个版本。“搜索”标签页列出集合的 Atlas Search 和 Vector Search 索引及其状态。全文：搜索内容，可在一个字段或索引映射的所有字段中搜索，允许一到两个字符的拼写错误，支持高亮。向量：粘贴的查询向量，或使用集合中的某个文档查找与之相似的文档，会检查维度，另有候选数和筛选。结果显示得分、高亮（以文本形式）和字段；单击即可将管道发送到聚合。未启用搜索（没有 mongot 的 Community）或集合没有搜索索引时，会给出提示。",
+        "ja": "最初のリリース。検索タブにコレクションの Atlas Search と Vector Search のインデックスを状態とともに一覧表示します。全文検索: 検索語を、1 つのフィールドまたはインデックスがマッピングするすべてのフィールドで検索し、1～2 文字の誤字を許容、ハイライト付き。ベクトル検索: 貼り付けたクエリベクトル、またはコレクションのドキュメントに類似するものを検索でき、次元数の検証、候補数、フィルターに対応。結果にはスコア、ハイライト（テキストとして）、フィールドが表示され、クリックでパイプラインを集計に渡せます。検索が有効でない場合（mongot のない Community）やコレクションに検索インデックスがない場合は、その旨を表示します。",
+        "es": "Primera versión. Una pestaña Búsqueda muestra los índices de Atlas Search y Vector Search de la colección con su estado. Texto completo: qué buscar, en un campo o en todos los que asigna el índice, con una o dos letras de errores tipográficos permitidas y resaltados. Vectorial: un vector de consulta pegado, o un documento de la colección para encontrar otros parecidos, con sus dimensiones comprobadas, candidatos y un filtro. Los resultados muestran su puntuación, los resaltados (como texto) y los campos; el pipeline pasa a Agregaciones con un clic. Si la búsqueda no está habilitada (Community sin mongot) o la colección no tiene índice de búsqueda, lo indica.",
+        "pt": "Primeira versão. Uma aba Busca lista os índices do Atlas Search e do Vector Search da coleção com seu estado. Texto completo: o que buscar, em um campo ou em todos os que o índice mapeia, com uma ou duas letras de erros de digitação permitidas e destaques. Vetorial: um vetor de consulta colado, ou um documento da coleção para encontrar outros parecidos, com as dimensões verificadas, candidatos e um filtro. Os resultados mostram sua pontuação, os destaques (como texto) e os campos; o pipeline vai para Agregações com um clique. Quando a busca não está habilitada (Community sem mongot) ou a coleção não tem índice de busca, ele avisa.",
+        "ko": "첫 릴리스입니다. 검색 탭에 컬렉션의 Atlas Search 및 Vector Search 인덱스가 상태와 함께 표시됩니다. 전체 텍스트: 검색어를 한 필드 또는 인덱스가 매핑한 모든 필드에서 검색하며, 1~2글자의 오타를 허용하고 강조 표시를 지원합니다. 벡터: 붙여넣은 쿼리 벡터 또는 유사한 항목을 찾기 위한 컬렉션의 도큐먼트를 사용하며, 차원 수 검사, 후보 수, 필터를 지원합니다. 결과에는 점수, 강조 표시(텍스트로), 필드가 표시되고, 클릭 한 번으로 파이프라인을 집계로 보낼 수 있습니다. 검색이 활성화되어 있지 않거나(mongot가 없는 Community) 컬렉션에 검색 인덱스가 없으면 그 사실을 알려 줍니다.",
+        "de": "Erste Version. Ein Tab „Suche“ listet die Atlas-Search- und Vector-Search-Indizes der Collection mit ihrem Status auf. Volltext: Suchbegriff, in einem Feld oder in allen vom Index abgebildeten Feldern, ein oder zwei Buchstaben Tippfehler erlaubt, mit Hervorhebungen. Vektor: ein eingefügter Abfragevektor oder ein Dokument der Collection, um ähnliche zu finden, mit geprüften Dimensionen, Kandidaten und einem Filter. Die Ergebnisse zeigen ihren Score, Hervorhebungen (als Text) und Felder; die Pipeline geht per Klick an Aggregationen. Ist die Suche nicht aktiviert (Community ohne mongot) oder hat die Collection keinen Suchindex, wird das gemeldet.",
+        "fr": "Première version. Un onglet Recherche liste les index Atlas Search et Vector Search de la collection avec leur état. Texte intégral : ce qu’il faut rechercher, dans un champ ou dans tous ceux que l’index mappe, avec une ou deux lettres de fautes de frappe tolérées et des surlignages. Vectoriel : un vecteur de requête collé, ou un document de la collection pour trouver ses semblables, avec dimensions vérifiées, candidats et un filtre. Les résultats affichent leur score, les surlignages (sous forme de texte) et les champs ; le pipeline est transmis à Agrégations en un clic. Si la recherche n’est pas activée (Community sans mongot) ou si la collection n’a pas d’index de recherche, l’onglet l’indique.",
+        "ru": "Первый выпуск. Вкладка «Поиск» показывает поисковые индексы Atlas Search и Vector Search коллекции с их состоянием. Полнотекстовый поиск: что искать, в одном поле или во всех, которые сопоставлены индексом, с допустимыми опечатками в одну-две буквы и подсветкой. Векторный поиск: вставленный вектор запроса или документ коллекции, чтобы найти похожие; размерность проверяется, есть кандидаты и фильтр. Результаты показывают оценку, подсветку (как текст) и поля; конвейер передается в агрегации одним щелчком. Если поиск не включен (Community без mongot) или в коллекции нет поискового индекса, вкладка сообщает об этом."
+      }
+    }
+  ]
+}

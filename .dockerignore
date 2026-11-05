@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+.git
+**/dist
+packages/cli/public
+# Local dot-folders and dotfiles (tools, editors): not part of the build.
+.*
+packages/e2e/test-results
+packages/e2e/playwright-report
+**/*.key
+**/.env*
+**/*.tgz
+docs

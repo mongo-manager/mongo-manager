@@ -1,0 +1,82 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 Gokhan OZGEZER */
+/* Anonymiser (plugins wave 4): what the kit (kit/src/ui.css) does not already give. */
+.an-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.an-muted {
+  margin: 0;
+  color: var(--ds-fg-muted);
+}
+.an-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.an-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.an-title {
+  margin: 0;
+  font-size: 15px;
+}
+.an-table {
+  overflow-x: auto;
+}
+.an-table td {
+  vertical-align: middle;
+}
+.an-table td:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.an-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+.an-option {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ds-fg-muted);
+}
+.an-number {
+  width: 110px;
+}
+.an-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+}
+.an-doc {
+  margin: 0;
+  padding: 10px 12px;
+  max-height: 260px;
+  overflow: auto;
+  border: 1px solid var(--ds-line);
+  border-radius: 8px;
+  background: var(--ds-subtle);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.an-error {
+  margin: 0;
+  min-height: 1.2em;
+  color: var(--ds-danger);
+}
+@media (max-width: 640px) {
+  .an-preview {
+    grid-template-columns: 1fr;
+  }
+}

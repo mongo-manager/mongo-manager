@@ -1,0 +1,5 @@
+# Archives made by scripts/pack.mjs: attach them to a GitHub release, never commit them.
+*.tgz
+node_modules/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,103 @@
+{
+  "id": "reshape",
+  "name": {
+    "en": "Reshape",
+    "tr": "Yeniden şekillendir",
+    "zh": "重塑",
+    "ja": "リシェイプ",
+    "es": "Remodelar",
+    "pt": "Remodelar",
+    "ko": "재구성",
+    "de": "Umformen",
+    "fr": "Remodeler",
+    "ru": "Реструктуризация"
+  },
+  "version": "1.2.0",
+  "description": {
+    "en": "Renames, flattens, nests, converts or removes a collection's fields as steps you preview on sample documents, then hands them to Aggregations as a pipeline — to write a new collection with a $out you add there. The collection itself is never changed.",
+    "tr": "Alanları, örnek belgelerde önizlenen adımlarla yeniden adlandırır, düzleştirir, iç içe koyar, dönüştürür ya da kaldırır; adımları bir boru hattı olarak Aggregations'a verir, orada eklenen bir $out yeni koleksiyonu yazar. Koleksiyonun kendisi hiç değişmez.",
+    "zh": "将集合的字段重命名、展平、嵌套、转换或删除，步骤可在示例文档上预览，再以管道形式交给聚合；在聚合中添加 $out 即可写入新集合。集合本身不会被更改。",
+    "ja": "コレクションのフィールドの名前変更、フラット化、ネスト、変換、削除を、サンプルドキュメントでプレビューできるステップとして組み立て、パイプラインとして集計に渡します。集計で $out を追加すると新しいコレクションに書き込めます。コレクション自体は変更されません。",
+    "es": "Renombra, aplana, anida, convierte o elimina los campos de una colección mediante pasos que previsualizas en documentos de muestra y los pasa a Agregaciones como un pipeline; allí, un $out que añadas escribe una colección nueva. La colección en sí nunca se modifica.",
+    "pt": "Renomeia, nivela, aninha, converte ou remove campos de uma coleção em etapas que você visualiza em documentos de amostra e as envia para Agregações como um pipeline; lá, um $out que você adicionar grava uma nova coleção. A coleção em si nunca é alterada.",
+    "ko": "컬렉션의 필드 이름을 바꾸거나 평탄화, 중첩, 변환, 삭제하는 작업을 샘플 도큐먼트에서 미리 볼 수 있는 단계로 구성하고, 파이프라인으로 집계에 넘깁니다. 새 컬렉션에 쓰려면 집계에서 $out을 추가하세요. 컬렉션 자체는 변경되지 않습니다.",
+    "de": "Benennt Felder einer Collection um, verflacht, verschachtelt, konvertiert oder entfernt sie – als Schritte mit Vorschau an Beispieldokumenten, die als Pipeline an Aggregationen gehen; ein dort hinzugefügtes $out schreibt eine neue Collection. Die Collection selbst wird nie geändert.",
+    "fr": "Renomme, aplatit, imbrique, convertit ou supprime les champs d’une collection en opérations prévisualisées sur des documents d’échantillon, puis les transmet à Agrégations comme un pipeline ; un $out ajouté là-bas écrit une nouvelle collection. La collection elle-même n’est jamais modifiée.",
+    "ru": "Переименовывает, разворачивает, вкладывает, преобразует или удаляет поля коллекции в виде шагов, которые вы просматриваете на примерах документов, и передает их в Агрегации как конвейер; добавленный там $out запишет новую коллекцию. Сама коллекция никогда не изменяется."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "reshape",
+        "title": {
+          "en": "Reshape",
+          "tr": "Yeniden şekillendir",
+          "zh": "重塑",
+          "ja": "リシェイプ",
+          "es": "Remodelar",
+          "pt": "Remodelar",
+          "ko": "재구성",
+          "de": "Umformen",
+          "fr": "Remodeler",
+          "ru": "Реструктуризация"
+        },
+        "icon": "shapes"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Some wording and counts also read better in several languages.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Bazı ifadeler ve sayılar da birçok dilde daha doğru okunuyor.",
+        "zh": "现已与应用一样支持韩语、德语、法语和俄语。部分措辞和计数在多种语言中也更加准确。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語に対応しました。いくつかの言語で、一部の文言と件数の表記もより正確になりました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Además, algunos textos y recuentos se leen mejor en varios idiomas.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o aplicativo. Além disso, alguns textos e contagens ficaram mais corretos em vários idiomas.",
+        "ko": "앱과 마찬가지로 이제 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 또한 여러 언어에서 일부 문구와 개수 표기가 더 정확해졌습니다.",
+        "de": "Jetzt wie die App auch auf Koreanisch, Deutsch, Französisch und Russisch. Außerdem lesen sich einige Formulierungen und Zählungen in mehreren Sprachen besser.",
+        "fr": "Désormais aussi en coréen, en allemand, en français et en russe, comme l’application. Certaines formulations et certains décomptes se lisent aussi mieux dans plusieurs langues.",
+        "ru": "Теперь, как и приложение, доступно также на корейском, немецком, французском и русском. Кроме того, некоторые формулировки и счетчики теперь точнее на нескольких языках."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现已与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容均无变化。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルのポルトガル語に対応しました。ほかに変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o aplicativo. Nada mais muda.",
+        "ko": "앱과 마찬가지로 이제 중국어, 일본어, 스페인어, 브라질 포르투갈어도 지원합니다. 그 밖의 변경 사항은 없습니다.",
+        "de": "Jetzt wie die App auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, en japonais, en espagnol et en portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь, как и приложение, доступно также на китайском, японском, испанском и бразильском португальском. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-26",
+      "notes": {
+        "en": "First release. A Reshape tab builds steps — rename or move a field, flatten an object, nest fields into one, convert a type, remove a field, set a default where it is missing, split text into a list or join a list into text — as $set and $unset stages, shows the same sampled documents before and after, and hands the stages to Aggregations, where a $out you add writes a new collection after Aggregations asks you. _id and fields hidden from you are never offered.",
+        "tr": "İlk sürüm. Yeniden şekillendir sekmesi adımlar kurar — bir alanı yeniden adlandırma ya da taşıma, bir nesneyi düzleştirme, alanları bir nesneye yerleştirme, türünü dönüştürme, bir alanı kaldırma, yoksa varsayılan değer koyma, metni listeye bölme ya da listeyi metne birleştirme — bunları $set ve $unset aşamaları olarak oluşturur, aynı örnek belgeleri önce ve sonra gösterir ve aşamaları Aggregations'a verir; orada ekleyeceğiniz bir $out, Aggregations size sorduktan sonra yeni bir koleksiyon yazar. _id ve sizden gizlenen alanlar asla sunulmaz.",
+        "zh": "首个版本。“重塑”标签页可构建步骤——重命名或移动字段、展平对象、将字段嵌套到一个对象中、转换类型、删除字段、缺失时设默认值、将文本拆分为列表或将列表合并为文本——并生成 $set 和 $unset 阶段，在前后显示相同的采样文档，再把这些阶段交给聚合；在聚合中添加的 $out 会在聚合向您确认后写入新集合。_id 以及对您隐藏的字段不会被提供。",
+        "ja": "最初のリリースです。リシェイプタブでステップを組み立てます。フィールドの名前変更や移動、オブジェクトのフラット化、フィールドを 1 つのオブジェクトへネスト、型の変換、フィールドの削除、欠落時のデフォルト値の設定、テキストのリスト分割、リストのテキスト結合に対応し、それらを $set と $unset ステージとして生成します。同じサンプルドキュメントを変更前後で表示し、ステージを集計に渡します。集計で追加した $out は、集計の確認後に新しいコレクションへ書き込みます。_id と非表示のフィールドは選択肢に表示されません。",
+        "es": "Primera versión. Una pestaña Remodelar crea pasos (renombrar o mover un campo, aplanar un objeto, anidar campos en uno, convertir un tipo, eliminar un campo, poner un valor por defecto si falta, dividir texto en una lista o unir una lista en texto) como etapas $set y $unset, muestra los mismos documentos de muestra antes y después, y pasa las etapas a Agregaciones, donde un $out que añadas escribe una colección nueva después de que Agregaciones te lo pregunte. _id y los campos que se te ocultan nunca se ofrecen.",
+        "pt": "Primeira versão. Uma guia Remodelar cria etapas (renomear ou mover um campo, nivelar um objeto, aninhar campos em um só, converter um tipo, remover um campo, definir um padrão quando ausente, dividir texto em uma lista ou unir uma lista em texto) como estágios $set e $unset, mostra os mesmos documentos de amostra antes e depois e envia os estágios para Agregações, onde um $out que você adicionar grava uma nova coleção depois que Agregações perguntar a você. _id e os campos ocultos de você nunca são oferecidos.",
+        "ko": "첫 번째 릴리스입니다. 재구성 탭에서 단계를 구성합니다. 필드 이름 변경 또는 이동, 객체 평탄화, 필드를 하나의 객체로 중첩, 유형 변환, 필드 삭제, 없을 때 기본값 설정, 텍스트를 목록으로 분할, 목록을 텍스트로 결합을 $set 및 $unset 스테이지로 만들고, 같은 샘플 도큐먼트를 변경 전후로 보여 주며, 스테이지를 집계에 넘깁니다. 집계에서 추가한 $out은 집계가 확인한 뒤 새 컬렉션에 씁니다. _id와 숨겨진 필드는 제안되지 않습니다.",
+        "de": "Erste Version. Ein Tab „Umformen“ baut Schritte auf – ein Feld umbenennen oder verschieben, ein Objekt verflachen, Felder in ein Objekt verschachteln, einen Typ konvertieren, ein Feld entfernen, einen Standardwert setzen, wenn es fehlt, Text in eine Liste aufteilen oder eine Liste zu Text verbinden – als $set- und $unset-Stages, zeigt dieselben Beispieldokumente vorher und nachher und übergibt die Stages an Aggregationen, wo ein von Ihnen hinzugefügtes $out nach Rückfrage von Aggregationen eine neue Collection schreibt. _id und Felder, die Ihnen verborgen sind, werden nie angeboten.",
+        "fr": "Première version. Un onglet Remodeler crée des opérations — renommer ou déplacer un champ, aplatir un objet, imbriquer des champs dans un seul, convertir un type, supprimer un champ, définir une valeur par défaut s’il est absent, scinder un texte en liste ou joindre une liste en texte — sous forme d’étapes $set et $unset, montre les mêmes documents d’échantillon avant et après, et transmet les étapes à Agrégations, où un $out que vous ajoutez écrit une nouvelle collection une fois qu’Agrégations vous l’a demandé. _id et les champs qui vous sont masqués ne sont jamais proposés.",
+        "ru": "Первый выпуск. Вкладка «Реструктуризация» строит шаги — переименование или перемещение поля, разворачивание объекта, вложение полей в один объект, преобразование типа, удаление поля, значение по умолчанию для отсутствующего поля, разбиение текста на список или объединение списка в текст — в виде стадий $set и $unset, показывает одни и те же документы выборки до и после и передает стадии в Агрегации, где добавленный вами $out записывает новую коллекцию после запроса подтверждения у вас. _id и скрытые от вас поля никогда не предлагаются."
+      }
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "version": "hand-made",
+  "note": "W5 review I6: a mongos aggregation whose shards answer with a $cursor and later stages (the shape a shard gives when its part of the pipeline does not all go into the query), one shard stopped at its time limit. Numbers chosen by hand.",
+  "raw": {
+    "mergeType": "router",
+    "splitPipeline": {
+      "shardsPart": [
+        { "$match": { "g": { "$eq": 2 } } },
+        { "$lookup": { "from": "other", "localField": "g", "foreignField": "k", "as": "o" } },
+        { "$group": { "_id": "$s", "c": { "$sum": { "$const": 1 } } } }
+      ],
+      "mergerPart": [
+        { "$mergeCursors": { "nss": "shop.items" } },
+        { "$group": { "_id": "$$ROOT._id", "c": { "$sum": "$$ROOT.c" }, "$doingMerge": true } },
+        { "$sort": { "sortKey": { "c": -1 } } }
+      ]
+    },
+    "shards": {
+      "shard0": {
+        "host": "capture-host",
+        "stages": [
+          {
+            "$cursor": {
+              "queryPlanner": {
+                "namespace": "shop.items",
+                "winningPlan": {
+                  "stage": "SHARDING_FILTER",
+                  "inputStage": {
+                    "stage": "FETCH",
+                    "inputStage": { "stage": "IXSCAN", "indexName": "g_1", "keyPattern": { "g": 1 } }
+                  }
+                },
+                "rejectedPlans": []
+              },
+              "executionStats": {
+                "executionSuccess": true,
+                "nReturned": 200,
+                "executionTimeMillis": 4,
+                "totalKeysExamined": 200,
+                "totalDocsExamined": 200,
+                "executionStages": {
+                  "stage": "SHARDING_FILTER",
+                  "nReturned": 200,
+                  "inputStage": {
+                    "stage": "FETCH",
+                    "nReturned": 200,
+                    "docsExamined": 200,
+                    "inputStage": {
+                      "stage": "IXSCAN",
+                      "indexName": "g_1",
+                      "keyPattern": { "g": 1 },
+                      "nReturned": 200,
+                      "keysExamined": 200
+                    }
+                  }
+                }
+              }
+            },
+            "nReturned": 200,
+            "executionTimeMillisEstimate": 3
+          },
+          {
+            "$lookup": { "from": "other", "as": "o", "localField": "g", "foreignField": "k" },
+            "nReturned": 200,
+            "executionTimeMillisEstimate": 9
+          },
+          {
+            "$group": { "_id": "$s", "c": { "$sum": { "$const": 1 } } },
+            "nReturned": 25,
+            "executionTimeMillisEstimate": 10
+          }
+        ]
+      },
+      "shard1": {
+        "host": "capture-host",
+        "stages": [
+          {
+            "$cursor": {
+              "queryPlanner": {
+                "namespace": "shop.items",
+                "winningPlan": {
+                  "stage": "SHARDING_FILTER",
+                  "inputStage": { "stage": "COLLSCAN", "filter": { "g": { "$eq": 2 } } }
+                },
+                "rejectedPlans": []
+              },
+              "executionStats": {
+                "executionSuccess": false,
+                "errorMessage": "operation exceeded time limit",
+                "errorCode": 50,
+                "nReturned": 229,
+                "executionTimeMillis": 30001,
+                "totalKeysExamined": 0,
+                "totalDocsExamined": 15000,
+                "executionStages": {
+                  "stage": "SHARDING_FILTER",
+                  "nReturned": 229,
+                  "inputStage": {
+                    "stage": "COLLSCAN",
+                    "filter": { "g": { "$eq": 2 } },
+                    "nReturned": 229,
+                    "docsExamined": 15000
+                  }
+                }
+              }
+            },
+            "nReturned": 229,
+            "executionTimeMillisEstimate": 29000
+          },
+          {
+            "$lookup": { "from": "other", "as": "o", "localField": "g", "foreignField": "k" },
+            "nReturned": 229,
+            "executionTimeMillisEstimate": 29900
+          },
+          {
+            "$group": { "_id": "$s", "c": { "$sum": { "$const": 1 } } },
+            "nReturned": 25,
+            "executionTimeMillisEstimate": 30000
+          }
+        ]
+      }
+    },
+    "ok": 1
+  }
+}
