@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>监视变更 · Mongo Manager 文档</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager 文档</a>
+      <details class="lang-menu">
+        <summary>简体中文</summary>
+        <span class="langs" role="group" aria-label="语言">
+          <a lang="en" hreflang="en" href="../watch.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/watch.html">Türkçe</a>
+          <strong lang="zh-CN">简体中文</strong>
+          <a lang="ja" hreflang="ja" href="../ja/watch.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/watch.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/watch.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/watch.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/watch.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/watch.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/watch.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">概览</a>
+      <a href="getting-started.html">快速入门</a>
+      <a href="security.html">安全</a>
+      <a href="deployment.html">部署</a>
+      <a href="import-export.html">导入与导出</a>
+      <a href="backup.html">备份与恢复</a>
+      <strong>监视变更</strong>
+      <a href="sync.html">实时同步</a>
+      <a href="server-admin.html">服务器管理</a>
+      <a href="ai.html">AI 助手</a>
+      <a href="plugins.html">插件</a>
+      <a href="shortcuts.html">键盘快捷键</a>
+    </nav>
+    <main>
+      <h1>监视变更</h1>
+      <p>
+        “监视”部分会实时显示 MongoDB 对数据所做的变更：每一次插入、更新、替换和删除，并可按需显示新建索引等模式变更。该功能基于
+        MongoDB 的变更流。不会存储任何内容：数据流在打开时开始，只显示此后发生的变更。
+      </p>
+
+      <h2 id="requirements">入口位置</h2>
+      <ul>
+        <li>集合标签页 → <strong>监视</strong>：该集合的变更。</li>
+        <li>数据库标签页 → <strong>监视</strong>：该数据库中所有集合的变更。</li>
+        <li>连接标签页 → <strong>监视</strong>：该连接下所有数据库的变更。</li>
+        <li>命令面板（Ctrl+K）：“Watch changes…”会打开当前标签页的“监视”部分。</li>
+      </ul>
+      <p>
+        变更流需要副本集、分片集群或负载均衡部署（MongoDB Atlas 始终属于其中之一）。独立服务器无法监视，该部分会给出说明。开发时使用单节点副本集即可：启动
+        <code>mongod --replSet rs0</code>，并运行一次 <code>rs.initiate()</code>。视图无法监视：视图的“监视”部分会提供该视图所读取的集合。尚不存在的集合可以监视，创建后其变更便会出现。
+      </p>
+
+      <h2 id="who-may-watch">谁可以监视</h2>
+      <p>
+        凡有权读取该连接中文档的用户，均可在所有范围内监视。连接所用的数据库用户需要对被监视对象拥有
+        <code>changeStream</code> 和 <code>find</code> 权限（内置的 <code>read</code> 角色同时具备二者）。
+        <code>system.users</code> 等凭据集合仅向该连接的管理员显示。
+      </p>
+
+      <h2 id="the-feed">数据流</h2>
+      <p>
+        数据流上方的状态栏显示其状态：实时、已暂停、落后（落后超过两秒，并显示落后多少）、重新连接中或已结束，以及已收到的变更数量和速率。最新的变更位于顶部。每一行显示变更的类型（以文字和颜色表示）、数据库和连接数据流中的集合、文档的
+        <code>_id</code>、更新所涉及的字段名，以及变更发生的时间（悬停时显示精确时间）。向下滚动时，新变更会收在“新事件”按钮之后，不会打乱正在阅读的内容。系统保留最近 2,000 条变更，更早的会从列表中移出。
+      </p>
+      <p>
+        选择一条变更，即可在右侧查看：已更改的字段、插入和替换时的完整文档，或以 JSON 表示的事件。“打开文档”会打开该集合的“文档”部分，并按该文档的
+        <code>_id</code> 筛选。“复制为 EJSON”会以 Extended JSON 复制该变更。
+      </p>
+
+      <h2 id="pause-resume-and-reconnects">暂停、继续和重新连接</h2>
+      <p>
+        暂停会停止列表更新，且不会丢失位置：MongoDB 在服务器端保留这些变更。继续时，选择“追赶”可查看暂停期间发生的变更，选择“从现在开始”则跳过这些变更。数据流工具栏上的空格键可暂停和继续。已暂停的数据流在切换部分或标签页时保持暂停，直到关闭其标签页；正在运行的数据流在离开其部分几秒后停止。
+      </p>
+      <p>
+        与应用的连接断开时，数据流会自动重新连接。两分钟内，数据流会从浏览器收到的最后一条变更之后继续，不会遗漏也不会重复，并会提示这一点；已暂停的数据流恢复后仍处于暂停状态。如果无法再从该位置继续（例如在一次非常大的突发之后），则会从服务器所在位置继续，并提示可能缺少部分变更；超过两分钟后，则从当前时刻重新开始，并提示这一点。数据流继续时所用的位置（MongoDB 的恢复令牌）保留在服务器上。
+      </p>
+
+      <h2 id="filters">筛选</h2>
+      <p>
+        各个标签用于选择变更的类型：插入、更新、替换和删除。“包含模式更改”会加入创建或删除集合和索引以及选项更改等变更。“更新后显示完整文档”会在每次更新后读取文档，每次更新需额外读取一次。
+      </p>
+      <p>
+        “编辑筛选”接受针对每个变更事件的 <code>$match</code>，写法与查询相同，例如：
+      </p>
+      <ul>
+        <li>
+          <code>{ 'updateDescription.updatedFields.status': 'paid' }</code>：将 status 设为 paid 的更新。
+        </li>
+        <li><code>{ 'fullDocument.total': { $gt: 1000 } }</code>：大额订单的插入和替换。</li>
+        <li><code>{ 'documentKey._id': ObjectId('…') }</code>：单个文档。</li>
+        <li><code>{ 'ns.coll': 'orders' }</code>：在数据库或连接数据流中指定某一个集合。</li>
+      </ul>
+      <p>
+        筛选最大 12 KB，最多嵌套 20 层。在服务器上运行 JavaScript 的操作符（<code>$where</code>、<code>$function</code>、<code>$accumulator</code>）一律不予接受。更改任何筛选都会使数据流从现在重新开始，数据流会提示这一点。
+      </p>
+
+      <h2 id="pre-images">查看变更前的值</h2>
+      <p>
+        MongoDB 会报告更新更改了哪些字段及其新值。若还要查看变更前的值，请为该集合开启前镜像；之后数据流会在更新时显示完整的变更前后对比，在删除时显示删除前的文档。在集合的“监视”页面上，有权更改集合选项（例如验证规则）的用户在前后镜像关闭时会看到
+        <em>开启前后镜像</em>；页面会说明其开销，然后运行同一条命令（会记入审计）。也可以在 Shell 中执行：
+      </p>
+      <pre><code>db.runCommand({ collMod: 'orders', changeStreamPreAndPostImages: { enabled: true } })</code></pre>
+      <p>
+        前镜像会按服务器变更流设置所规定的时长保存在服务器的存储中，因此在繁忙的集合上会占用磁盘空间。没有前镜像时，数据流显示更新后的值、被移除的字段名，以及数组被缩短的方式。
+      </p>
+
+      <h2 id="recordings">录制、回放和告警</h2>
+      <p>
+        <em>录制到文件</em>（位于筛选中，供有权从该连接导出的用户使用）会在服务器上保存数据流的事件，内容与发送给您的完全一致（已脱敏的部分保持脱敏），每行一个事件。录制文件属于用户自己的传输文件：占用个人的传输空间，最大 64 MB（达到后录制停止而数据流继续，“监视”页面会提示），并在数据流结束后按传输文件的保留时间保存。重新连接后继续录制会开始新文件。服务器重启会结束录制：已写入磁盘的内容会保留，作为已完成的录制。文件是否脱敏，以其事件发送时的状态为准：如果在数据流期间脱敏设置发生变化（个人值现在对该用户隐藏或不再隐藏，或规则已更改），文件会在此处结束，并以新的标记开始新文件，录制列表中会同时显示两者。工具栏上的
+        <em>录制</em>会列出该连接下属于用户自己的录制：<em>回放</em>会取代实时数据流显示其中一个（列表和详情相同）——先显示前 500 个事件，之后每次选择<em>加载更多事件</em>再显示 500 个，最多 5,000 个（其余内容在文件中）；<em>下载</em>可获取文件（NDJSON）；录制也可以删除。其他任何人（包括管理员）都无法读取。如果该连接上的个人值现在已对用户隐藏（录制时未脱敏），或其规则已更改（录制时已脱敏），则不再提供该录制。
+      </p>
+      <p>
+        <em>匹配时触发告警</em>会通知应用的告警（<code>watch.matched</code> 事件）：有事件通过了数据流的筛选，最多每 10 秒一次，内容包括匹配数量和最后一个事件的类型，绝不包含任何值。该功能在数据流运行期间有效。
+      </p>
+
+      <h2 id="personal-data">个人数据</h2>
+      <p>
+        对于无权查看个人数据的用户，每条变更中的个人字段均显示为
+        <code>***</code>：文档、其键、变更前的值和更新后的值，均按字段路径处理，包括数组位置。针对隐藏字段的筛选会被拒绝，并且在数据库和连接数据流中，此类用户只能按变更类型、命名空间和时间进行筛选。数据流的导出包含当时显示的内容，隐藏的值同样显示为
+        <code>***</code>。
+      </p>
+
+      <h2 id="limits-and-settings">限制和设置</h2>
+      <ul>
+        <li>
+          每个浏览器窗口 3 个实时数据流，每个用户 5 个，服务器上共 50 个（<code>MM_WATCH_MAX_FEEDS</code>）。
+        </li>
+        <li>大于 256 KB 的文档不会在数据流中发送；“打开文档”可显示该文档。</li>
+        <li>
+          每个数据流每秒最多有 200 条变更到达浏览器；超过时，数据流会显示落后多少并随后赶上。
+        </li>
+        <li><code>MM_WATCH=0</code> 会在服务器上关闭监视功能。</li>
+        <li>
+          数据流的启动和停止会记入审计日志，包含筛选的指纹，但绝不包含其值。
+        </li>
+      </ul>
+
+      <h2 id="when-a-feed-ends">数据流结束的情形</h2>
+      <ul>
+        <li>
+          集合被删除或重命名：数据流结束；“从现在重新开始”会重新监视同名集合。
+        </li>
+        <li>
+          服务器的历史记录（oplog）已不再覆盖数据流所处的位置，例如离开很长时间之后：请从现在重新开始。
+        </li>
+        <li>访问权限、连接或其设置发生了变化：数据流结束并说明原因。</li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">本页内容</p>
+      <ol>
+        <li><a href="#requirements">入口位置</a></li>
+        <li><a href="#who-may-watch">谁可以监视</a></li>
+        <li><a href="#the-feed">数据流</a></li>
+        <li><a href="#pause-resume-and-reconnects">暂停、继续和重新连接</a></li>
+        <li><a href="#filters">筛选</a></li>
+        <li><a href="#pre-images">查看变更前的值</a></li>
+        <li><a href="#recordings">录制、回放和告警</a></li>
+        <li><a href="#personal-data">个人数据</a></li>
+        <li><a href="#limits-and-settings">限制和设置</a></li>
+        <li><a href="#when-a-feed-ends">数据流结束的情形</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

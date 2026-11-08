@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Importación y exportación · Documentación de Mongo Manager</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Documentación de Mongo Manager</a>
+      <details class="lang-menu">
+        <summary>Español</summary>
+        <span class="langs" role="group" aria-label="Idioma">
+          <a lang="en" hreflang="en" href="../import-export.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/import-export.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/import-export.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/import-export.html">日本語</a>
+          <strong lang="es">Español</strong>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/import-export.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/import-export.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/import-export.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/import-export.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/import-export.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Resumen</a>
+      <a href="getting-started.html">Primeros pasos</a>
+      <a href="security.html">Seguridad</a>
+      <a href="deployment.html">Implementación</a>
+      <strong>Importación y exportación</strong>
+      <a href="backup.html">Copia de seguridad y restauración</a>
+      <a href="watch.html">Observación de cambios</a>
+      <a href="sync.html">Sincronización en vivo</a>
+      <a href="server-admin.html">Administración del servidor</a>
+      <a href="ai.html">Asistente de IA</a>
+      <a href="plugins.html">Complementos</a>
+      <a href="shortcuts.html">Atajos de teclado</a>
+    </nav>
+    <main>
+      <h1>Importación y exportación</h1>
+      <p>
+        Los archivos se mueven entre tu equipo y una colección como tareas en segundo plano: puedes cerrar el
+        cuadro de diálogo y seguirlas en la lista de tareas. Ábrelas desde la barra de herramientas de la
+        colección, el menú de la colección en la barra lateral o la paleta de comandos. Los volcados SQL son
+        distintos: se mueven entre un archivo y una base de datos completa, en una página propia (consulta
+        <a href="#sql">Importación y exportación de SQL</a>).
+      </p>
+      <h2 id="formats">Formatos</h2>
+      <ul>
+        <li>
+          CSV y TSV (coma, punto y coma, tabulación o barra vertical; UTF-8, UTF-16, Latin-1, Windows-1252,
+          Windows-1254 o ISO-8859-9).
+        </li>
+        <li>JSON: un arreglo de documentos o un solo documento.</li>
+        <li>
+          NDJSON: un documento por línea, en Extended JSON, de modo que cada tipo BSON vuelve tal como era.
+        </li>
+        <li>Libros de Excel (.xlsx), una hoja cada vez.</li>
+        <li>Cualquiera de estos comprimido con gzip (.gz).</li>
+      </ul>
+      <h2 id="importing">Importación</h2>
+      <ol>
+        <li>Elige un archivo, suéltalo en el cuadro de diálogo o pega texto.</li>
+        <li>
+          Comprueba cómo se lee: el formato, el delimitador, la codificación, si la primera fila da nombre a
+          los campos y la hoja de un libro. Un archivo se lee como UTF-8, salvo que una marca de orden de
+          bytes indique otra cosa o elijas otra codificación. Cuando los bytes no son texto en esa
+          codificación, se sugiere la codificación a la que se parecen (UTF-16 sin marca de orden de bytes,
+          Windows-1254 para letras turcas, y si no Windows-1252) y un clic vuelve a leer el archivo con ella;
+          una suposición nunca se aplica por sí sola, porque una errónea escribiría letras equivocadas. Las
+          filas que siguen sin ser texto en la codificación elegida se rechazan, nunca se escriben con
+          caracteres de sustitución.
+        </li>
+        <li>
+          Asigna los campos: adónde va cada uno (<code>a.b</code> anida, <code>a[0]</code> es un elemento de
+          arreglo), su tipo, y en qué se convierte un valor vacío o un valor que no se puede convertir. Los
+          tipos se sugieren a partir de los primeros mil registros; los valores con un cero inicial o un
+          <code>+</code> inicial siguen siendo texto, de modo que los códigos y los números de teléfono los
+          conservan. La misma regla vale para todos los registros posteriores, para un tipo que elijas y para
+          una constante: un código nunca se lee como número, ni un número como un double que sería otro número
+          (<code>0.30000000000000004</code> es un double; <code>12345678901234567</code> no lo es); un valor
+          así se trata como uno que no se puede convertir. Las fechas sin zona horaria se leen como UTC. Una
+          fila de CSV con más o menos campos que el encabezado (una coma sin comillas en un campo) es un error
+          de fila, y va tal cual al archivo de registros rechazados; una línea solo de espacios no es un
+          registro. Bajo cada campo se muestran sus primeras muestras tal como se escribirían en el tipo
+          elegido, o con el motivo por el que no pueden escribirse.
+        </li>
+        <li>
+          Añade campos constantes si quieres: el mismo valor en cada documento, como la hora de importación o
+          como cadena, número (Int32, Int64, Double, Decimal128), fecha, ObjectId, booleano, JSON o nulo. Una
+          constante se convierte con las mismas reglas que los valores del archivo, y se rechaza antes de que
+          empiece la importación cuando no se puede convertir.
+        </li>
+        <li>
+          Elige el modo y, si quieres, haz primero una simulación. Para Upsert y Combinar, el cuadro de diálogo
+          avisa cuando ningún índice empieza por uno de los campos clave: cada registro se encontraría
+          entonces escaneando la colección.
+        </li>
+      </ol>
+      <h2 id="modes">Modos</h2>
+      <ul>
+        <li>
+          <strong>Insertar</strong>: cada registro se convierte en un documento nuevo; un registro cuyo
+          <code>_id</code> ya existe falla.
+        </li>
+        <li>
+          <strong>Upsert</strong>: un documento con los mismos campos clave (de forma predeterminada
+          <code>_id</code>) es reemplazado por el registro; en caso contrario, el registro se inserta.
+        </li>
+        <li>
+          <strong>Combinar</strong>: los campos del registro se escriben en el documento con los mismos campos
+          clave; los campos que el registro no tiene permanecen, también dentro de los subdocumentos.
+          «Solo actualizar» deja fuera los registros que no coinciden con nada. Un registro con un nombre de
+          campo que contiene un punto o empieza por <code>$</code> no se puede combinar (se leería como una
+          ruta); usa Upsert para él.
+        </li>
+      </ul>
+      <p>
+        Con «Omitirlo y continuar», los registros que fallan se cuentan y se enumeran; con «Detener la
+        importación», se escriben los registros anteriores al primer fallo y la importación se detiene ahí. Una
+        simulación lee, convierte y comprueba el archivo completo y no escribe nada. El informe cuenta lo
+        ocurrido, muestra por cada campo asignado cuántos valores se convirtieron y cuántos no, enumera los
+        primeros fallos y ofrece los registros rechazados como un archivo en el formato original, para
+        corregirlos e importarlos de nuevo. Cuando ese archivo superaría tu límite de almacenamiento, no se
+        conserva, y el informe lo indica. Los campos clave se comparan como valores y no pueden empezar por
+        <code>$</code>.
+      </p>
+      <h2 id="exporting">Exportación</h2>
+      <p>
+        Exporta la consulta que aplicaste, la colección completa o los resultados de un pipeline. CSV y Excel
+        toman las columnas que eliges y ordenas. Cuando se abre desde la barra lateral, la paleta de comandos o
+        una colección sin documentos mostrados, el cuadro de diálogo propone las columnas a partir de una
+        muestra de 100 documentos (los campos personales aparecen marcados: se escriben como <code>***</code>
+        para un usuario que no puede verlos). Los arreglos se escriben como su texto JSON, como una columna por
+        elemento (<code>tags.0</code>, <code>tags.1</code>… tantas como el arreglo más largo entre los
+        primeros documentos, como máximo el número que fijes; los elementos que excedan ese número se nombran
+        en el informe), o como sus elementos unidos con un separador que elijas. Si no eliges ninguno, los
+        campos de los primeros documentos (hasta 1000 u 8 MiB, como máximo 500 columnas) son las columnas, y
+        un campo que es un valor en un documento y un subdocumento en otro es una sola columna que contiene el
+        valor completo. El informe nombra, por su ruta, todo lo que ninguna columna contiene. El texto CSV que
+        empieza, tras posibles espacios, por <code>=</code>, <code>+</code>, <code>-</code>, <code>@</code>,
+        una tabulación o un salto de línea recibe un <code>'</code> inicial para que una hoja de cálculo nunca
+        lo ejecute como fórmula; desactívalo para un archivo que vaya a leer otro programa o una reimportación.
+        JSON y NDJSON conservan todos los campos y todos los tipos. Excel admite como máximo 1 048 575 filas y
+        32 767 caracteres por celda: las celdas más largas se recortan y se cuentan en el informe, y las
+        exportaciones mayores se rechazan con la sugerencia de usar CSV o NDJSON. Cuando la tarea termina,
+        descarga el archivo desde la lista de tareas; indica hasta cuándo se conserva el archivo (24 horas de
+        forma predeterminada, <code>MM_TRANSFER_TTL_HOURS</code>), y cuando caduca hay que volver a ejecutar la
+        exportación.
+      </p>
+      <h2 id="sql">Importación y exportación de SQL</h2>
+      <p>
+        La importación y exportación SQL vienen con el complemento incluido <strong>SQL → MongoDB</strong>. Hasta que un administrador lo apruebe y lo active en <a href="plugins.html">Complementos</a>, la página, su entrada en la barra lateral, sus comandos de la paleta y los elementos del menú de base de datos descritos abajo no se muestran, y el servidor rechaza las importaciones y exportaciones SQL, incluidas la exportación de una colección como SQL y las exportaciones SQL del asistente.
+      </p>
+      <p>
+        SQL no se importa ni se exporta desde una colección: ni la barra de herramientas de Documentos ni el
+        cuadro de diálogo Exportar de una colección lo ofrecen. Tiene una página propia,
+        <strong>SQL ↔ MongoDB</strong> en la barra lateral. La página siempre muestra la conexión y la base de
+        datos en la que trabaja. Ambas se eligen arriba y se conservan en la dirección de la página
+        (<code>/sql/import/&lt;connection&gt;/&lt;database&gt;</code> o <code>/sql/export/…</code>), de modo
+        que una recarga o un enlace compartido abre el mismo lugar. En el árbol de la barra lateral, el menú de
+        una base de datos ofrece «Importar volcado SQL…» y «Exportar como SQL…», que abren la página sobre esa
+        base de datos. En la paleta de comandos, «SQL ↔ MongoDB» abre la página donde se dejó, y «Exportar
+        como SQL» abre su exportación sobre la base de datos de la pestaña en la que estás. Tanto la
+        importación como la exportación trabajan con una base de datos a la vez. La página permanece abierta
+        mientras miras otras pestañas o su otra parte: un archivo que se está preparando o una tarea en
+        ejecución no se pierde, y una exportación aún en curso se muestra de nuevo cuando vuelves. Cerrar la
+        página, o salir de la aplicación, con un archivo preparado o una importación en curso pregunta antes.
+        Mientras el progreso de una tarea está a la vista en la página, cómo terminó se indica allí, sin
+        ninguna notificación adicional.
+      </p>
+      <h3>Importar un volcado SQL (SQL → MongoDB)</h3>
+      <ol>
+        <li>
+          Elige o suelta un archivo de MySQL (mysqldump), PostgreSQL (pg_dump) o SQLite (<code>.dump</code>),
+          sin comprimir o comprimido con gzip (.gz). Solo se leen las definiciones de tablas y las filas; no
+          se ejecuta nada del archivo. Las demás instrucciones se enumeran como omitidas.
+        </li>
+        <li>
+          Comprueba las tablas que contiene el volcado: cada una muestra sus columnas, su número de filas, su
+          clave primaria y algunas filas de muestra. Elige las tablas que importar y da nombre a la colección
+          en la que va cada una; el nombre se marca como nuevo o existente. Varias tablas pueden ir a una
+          misma colección al insertar; en upsert y combinar, cada tabla va a la suya, ya que las filas de dos
+          tablas con la misma clave se reemplazarían entre sí.
+        </li>
+        <li>
+          Elige las opciones. «Clave primaria como _id» convierte una clave primaria de una sola columna en el
+          <code>_id</code> del documento; una clave compuesta permanece como campos. El modo es Insertar,
+          Upsert o Combinar, como para un archivo (upsert y combinar comparan por <code>_id</code>, de modo que
+          una tabla sin clave primaria de una sola columna no puede usarlos). Cuando una fila no se puede
+          escribir, «Omitirlo y continuar» o «Detener la importación».
+        </li>
+        <li>
+          Haz una simulación si quieres: lee y comprueba cada fila elegida y no escribe nada. Después inicia la
+          importación. Se ejecuta como una tarea en segundo plano, que se sigue en una página propia aparte de
+          los formularios: su progreso y después su informe, y «Detener» la termina. Una importación detenida,
+          fallida o interrumpida lo indica e informa de lo que escribió antes de terminar.
+        </li>
+      </ol>
+      <p>
+        La importación va a una base de datos existente o a una nueva cuyo nombre indicas en la página, nunca a
+        <code>admin</code>, <code>local</code> ni <code>config</code>. Se rechaza un nombre nuevo que solo se
+        diferencie de una base de datos existente por las mayúsculas, como lo rechaza MongoDB. Elegir otra base
+        de datos conserva el archivo que se está preparando (una simulación se descarta, ya que informa de la
+        base de datos en la que se ejecutó); otra conexión pregunta antes, se pida como se pida (la lista, el
+        árbol, la paleta, un complemento, el botón Atrás del navegador), puesto que el archivo leído pertenece
+        a la conexión, y rechazar deja la página donde estaba. Necesita los permisos para escribir documentos
+        y ejecutar tareas en segundo plano en la conexión, y ni la conexión ni el servidor deben ser de solo
+        lectura.
+      </p>
+      <p>
+        La importación y la exportación avanzan paso a paso, nunca en una sola página larga: los pasos de
+        arriba (Archivo, Tablas, Opciones, Progreso para una importación; Colecciones, Opciones, Progreso para
+        una exportación) muestran dónde estás. Se puede volver a los pasos superados después del archivo, con
+        lo elegido conservado; «Elegir otro archivo» empieza de nuevo con otro archivo. Una simulación informa
+        de lo que comprobó: cambiar una tabla, una colección o una opción, o la base de datos, la descarta
+        (una simulación todavía en ejecución se detiene). Una vez que una importación se ejecuta, lo que se le
+        dio no puede cambiar: su página permanece hasta que termina, y entonces «Importar otro archivo» empieza
+        de nuevo.
+      </p>
+      <h3>Exportar como SQL (MongoDB → SQL)</h3>
+      <p>
+        Elige la base de datos (nunca <code>admin</code>, <code>local</code> ni <code>config</code>) y después
+        las colecciones, vistas y colecciones de series temporales que exportar: todas para empezar, como
+        máximo 500. Una tarea en segundo plano las escribe en un archivo SQL, con un CREATE TABLE y sus INSERT
+        para cada una; el archivo no crea ninguna base de datos ni esquema propios, de modo que se carga en la
+        base de datos que elijas. Cuando dos nombres de tabla chocarían, por ejemplo nombres que solo se
+        diferencian por las mayúsculas, uno se hace único y el informe lo indica. Las opciones son el dialecto
+        (PostgreSQL, MySQL o SQLite), las filas por INSERT (de 1 a 1000), una transacción por tabla y la
+        compresión gzip; con MySQL, los valores anidados pueden escribirse como <code>LONGTEXT</code> (el
+        mismo texto JSON) en lugar de <code>JSON</code>, para herramientas más antiguas como phpMyAdmin
+        anterior a la 4.7. Una columna decimal de MySQL toma los decimales con que están escritos los valores
+        de los primeros documentos (<code>234.20</code>: dos; más de dos ceros finales son relleno, de modo
+        que un valor leído de una columna <code>DECIMAL(65,30)</code> conserva sus propios decimales), nunca
+        30 ceros en cada importe. Un valor posterior con más decimales ensancha la columna con
+        <code>ALTER TABLE … MODIFY</code> (MySQL confirma antes las filas, de modo que después de él empieza
+        otra transacción). Un valor que ninguna columna decimal puede contener junto con los valores
+        anteriores, con más de 30 decimales o más de 65 dígitos en total, se escribe como NULL y se cuenta,
+        nunca se redondea. Las columnas proceden de los primeros documentos de cada colección: los campos que
+        solo aparecen en documentos posteriores se dejan fuera, y el informe los enumera por tabla, con los
+        valores escritos como NULL por ser demasiado grandes o no ser un tipo SQL. Un archivo que escribió la
+        aplicación se importa de vuelta como los documentos que contenía: sus columnas <code>CHAR(24)</code>
+        como ObjectId, sus columnas <code>"sub.a"</code> como campos anidados (un NULL ahí como un campo que
+        el documento no tenía) y sus bytes como binario. El progreso, el informe y la descarga se muestran en
+        una página propia; «Detener» termina una exportación en ejecución, y «Exportar de nuevo» vuelve a las
+        opciones.
+      </p>
+      <p>
+        Exportar como SQL necesita el permiso de exportación de la conexión. Un usuario que no puede ver datos
+        personales recibe <code>***</code> donde un valor está oculto, como en cualquier exportación.
+      </p>
+      <h2 id="copy-compare-and-sync">Copiar, comparar y sincronizar</h2>
+      <p>
+        Copia una colección (la colección completa, la consulta aplicada, un filtro escrito en el cuadro de
+        diálogo de copia o los resultados de un pipeline: «Copiar resultados…» en el generador de
+        agregaciones) o las colecciones elegidas de una base de datos a la misma conexión o a otra. El primer
+        paso muestra el tamaño estimado del origen; a medida que se elige o escribe el destino, el cuadro de
+        diálogo lo comprueba al instante: si existe y cuántos documentos contiene, qué le hace el modo
+        elegido, tu rol allí y todo lo que la copia rechazaría. Mientras se ejecuta la copia de una base de
+        datos, la lista de tareas muestra cada colección con su propio progreso. Insertar, upsert y combinar
+        funcionan como en las importaciones, y conservan lo escrito antes de un fallo; «Reemplazar destino»
+        construye la copia en una colección de preparación y solo la coloca cuando se escribieron todos los
+        documentos: un documento rechazado, un fallo o una cancelación dejan el destino como estaba. El
+        validador se establece una vez cargados los documentos, como hace la propia copia de MongoDB, de modo
+        que también se copian los documentos almacenados antes de él, a menos que el usuario del destino no
+        pueda cambiar un validador (el rol readWrite), en cuyo caso se establece primero y el informe lo
+        indica. También pueden copiarse los índices, el validador y las opciones de colección (capped,
+        intercalación, series temporales, clustered); la copia de una base de datos crea sus vistas al final,
+        en orden de dependencia, y sus vistas pueden elegirse una a una. Las colecciones cifradas (Queryable
+        Encryption) y sus colecciones de metadatos no se copian. En una misma conexión, sin nada que
+        enmascarar, MongoDB copia por sí mismo ($out o $merge) y los datos nunca pasan por Mongo Manager.
+      </p>
+      <p>
+        Las copias que pasan por Mongo Manager escriben cada documento como lo lee el controlador de MongoDB
+        para Node.js: los tipos BSON obsoletos undefined y DBPointer llegan como null y como un documento
+        DBRef. Las copias que MongoDB hace por sí mismo los conservan.
+      </p>
+      <p>
+        El resumen muestra cada destino, si existe y cómo se copiará, antes de escribir nada. Los índices TTL,
+        que eliminan documentos del destino, necesitan una confirmación. Cuando el origen tiene reglas de
+        campos personales de las que carece el destino, la copia necesita una confirmación de que los valores
+        personales serán visibles allí; en su lugar, un administrador del destino puede añadir las reglas.
+        Los campos personales se encuentran como los encuentra una consulta, a través de vistas y de campos
+        que un pipeline mueve o busca. Si los campos personales se te ocultan en el origen, la copia contiene
+        *** en su lugar y siempre es anónima; «Copia anónima» escribe *** para todos. Un _id personal no se
+        puede copiar enmascarado. Cuando el destino no se puede distinguir del origen, el resumen indica que
+        puede ser el propio origen.
+      </p>
+      <p>
+        Comparar lee ambos lados en orden de _id y cuenta los documentos solo en el origen, solo en el
+        destino, distintos e iguales, con muestras y una diferencia campo por campo. Un filtro se aplica a
+        ambos lados, y pueden ignorarse campos elegidos. Cuando los campos personales se te ocultan en
+        cualquiera de los lados, ambos se comparan como ***, y un _id personal no se puede comparar.
+        Sincronizar aplica una comparación terminada: inserta los documentos que faltan y reemplaza los
+        distintos, pero nunca sobrescribe un documento modificado después de leerse. Como una copia, necesita
+        una confirmación cuando el destino carece de las reglas de campos personales del origen. Eliminar los
+        documentos sobrantes del destino está desactivado de forma predeterminada, requiere escribir el nombre
+        del destino, se rechaza cuando el origen no lee ningún documento y se detiene cuando eliminaría más de
+        lo que encontró la comparación más un margen (el 10 % de esa cifra, como mínimo 100). Con un filtro, un
+        documento del destino cuyo origen sigue existiendo pero ya no coincide con el filtro se conserva,
+        nunca se elimina, y se cuenta en el informe. Los informes se retiran cuando cambian las reglas de
+        campos personales, cuando pierdes el acceso a cualquiera de las conexiones o cuando los campos
+        personales pasan a ocultarse para ti.
+      </p>
+      <h2 id="saved-settings">Configuraciones guardadas</h2>
+      <p>
+        Las asignaciones, las configuraciones de exportación y las configuraciones de copia pueden guardarse
+        con un nombre y cargarse de nuevo, en esta colección o en otra. Se almacenan cifradas, como las
+        consultas guardadas.
+      </p>
+      <h2 id="what-is-kept">Qué conserva un archivo y qué no</h2>
+      <ul>
+        <li>
+          CSV y Excel contienen texto, números, booleanos y fechas. Los tipos de un documento que van más allá
+          de esos (ObjectId, Long, Decimal128, binario, documentos anidados y arreglos) salen como texto o como
+          su Extended JSON, y un CSV leído de nuevo les da los tipos que indica su asignación. Para un archivo
+          que vuelva exactamente igual, exporta JSON o NDJSON (Extended JSON).
+        </li>
+        <li>
+          Una exportación SQL aplana los documentos en columnas; un volcado que hizo esta aplicación se lee de
+          vuelta con sus ObjectId, campos anidados y valores binarios, y un volcado de otro origen con los
+          tipos que nombran sus columnas.
+        </li>
+        <li>
+          Las fechas conservan los milisegundos, como hace MongoDB: los microsegundos de un volcado SQL se
+          descartan. El <code>0000-00-00</code> de MySQL («sin fecha») se lee como <code>null</code>. Un entero
+          de un volcado SQL más largo de lo que admite un Decimal128 (34 dígitos) se conserva exactamente,
+          como texto.
+        </li>
+        <li>
+          En Excel, una celda que muestra una fecha se lee como esa fecha y hora tal como están escritas, en
+          UTC (ya que una celda no contiene zona horaria); una celda que muestra solo una hora del día se lee
+          como texto, <code>HH:MM:SS</code> (con las fracciones de segundo que muestra el formato), y como
+          fecha y hora cuando contiene también una fecha. Una duración (<code>[h]:mm</code>) se lee como texto,
+          con sus horas contadas más allá de un día.
+        </li>
+        <li>
+          Una exportación lee la colección sobre la marcha, no como una instantánea de un momento: los
+          documentos escritos entretanto pueden estar en ella o no.
+        </li>
+        <li>
+          Una importación que se detiene, falla o se cancela conserva lo que escribió; su informe indica
+          cuántos registros fueron. Si se ejecuta de nuevo con Insertar, esos registros se escriben dos veces:
+          usa Upsert o Combinar con una clave, o elimínalos antes. El archivo subido se elimina después de cada
+          ejecución; súbelo de nuevo para ejecutarlo otra vez.
+        </li>
+        <li>
+          Combinar establece los campos del registro y deja los demás; un subdocumento vacío en un registro no
+          cambia nada de lo almacenado, y solo se crea para un documento nuevo. «Solo actualizar» vale tanto
+          para Upsert como para Combinar.
+        </li>
+        <li>
+          Los registros rechazados vuelven en el formato y el delimitador del origen, con los bytes que no eran
+          texto mostrados como <code>�</code>, para poder encontrar y corregir la fila.
+        </li>
+      </ul>
+      <h2 id="limits-and-safety">Límites y seguridad</h2>
+      <ul>
+        <li>
+          Los archivos se conservan en el servidor durante 24 horas, con un límite de almacenamiento por
+          usuario; los administradores pueden cambiar ambos (consulta
+          <a href="deployment.html">Implementación</a>).
+        </li>
+        <li>
+          Se rechazan por seguridad: los libros con macros y los protegidos con contraseña, los archivos .xls
+          antiguos, los archivos que se expanden demasiado al descomprimirse, el XML con un DTD, y los nombres
+          de campo que empiezan por <code>$</code>, contienen puntos o se llaman <code>__proto__</code>, a
+          menos que permitas nombres inusuales. Un libro comprimido con gzip se descomprime una vez, cuando se
+          lee por primera vez, y a partir de entonces ocupa el tamaño del libro; su contenido no puede
+          expandirse más que el de un libro sin comprimir.
+        </li>
+        <li>
+          Los usuarios que no pueden ver datos personales exportan archivos con <code>***</code> en lugar de
+          los valores personales, no pueden asignar ni comparar por campos personales, y no pueden reemplazar
+          documentos completos donde existen campos personales. Un archivo creado antes de que cambiaran las
+          reglas de campos personales ya no se puede descargar; vuelve a exportar.
+        </li>
+        <li>Los lectores solo exportan cuando un administrador lo permite para la conexión.</li>
+        <li>
+          Tus tareas de importación y exportación solo las ven tú y los administradores. La vista previa
+          muestra los valores largos recortados; un archivo muy ancho se muestrea con menos filas.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">En esta página</p>
+      <ol>
+        <li><a href="#formats">Formatos</a></li>
+        <li><a href="#importing">Importación</a></li>
+        <li><a href="#modes">Modos</a></li>
+        <li><a href="#exporting">Exportación</a></li>
+        <li><a href="#sql">Importación y exportación de SQL</a></li>
+        <li><a href="#copy-compare-and-sync">Copiar, comparar y sincronizar</a></li>
+        <li><a href="#saved-settings">Configuraciones guardadas</a></li>
+        <li><a href="#what-is-kept">Qué conserva un archivo y qué no</a></li>
+        <li><a href="#limits-and-safety">Límites y seguridad</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

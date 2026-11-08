@@ -1,0 +1,26 @@
+{
+  "version": "100.19.1",
+  "source": "https://downloads.mongodb.org/tools/db/release.json (read 2026-10-03)",
+  "platforms": {
+    "win32-x64": {
+      "url": "https://fastdl.mongodb.org/tools/db/mongodb-database-tools-windows-x86_64-100.19.1.zip",
+      "sha256": "527738a0f9ab2d80ea40cb8fc7a68f8e28664a2fd4e3b63626c2d4629aeb7f37"
+    },
+    "linux-x64": {
+      "url": "https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2404-x86_64-100.19.1.tgz",
+      "sha256": "f34b84a67ab96b4ff52571ec5d15e2148d96cb140b1ea9ef8c29ac33c48e3480"
+    },
+    "linux-arm64": {
+      "url": "https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2404-arm64-100.19.1.tgz",
+      "sha256": "ebf518d9a303b36e612e40be106cd0ecc7135dc15d098626f81ac3ee8654a821"
+    },
+    "darwin-arm64": {
+      "url": "https://fastdl.mongodb.org/tools/db/mongodb-database-tools-macos-arm64-100.19.1.zip",
+      "sha256": "54643d4aedb79ddc81797d6fb54113acf79f77fd82a5868b6674f6c74e1b3000"
+    },
+    "darwin-x64": {
+      "url": "https://fastdl.mongodb.org/tools/db/mongodb-database-tools-macos-x86_64-100.19.1.zip",
+      "sha256": "1633f62c42d8cbff79b3f0b2475080ce9e1a536170fce632b64f83ae05520a4a"
+    }
+  }
+}

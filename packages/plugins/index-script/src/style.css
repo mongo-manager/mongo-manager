@@ -1,0 +1,38 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 Gokhan OZGEZER */
+/* Index script: what the kit (kit/src/ui.css) does not already give. */
+.is-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.is-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.is-notes:empty {
+  display: none;
+}
+.is-results {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.is-script {
+  margin: 0;
+  padding: 12px 14px;
+  max-height: 60vh;
+  overflow: auto;
+  border: 1px solid var(--ds-line);
+  border-radius: var(--mm-radius);
+  background: var(--ds-subtle);
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre;
+  tab-size: 2;
+}
+.is-script:focus-visible {
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 2px;
+}

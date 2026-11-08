@@ -1,0 +1,121 @@
+{
+  "id": "anonymiser",
+  "name": {
+    "en": "Anonymiser",
+    "tr": "Anonimleştirici",
+    "zh": "数据匿名化",
+    "ja": "匿名化",
+    "es": "Anonimizador",
+    "pt": "Anonimizador",
+    "ko": "익명화",
+    "de": "Anonymisierer",
+    "fr": "Anonymiseur",
+    "ru": "Анонимизатор"
+  },
+  "version": "1.2.1",
+  "description": {
+    "en": "Makes an anonymised copy of a collection for testing or sharing: realistic fake values that keep their format, consistent hashes, shuffled values, shifted dates, number noise — saved as NDJSON or JSON, or imported into a new collection.",
+    "tr": "Test ya da paylaşım için bir koleksiyonun anonim kopyasını oluşturur: biçimini koruyan gerçekçi sahte değerler, tutarlı hash'ler, karıştırılmış değerler, kaydırılmış tarihler, sayı gürültüsü; NDJSON ya da JSON kaydedilir veya yeni bir koleksiyona aktarılır.",
+    "zh": "为测试或共享生成集合的匿名副本：保持原有格式的逼真虚构值、一致性哈希、打乱的值、平移的日期、数字噪声；可保存为 NDJSON 或 JSON，也可导入到新集合。",
+    "ja": "テストや共有のために、コレクションの匿名化コピーを作成します。形式を保ったダミー値、一貫したハッシュ、シャッフルした値、シフトした日付、数値ノイズに対応し、NDJSON または JSON で保存するか、新しいコレクションにインポートできます。",
+    "es": "Crea una copia anonimizada de una colección para pruebas o para compartir: valores ficticios realistas que conservan su formato, hashes coherentes, valores mezclados, fechas desplazadas y ruido numérico; se guarda como NDJSON o JSON, o se importa a una colección nueva.",
+    "pt": "Cria uma cópia anonimizada de uma coleção para testes ou compartilhamento: valores fictícios realistas que mantêm o formato, hashes consistentes, valores embaralhados, datas deslocadas e ruído numérico; salva como NDJSON ou JSON, ou importa para uma nova coleção.",
+    "ko": "테스트나 공유를 위해 컬렉션의 익명화된 복사본을 만듭니다. 형식을 유지하는 실제 같은 가짜 값, 일관된 해시, 셔플한 값, 이동한 날짜, 숫자 노이즈를 지원하며 NDJSON 또는 JSON으로 저장하거나 새 컬렉션으로 가져올 수 있습니다.",
+    "de": "Erstellt eine anonymisierte Kopie einer Collection für Tests oder zum Teilen: realistische fiktive Werte, die ihr Format behalten, konsistente Hashes, gemischte Werte, verschobene Datumswerte, Zahlenrauschen – gespeichert als NDJSON oder JSON oder in eine neue Collection importiert.",
+    "fr": "Crée une copie anonymisée d’une collection pour les tests ou le partage : valeurs fictives réalistes qui gardent leur format, hachages cohérents, valeurs mélangées, dates décalées, bruit numérique ; enregistrée en NDJSON ou JSON, ou importée dans une nouvelle collection.",
+    "ru": "Создает анонимизированную копию коллекции для тестов или обмена: правдоподобные вымышленные значения с сохранением формата, согласованные хеши, перемешанные значения, сдвинутые даты, шум для чисел; сохраняется как NDJSON или JSON либо импортируется в новую коллекцию."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read", "database:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "anonymise",
+        "title": {
+          "en": "Anonymise",
+          "tr": "Anonimleştir",
+          "zh": "匿名化",
+          "ja": "匿名化",
+          "es": "Anonimizar",
+          "pt": "Anonimizar",
+          "ko": "익명화",
+          "de": "Anonymisieren",
+          "fr": "Anonymiser",
+          "ru": "Анонимизировать"
+        },
+        "icon": "shapes"
+      }
+    ]
+  },
+  "author": {
+    "name": "Gokhan OZGEZER"
+  },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-11-07",
+  "changelog": [
+    {
+      "version": "1.2.1",
+      "date": "2026-11-07",
+      "notes": {
+        "en": "Opens on a collection of large documents, such as API logs: its sample takes as many documents as one answer to the page can hold. The copy reads such a collection page after page, going on after a page cut to fit one answer, so no document is skipped. Before, it stopped with “too large” when it opened.",
+        "tr": "API günlükleri gibi büyük belgeli bir koleksiyonda da açılıyor: örnek, sayfaya giden tek bir cevaba sığacak kadar belge alır. Kopya böyle bir koleksiyonu sayfa sayfa okur ve tek cevaba sığsın diye kısaltılmış bir sayfadan sonra devam eder; hiçbir belge atlanmaz. Önceden açılırken “çok büyük” diyerek duruyordu.",
+        "zh": "现在可以在由大文档组成的集合（例如 API 日志）上打开：采样只取页面一次应答能容纳的文档数量。副本逐页读取这样的集合，在为了放进一次应答而被截短的页面之后继续读取，不会漏掉任何文档。以前它在打开时就会以“过大”停止。",
+        "ja": "API ログのような大きなドキュメントのコレクションでも開けるようになりました。サンプルはページへの 1 回の応答に収まる数だけドキュメントを取ります。コピーはこのようなコレクションをページごとに読み、1 回の応答に収めるために短くなったページの後も続けて読むため、ドキュメントを読み飛ばしません。以前は開いたときに「大きすぎる」で止まっていました。",
+        "es": "Se abre en una colección de documentos grandes, como registros de API: la muestra toma tantos documentos como caben en una respuesta a la página. La copia lee una colección así página a página y sigue después de una página recortada para caber en una respuesta, sin saltarse ningún documento. Antes se detenía con «demasiado grande» al abrirse.",
+        "pt": "Abre em uma coleção de documentos grandes, como logs de API: a amostra pega tantos documentos quanto cabem em uma resposta à página. A cópia lê uma coleção assim página por página e continua depois de uma página encurtada para caber em uma resposta, sem pular nenhum documento. Antes, parava com “grande demais” ao abrir.",
+        "ko": "API 로그처럼 큰 도큐먼트로 된 컬렉션에서도 열립니다. 샘플은 페이지로 가는 한 번의 응답에 담길 만큼만 도큐먼트를 가져옵니다. 복사본은 이런 컬렉션을 페이지 단위로 읽으며, 한 번의 응답에 맞추려고 잘린 페이지 뒤에서도 이어 읽으므로 어떤 도큐먼트도 건너뛰지 않습니다. 이전에는 열 때 ‘너무 큼’으로 멈췄습니다.",
+        "de": "Öffnet sich auch auf einer Collection großer Dokumente, etwa API-Logs: Die Stichprobe nimmt so viele Dokumente, wie eine Antwort an die Seite fassen kann. Die Kopie liest eine solche Collection Seite für Seite und macht nach einer Seite, die für eine Antwort gekürzt wurde, weiter, sodass kein Dokument übersprungen wird. Vorher brach sie beim Öffnen mit „zu groß“ ab.",
+        "fr": "S’ouvre aussi sur une collection de documents volumineux, comme des journaux d’API : l’échantillon prend autant de documents qu’une réponse à la page peut en contenir. La copie lit une telle collection page après page et reprend après une page raccourcie pour tenir dans une réponse, sans sauter aucun document. Auparavant, l’onglet s’arrêtait sur « trop volumineux » dès son ouverture.",
+        "ru": "Открывается и на коллекции больших документов, например журналов API: выборка берет столько документов, сколько помещается в один ответ странице. Копия читает такую коллекцию страница за страницей и продолжает после страницы, урезанной, чтобы поместиться в один ответ, не пропуская ни одного документа. Раньше вкладка останавливалась при открытии с ошибкой «слишком большой объем»."
+      }
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. In every language of the app, the fake values (names, addresses, phone numbers in fictional ranges) are now made in the reader’s own language, and the size of a copy is shown in B, KB or MB with numbers in that language. Counts read correctly in each language.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Uygulamanın her dilinde sahte değerler (adlar, adresler, kurgusal aralıklardaki telefon numaraları) artık okuyanın kendi dilinde üretilir; kopyanın boyutu da o dilin sayı biçimiyle B, KB veya MB olarak gösterilir. Sayılar her dilde doğru okunur.",
+        "zh": "现在和应用一样，也支持韩语、德语、法语和俄语。在应用的所有语言中，虚构值（姓名、地址、虚构号段的电话号码）现在都以读者自己的语言生成，副本大小以 B、KB 或 MB 显示，数字格式也遵循该语言。各语言中的数量表述均正确。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。アプリのすべての言語で、ダミー値（氏名、住所、架空の番号帯の電話番号）が読む人自身の言語で作られるようになり、コピーのサイズも B、KB、MB で、その言語の数字表記で表示されます。件数の表現も各言語で正しく表示されます。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. En todos los idiomas de la aplicación, los valores ficticios (nombres, direcciones, teléfonos de rangos ficticios) ahora se generan en el idioma de quien lee, y el tamaño de la copia se muestra en B, KB o MB con los números de ese idioma. Los recuentos se leen correctamente en cada idioma.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o app. Em todos os idiomas do app, os valores fictícios (nomes, endereços, telefones de faixas fictícias) agora são gerados no idioma de quem lê, e o tamanho da cópia é mostrado em B, KB ou MB com os números desse idioma. As contagens são lidas corretamente em cada idioma.",
+        "ko": "앱과 같이 한국어, 독일어, 프랑스어, 러시아어로도 제공됩니다. 앱의 모든 언어에서 가짜 값(이름, 주소, 가상 대역의 전화번호)이 이제 읽는 사람의 언어로 만들어지며, 복사본 크기도 해당 언어의 숫자 표기로 B, KB 또는 MB로 표시됩니다. 개수 표현도 각 언어에서 올바르게 표시됩니다.",
+        "de": "Jetzt wie die App auch auf Koreanisch, Deutsch, Französisch und Russisch. In allen Sprachen der App werden die erfundenen Werte (Namen, Adressen, Telefonnummern in fiktiven Bereichen) jetzt in der Sprache der Leserin oder des Lesers erzeugt, und die Größe der Kopie erscheint in B, KB oder MB mit den Zahlen dieser Sprache. Anzahlen lesen sich in jeder Sprache richtig.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Dans toutes les langues de l’application, les valeurs fictives (noms, adresses, numéros de téléphone dans des plages fictives) sont maintenant créées dans la langue du lecteur ; la taille de la copie s’affiche en B, KB ou MB avec les nombres de cette langue. Les nombres d’éléments se lisent correctement dans chaque langue.",
+        "ru": "Теперь и на корейском, немецком, французском и русском, как и приложение. Во всех языках приложения вымышленные значения (имена, адреса, телефонные номера из вымышленных диапазонов) теперь создаются на языке читателя, а размер копии показывается в B, KB или MB с числами этого языка. Количества читаются правильно в каждом языке."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在和应用一样，支持中文、日语、西班牙语和巴西葡萄牙语。其他方面保持不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルポルトガル語に対応しました。ほかに変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o app. Nada mais muda.",
+        "ko": "앱과 같이 중국어, 일본어, 스페인어, 브라질 포르투갈어로도 제공됩니다. 그 외에는 달라지는 것이 없습니다.",
+        "de": "Jetzt wie die App auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь и на китайском, японском, испанском и бразильском португальском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-27",
+      "notes": {
+        "en": "First release. An Anonymise tab gives each field of the collection's sampled shape a technique — keep, a fake value of its kind (an e-mail stays an e-mail), a consistent hash (the same input the same output, its key drawn for the session and never saved), a shuffle between documents, a date shift (the same days for a whole document), number noise, null, remove or mask — with five documents before and after. Fields hidden from you are never kept, even where the sample did not have them. Up to 1,000 documents are read by _id pages, saved as NDJSON or JSON or handed to the Import wizard for a new collection of the database. The settings are saved and loaded as JSON.",
+        "tr": "İlk sürüm. Anonimleştir sekmesi koleksiyonun örneklenen şeklinin her alanına bir teknik verir — koru, türüne uygun sahte bir değer (e-posta e-posta kalır), tutarlı hash (aynı girdi aynı çıktı; anahtarı oturum için çekilir, asla kaydedilmez), belgeler arasında karıştırma, tarih kaydırma (bütün bir belge için aynı gün), sayı gürültüsü, null, kaldır ya da maskele — önce ve sonra beş belgeyle. Senden gizlenen alanlar, örnekte olmasalar bile asla korunmaz. En fazla 1.000 belge _id sayfalarıyla okunur; NDJSON ya da JSON kaydedilir veya veritabanının yeni bir koleksiyonu için İçe Aktarma sihirbazına verilir. Ayarlar JSON olarak kaydedilir ve yüklenir.",
+        "zh": "首个版本。“匿名化”标签页为集合采样结构中的每个字段指定一种方式：保留、同类型的虚构值（电子邮件仍是电子邮件）、一致性哈希（相同输入得到相同输出，密钥按会话随机生成且绝不保存）、在文档间打乱、平移日期（同一文档平移相同天数）、数字噪声、null、移除或脱敏，并显示 5 个文档的前后对比。对您隐藏的字段绝不会被保留，即使采样中没有它们。最多按 _id 分页读取 1,000 个文档，可保存为 NDJSON 或 JSON，也可交给导入向导导入到该数据库的新集合。设置可保存和加载为 JSON。",
+        "ja": "最初のリリースです。「匿名化」タブでは、コレクションのサンプルから得たフィールドごとに方法を選べます。保持、同じ種類のダミー値（メールアドレスはメールアドレスのまま）、一貫したハッシュ（同じ入力は同じ出力。キーはセッションごとに生成され、保存されません）、ドキュメント間のシャッフル、日付のシフト（1 つのドキュメントでは同じ日数）、数値ノイズ、null、削除、マスクに対応し、5 件のドキュメントで変換前後を確認できます。非表示のフィールドは、サンプルになくても保持されません。最大 1,000 件のドキュメントを _id のページ単位で読み込み、NDJSON または JSON で保存するか、インポートウィザードに渡してデータベースの新しいコレクションにできます。設定は JSON として保存・読み込みできます。",
+        "es": "Primera versión. Una pestaña Anonimizar asigna una técnica a cada campo de la forma muestreada de la colección: conservar, un valor ficticio de su tipo (un correo sigue siendo un correo), un hash coherente (misma entrada, misma salida; su clave se genera para la sesión y nunca se guarda), una mezcla entre documentos, un desplazamiento de fechas (los mismos días en todo un documento), ruido numérico, null, eliminar o enmascarar, con cinco documentos antes y después. Los campos ocultos para ti nunca se conservan, ni siquiera donde la muestra no los tenía. Se leen hasta 1.000 documentos por páginas de _id y se guardan como NDJSON o JSON, o se pasan al asistente de importación para una colección nueva de la base de datos. La configuración se guarda y se carga como JSON.",
+        "pt": "Primeira versão. Uma aba Anonimizar atribui uma técnica a cada campo da forma amostrada da coleção: manter, um valor fictício do mesmo tipo (um e-mail continua sendo um e-mail), um hash consistente (mesma entrada, mesma saída; a chave é gerada para a sessão e nunca é salva), um embaralhamento entre documentos, um deslocamento de datas (os mesmos dias em um documento inteiro), ruído numérico, null, remover ou mascarar, com cinco documentos antes e depois. Campos ocultos para você nunca são mantidos, mesmo onde a amostra não os tinha. Até 1.000 documentos são lidos por páginas de _id e salvos como NDJSON ou JSON, ou entregues ao assistente de importação para uma nova coleção do banco de dados. As configurações são salvas e carregadas como JSON.",
+        "ko": "첫 릴리스입니다. 익명화 탭에서 컬렉션 샘플의 각 필드에 방식을 지정합니다. 유지, 같은 종류의 가짜 값(이메일은 이메일로 유지), 일관된 해시(같은 입력은 같은 출력이며 키는 세션마다 생성되고 저장되지 않음), 도큐먼트 간 셔플, 날짜 이동(한 도큐먼트 전체에 같은 일수), 숫자 노이즈, null, 제거 또는 마스킹을 선택할 수 있으며 이전과 이후의 도큐먼트 5개를 미리 볼 수 있습니다. 숨겨진 필드는 샘플에 없는 경우에도 절대 유지되지 않습니다. 최대 1,000개의 도큐먼트를 _id 페이지 단위로 읽어 NDJSON 또는 JSON으로 저장하거나 데이터베이스의 새 컬렉션용 가져오기 마법사로 넘길 수 있습니다. 설정은 JSON으로 저장하고 불러올 수 있습니다.",
+        "de": "Erste Version. Ein Tab „Anonymisieren“ weist jedem Feld der Stichprobe der Collection ein Verfahren zu – beibehalten, ein fiktiver Wert derselben Art (eine E-Mail bleibt eine E-Mail), ein konsistenter Hash (gleiche Eingabe, gleiche Ausgabe; sein Schlüssel wird für die Sitzung erzeugt und nie gespeichert), Mischen zwischen Dokumenten, eine Datumsverschiebung (dieselben Tage für ein ganzes Dokument), Zahlenrauschen, Null, Entfernen oder Maskieren – mit fünf Dokumenten vorher und nachher. Vor Ihnen verborgene Felder werden nie beibehalten, auch wenn die Stichprobe sie nicht enthielt. Bis zu 1.000 Dokumente werden seitenweise nach _id gelesen und als NDJSON oder JSON gespeichert oder an den Import-Assistenten für eine neue Collection der Datenbank übergeben. Die Einstellungen werden als JSON gespeichert und geladen.",
+        "fr": "Première version. Un onglet Anonymiser attribue à chaque champ de la forme échantillonnée de la collection une technique : conserver, une valeur fictive du même type (un e-mail reste un e-mail), un hachage cohérent (même entrée, même sortie ; sa clé est tirée pour la session et jamais enregistrée), un mélange entre documents, un décalage de dates (les mêmes jours pour tout un document), du bruit numérique, null, supprimer ou masquer — avec cinq documents avant et après. Les champs qui vous sont masqués ne sont jamais conservés, même ceux que l’échantillon ne contenait pas. Jusqu’à 1 000 documents sont lus par pages de _id, puis enregistrés en NDJSON ou JSON, ou transmis à l’assistant d’import pour une nouvelle collection de la base. Les paramètres sont enregistrés et chargés en JSON.",
+        "ru": "Первый выпуск. Вкладка «Анонимизировать» назначает каждому полю структуры выборки коллекции метод: оставить, вымышленное значение того же вида (адрес эл. почты остается адресом эл. почты), согласованный хеш (тот же вход — тот же результат; его ключ создается на сессию и никогда не сохраняется), перемешивание между документами, сдвиг дат (одинаковое число дней для всего документа), шум для чисел, null, удаление или скрытие — с пятью документами до и после. Поля, скрытые от вас, никогда не сохраняются, даже если их не было в выборке. До 1 000 документов читаются страницами по _id и сохраняются как NDJSON или JSON либо передаются мастеру импорта для новой коллекции базы данных. Настройки сохраняются и загружаются как JSON."
+      }
+    }
+  ]
+}

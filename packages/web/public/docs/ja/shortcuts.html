@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>キーボードショートカット · Mongo Manager ドキュメント</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager ドキュメント</a>
+      <details class="lang-menu">
+        <summary>日本語</summary>
+        <span class="langs" role="group" aria-label="言語">
+          <a lang="en" hreflang="en" href="../shortcuts.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/shortcuts.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/shortcuts.html">简体中文</a>
+          <strong lang="ja">日本語</strong>
+          <a lang="es" hreflang="es" href="../es/shortcuts.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/shortcuts.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/shortcuts.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/shortcuts.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/shortcuts.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/shortcuts.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">概要</a>
+      <a href="getting-started.html">はじめに</a>
+      <a href="security.html">セキュリティ</a>
+      <a href="deployment.html">デプロイメント</a>
+      <a href="import-export.html">インポートとエクスポート</a>
+      <a href="backup.html">バックアップとリストア</a>
+      <a href="watch.html">変更の監視</a>
+      <a href="sync.html">ライブ同期</a>
+      <a href="server-admin.html">サーバー管理</a>
+      <a href="ai.html">AI アシスタント</a>
+      <a href="plugins.html">プラグイン</a>
+      <strong>キーボードショートカット</strong>
+    </nav>
+    <main>
+      <h1>キーボードショートカット</h1>
+      <h2 id="your-own-keys">独自のキー設定</h2>
+      <p>
+        以下のキーは、アプリの初期設定です。一般的なショートカット（コマンドパレット、サイドバー、フォーカスモード、ピン留め、ショートカット一覧、クエリ、AI に質問、アシスタント、タブの移動、分割表示）は、アカウント → キーボードショートカットで別のキーに変更できます。変更をクリックして、新しいキーを押してください。ほかのショートカットが使っているキー、ブラウザーや編集操作が使うキー（コピー、貼り付け、タブを閉じる、再読み込みなど）、入力中にも反応してしまう単独の文字や記号は、理由が表示されて拒否されます。リセットはショートカット 1 つを初期のキーに戻し（同じキーをもう一度押しても戻せます）、すべてリセットはすべてを戻します。キーの設定がサーバーから読み込まれるまでは何も変更できません。再試行でもう一度読み込みます。新しいバージョンで使えなくなったキーはそのショートカット本来のキーに戻り、設定画面で一度だけ知らされます。キーの設定はサーバー上にユーザーごとに保存されるため、ほかのブラウザーでも同じ設定が使えます。<kbd>?</kbd> の一覧、コマンドパレット、ツールチップ、スクリーンリーダーには、設定したキーが表示されます。エディター、リスト、テーブル、ダイアグラム、シェルのキーは変更できません。
+      </p>
+      <h2 id="general">一般</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>コマンドパレットを開く</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>K</kbd></td>
+          </tr>
+          <tr>
+            <td>接続パネルを表示または非表示にする</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>B</kbd></td>
+          </tr>
+          <tr>
+            <td>フォーカスモード: タブ周囲のパネルを非表示または表示</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd></td>
+          </tr>
+          <tr>
+            <td>開いているタブの場所をホームにピン留め、またはピン留め解除</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd></td>
+          </tr>
+          <tr>
+            <td>コマンドパレットの結果を移動</td>
+            <td><kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>開いているコレクションのクエリバーへ移動</td>
+            <td><kbd>/</kbd></td>
+          </tr>
+          <tr>
+            <td>これらのショートカットを表示</td>
+            <td><kbd>?</kbd></td>
+          </tr>
+          <tr>
+            <td>クエリを開く</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd></td>
+          </tr>
+          <tr>
+            <td>コレクションについて AI アシスタントに質問する</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>I</kbd></td>
+          </tr>
+          <tr>
+            <td>アシスタントを開く、または閉じる</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>.</kbd></td>
+          </tr>
+          <tr>
+            <td>ダイアログ、メニュー、ポップオーバーを閉じる</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="queries-and-editors">クエリとエディター</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>クエリを実行、または 1 行フィールドを送信</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>複数行エディターから実行または保存する</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>複数行エディターでインデントする</td>
+            <td><kbd>Tab</kbd></td>
+          </tr>
+          <tr>
+            <td>複数行エディターを離れる（Escape、次に Tab）</td>
+            <td><kbd>Escape</kbd> + <kbd>Tab</kbd></td>
+          </tr>
+          <tr>
+            <td>候補を移動</td>
+            <td><kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>候補を確定する</td>
+            <td><kbd>Tab</kbd> / <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>候補を閉じる</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="assistant">アシスタント</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>メッセージを送信する</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>メッセージ内で改行する</td>
+            <td><kbd>Shift</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>ワークスペースに戻る</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+          <tr>
+            <td>アシスタントの幅を広げる、または狭める（区切りにフォーカス中）</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="workspace-tabs">ワークスペースのタブ</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>タブ間を移動する</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd> / <kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+          <tr>
+            <td>フォーカス中のタブを閉じる</td>
+            <td><kbd>Delete</kbd></td>
+          </tr>
+          <tr>
+            <td>アクティブなタブを左または右に移動する</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>←</kbd> / <kbd>→</kbd></td>
+          </tr>
+          <tr>
+            <td>アクティブなタブを前のタブの横に開く。分割表示では、もう一方のペインへ移動</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>\</kbd></td>
+          </tr>
+          <tr>
+            <td>フォーカス中のタブのメニューを開く（横に開く、ペインを閉じる、タブを閉じる、他のタブを閉じる）</td>
+            <td><kbd>Shift</kbd> + <kbd>F10</kbd> / <kbd>Menu</kbd></td>
+          </tr>
+          <tr>
+            <td>ペインのサイズを変更する（仕切りにフォーカスがあるとき）</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd> / <kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <p>
+        <strong>分割表示</strong>では、2 つのタブを左右に並べて表示します。タブのメニュー（矢印、右クリック、または Shift + F10）の<em>横に開く</em>から開くか、タブをワークスペースの右側へドラッグするか、Ctrl / ⌘ + \ を押します。タブバーは 1 つだけで、画面に表示されている 2 つのタブにはペインの目印が付き、タブバーで選んだタブは使用中のペインで開きます。使用中のペインにはアクセントバーが付き、<em>アクティブなペイン</em>と表示されます。もう一方を使うには、クリックするか Tab キーで移動してください。仕切りをドラッグするか、フォーカスして矢印キーを押すと、幅の配分を変えられます（20～80 %）。ペインのヘッダーにある<em>ペインを閉じる</em>は、分割を終了して両方のタブを開いたままにします。キーボードのフォーカスは残ったペインに移ります。ペインのタブを閉じても分割は終了します。ホームでは分割が終了せずに非表示になります。分割中のタブのどれかを選ぶか、ホームで Ctrl / ⌘ + \ を押すと、再び表示されます（分割が保持されていない場合、ホームで Ctrl / ⌘ + \ を押すと、直前に使った 2 つのタブが並んで表示されます）。Ctrl / ⌘ + \ は、キーボードのフォーカスを使用中のペインに移します。ペイン間の移動でブラウザーの履歴に項目が増えることはありません。分割はタブと同様に、再読み込み後も復元されます。幅が 768 px 未満のときは 1 つのタブだけが表示され（分割はより広いウィンドウのために保持されます）、横に開くは単にそのタブを開きます。スクリーンリーダーは、各ペインをタブ名が付いたリージョン（「orders、左ペイン」）として認識します。
+      </p>
+      <p>
+        別のデータベースや別のページなど、ほかの場所で作業している間は、データベースのコレクションタブ（2 つ以上。データベース自体のタブが開いていればそれも含む）が、データベース名と保持しているタブ数を付けた 1 つのタブにまとまります。ポイントするかフォーカスすると、まとまったタブの名前が表示されます。クリックするか Enter を押すと、データベース自体が開き（開いていなければタブが開きます）、まとまっていたタブが再び表示されます。どこからでもそのコレクションのどれかを開いた場合も、そのコレクションをアクティブにして再び表示されます。矢印キーはこのタブで止まり、開きません。Delete、閉じるボタン、中クリックのいずれかですべてを閉じられ、元に戻すで復元できます。Ctrl / ⌘ + Shift + 矢印は、アクティブなタブをまとまったグループの向こう側へ 1 つの塊として移動します。グループはドラッグもできます。
+      </p>
+      <h2 id="tabs-inside-a-screen">画面内のタブ</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>画面またはダイアログのタブ間を移動する</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd> / <kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="connection-tree">接続ツリー</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>項目間を移動する</td>
+            <td><kbd>↑</kbd> / <kbd>↓</kbd> / <kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+          <tr>
+            <td>展開または折りたたみ</td>
+            <td><kbd>→</kbd> / <kbd>←</kbd></td>
+          </tr>
+          <tr>
+            <td>タブで開く</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>その場で展開または折りたたみ</td>
+            <td><kbd>Space</kbd></td>
+          </tr>
+          <tr>
+            <td>項目の操作を開く</td>
+            <td><kbd>Shift</kbd> + <kbd>F10</kbd> / <kbd>Menu</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="document-table">ドキュメントテーブル</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>フォーカス中のセルを編集</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>セルを保存する</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>編集をキャンセルする</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+          <tr>
+            <td>セルから行の操作を開く</td>
+            <td><kbd>Shift</kbd> + <kbd>F10</kbd> / <kbd>Menu</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="document-page">ドキュメントページ</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>前または次のドキュメント</td>
+            <td><kbd>Alt</kbd> + <kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>ドキュメント内を検索</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>F</kbd></td>
+          </tr>
+          <tr>
+            <td>次または前の一致</td>
+            <td><kbd>Enter</kbd> / <kbd>Shift</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>ツリーまたはテキストの編集を元に戻す・やり直す</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Z</kbd> / <kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></td>
+          </tr>
+          <tr>
+            <td>ツリーで選択した値を変更</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>ドキュメントのテキストを整形</td>
+            <td><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd></td>
+          </tr>
+          <tr>
+            <td>選択したフィールドの名前を変更</td>
+            <td><kbd>F2</kbd></td>
+          </tr>
+          <tr>
+            <td>選択したフィールドを削除</td>
+            <td><kbd>Delete</kbd></td>
+          </tr>
+          <tr>
+            <td>結果に戻る</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="data-model-diagram">データモデルのダイアグラム</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>拡大または縮小する（ダイアグラムにフォーカスがあるとき）</td>
+            <td><kbd>+</kbd> / <kbd>-</kbd></td>
+          </tr>
+          <tr>
+            <td>図をビューに合わせる</td>
+            <td><kbd>0</kbd></td>
+          </tr>
+          <tr>
+            <td>図を移動</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd> / <kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>フォーカス中のコレクションを選択</td>
+            <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+          </tr>
+          <tr>
+            <td>選択を解除する</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="shell">シェル</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>コードを実行（括弧、文字列、ステートメントが開いている間は入力を継続）</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>改行を挿入する</td>
+            <td><kbd>Shift</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>コードをそのまま実行する</td>
+            <td><kbd>Ctrl</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>実行中のコマンドを停止、または行をクリア（出力を選択中はコピー）</td>
+            <td><kbd>Ctrl</kbd> + <kbd>C</kbd></td>
+          </tr>
+          <tr>
+            <td>コマンド履歴を検索（もう一度押すと古い一致へ）</td>
+            <td><kbd>Ctrl</kbd> + <kbd>R</kbd></td>
+          </tr>
+          <tr>
+            <td>画面と結果をクリアする</td>
+            <td><kbd>Ctrl</kbd> + <kbd>L</kbd></td>
+          </tr>
+          <tr>
+            <td>行間を移動し、その後は前後のコマンドへ移動</td>
+            <td><kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>行頭と行末</td>
+            <td>
+              <kbd>Home</kbd> / <kbd>End</kbd> (<kbd>Ctrl</kbd> + <kbd>A</kbd> / <kbd>Ctrl</kbd> + <kbd>E</kbd>)
+            </td>
+          </tr>
+          <tr>
+            <td>行頭まで、または行末まで削除</td>
+            <td><kbd>Ctrl</kbd> + <kbd>U</kbd> / <kbd>Ctrl</kbd> + <kbd>K</kbd></td>
+          </tr>
+          <tr>
+            <td>単語単位で前後に移動</td>
+            <td>
+              <kbd>Alt</kbd> + <kbd>B</kbd> / <kbd>Alt</kbd> + <kbd>F</kbd> (<kbd>Ctrl</kbd> + <kbd>←</kbd> /
+              <kbd>Ctrl</kbd> + <kbd>→</kbd>；Mac では Option)
+            </td>
+          </tr>
+          <tr>
+            <td>カーソルの前、または後の単語を削除</td>
+            <td>
+              <kbd>Ctrl</kbd> + <kbd>W</kbd> / <kbd>Alt</kbd> + <kbd>D</kbd> (<kbd>Ctrl</kbd> +
+              <kbd>Backspace</kbd> / <kbd>Ctrl</kbd> + <kbd>Delete</kbd>)
+            </td>
+          </tr>
+          <tr>
+            <td>コマンドを補完する</td>
+            <td><kbd>Tab</kbd></td>
+          </tr>
+          <tr>
+            <td>ターミナルを離れる</td>
+            <td><kbd>Shift</kbd> + <kbd>Tab</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="shell-page">シェルページ</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>結果の幅を広げる、または狭める（ハンドル上で）</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd></td>
+          </tr>
+          <tr>
+            <td>より大きな単位でサイズを変更する（ハンドル上で）</td>
+            <td><kbd>Shift</kbd> + 矢印キー</td>
+          </tr>
+          <tr>
+            <td>結果を最小幅または最大幅にする（ハンドル上で）</td>
+            <td><kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+          <tr>
+            <td>ターミナルと結果の間（狭い画面）、または結果ビュー間を移動する</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd></td>
+          </tr>
+        </table>
+      </div>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">このページの内容</p>
+      <ol>
+        <li><a href="#your-own-keys">独自のキー設定</a></li>
+        <li><a href="#general">一般</a></li>
+        <li><a href="#queries-and-editors">クエリとエディター</a></li>
+        <li><a href="#assistant">アシスタント</a></li>
+        <li><a href="#workspace-tabs">ワークスペースのタブ</a></li>
+        <li><a href="#tabs-inside-a-screen">画面内のタブ</a></li>
+        <li><a href="#connection-tree">接続ツリー</a></li>
+        <li><a href="#document-table">ドキュメントテーブル</a></li>
+        <li><a href="#document-page">ドキュメントページ</a></li>
+        <li><a href="#data-model-diagram">データモデルのダイアグラム</a></li>
+        <li><a href="#shell">シェル</a></li>
+        <li><a href="#shell-page">シェルページ</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

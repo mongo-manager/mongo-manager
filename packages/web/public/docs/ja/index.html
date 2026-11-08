@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>概要 · Mongo Manager ドキュメント</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager ドキュメント</a>
+      <details class="lang-menu">
+        <summary>日本語</summary>
+        <span class="langs" role="group" aria-label="言語">
+          <a lang="en" hreflang="en" href="../index.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/index.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/index.html">简体中文</a>
+          <strong lang="ja">日本語</strong>
+          <a lang="es" hreflang="es" href="../es/index.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/index.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/index.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/index.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/index.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/index.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <strong>概要</strong>
+      <a href="getting-started.html">はじめに</a>
+      <a href="security.html">セキュリティ</a>
+      <a href="deployment.html">デプロイメント</a>
+      <a href="import-export.html">インポートとエクスポート</a>
+      <a href="backup.html">バックアップとリストア</a>
+      <a href="watch.html">変更の監視</a>
+      <a href="sync.html">ライブ同期</a>
+      <a href="server-admin.html">サーバー管理</a>
+      <a href="ai.html">AI アシスタント</a>
+      <a href="plugins.html">プラグイン</a>
+      <a href="shortcuts.html">キーボードショートカット</a>
+    </nav>
+    <main>
+      <h1>概要</h1>
+      <p>
+        Mongo Manager は、ブラウザーで使える安全な MongoDB 管理ツールです。完全にオフラインで動作し、テレメトリ、CDN、外部フォントは一切使わず、管理者が毎日の確認をオンにしない限り更新も確認しません。ブラウザーが通信する相手は Mongo Manager だけで、Mongo Manager が接続するのは、お客様が設定したもの（MongoDB のデプロイメントと SSH ホスト、および有効にした AI プロバイダー、バックアップ先、GitHub からのプラグインインストール、更新確認）だけです。
+      </p>
+      <ul class="cards">
+        <li>
+          <a href="getting-started.html">はじめに</a>
+          <span>インストール、初回起動、最初の接続とクエリ。</span>
+        </li>
+        <li>
+          <a href="security.html">セキュリティ</a>
+          <span>モード、キー、二要素サインイン、ロール、監査ログ。</span>
+        </li>
+        <li>
+          <a href="deployment.html">デプロイメント</a>
+          <span>システムサービス、Docker、リバースプロキシ、オフラインインストール。</span>
+        </li>
+        <li>
+          <a href="import-export.html">インポートとエクスポート</a>
+          <span>CSV、JSON、NDJSON、Excel ファイル、フィールドのマッピング、モード、ドライラン、レポート。</span>
+        </li>
+        <li>
+          <a href="backup.html">バックアップとリストア</a>
+          <span>コレクション、データベース、サーバーのバックアップ。暗号化または mongodump アーカイブで取得し、プラン、確認、ドライランを経てどこにでもリストアできます。</span>
+        </li>
+        <li>
+          <a href="server-admin.html">サーバー管理</a>
+          <span>MongoDB のユーザーとロール、シャーディングとゾーン、メールと Webhook によるアラート、各接続のリアルタイムの状態。</span>
+        </li>
+        <li>
+          <a href="ai.html">AI アシスタント</a>
+          <span>クエリ、パイプライン、検証ルールを普通の言葉で依頼したり、クエリの説明や高速化、コレクションの説明を任せたりできます。クラウドモデルもローカルモデルも使えます。</span>
+        </li>
+        <li>
+          <a href="plugins.html">プラグイン</a>
+          <span>独自のタブ、アクション、ページを作成できます。マニフェスト、ブリッジ API、サンドボックスとセキュリティスキャン、GitHub でのパッケージ化と公開、スターターテンプレート、AI コーディングアシスタント向けのファイルを扱います。</span>
+        </li>
+        <li>
+          <a href="shortcuts.html">キーボードショートカット</a>
+          <span>アプリ内のどこでも <kbd>?</kbd> を押すと一覧が表示されます。</span>
+        </li>
+      </ul>
+    </main>
+  </body>
+</html>

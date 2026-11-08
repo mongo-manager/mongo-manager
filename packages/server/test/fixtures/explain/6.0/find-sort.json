@@ -1,0 +1,194 @@
+{
+  "version": "6.0.29",
+  "raw": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "shop.items",
+      "indexFilterSet": false,
+      "parsedQuery": {
+        "s": {
+          "$eq": "s3"
+        }
+      },
+      "queryHash": "3A377165",
+      "planCacheKey": "3A377165",
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "winningPlan": {
+        "stage": "SORT",
+        "sortPattern": {
+          "n": {
+            "$numberInt": "-1"
+          }
+        },
+        "memLimit": {
+          "$numberInt": "104857600"
+        },
+        "type": "simple",
+        "inputStage": {
+          "stage": "COLLSCAN",
+          "filter": {
+            "s": {
+              "$eq": "s3"
+            }
+          },
+          "direction": "forward"
+        }
+      },
+      "rejectedPlans": []
+    },
+    "executionStats": {
+      "executionSuccess": true,
+      "nReturned": {
+        "$numberInt": "60"
+      },
+      "executionTimeMillis": {
+        "$numberInt": "3"
+      },
+      "totalKeysExamined": {
+        "$numberInt": "0"
+      },
+      "totalDocsExamined": {
+        "$numberInt": "3000"
+      },
+      "executionStages": {
+        "stage": "SORT",
+        "nReturned": {
+          "$numberInt": "60"
+        },
+        "executionTimeMillisEstimate": {
+          "$numberInt": "1"
+        },
+        "works": {
+          "$numberInt": "3062"
+        },
+        "advanced": {
+          "$numberInt": "60"
+        },
+        "needTime": {
+          "$numberInt": "3001"
+        },
+        "needYield": {
+          "$numberInt": "0"
+        },
+        "saveState": {
+          "$numberInt": "3"
+        },
+        "restoreState": {
+          "$numberInt": "3"
+        },
+        "isEOF": {
+          "$numberInt": "1"
+        },
+        "sortPattern": {
+          "n": {
+            "$numberInt": "-1"
+          }
+        },
+        "memLimit": {
+          "$numberInt": "104857600"
+        },
+        "type": "simple",
+        "totalDataSizeSorted": {
+          "$numberInt": "5760"
+        },
+        "usedDisk": false,
+        "spills": {
+          "$numberInt": "0"
+        },
+        "inputStage": {
+          "stage": "COLLSCAN",
+          "filter": {
+            "s": {
+              "$eq": "s3"
+            }
+          },
+          "nReturned": {
+            "$numberInt": "60"
+          },
+          "executionTimeMillisEstimate": {
+            "$numberInt": "1"
+          },
+          "works": {
+            "$numberInt": "3001"
+          },
+          "advanced": {
+            "$numberInt": "60"
+          },
+          "needTime": {
+            "$numberInt": "2940"
+          },
+          "needYield": {
+            "$numberInt": "0"
+          },
+          "saveState": {
+            "$numberInt": "3"
+          },
+          "restoreState": {
+            "$numberInt": "3"
+          },
+          "isEOF": {
+            "$numberInt": "1"
+          },
+          "direction": "forward",
+          "docsExamined": {
+            "$numberInt": "3000"
+          }
+        }
+      }
+    },
+    "command": {
+      "find": "items",
+      "filter": {
+        "s": "s3"
+      },
+      "sort": {
+        "n": {
+          "$numberInt": "-1"
+        }
+      },
+      "maxTimeMS": {
+        "$numberInt": "30000"
+      },
+      "$db": "shop"
+    },
+    "serverInfo": {
+      "host": "capture-host",
+      "port": {
+        "$numberInt": "57561"
+      },
+      "version": "6.0.29",
+      "gitVersion": "84e761de17af58439056c9d0444b51bda6b38e4f"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFacetMaxOutputDocSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceGroupMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryMaxBlockingSortMemoryUsageBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryProhibitBlockingMergeOnMongoS": {
+        "$numberInt": "0"
+      },
+      "internalQueryMaxAddToSetBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      }
+    },
+    "ok": {
+      "$numberInt": "1"
+    }
+  }
+}

@@ -1,0 +1,265 @@
+{
+  "version": "8.2.6",
+  "sharded": true,
+  "raw": {
+    "queryPlanner": {
+      "winningPlan": {
+        "stage": "SHARD_MERGE",
+        "shards": [
+          {
+            "explainVersion": "1",
+            "shardName": "shard0",
+            "connectionString": "shard0/127.0.0.1:47371",
+            "serverInfo": {
+              "host": "capture-host",
+              "port": {
+                "$numberInt": "47371"
+              },
+              "version": "8.2.6",
+              "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+            },
+            "namespace": "shop.items",
+            "parsedQuery": {
+              "g": {
+                "$eq": {
+                  "$numberInt": "3"
+                }
+              }
+            },
+            "indexFilterSet": false,
+            "queryHash": "2FFBC548",
+            "planCacheShapeHash": "2FFBC548",
+            "planCacheKey": "17CE147A",
+            "optimizationTimeMillis": {
+              "$numberInt": "0"
+            },
+            "maxIndexedOrSolutionsReached": false,
+            "maxIndexedAndSolutionsReached": false,
+            "maxScansToExplodeReached": false,
+            "prunedSimilarIndexes": false,
+            "winningPlan": {
+              "isCached": false,
+              "stage": "SHARDING_FILTER",
+              "inputStage": {
+                "stage": "FETCH",
+                "inputStage": {
+                  "stage": "IXSCAN",
+                  "keyPattern": {
+                    "g": {
+                      "$numberInt": "1"
+                    }
+                  },
+                  "indexName": "g_1",
+                  "isMultiKey": false,
+                  "multiKeyPaths": {
+                    "g": []
+                  },
+                  "isUnique": false,
+                  "isSparse": false,
+                  "isPartial": false,
+                  "indexVersion": {
+                    "$numberInt": "2"
+                  },
+                  "direction": "forward",
+                  "indexBounds": {
+                    "g": ["[3, 3]"]
+                  }
+                }
+              }
+            },
+            "rejectedPlans": [
+              {
+                "isCached": false,
+                "stage": "FETCH",
+                "inputStage": {
+                  "stage": "SHARDING_FILTER",
+                  "inputStage": {
+                    "stage": "IXSCAN",
+                    "keyPattern": {
+                      "g": {
+                        "$numberInt": "1"
+                      },
+                      "n": {
+                        "$numberInt": "-1"
+                      }
+                    },
+                    "indexName": "g_1_n_-1",
+                    "isMultiKey": false,
+                    "multiKeyPaths": {
+                      "g": [],
+                      "n": []
+                    },
+                    "isUnique": false,
+                    "isSparse": false,
+                    "isPartial": false,
+                    "indexVersion": {
+                      "$numberInt": "2"
+                    },
+                    "direction": "forward",
+                    "indexBounds": {
+                      "g": ["[3, 3]"],
+                      "n": ["[MaxKey, MinKey]"]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "explainVersion": "1",
+            "shardName": "shard1",
+            "connectionString": "shard1/127.0.0.1:47372",
+            "serverInfo": {
+              "host": "capture-host",
+              "port": {
+                "$numberInt": "47372"
+              },
+              "version": "8.2.6",
+              "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+            },
+            "namespace": "shop.items",
+            "parsedQuery": {
+              "g": {
+                "$eq": {
+                  "$numberInt": "3"
+                }
+              }
+            },
+            "indexFilterSet": false,
+            "queryHash": "2FFBC548",
+            "planCacheShapeHash": "2FFBC548",
+            "planCacheKey": "17CE147A",
+            "optimizationTimeMillis": {
+              "$numberInt": "0"
+            },
+            "maxIndexedOrSolutionsReached": false,
+            "maxIndexedAndSolutionsReached": false,
+            "maxScansToExplodeReached": false,
+            "prunedSimilarIndexes": false,
+            "winningPlan": {
+              "isCached": false,
+              "stage": "SHARDING_FILTER",
+              "inputStage": {
+                "stage": "FETCH",
+                "inputStage": {
+                  "stage": "IXSCAN",
+                  "keyPattern": {
+                    "g": {
+                      "$numberInt": "1"
+                    }
+                  },
+                  "indexName": "g_1",
+                  "isMultiKey": false,
+                  "multiKeyPaths": {
+                    "g": []
+                  },
+                  "isUnique": false,
+                  "isSparse": false,
+                  "isPartial": false,
+                  "indexVersion": {
+                    "$numberInt": "2"
+                  },
+                  "direction": "forward",
+                  "indexBounds": {
+                    "g": ["[3, 3]"]
+                  }
+                }
+              }
+            },
+            "rejectedPlans": [
+              {
+                "isCached": false,
+                "stage": "FETCH",
+                "inputStage": {
+                  "stage": "SHARDING_FILTER",
+                  "inputStage": {
+                    "stage": "IXSCAN",
+                    "keyPattern": {
+                      "g": {
+                        "$numberInt": "1"
+                      },
+                      "n": {
+                        "$numberInt": "-1"
+                      }
+                    },
+                    "indexName": "g_1_n_-1",
+                    "isMultiKey": false,
+                    "multiKeyPaths": {
+                      "g": [],
+                      "n": []
+                    },
+                    "isUnique": false,
+                    "isSparse": false,
+                    "isPartial": false,
+                    "indexVersion": {
+                      "$numberInt": "2"
+                    },
+                    "direction": "forward",
+                    "indexBounds": {
+                      "g": ["[3, 3]"],
+                      "n": ["[MaxKey, MinKey]"]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "queryShapeHash": "AC055654614825EFD3C9C8FE43ECB1144C3753A2A0E8B0A19427F9A7F51CD833",
+    "serverInfo": {
+      "host": "capture-host",
+      "port": {
+        "$numberInt": "47373"
+      },
+      "version": "8.2.6",
+      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFacetMaxOutputDocSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceGroupMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryMaxBlockingSortMemoryUsageBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryProhibitBlockingMergeOnMongoS": {
+        "$numberInt": "0"
+      },
+      "internalQueryMaxAddToSetBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": {
+        "$numberInt": "1"
+      }
+    },
+    "command": {
+      "find": "items",
+      "filter": {
+        "g": {
+          "$numberInt": "3"
+        }
+      },
+      "maxTimeMS": {
+        "$numberInt": "30000"
+      },
+      "$db": "shop"
+    },
+    "ok": {
+      "$numberInt": "1"
+    }
+  }
+}

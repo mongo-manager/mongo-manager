@@ -1,0 +1,16 @@
+{
+  "name": "@mongo-manager/plugin-local-time",
+  "private": true,
+  "version": "1.2.1",
+  "type": "module",
+  "description": "First-party Mongo Manager plugin: dates in your local time (or a zone you set), with their offset from UTC (plugins wave 3).",
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "vite": "^8.3.4",
+    "vitest": "^5.0.2"
+  }
+}

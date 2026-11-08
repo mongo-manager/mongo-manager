@@ -1,0 +1,17 @@
+{
+  "name": "@mongo-manager/plugin-schema-health",
+  "private": true,
+  "version": "1.4.1",
+  "type": "module",
+  "description": "First-party Mongo Manager plugin: schema anti-patterns found in a sample, the documents' sizes and the indexes (plugins wave 2).",
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "happy-dom": "^21.0.4",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.2"
+  }
+}

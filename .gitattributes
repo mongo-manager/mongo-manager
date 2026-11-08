@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.png binary
+*.ico binary
+packages/server/test/fixtures/backup/*.archive binary
+packages/server/test/fixtures/backup/*.gz binary
+packages/server/test/fixtures/backup/*.zip binary

@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Sauvegarde et restauration · Documentation de Mongo Manager</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Documentation de Mongo Manager</a>
+      <details class="lang-menu">
+        <summary>Français</summary>
+        <span class="langs" role="group" aria-label="Langue">
+          <a lang="en" hreflang="en" href="../backup.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/backup.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/backup.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/backup.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/backup.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/backup.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/backup.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/backup.html">Deutsch</a>
+          <strong lang="fr">Français</strong>
+          <a lang="ru" hreflang="ru" href="../ru/backup.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Vue d’ensemble</a>
+      <a href="getting-started.html">Prise en main</a>
+      <a href="security.html">Sécurité</a>
+      <a href="deployment.html">Déploiement</a>
+      <a href="import-export.html">Import et export</a>
+      <strong>Sauvegarde et restauration</strong>
+      <a href="watch.html">Suivi des modifications</a>
+      <a href="sync.html">Synchronisation en continu</a>
+      <a href="server-admin.html">Administration du serveur</a>
+      <a href="ai.html">Assistant IA</a>
+      <a href="plugins.html">Plug-ins</a>
+      <a href="shortcuts.html">Raccourcis clavier</a>
+    </nav>
+    <main>
+      <h1>Sauvegarde et restauration</h1>
+      <p>
+        Sauvegardez une collection, une base de données ou tout le serveur, puis téléchargez le fichier ou
+        conservez-le un certain temps sur le serveur. Restaurez n’importe laquelle de vos sauvegardes, une
+        archive mongodump ou un zip d’un dossier mongodump dans les espaces de noms de votre choix. Les deux
+        opérations s’exécutent comme des tâches en arrière-plan que vous pouvez suivre dans la liste des
+        tâches.
+      </p>
+      <p>
+        Partez du menu d’une collection ou d’une base de données dans la barre latérale, du menu de la
+        connexion, de l’onglet Sauvegardes d’une connexion, de la section Sauvegardes d’une base de données ou d’une collection, ou de la palette de commandes (« Sauvegarder… », « Restaurer une sauvegarde… »).
+      </p>
+
+      <h2 id="taking-a-backup">Effectuer une sauvegarde</h2>
+      <p>
+        La sauvegarde s’ouvre sur un seul écran, avec le choix recommandé pour l’endroit d’où vous l’avez
+        ouverte : une sauvegarde chiffrée lorsque les données contiennent des champs personnels, une archive
+        compressée sinon. Les vérifications placées à côté se mettent à jour à chaque modification : la
+        taille et la durée prévues, votre espace de sauvegarde libre, les champs personnels qui seraient
+        lisibles dans le fichier, et tout ce qui est laissé de côté. Chaque vérification qui peut être
+        corrigée a son bouton. « Personnaliser… » ouvre les étapes : portée, moteur, contenu, protection et
+        récapitulatif.
+      </p>
+      <p>
+        La sauvegarde s’exécute en arrière-plan : fermez la boîte de dialogue quand vous voulez. Dès son lancement, la section Sauvegardes de ce qu’elle sauvegarde s’ouvre, celle de la collection, de la base de données ou de la connexion. Pendant l’exécution, la section Sauvegardes et la liste des tâches affichent chaque espace de noms avec sa
+        propre progression (combien sont terminés, celui en cours de lecture, et la phase). À la fin, sa
+        notification propose « Télécharger » et « Ouvrir le rapport ».
+      </p>
+      <p>
+        Une sauvegarde et une restauration ont besoin du serveur de la connexion, et ne sont affichées que
+        tant que Mongo Manager y est connecté (ses bases de données ont été lues). Pendant qu’il se connecte,
+        ou lorsqu’il ne le peut pas (délai dépassé, échec du réseau, du DNS ou de TLS, connexion refusée,
+        serveur indisponible), la page de la connexion n’affiche que sa vue d’ensemble avec l’erreur,
+        Réessayer et Modifier : ni Performances, ni Suivi, ni Utilisateurs et rôles, ni Alertes, ni Données
+        personnelles, ni Sauvegardes, ni Nouvelle base de données, ni shell ; la page d’une base de données
+        n’affiche ni Modèle, ni Suivi, ni Sauvegardes. Les menus de l’arborescence et de ces pages omettent la
+        sauvegarde, la restauration, la synchronisation en continu, le shell, la création, le renommage et la
+        suppression, et les commandes de la palette de commandes qui concernent le serveur indiquent qu’il n’y
+        a pas de connexion. Une sauvegarde ou une restauration ouverte d’une autre façon le dit, avec
+        Réessayer, et ne démarre rien. Une réponse qui ne concerne pas l’accès au serveur (toutes ses
+        connexions occupées un instant, une requête qui a dépassé sa limite de temps) ne masque rien. Tout
+        revient dès que les bases de données sont lues : Réessayer, Actualiser, un test de connexion réussi,
+        ou de lui-même lorsque la cause disparaît d’elle-même (le réseau, un délai dépassé, le DNS, un serveur
+        indisponible) : une page ouverte réessaie toutes les 15 secondes tant que le navigateur l’affiche.
+        Une connexion que le serveur a refusée (un nom d’utilisateur ou un mot de passe, une connexion SSH, une
+        clé d’hôte SSH qui a changé) est retenue pendant cinq minutes, ou jusqu’à ce que la connexion soit
+        modifiée, que sa personne se reconnecte (pour une connexion à laquelle chaque personne se connecte)
+        ou qu’un test de connexion réussisse : entre-temps, rien dans Mongo Manager (pages, widgets,
+        vérification de santé, tâches, shell) ne se reconnecte pour elle, et tant qu’elle est retenue, seuls
+        les administrateurs de la connexion peuvent la tester de nouveau, afin que les règles de verrouillage
+        d’un annuaire ne verrouillent pas le compte, et l’erreur indique comment réessayer.
+      </p>
+
+      <h2 id="formats">Formats</h2>
+      <ul>
+        <li>
+          <code>.archive</code> : une archive mongodump ; elle s’ouvre avec
+          <code>mongorestore --archive</code>.
+        </li>
+        <li>
+          <code>.archive.gz</code> : la même archive compressée avec gzip ;
+          <code>mongorestore --archive --gzip</code>.
+        </li>
+        <li>
+          <code>.mmbak</code> : compressé avec Zstandard, puis scellé avec AES-256-GCM en parties vérifiées
+          chacune à la lecture. Le mot de passe doit comporter 12 caractères au moins ; « Générer un mot de
+          passe fort » en produit un pour vous. Le mot de passe n’est stocké nulle part et ne peut pas être
+          récupéré : sans lui, la sauvegarde ne peut pas être ouverte. Ouvrez-la dans Mongo Manager, ou
+          transformez-la en archive simple avec
+          <code>mongo-manager backup decrypt &lt;file&gt; -o &lt;file.archive&gt;</code>
+          (le mot de passe est demandé sans écho, ou lu depuis un tube avec <code>--password-stdin</code>).
+          <code>mongo-manager backup inspect &lt;file&gt;</code> liste le contenu de n’importe quelle
+          sauvegarde.
+        </li>
+      </ul>
+
+      <h2 id="engines">Moteurs</h2>
+      <ul>
+        <li>
+          Intégré : lit via Mongo Manager, si bien que les règles de champs personnels et le masquage
+          s’appliquent. Il fonctionne sur toutes les installations, et ses archives s’ouvrent avec
+          mongorestore.
+        </li>
+        <li>
+          mongodump et mongorestore : les outils propres à MongoDB, qui peuvent être plus rapides sur de très
+          gros volumes de données. Ils sont proposés aux administrateurs de la connexion qui voient les
+          valeurs personnelles, pas à travers des tunnels SSH. Installez les MongoDB Database Tools 100.9 ou
+          ultérieurs (100.16 ou ultérieurs pour MongoDB 8.3 et versions ultérieures, ce que les outils de
+          l’image Docker ne sont pas encore : elle y utilise le moteur intégré) et définissez
+          <code>MM_MONGODB_TOOLS_PATH</code>, ou utilisez l’image Docker, qui les inclut. Les identifiants
+          parviennent aux outils dans un fichier de configuration temporaire et privé, supprimé à leur fin,
+          jamais sur la ligne de commande.
+        </li>
+      </ul>
+
+      <h2 id="time-series">Séries chronologiques</h2>
+      <p>
+        Une série chronologique est conservée comme mongodump la conserve pour la version du serveur : à
+        partir de MongoDB 8.3 sous son propre nom, lue et écrite par ce nom avec <code>rawData</code> ; avant
+        la 8.3 sous <code>system.buckets.&lt;name&gt;</code>. Le moteur intégré restaure les deux sortes, celle
+        de Mongo Manager comme celle de mongodump, dans n’importe quelle version prise en charge, y compris
+        une sauvegarde 8.3 vers un serveur plus ancien. mongorestore exige la version 100.16 ou ultérieure
+        pour une sauvegarde ou une cible de la version 8.3 ou ultérieure, et ne retrouve les séries
+        chronologiques d’une sauvegarde 8.3 que si mongodump 100.16 ou ultérieur, ou cette version de Mongo
+        Manager, l’a produite : pour une sauvegarde produite autrement, le plan propose à la place le moteur
+        intégré. Un serveur qui n’indique pas sa version n’est jamais deviné : sa série chronologique est
+        laissée de côté dans une sauvegarde, avec la raison, la restauration d’une telle série est refusée
+        dans son plan, et un test de restauration d’une telle série s’arrête avant d’écrire le moindre de ses
+        documents, sa base de données temporaire étant supprimée. Avec la connexion activée sur MongoDB 8.3 et
+        versions ultérieures, le compte qui sauvegarde ou restaure une série chronologique a aussi besoin du
+        privilège <code>performRawDataOperations</code> (le rôle <code>backup</code> de MongoDB le possède ;
+        pour une restauration, accordez-le en plus de <code>restore</code>).
+      </p>
+
+      <h2 id="personal-data">Données personnelles</h2>
+      <ul>
+        <li>
+          Un utilisateur qui n’a pas le droit de voir les valeurs personnelles sauvegarde <code>***</code> à
+          leur place : une telle sauvegarde est toujours anonyme. Chacun peut choisir une sauvegarde anonyme.
+        </li>
+        <li>
+          Les séries chronologiques contenant des champs personnels, et les vues dont la définition contient
+          une valeur qui serait masquée, sont laissées de côté dans une sauvegarde masquée. Une collection
+          dont le validateur contient une telle valeur conserve ses données masquées, sans le validateur. Le
+          rapport indique ce qui a été laissé de côté et pourquoi.
+        </li>
+        <li>
+          Une sauvegarde masquée ne peut plus être téléchargée ni restaurée dès que les règles de champs
+          personnels changent.
+        </li>
+        <li>
+          Restaurer une sauvegarde masquée sur des documents existants exige une confirmation, car
+          <code>***</code> remplace les valeurs stockées.
+        </li>
+      </ul>
+
+      <h2 id="restoring">Restauration</h2>
+      <ol>
+        <li>
+          Déposez un fichier, choisissez-en un, ou prenez l’une de vos sauvegardes conservées. Les gros
+          fichiers sont envoyés par parties et reprennent après une perte de connexion ; le contenu du fichier
+          s’affiche pendant l’envoi. Une sauvegarde chiffrée demande son mot de passe.
+        </li>
+        <li>
+          Choisissez ce qu’il faut restaurer et où : renommez la base de données pour tous les espaces de
+          noms à la fois, ajoutez <code>_restored</code> aux noms, ou « Dans une nouvelle base de données »
+          (nommée d’après la base sauvegardée et la date, jamais une base que la cible possède déjà ; une
+          sauvegarde de plusieurs bases de données reçoit une nouvelle base pour chacune, afin que des
+          collections de même nom ne se rencontrent jamais). Les cibles qui existent déjà sont marquées de leur
+          nombre de documents. « Restaurer ici… » sur une collection restaure dans celle-ci : la sauvegarde
+          d’une collection va dans cette collection quel que soit son nom d’origine.
+        </li>
+        <li>
+          Choisissez le mode d’écriture : ajouter (un document dont l’<code>_id</code> est déjà présent est
+          refusé et listé), upsert par champs clés, ou remplacer. Un remplacement restaure dans une collection
+          intermédiaire et ne la met en place que lorsque tout est arrivé, si bien qu’une restauration échouée
+          ou annulée laisse la cible telle qu’elle était. Avec le moteur intégré, ce qu’un remplacement ne
+          prend pas à la sauvegarde (ses index, ou ses options et son validateur, lorsqu’ils sont laissés de
+          côté) reste propre à la cible : si l’un de ses propres index ne peut pas être reconstruit, ou si son
+          propre plafond conserverait moins de documents que ceux qui ont été écrits, rien n’est remplacé.
+          mongorestore ne peut pas les conserver. Une série chronologique ne peut pas être remplacée, ni dans
+          la sauvegarde ni sur la cible ; restaurez-la dans une nouvelle collection. Une restauration relancée
+          retrouve les documents qu’elle a déjà écrits tels qu’ils étaient, et les compte comme déjà présents
+          au lieu de les refuser, une simulation aussi.
+        </li>
+        <li>
+          Confirmez ce qui doit l’être : les index TTL et l’expiration de collection que la collection écrite
+          aura, ceux de la sauvegarde ou ceux de la cible conservés par un remplacement (le rapport, et une
+          simulation, comptent les documents supprimés dès leur écriture, leurs dates étant déjà postérieures
+          à l’expiration, le TTL propre de la cible compris), les règles de champs personnels qui manquent à
+          la cible (un administrateur peut les ajouter), et le nom de chaque cible non vide qu’un remplacement
+          écrase, saisi.
+        </li>
+        <li>
+          Lancez une simulation pour voir ce qui se passerait, puis « Restaurer maintenant avec ces
+          paramètres », ou démarrez la restauration. La somme de contrôle de chaque espace de noms est
+          vérifiée ; une différence fait échouer la restauration. Sa progression est affichée par espace de
+          noms, puis les index et vues qu’elle construit ; à la fin, sa notification et sa ligne dans la liste
+          des tâches ouvrent ce qu’elle a écrit (« Ouvrir la collection », ou « Ouvrir la base de données »
+          pour plusieurs) et son rapport.
+        </li>
+      </ol>
+
+      <h2 id="kept-backups">Sauvegardes conservées</h2>
+      <p>
+        La section Sauvegardes d’une connexion, d’une base de données ou d’une collection liste vos sauvegardes (celle d’une collection, celles qui la contiennent) avec leur
+        protection, leur taille, leur ancienneté et leur date d’expiration, ainsi que votre utilisation de
+        l’espace de sauvegarde. Le menu « … » d’une sauvegarde la télécharge, l’envoie ou la restaure, ou la
+        supprime (avec cinq secondes pour annuler). Les sauvegardes ne sont qu’à vous ; elles sont retirées
+        lorsque vous perdez l’accès à leur connexion ou que les valeurs personnelles vous y deviennent
+        masquées.
+      </p>
+
+      <h2 id="destinations">Destinations</h2>
+      <p>
+        Une sauvegarde peut aussi être envoyée ailleurs : un dossier du serveur, un stockage compatible S3,
+        Google Drive ou un serveur WebDAV. Les administrateurs définissent les destinations sous
+        <em>Menu du compte → Destinations de sauvegarde</em>
+        et choisissent qui peut utiliser chacune ; tous les autres ne voient que le nom d’une destination,
+        jamais son adresse ni ses clés. Les clés sont stockées chiffrées et ne peuvent qu’être remplacées,
+        jamais relues.
+      </p>
+      <ul>
+        <li>
+          <strong>Dossier du serveur :</strong> un chemin absolu situé dans l’un des dossiers listés dans
+          <code>MM_BACKUP_FOLDER_ROOTS</code>, en dehors du répertoire de données. Sans ce paramètre, aucune
+          destination de type dossier ne peut être créée.
+        </li>
+        <li>
+          <strong>Stockage compatible S3 :</strong> un point de terminaison, une région, un compartiment, un
+          ID de clé d’accès et un secret. Des préréglages remplissent ce qu’ils peuvent pour Amazon S3, MinIO,
+          Cloudflare R2 (l’ID de votre compte), Backblaze B2, DigitalOcean Spaces, DigitalOcean Spaces Cold
+          Storage, Wasabi, ou tout autre service S3.
+        </li>
+        <li>
+          <strong>Google Drive :</strong> votre propre client OAuth Google Cloud, connecté avec un code
+          affiché à l’écran, ou un compte de service écrivant dans un Drive partagé (voir ci-dessous).
+        </li>
+        <li>
+          <strong>WebDAV :</strong> l’adresse du serveur, un nom d’utilisateur et un mot de passe
+          d’application (Nextcloud, ownCloud ou tout serveur WebDAV). Nextcloud et ownCloud reçoivent les
+          grosses sauvegardes par blocs reprenables.
+        </li>
+        <li>
+          <strong>Google Cloud Storage :</strong> un compartiment, un préfixe facultatif, la classe de
+          stockage dans laquelle les sauvegardes sont écrites (Standard, Nearline, Coldline ou Archive —
+          toutes les classes sont lues instantanément ; les plus froides facturent une durée minimale) et la
+          clé JSON d’un compte de service disposant du rôle <em>Utilisateur d’objets Storage</em> (suffisant :
+          il lit, écrit, liste et supprime des objets) sur le compartiment. La clé est scellée sur le
+          serveur ; seule l’adresse du compte est affichée. Les envois reprennent après une perte de
+          connexion, et chaque copie est comparée au MD5 de Google.
+        </li>
+        <li>
+          <strong>Azure Blob Storage :</strong> un compte de stockage, un conteneur, un préfixe facultatif et
+          le niveau d’accès dans lequel les sauvegardes sont écrites (celui par défaut du compte, Chaud, Froid,
+          Très froid ou Archive), signé avec un jeton SAS ou la clé du compte. Un jeton SAS limité au seul
+          conteneur, autorisé à lire, ajouter, créer, écrire, supprimer et lister, est l’accès le plus
+          restreint ; il cesse de fonctionner à sa date de fin. Seuls les champs qu’un jeton SAS peut contenir
+          sont acceptés, et seul l’identifiant qu’utilise le mode de signature choisi est conservé. Une petite
+          sauvegarde est vérifiée en entier par son MD5. Les grosses sauvegardes sont envoyées par blocs, chacun
+          vérifié par Azure par son MD5, et le blob terminé est comparé par sa taille (Azure ne conserve aucune
+          somme de contrôle pour un blob composé de blocs) ; un envoi interrompu reprend uniquement à partir de
+          ses propres blocs — chaque envoi marque ses blocs, si bien que les blocs laissés par une autre
+          tentative ne sont jamais pris pour ceux-ci. Un blob du niveau Archive est affiché comme archivé :
+          <em>Dégeler…</em> le réhydrate vers Froid (il y reste) avec une priorité standard ou haute. Les
+          manifestes ne sont jamais écrits dans Archive. <em>Avancé</em> accepte le point de terminaison d’un
+          autre cloud Azure et un certificat d’autorité de certification.
+        </li>
+        <li>
+          <strong>SFTP :</strong> un serveur, son port, un nom d’utilisateur, un dossier facultatif (le
+          dossier de connexion lorsqu’il est vide ; il doit exister) et un mot de passe ou une clé privée
+          (avec sa phrase secrète). La clé d’hôte du serveur est épinglée par son empreinte SHA-256 : laissez
+          l’empreinte vide, exécutez <em>Tester la connexion</em>, comparez la clé affichée à celle du serveur
+          lui-même (par exemple <code>ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub</code> sur le serveur)
+          et choisissez <em>Approuver cette clé et tester à nouveau</em>. Rien n’est envoyé à un serveur dont
+          la clé n’est pas celle qui est approuvée ; une clé modifiée redemande le mot de passe ou la clé. Les
+          sauvegardes sont écrites sous forme de fichiers <code>.part</code>, renommés une fois complets, et un
+          envoi interrompu reprend là où il s’est arrêté — une fois que ce que contient le fichier partiel a
+          été relu et reconnu comme le début de la sauvegarde (même si la relecture est désactivée) ; un
+          fichier partiel qui ne l’est pas repart de zéro. SFTP ne conserve aucune somme de contrôle, chaque
+          copie est donc relue en entier, sauf si <em>Vérifier en relisant</em> est désactivé. Un manifeste
+          réécrit remplace aussitôt l’ancien lorsque le serveur propose <code>posix-rename@openssh.com</code>
+          (OpenSSH le fait). Un téléchargement qui ne reçoit rien pendant une minute est abandonné. La
+          connexion passe par les mêmes vérifications d’adresse et le même proxy que les autres destinations.
+        </li>
+      </ul>
+      <p>
+        Sous <em>Accès</em>, choisissez qui d’autre peut utiliser la destination : <em>Envoyer</em> permet à
+        un utilisateur d’y envoyer ses propres sauvegardes et de restaurer celles qu’il y a envoyées ;
+        <em>Tout parcourir</em> lui permet de lire toutes les sauvegardes qui s’y trouvent, y compris celles
+        des autres utilisateurs. Les administrateurs peuvent toujours utiliser toutes les destinations.
+      </p>
+
+      <h3 id="testing">Tester une destination</h3>
+      <p>
+        La dernière étape de l’éditeur, <em>Tester et enregistrer</em>, exécute <em>Tester la connexion</em>
+        sur la destination réelle et affiche chaque étape avec sa durée : <em>Trouver l’adresse</em>,
+        <em>Se connecter de façon sécurisée</em>, <em>Se connecter</em>, <em>Écrire un fichier de test</em>,
+        <em>Le relire</em> et <em>Le supprimer</em>. Pour un dossier du serveur, les deux premières affichent
+        <em>Sur ce serveur</em>. Une étape qui échoue en donne la raison ; les étapes suivantes affichent
+        <em>Non exécuté</em>. Un paramètre modifié après le test appelle un nouveau test.
+        <em>Enregistrer</em> après un test échoué demande d’abord <em>Enregistrer sans test réussi ?</em> ;
+        <em>Enregistrer quand même</em> conserve la destination telle quelle, à corriger plus tard.
+        <em>Tester maintenant</em>, dans le menu d’une destination, teste de nouveau une destination
+        enregistrée. Sa carte affiche le résultat : <em>En bon état</em>, <em>Nécessite une intervention</em>,
+        <em>Reconnexion nécessaire</em> (Google Drive, voir ci-dessous) ou <em>Pas encore testée</em>.
+      </p>
+
+      <h3 id="google-drive">Google Drive</h3>
+      <p>
+        Mongo Manager se connecte à Drive avec votre propre client OAuth Google Cloud, ou avec un compte de
+        service dans Google Workspace. Il ne demande que la portée <code>drive.file</code> : il voit les
+        fichiers et dossiers qu’il a créés lui-même et rien d’autre dans ce Drive.
+      </p>
+      <p><strong>Avec votre compte Google</strong> (<em>Mon compte Google</em> dans l’éditeur) :</p>
+      <ol>
+        <li>
+          Dans la console Google Cloud, choisissez ou créez un projet. Sous
+          <em>API et services → Bibliothèque</em>, activez l’<em>API Google Drive</em>.
+        </li>
+        <li>
+          Configurez d’abord l’<em>écran de consentement OAuth</em> (dans les consoles récentes, c’est
+          <em>Google Auth Platform</em>, avec <em>Branding</em> et <em>Audience</em>). Dans Google Workspace,
+          choisissez le type d’utilisateur <em>Interne</em> : seuls les comptes de votre organisation peuvent
+          se connecter. Sinon, choisissez <em>Externe</em> puis <em>Publier l’application</em> afin que son
+          état soit <em>En production</em> ; <code>drive.file</code> est une portée non sensible, la
+          publication n’exige donc aucun examen de Google. Ne laissez pas une application Externe en
+          <em>Test</em> : Google fait expirer ses connexions au bout de 7 jours, et la destination affiche
+          alors <em>Reconnexion nécessaire</em>.
+        </li>
+        <li>
+          Allez dans <em>Identifiants → Créer des identifiants → ID client OAuth</em> et choisissez le type
+          <em>TVs and Limited Input devices</em>. Aucune adresse de redirection n’est nécessaire. Conservez
+          l’ID client et le secret client.
+        </li>
+        <li>
+          Dans l’éditeur, saisissez l’<em>ID client OAuth</em> et le <em>Secret client OAuth</em> et choisissez
+          <em>Connecter le compte Google</em>. Ouvrez l’adresse affichée (google.com/device) et saisissez le
+          code avec le compte Google qui doit contenir les sauvegardes, avant la fin du décompte. L’éditeur
+          affiche alors <em>Connecté en tant que</em> ce compte. Les sauvegardes vont dans un dossier créé par
+          l’application (<em>Nom du dossier</em>, « Mongo Manager backups » tant que vous ne le changez pas).
+        </li>
+        <li>
+          Lorsque Google n’accepte plus la connexion (son accès a été retiré dans le compte Google, elle n’a
+          pas été utilisée pendant six mois, ou l’application est restée en Test), la destination affiche
+          <em>Reconnexion nécessaire</em>. Ouvrez <em>Modifier…</em>, choisissez <em>Reconnecter</em>,
+          saisissez le nouveau code, puis enregistrez. Le secret client enregistré est utilisé pour cela : vous
+          ne le saisissez pas de nouveau, et il ne revient jamais vers le navigateur.
+        </li>
+      </ol>
+      <p>
+        <strong>Avec un compte de service</strong> (Google Workspace, <em>Compte de service</em> dans
+        l’éditeur) :
+      </p>
+      <ol>
+        <li>
+          Dans le même projet, sous <em>IAM et administration → Comptes de service</em>, créez un compte de
+          service (il n’a besoin d’aucun rôle). Sous ses <em>Clés</em>, choisissez
+          <em>Ajouter une clé → Créer une clé</em> de type JSON.
+        </li>
+        <li>
+          Dans Google Drive, ouvrez le Drive partagé qui doit contenir les sauvegardes, choisissez
+          <em>Gérer les membres</em>, et ajoutez l’adresse du compte de service comme <em>Gestionnaire de
+          contenu</em> (un compte de service n’a pas de stockage propre). L’ID du Drive partagé est la
+          dernière partie de son adresse (<code>drive.google.com/drive/folders/&lt;id&gt;</code>).
+        </li>
+        <li>
+          Dans l’éditeur, collez la clé ou déposez son fichier sur <em>Clé du compte de service (JSON)</em>,
+          et saisissez l’<em>ID du Drive partagé</em>. Seule l’adresse du compte reste affichée.
+        </li>
+      </ol>
+
+      <h3>Envoyer une sauvegarde</h3>
+      <p>
+        Choisissez les destinations sous <em>Destination</em> lorsque vous effectuez une sauvegarde, ou
+        utilisez <em>Envoyer…</em> sur une sauvegarde conservée. Chaque copie s’affiche sur la ligne de la
+        sauvegarde : <em>Envoi vers</em> une destination avec sa progression, <em>Sur</em> une destination une
+        fois vérifiée, ou <em>Non envoyée vers</em> une destination avec la raison.
+      </p>
+      <ul>
+        <li>
+          Une destination n’accepte que <strong>les sauvegardes chiffrées</strong>, sauf si un administrateur
+          le désactive (la modification est consignée dans le journal d’audit).
+        </li>
+        <li>
+          Une sauvegarde de données soumises à des règles de champs personnels n’est envoyée à une destination
+          que si elle est chiffrée ou masquée, quel que soit le paramètre de la destination.
+        </li>
+        <li>
+          Une copie n’est comptée comme envoyée qu’une fois vérifiée. Chaque destination compare la taille. Un
+          stockage compatible S3 vérifie aussi chaque partie envoyée par rapport à son SHA-256 à mesure
+          qu’elle arrive, et Google Drive compare la somme de contrôle qu’il indique. Un dossier du serveur
+          relit tout le fichier et compare son SHA-256 ; WebDAV fait de même lorsque <em>Vérifier chaque envoi
+          en le relisant</em> est activé (cela double le trafic). Sans cela, WebDAV ne vérifie que la taille,
+          et la boîte de dialogue le dit. Une copie dont la vérification échoue est supprimée de la
+          destination.
+        </li>
+        <li>
+          <em>Supprimer la copie locale après un envoi vérifié</em> s’appuie sur cette vérification : la copie
+          du serveur n’est supprimée que lorsque chaque destination choisie a vérifié sa copie. Si l’une
+          échoue, la copie locale est conservée 7 jours, le délai pendant lequel un envoi peut être retenté, et
+          la tâche le dit ; un envoi annulé ne la supprime jamais.
+        </li>
+        <li>
+          Chaque destination exécute un nombre limité de transferts à la fois
+          (<code>MM_BACKUP_DEST_TRANSFERS</code>, 2 par défaut, envois et téléchargements confondus). Les
+          suivants attendent, et la tâche affiche <em>En attente de</em> cette destination jusqu’à ce qu’une
+          place se libère.
+        </li>
+        <li>
+          <em>Réessayer</em> sur une copie non envoyée l’envoie de nouveau et conserve son choix
+          <em>Supprimer la copie locale</em> : une fois qu’elle et les autres copies envoyées avec ce choix
+          sont vérifiées, la copie locale disparaît. <em>Abandonner</em> abandonne la copie en échec et son
+          envoi inachevé.
+        </li>
+        <li>
+          Un envoi interrompu par un redémarrage du serveur devient une copie non envoyée, avec la raison « Le
+          serveur a redémarré pendant l’envoi. » ; <em>Réessayer</em> la poursuit à partir des parties déjà
+          envoyées lorsque le fournisseur les conserve (envois multipart S3, blocs Nextcloud).
+        </li>
+      </ul>
+
+      <h3>Ce qui y est stocké</h3>
+      <p>
+        Les fichiers vont sous <code>mongo-manager/&lt;year&gt;/&lt;month&gt;/</code> dans le dossier ou le
+        préfixe de la destination, nommés d’après la date, l’heure et un court identifiant, à côté d’un petit
+        manifeste <code>.json</code> contenant la taille, le format et la somme de contrôle, écrit en dernier,
+        une fois le fichier vérifié. Ni les noms ni le manifeste ne contiennent de noms de bases de données ou
+        de collections.
+      </p>
+
+      <h3>Restaurer depuis une destination</h3>
+      <p>
+        Choisissez l’onglet de la destination dans la carte Sauvegardes, ou <em>Depuis une destination</em>
+        dans la feuille de restauration, puis choisissez une sauvegarde. La restauration exige le droit
+        d’écrire sur la connexion cible. Le fichier est téléchargé sur le serveur et prévisualisé à mesure
+        qu’il arrive ; la restauration peut démarrer une fois le téléchargement terminé et sa somme de
+        contrôle conforme à celle enregistrée lors de l’envoi, ou à celle du manifeste. Un fichier dont la
+        somme de contrôle diffère est supprimé. Un fichier sans manifeste (déposé là par un autre outil, ou à
+        la main) est listé comme <em>Provenant d’une autre installation</em> : il peut être restauré, mais
+        rien ne peut le vérifier au préalable, et la feuille de restauration le dit.
+      </p>
+      <p>
+        Un téléchargement qui échoue conserve ce qu’il a reçu : choisir de nouveau la même sauvegarde le
+        reprend. Un téléchargement annulé est abandonné, tout comme celui dont la partie reçue est inutilisable
+        (sa somme de contrôle diffère, ou le fichier a disparu). La partie déjà reçue est comptée dans votre
+        espace de sauvegarde jusqu’à ce qu’elle soit reprise, abandonnée ou qu’elle expire
+        (<code>MM_BACKUP_TTL_HOURS</code>).
+      </p>
+      <p>
+        Sur une nouvelle installation, définissez de nouveau la destination avec les mêmes paramètres : le
+        même dossier ; les mêmes point de terminaison, compartiment et préfixe ; les mêmes adresse et dossier
+        WebDAV. Pour Google Drive, utilisez le même client OAuth (ou le même compte de service et le même
+        Drive partagé) et le même nom de dossier : avec <code>drive.file</code>, un client ne voit que les
+        fichiers qu’il a créés lui-même. Les administrateurs voient alors toutes les sauvegardes qui s’y
+        trouvent, celles de l’ancienne installation comprises. Tous les autres ont besoin de
+        <em>Tout parcourir</em> : <em>Envoyer</em> ne montre que les sauvegardes que cet utilisateur a
+        envoyées depuis cette installation.
+      </p>
+
+      <h3>Cold Storage et classes de stockage d’archive</h3>
+      <p>
+        DigitalOcean Spaces Cold Storage conserve les sauvegardes à bas coût et elles restent lisibles
+        immédiatement, mais chaque objet est facturé pendant au moins 30 jours, et le fournisseur peut
+        facturer les récupérations au-delà d’un quota : supprimer ou restaurer peu après l’envoi a un coût.
+      </p>
+      <p>
+        La <em>Classe de stockage</em> d’une destination S3 (sous <em>Avancé</em>, <code>STANDARD</code> par
+        défaut) s’applique aux fichiers de sauvegarde ; les manifestes restent en <code>STANDARD</code>. Les
+        fichiers en <code>GLACIER</code> ou <code>DEEP_ARCHIVE</code> ne sont pas lisibles tant qu’ils ne sont
+        pas dégelés : la liste de la destination les affiche comme archivés avec une action <em>Dégeler…</em>,
+        qui demande combien de temps la copie dégelée reste lisible (1 à 30 jours) et la vitesse de travail du
+        fournisseur (Standard, Bulk — le moins cher et le plus lent — ou Expedited, indisponible pour Deep
+        Archive). Le fournisseur facture le dégel et ces jours. Pendant son exécution, la copie est affichée
+        comme en cours de dégel ; une fois dégelée, elle peut être restaurée depuis la liste jusqu’à la fin
+        des jours choisis. Quiconque peut restaurer depuis la destination peut dégeler (un expéditeur, ses
+        propres copies), à raison de 10 dégels par minute au plus, chacun consigné dans le journal d’audit.
+        <code>GLACIER_IR</code>, <code>STANDARD_IA</code>, <code>ONEZONE_IA</code> et
+        <code>INTELLIGENT_TIERING</code> sont lus immédiatement.
+      </p>
+
+      <h2 id="scheduled">Sauvegardes planifiées</h2>
+      <p>
+        Une planification effectue la même sauvegarde à répétition, envoie chacune aux destinations que vous
+        choisissez et en conserve autant que le prévoit sa règle de rétention. Ouvrez
+        <em>Menu du compte → Sauvegardes planifiées</em>, la palette de commandes (« Ouvrir les sauvegardes
+        planifiées ») ou <em>Planifier…</em> dans la section Sauvegardes d’une connexion ou d’une base de
+        données, qui démarre une planification pour elle. L’éditeur comporte six étapes : quoi, quand,
+        protection, où, rétention, et un récapitulatif avec les vérifications du serveur.
+      </p>
+
+      <h3 id="scheduled-who">Qui peut planifier</h3>
+      <ul>
+        <li>
+          Quiconque peut sauvegarder la connexion peut la planifier (lire des documents, exécuter des tâches
+          et exporter dessus). Chaque exécution prend les droits du propriétaire tels qu’ils sont à ce
+          moment-là, jamais tels qu’ils étaient lors de l’enregistrement de la planification.
+        </li>
+        <li>
+          Un droit disparu met la planification en pause avant toute lecture de données, avec la raison sur sa
+          carte : le compte du propriétaire est désactivé, le propriétaire ne peut plus sauvegarder la
+          connexion ni envoyer vers une destination, une destination a été supprimée, la clé de sauvegarde
+          n’est pas active, le périmètre contient désormais des données personnelles pour une planification non
+          chiffrée, une destination n’accepte désormais que les sauvegardes chiffrées, ce serveur ne peut pas
+          lire sa cadence ou son fuseau horaire (un fuseau horaire qu’une autre version connaissait), ou les
+          copies qu’elle conserve sur ce serveur remplissent votre espace de sauvegarde. Reprenez-la une fois
+          la raison disparue.
+        </li>
+        <li>
+          Les administrateurs voient toutes les planifications et peuvent les mettre en pause, les reprendre,
+          les exécuter et les supprimer ; ils ne modifient pas la planification d’un autre utilisateur. Une
+          planification qu’un administrateur a mise en pause est reprise par un administrateur. Un utilisateur
+          peut détenir 10 planifications au plus.
+        </li>
+      </ul>
+
+      <h3 id="cadence">Quand elle s’exécute</h3>
+      <ul>
+        <li>
+          <strong>Toutes les N heures</strong> (1 à 24), à une minute choisie de l’heure.
+        </li>
+        <li><strong>Quotidienne</strong>, à quatre heures de la journée au plus.</li>
+        <li><strong>Hebdomadaire</strong>, les jours que vous choisissez, à une heure donnée.</li>
+        <li>
+          <strong>Mensuelle</strong>, un jour de 1 à 28 ou le dernier jour du mois, à une heure donnée.
+        </li>
+        <li>
+          <strong>Avancé</strong> : une expression cron à cinq champs (minute, heure, jour du mois, mois, jour
+          de la semaine), relue en toutes lettres pendant la saisie. Elle suit les règles classiques de Vixie :
+          lorsque le jour du mois et le jour de la semaine sont tous deux restreints, la correspondance de
+          l’un des deux suffit ; un champ qui commence par <code>*</code> compte comme non restreint. Il n’y a
+          pas de raccourcis <code>@</code>, pas de secondes, ni de <code>L</code>, <code>W</code> ou
+          <code>#</code>.
+        </li>
+      </ul>
+      <p>
+        Les exécutions doivent être espacées d’au moins une heure, et une cadence doit s’exécuter dans les
+        cinq prochaines années ; l’éditeur affiche les prochaines exécutions dans le fuseau horaire de la
+        planification et indique quand l’une de ces règles n’est pas respectée.
+      </p>
+
+      <h3 id="time-zones">Fuseaux horaires et heure d’été</h3>
+      <p>
+        Chaque planification a son propre fuseau horaire (le vôtre par défaut) ; les heures sont des heures
+        d’horloge dans ce fuseau. Lorsque les horloges avancent, une heure qui n’existe pas ce jour-là
+        s’exécute à la première minute après le changement. Lorsqu’elles reculent, une heure qui se produit
+        deux fois s’exécute une seule fois, à sa première occurrence. Une planification horaire perd une
+        exécution dans l’heure qui se répète plutôt que de s’exécuter deux fois en une heure.
+      </p>
+
+      <h3 id="missed-runs">Exécutions manquées, chevauchement et file d’attente</h3>
+      <ul>
+        <li>
+          Lorsque le serveur était arrêté à une heure d’échéance, le démarrage suivant effectue une sauvegarde
+          de rattrapage si la dernière échéance manquée n’est pas plus ancienne que l’intervalle propre à la
+          planification (un jour au plus). Toute autre échéance manquée est enregistrée comme manquée ; il n’y
+          a jamais plus d’un rattrapage.
+        </li>
+        <li>
+          Une exécution qui arrive à échéance alors que la précédente est encore en cours, ou attend encore
+          son tour, est ignorée et enregistrée comme ignorée, avec laquelle des deux il s’agissait.
+        </li>
+        <li>
+          Au plus <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code> exécutions planifiées travaillent à la fois (2
+          par défaut). Les autres attendent par ordre d’échéance jusqu’à six heures ; une exécution qui
+          attend plus longtemps est ignorée.
+        </li>
+        <li>
+          Une horloge qui saute en avant donne au plus un rattrapage ; une horloge qui recule n’exécute rien
+          deux fois.
+        </li>
+      </ul>
+
+      <h3 id="run-history">Exécuter maintenant et historique des exécutions</h3>
+      <p>
+        <em>Exécuter maintenant</em> démarre aussitôt une exécution sans déplacer la suivante ; une
+        planification s’exécute une à la fois. Chaque carte affiche ses dernières exécutions sous forme de
+        bande : vert pour réussie, ambre pour partielle (une destination a échoué), rouge pour échouée, gris
+        pour ignorée, un contour en pointillés pour manquée, et un repère pulsant pour l’exécution en cours.
+        L’historique des exécutions liste chaque exécution avec son résultat, sa durée et sa taille, la
+        destination de chaque copie, ce que la rétention a supprimé et, pour une exécution qui n’a pas réussi,
+        pourquoi. Les 200 dernières exécutions de chaque planification sont conservées. Une carte dont la
+        dernière exécution terminée a échoué ou était partielle l’indique, avec la raison. Les tâches
+        démarrées par une planification portent son nom dans la liste des tâches, et une planification de
+        votre compte en pause ou en échec marque le menu du compte.
+      </p>
+
+      <h3 id="scheduled-protection">Protection et destination</h3>
+      <ul>
+        <li>
+          Par défaut, chaque exécution est un <code>.mmbak</code> chiffré, scellé avec votre clé de
+          sauvegarde (voir <a href="security.html#backup-keys">Clés de sauvegarde</a>) : aucun mot de passe à
+          saisir, et son kit de récupération l’ouvre partout. Créez d’abord une clé sous
+          <em>Paramètres du compte → Clés de sauvegarde</em>.
+        </li>
+        <li>
+          Un format simple (<code>.archive</code> ou <code>.archive.gz</code>) n’est autorisé que si le
+          périmètre ne contient aucune donnée personnelle et que chaque destination choisie accepte les
+          sauvegardes non chiffrées ; les deux sont vérifiés de nouveau avant chaque exécution.
+        </li>
+        <li>
+          Chaque exécution va vers les destinations partagées avec vous que vous choisissez, puis la copie sur
+          ce serveur est supprimée une fois que chaque destination a une copie vérifiée.
+          <em>Conserver aussi sur le serveur</em> la garde aussi ici, sous la même rétention et dans votre
+          espace de sauvegarde ; l’éditeur indique à peu près la place qu’elles prendront. Le désactiver
+          donne aux copies conservées jusque-là la durée de vie normale.
+        </li>
+      </ul>
+
+      <h3 id="restore-drills">Tests de restauration</h3>
+      <p>
+        Une sauvegarde ne vaut que par sa restauration. « Vérifier que les sauvegardes se restaurent » (dans
+        l’étape de rétention) lance un test de restauration toutes les quelques exécutions (1 à 30) : la
+        sauvegarde de l’exécution, ouverte avec votre clé de sauvegarde, est restaurée dans une nouvelle base
+        de données temporaire sur la même connexion (<code>mm_drill_</code> et 12 caractères aléatoires),
+        chaque espace de noms est relu et comparé à la sauvegarde — le nombre de documents, et chaque document
+        octet par octet — et la base de données temporaire est supprimée, quel que soit le résultat. Tant
+        qu’elle existe, elle est fermée à tout le monde, administrateurs compris : elle n’apparaît pas dans
+        l’arborescence, la page Performances, les requêtes lentes ni les opérations en cours (et n’est pas
+        comptée dans la taille totale des bases de données), et aucune page, requête, commande de shell,
+        assistant, flux de modifications, synchronisation en continu, copie, comparaison, sauvegarde ou
+        restauration ne la lit ni n’y écrit — une requête qui la nomme est refusée. Deux choses restent hors
+        de portée de l’application : la réponse de <code>listDatabases</code> dans le shell d’un
+        administrateur de la connexion montre toujours son nom (elle ne peut pas être ouverte), et ce que le
+        test écrit apparaît, comme toute écriture, dans l’oplog (<code>local.oplog.rs</code>, administrateurs
+        uniquement) et dans un flux de modifications de tout le déploiement ouvert dans le shell d’un
+        administrateur. Elle porte aussi les règles de données personnelles de ce qu’elle contient (celles de
+        la sauvegarde, et celles de la connexion pour ces espaces de noms), si bien que ses valeurs sont
+        masquées à quiconque n’a pas le droit de les voir ; ces règles ne sont pas ajoutées à la liste de la
+        connexion et disparaissent avec la base de données. Les collections sont restaurées sans leurs
+        options (un validateur ou un plafond ferait de ce test un test de la cible), et les vues ne sont pas
+        vérifiées. L’exécution garde sa copie du serveur jusqu’à la fin du test, puis la libère comme
+        d’habitude. L’historique des exécutions indique si chaque test a réussi ou échoué (et dans quels
+        espaces de noms), le rapport du test figure dans la liste des tâches, et un test échoué déclenche une
+        alerte. Un test exige le droit de créer des bases de données sur la connexion ; sans lui (ou sur une
+        connexion en lecture seule), le test est ignoré, jamais la sauvegarde. Il écrit autant que ce que
+        contient la sauvegarde, et les écritures vont au nœud principal quel que soit le membre que nomme la
+        connexion : choisissez un moment calme. Avant d’écrire quoi que ce soit, il vérifie que l’utilisateur
+        MongoDB de la connexion peut supprimer des bases de données (un test qui ne peut pas faire le ménage
+        échoue aussitôt), choisit un nom temporaire qu’aucune base de données ne porte, et garde ce qu’il
+        écrit sous la moitié de l’espace disque libre du serveur — celui du shard le plus plein à travers un
+        mongos, et sous <code>MM_BACKUP_DRILL_MAX_MB</code> lorsqu’il est défini, ce dont a besoin un serveur
+        qui n’indique pas son espace libre (niveaux partagés d’Atlas) — une sauvegarde plus grosse fait
+        échouer le test, ce qui est dit comme tel. Un droit de suppression qui ne peut pas être lu n’est pas
+        présumé : le test ne démarre pas. Si la base de données temporaire ne peut pas être supprimée à la
+        fin, le test échoue, une alerte d’avertissement est déclenchée et le rapport nomme la base de
+        données : les administrateurs de la connexion la voient sur la page de la connexion et la suppriment
+        là en saisissant son nom (pas tant qu’un test s’exécute). Elle est fermée à tout le monde entre-temps,
+        et un redémarrage la supprime.
+      </p>
+
+      <h2 id="retention">Rétention</h2>
+      <p>
+        La rétention décide quelles sauvegardes une planification conserve à chaque emplacement (chaque
+        destination, et ce serveur lorsqu’il conserve des copies). Quatre paliers, comptés dans le fuseau
+        horaire de la planification ; une sauvegarde reste dès qu’un palier la conserve :
+      </p>
+      <ul>
+        <li><strong>Plus récentes</strong> : les N sauvegardes les plus récentes (1 à 100).</li>
+        <li>
+          <strong>Quotidien</strong> : la plus récente de chaque jour calendaire, pendant ce nombre de jours
+          (0 à 90).
+        </li>
+        <li>
+          <strong>Hebdomadaire</strong> : la plus récente de chaque semaine ISO (du lundi au dimanche),
+          pendant ce nombre de semaines (0 à 52).
+        </li>
+        <li>
+          <strong>Mensuel</strong> : la plus récente de chaque mois calendaire, pendant ce nombre de mois (0 à
+          60).
+        </li>
+      </ul>
+      <p>
+        Préréglages : <em>Quotidienne pendant 30 jours</em> (les 7 plus récentes et une par jour pendant
+        30 jours), <em>Standard</em> (les 7 plus récentes, 14 jours, 8 semaines et 12 mois), <em>Longue</em>
+        (les 7 plus récentes, 30 jours, 26 semaines et 60 mois) et <em>Personnalisée</em>. L’éditeur dessine ce
+        qui reste sur une frise chronologique.
+      </p>
+      <ul>
+        <li>
+          Seules les copies complètes et vérifiées de la planification elle-même, à un emplacement donné,
+          sont jamais supprimées ; une copie envoyée à la main, même d’une sauvegarde planifiée, ne l’est
+          jamais. Rien n’est supprimé sur une destination que son propriétaire n’a plus le droit d’utiliser.
+        </li>
+        <li>
+          La sauvegarde la plus récente n’est jamais supprimée, et une exécution qui échoue ne supprime rien.
+        </li>
+        <li>
+          La suppression à un emplacement a lieu une fois la copie de cette exécution complète à cet
+          emplacement, à raison de 100 suppressions au plus par emplacement et par exécution ; une suppression
+          qui échoue est retentée après l’exécution suivante. Chaque suppression figure dans le journal
+          d’audit avec le nom du fichier.
+        </li>
+        <li>
+          Une modification de règle, de fuseau horaire, de destinations ou de conservation qui supprimerait
+          plus de dix sauvegardes à la fois vous demande d’abord de confirmer ce nombre.
+        </li>
+        <li>
+          DigitalOcean Spaces Cold Storage facture chaque objet pendant au moins 30 jours : l’éditeur avertit
+          lorsqu’une règle y conserverait des sauvegardes moins longtemps.
+        </li>
+      </ul>
+
+      <h2 id="opening-scheduled">Ouvrir une sauvegarde planifiée</h2>
+      <ul>
+        <li>
+          Sur ce serveur, restaurez-la comme n’importe quelle autre sauvegarde : elle s’ouvre avec votre clé de
+          sauvegarde, anciennes clés retirées comprises, et la restauration indique quelle clé l’a ouverte.
+        </li>
+        <li>
+          Ailleurs, ou lorsqu’aucune de vos clés ne l’ouvre, la restauration demande le kit de récupération de
+          la sauvegarde (collez-le ou choisissez son fichier). Le kit sert à cette restauration et n’est pas
+          conservé, sauf si vous cochez <em>Importer cette clé</em>, ce qui ajoute la clé à vos clés de
+          sauvegarde.
+        </li>
+        <li>
+          Sans l’application :
+          <code
+            >mongo-manager backup decrypt &lt;file.mmbak&gt; --key-file &lt;kit.txt&gt; -o
+            &lt;file.archive&gt;</code
+          >
+          écrit l’archive simple, qui s’ouvre avec <code>mongorestore --archive</code>. Sans
+          <code>--key-file</code>, un fichier qui ne s’ouvre qu’avec sa clé de sauvegarde le dit avant de
+          demander quoi que ce soit.
+        </li>
+      </ul>
+
+      <h2 id="limits-and-settings">Limites et paramètres</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_QUOTA</code> : l’espace de sauvegarde par utilisateur, en Mio (20 480 par défaut).
+        </li>
+        <li>
+          <code>MM_BACKUP_TOTAL_QUOTA</code> : l’espace de sauvegarde de tous les utilisateurs, en Mio
+          (102 400 par défaut).
+        </li>
+        <li>
+          <code>MM_BACKUP_MAX_UPLOAD</code> : le plus gros fichier à restaurer, en Mio (20 480 par défaut).
+        </li>
+        <li>
+          <code>MM_BACKUP_TTL_HOURS</code> : la durée de conservation des sauvegardes et des envois (24 par
+          défaut).
+        </li>
+        <li>
+          <code>MM_BACKUP_MAX_JOB_HOURS</code> : la durée maximale d’une sauvegarde ou d’une restauration (12
+          par défaut).
+        </li>
+        <li>
+          <code>MM_BACKUP_CHUNK_MB</code> : la taille de partie par défaut des sauvegardes chiffrées (64 par
+          défaut).
+        </li>
+        <li><code>MM_MONGODB_TOOLS_PATH</code> : le dossier de mongodump et mongorestore.</li>
+        <li>
+          10 000 espaces de noms au plus dans une archive ; un zip d’un dossier mongodump doit faire moins de
+          4 Gio.
+        </li>
+        <li>
+          <code>MM_BACKUP_SCHEDULES</code> et <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code> : activation ou
+          désactivation de la planification, et nombre d’exécutions planifiées simultanées (voir
+          <a href="deployment.html#scheduled-backups">Déploiement</a>).
+        </li>
+      </ul>
+
+      <h2 id="not-covered">Hors périmètre</h2>
+      <p>
+        Les utilisateurs et les rôles, l’oplog et la restauration à un instant donné. Une sauvegarde lit les
+        collections l’une après l’autre, et non à un instant précis : les documents écrits entre-temps
+        peuvent n’y figurer qu’en partie. Pour une copie à un instant précis, sauvegardez un membre du jeu de
+        réplicas sur lequel les écritures se sont arrêtées, ou utilisez les instantanés propres à MongoDB.
+      </p>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Sur cette page</p>
+      <ol>
+        <li><a href="#taking-a-backup">Effectuer une sauvegarde</a></li>
+        <li><a href="#formats">Formats</a></li>
+        <li><a href="#engines">Moteurs</a></li>
+        <li><a href="#time-series">Séries chronologiques</a></li>
+        <li><a href="#personal-data">Données personnelles</a></li>
+        <li><a href="#restoring">Restauration</a></li>
+        <li><a href="#kept-backups">Sauvegardes conservées</a></li>
+        <li><a href="#destinations">Destinations</a></li>
+        <li><a href="#scheduled">Sauvegardes planifiées</a></li>
+        <li><a href="#retention">Rétention</a></li>
+        <li><a href="#opening-scheduled">Ouvrir une sauvegarde planifiée</a></li>
+        <li><a href="#limits-and-settings">Limites et paramètres</a></li>
+        <li><a href="#not-covered">Hors périmètre</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

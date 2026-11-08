@@ -1,0 +1,17 @@
+{
+  "name": "@mongo-manager/e2e",
+  "version": "1.2.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "e2e": "playwright test",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "ui-review": "playwright test tests/01-first-run.spec.ts tests/ui-review --project=chrome",
+    "e2e:rs": "node scripts/e2e-rs.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "mongodb": "^7.6.0",
+    "mongodb-memory-server": "^11.3.0"
+  }
+}

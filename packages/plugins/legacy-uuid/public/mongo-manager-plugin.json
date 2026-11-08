@@ -1,0 +1,120 @@
+{
+  "id": "legacy-uuid",
+  "name": {
+    "en": "Legacy UUIDs",
+    "tr": "Eski UUID'ler",
+    "zh": "旧版 UUID",
+    "ja": "旧形式 UUID",
+    "es": "UUID heredados",
+    "pt": "UUIDs legados",
+    "ko": "레거시 UUID",
+    "de": "Legacy-UUIDs",
+    "fr": "UUID hérités",
+    "ru": "Устаревшие UUID"
+  },
+  "version": "1.2.1",
+  "description": {
+    "en": "Reads the legacy UUIDs older drivers stored (binary subtype 3) in the Java, C# and Python byte orders, finds which order a field was written in, and finds a UUID however it was stored.",
+    "tr": "Eski sürücülerin sakladığı UUID'leri (ikili alt tür 3) Java, C# ve Python bayt sıralarıyla okur, bir alanın hangi sırayla yazıldığını bulur ve bir UUID'yi nasıl saklanmış olursa olsun bulur.",
+    "zh": "按 Java、C# 和 Python 的字节顺序读取旧版驱动程序存储的旧版 UUID（二进制子类型 3），判断字段是按哪种顺序写入的，并可查找以任意方式存储的 UUID。",
+    "ja": "古いドライバーが保存した旧形式の UUID（バイナリのサブタイプ 3）を Java、C#、Python のバイト順で読み取り、フィールドがどの順序で書き込まれたかを判定し、どの形式で保存された UUID も検索します。",
+    "es": "Lee los UUID heredados que guardaban los controladores antiguos (subtipo binario 3) en los órdenes de bytes de Java, C# y Python, averigua en qué orden se escribió un campo y encuentra un UUID sea cual sea su forma de almacenamiento.",
+    "pt": "Lê os UUIDs legados que drivers antigos armazenavam (subtipo binário 3) nas ordens de bytes de Java, C# e Python, descobre em qual ordem um campo foi gravado e encontra um UUID independentemente de como foi armazenado.",
+    "ko": "구형 드라이버가 저장한 레거시 UUID(바이너리 서브타입 3)를 Java, C#, Python 바이트 순서로 읽고, 필드가 어떤 순서로 기록되었는지 알려 주며, 저장된 방식과 관계없이 UUID를 찾습니다.",
+    "de": "Liest die Legacy-UUIDs, die ältere Treiber gespeichert haben (Binary-Subtyp 3), in den Byte-Reihenfolgen von Java, C# und Python, ermittelt, in welcher Reihenfolge ein Feld geschrieben wurde, und findet eine UUID, wie auch immer sie gespeichert wurde.",
+    "fr": "Lit les UUID hérités que stockaient les anciens pilotes (sous-type binaire 3) dans les ordres d’octets de Java, C# et Python, détermine dans quel ordre un champ a été écrit et trouve un UUID quelle que soit la façon dont il a été stocké.",
+    "ru": "Читает устаревшие UUID, которые хранили старые драйверы (двоичный подтип 3), в порядках байтов Java, C# и Python, определяет, в каком порядке записано поле, и находит UUID независимо от способа хранения."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "uuids",
+        "title": {
+          "en": "UUIDs",
+          "tr": "UUID'ler",
+          "zh": "UUID",
+          "ja": "UUID",
+          "es": "UUID",
+          "pt": "UUIDs",
+          "ko": "UUID",
+          "de": "UUIDs",
+          "fr": "UUID",
+          "ru": "UUID"
+        },
+        "icon": "shapes"
+      }
+    ],
+    "cellRenderers": [{ "id": "uuid", "match": "binary", "display": "tooltip" }]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-11-07",
+  "changelog": [
+    {
+      "version": "1.2.1",
+      "date": "2026-11-07",
+      "notes": {
+        "en": "A collection of large documents, such as API logs, is scanned for UUIDs again: the sample takes as many documents as one answer to the page can hold, and the app stops reading there. Before, the scan failed after reading up to 60 MB.",
+        "tr": "API günlükleri gibi büyük belgeli bir koleksiyon yeniden UUID'ler için taranabiliyor: örnek, sayfaya giden tek bir yanıta sığacak kadar belge alır ve uygulama okumayı orada bırakır. Önceden tarama, 60 MB'a kadar okuduktan sonra başarısız oluyordu.",
+        "zh": "大文档组成的集合（例如 API 日志）现在可以重新扫描 UUID：采样只取页面一次应答能容纳的文档数量，应用读到这里就停止。以前扫描会在读取多达 60 MB 后失败。",
+        "ja": "API ログのような大きなドキュメントのコレクションでも、UUID を再びスキャンできるようになりました。サンプルはページへの 1 回の応答に収まる数だけドキュメントを取り、アプリはそこで読み取りを止めます。以前は最大 60 MB を読み取った後にスキャンが失敗していました。",
+        "es": "Una colección de documentos grandes, como registros de API, vuelve a poder analizarse en busca de UUID: la muestra toma tantos documentos como caben en una respuesta a la página, y la aplicación deja de leer ahí. Antes, el análisis fallaba tras leer hasta 60 MB.",
+        "pt": "Uma coleção de documentos grandes, como logs de API, volta a ser verificada em busca de UUIDs: a amostra pega tantos documentos quanto cabem em uma resposta à página, e o app para de ler aí. Antes, a verificação falhava depois de ler até 60 MB.",
+        "ko": "API 로그처럼 큰 도큐먼트로 된 컬렉션에서도 UUID를 다시 검사할 수 있습니다. 샘플은 페이지로 가는 한 번의 응답에 담길 만큼만 도큐먼트를 가져오고, 앱은 거기서 읽기를 멈춥니다. 이전에는 최대 60 MB를 읽은 뒤 검사가 실패했습니다.",
+        "de": "Eine Collection großer Dokumente, etwa API-Logs, lässt sich wieder nach UUIDs durchsuchen: Die Stichprobe nimmt so viele Dokumente, wie eine Antwort an die Seite fassen kann, und die App hört dort auf zu lesen. Vorher scheiterte die Suche, nachdem bis zu 60 MB gelesen waren.",
+        "fr": "Une collection de documents volumineux, comme des journaux d’API, peut de nouveau être analysée à la recherche d’UUID : l’échantillon prend autant de documents qu’une réponse à la page peut en contenir, et l’application arrête la lecture là. Auparavant, l’analyse échouait après avoir lu jusqu’à 60 MB.",
+        "ru": "Коллекцию больших документов, например журналов API, снова можно проверить на UUID: выборка берет столько документов, сколько помещается в один ответ странице, и приложение на этом прекращает чтение. Раньше проверка не удавалась после чтения до 60 MB."
+      }
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Counts of documents and legacy values now follow each language’s plural rules (French reads 0 as singular, Russian has three forms), and the English, Spanish and Portuguese wording of those counts is corrected.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Belge ve eski değer sayıları artık her dilin çoğul kurallarını izler (Fransızca 0’ı tekil okur, Rusçanın üç biçimi var); İngilizce, İspanyolca ve Portekizce sayı metinleri düzeltildi, Türkçe “örnekte UUID yok” ipucu da güncellendi.",
+        "zh": "现已与应用一样支持韩语、德语、法语和俄语。文档数和旧版值的数量文本现按各语言的复数规则显示（法语将 0 视为单数，俄语有三种形式），并修正了英语、西班牙语和葡萄牙语的相关措辞。",
+        "ja": "アプリと同様に、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。ドキュメント数と旧形式の値の数の表示が各言語の複数形の規則に従うようになりました（フランス語は 0 を単数、ロシア語は 3 つの形）。英語、スペイン語、ポルトガル語の該当する文言も修正しました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Los recuentos de documentos y de valores heredados siguen ahora las reglas de plural de cada idioma (el francés lee 0 como singular, el ruso tiene tres formas) y se corrige la redacción de esos recuentos en inglés, español y portugués.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o app. As contagens de documentos e de valores legados seguem agora as regras de plural de cada idioma (o francês lê 0 como singular, o russo tem três formas) e o texto dessas contagens em inglês, espanhol e português foi corrigido.",
+        "ko": "앱과 마찬가지로 한국어, 독일어, 프랑스어, 러시아어로도 제공됩니다. 도큐먼트 수와 레거시 값 수의 문구가 이제 각 언어의 복수형 규칙을 따릅니다(프랑스어는 0을 단수로, 러시아어는 세 가지 형태). 영어, 스페인어, 포르투갈어의 해당 문구도 바로잡았습니다.",
+        "de": "Jetzt auch auf Koreanisch, Deutsch, Französisch und Russisch, wie die App. Die Texte zu Anzahlen von Dokumenten und Legacy-Werten folgen nun den Pluralregeln jeder Sprache (Französisch liest 0 als Singular, Russisch hat drei Formen); die englischen, spanischen und portugiesischen Formulierungen dieser Anzahlen wurden korrigiert.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Les nombres de documents et de valeurs héritées suivent maintenant les règles de pluriel de chaque langue (le français lit 0 comme un singulier, le russe a trois formes) et la formulation de ces nombres en anglais, espagnol et portugais est corrigée.",
+        "ru": "Теперь и на корейском, немецком, французском и русском, как и приложение. Числа документов и устаревших значений теперь следуют правилам множественного числа каждого языка (французский читает 0 как единственное число, в русском три формы), а формулировки этих чисел на английском, испанском и португальском исправлены."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现已与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同様に、中国語、日本語、スペイン語、ブラジルポルトガル語に対応しました。ほかに変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. No cambia nada más.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o app. Nada mais muda.",
+        "ko": "앱과 마찬가지로 중국어, 일본어, 스페인어, 브라질 포르투갈어로도 제공됩니다. 그 밖의 변경 사항은 없습니다.",
+        "de": "Jetzt auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь и на китайском, японском, испанском и бразильском португальском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-28",
+      "notes": {
+        "en": "First release. Pointing at a legacy UUID (binary subtype 3) in Documents shows it read in the Java, C# and Python drivers' byte orders. A UUIDs tab lists the fields of 1,000 random documents that hold UUIDs, how many are legacy or standard, and the driver whose order reads the legacy ones as well-formed UUIDs; its finder writes a UUID as each driver stored it, copies that value, and selects its documents in Documents, for one driver or any of them.",
+        "tr": "İlk sürüm. Belgelerde eski bir UUID'nin (ikili alt tür 3) üzerine gelmek onu Java, C# ve Python sürücülerinin bayt sıralarıyla okunmuş gösterir. UUID'ler sekmesi rastgele 1.000 belgenin UUID taşıyan alanlarını, kaçının eski ya da standart olduğunu ve eskileri iyi biçimli UUID olarak okuyan sürücüyü listeler; bulucusu bir UUID'yi her sürücünün sakladığı gibi yazar, o değeri kopyalar ve belgelerini Belgeler'de seçer: tek bir sürücü için ya da hepsi için.",
+        "zh": "首个版本。在文档中指向旧版 UUID（二进制子类型 3），即可看到它按 Java、C# 和 Python 驱动程序的字节顺序读取的结果。UUID 标签页列出随机 1,000 个文档中包含 UUID 的字段、其中旧版和标准的数量，以及能把旧版值读成格式正确的 UUID 的驱动程序；其查找器会按各驱动程序的存储方式写出 UUID，复制该值，并在文档中选出对应文档，可针对某个驱动程序或任意驱动程序。",
+        "ja": "初回リリースです。ドキュメントで旧形式の UUID（バイナリのサブタイプ 3）にポインターを合わせると、Java、C#、Python の各ドライバーのバイト順で読み取った結果を表示します。UUID タブには、ランダムな 1,000 件のドキュメントのうち UUID を持つフィールド、旧形式と標準の件数、旧形式の値を正しい形式の UUID として読み取れるドライバーが一覧表示されます。検索機能は、UUID を各ドライバーが保存した形で書き出し、その値をコピーし、該当するドキュメントをドキュメントで選択します。特定のドライバーでも、いずれのドライバーでも使えます。",
+        "es": "Primera versión. Al señalar un UUID heredado (subtipo binario 3) en Documentos, se muestra leído en los órdenes de bytes de los controladores de Java, C# y Python. Una pestaña UUID enumera los campos de 1000 documentos aleatorios que contienen UUID, cuántos son heredados o estándar y el controlador cuyo orden lee los heredados como UUID bien formados; su buscador escribe un UUID tal como lo almacenó cada controlador, copia ese valor y selecciona sus documentos en Documentos, para un controlador o para cualquiera.",
+        "pt": "Primeira versão. Apontar para um UUID legado (subtipo binário 3) em Documentos o mostra lido nas ordens de bytes dos drivers de Java, C# e Python. Uma aba UUIDs lista os campos de 1.000 documentos aleatórios que contêm UUIDs, quantos são legados ou padrão e o driver cuja ordem lê os legados como UUIDs bem formados; o localizador escreve um UUID como cada driver o armazenou, copia esse valor e seleciona os documentos dele em Documentos, para um driver ou para qualquer um.",
+        "ko": "첫 릴리스입니다. 도큐먼트에서 레거시 UUID(바이너리 서브타입 3)를 가리키면 Java, C#, Python 드라이버의 바이트 순서로 읽은 값을 보여 줍니다. UUID 탭에는 무작위 도큐먼트 1,000개 중 UUID를 가진 필드, 레거시와 표준의 개수, 레거시 값을 올바른 형식의 UUID로 읽는 드라이버가 나열됩니다. 찾기 기능은 UUID를 각 드라이버가 저장한 형태로 써 주고, 그 값을 복사하며, 해당 도큐먼트를 도큐먼트에서 선택합니다. 특정 드라이버나 모든 드라이버에 대해 사용할 수 있습니다.",
+        "de": "Erste Version. Zeigt man in Dokumente auf eine Legacy-UUID (Binary-Subtyp 3), erscheint sie in den Byte-Reihenfolgen der Treiber für Java, C# und Python gelesen. Ein Tab UUIDs listet die Felder von 1.000 zufälligen Dokumenten, die UUIDs enthalten, wie viele Legacy oder Standard sind und den Treiber, dessen Reihenfolge die Legacy-Werte als wohlgeformte UUIDs liest; die Suche schreibt eine UUID so, wie jeder Treiber sie gespeichert hat, kopiert diesen Wert und wählt ihre Dokumente in Dokumente aus, für einen Treiber oder für jeden.",
+        "fr": "Première version. Pointer un UUID hérité (sous-type binaire 3) dans Documents l’affiche lu dans les ordres d’octets des pilotes Java, C# et Python. Un onglet UUID liste les champs de 1 000 documents aléatoires qui contiennent des UUID, combien sont hérités ou standard, et le pilote dont l’ordre lit les valeurs héritées comme des UUID bien formés ; sa recherche écrit un UUID tel que chaque pilote l’a stocké, copie cette valeur et sélectionne ses documents dans Documents, pour un pilote ou pour n’importe lequel.",
+        "ru": "Первый выпуск. Если навести указатель на устаревший UUID (двоичный подтип 3) в Документах, он показывается прочитанным в порядках байтов драйверов Java, C# и Python. Вкладка UUID перечисляет поля 1000 случайных документов, содержащие UUID, сколько из них устаревших или стандартных, и драйвер, порядок которого читает устаревшие значения как корректные UUID; поиск записывает UUID так, как его хранил каждый драйвер, копирует это значение и выбирает его документы в Документах — для одного драйвера или для любого."
+      }
+    }
+  ]
+}

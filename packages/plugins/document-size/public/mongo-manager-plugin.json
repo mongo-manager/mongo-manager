@@ -1,0 +1,103 @@
+{
+  "id": "document-size",
+  "name": {
+    "en": "Document size",
+    "tr": "Belge boyutu",
+    "zh": "文档大小",
+    "ja": "ドキュメントサイズ",
+    "es": "Tamaño del documento",
+    "pt": "Tamanho do documento",
+    "ko": "도큐먼트 크기",
+    "de": "Dokumentgröße",
+    "fr": "Taille des documents",
+    "ru": "Размер документов"
+  },
+  "version": "1.2.0",
+  "description": {
+    "en": "How big a collection's documents are — their spread, the largest, how near the 16 MB limit — and where their bytes go, field by field and into object fields, names included, measured on the server.",
+    "tr": "Bir koleksiyonun belgelerinin ne kadar büyük olduğu — dağılımı, en büyükleri, 16 MB sınırına yakınlığı — ve baytlarının nereye gittiği; alan alan ve nesne alanlarının içine, adlar dahil, sunucuda ölçülür.",
+    "zh": "集合中的文档有多大——分布、最大的文档、距 16 MB 上限有多近——以及字节都用在了哪里：逐个字段、并深入对象字段，包括字段名，均在服务器上测量。",
+    "ja": "コレクション内のドキュメントの大きさ（分布、最大のもの、16 MB 上限への近さ）と、バイトの内訳を、フィールドごと、さらにオブジェクトフィールドの内側まで、名前も含めて、サーバー上で測定します。",
+    "es": "Qué tamaño tienen los documentos de una colección —su distribución, los más grandes, lo cerca que están del límite de 16 MB— y adónde van sus bytes, campo por campo y dentro de los campos de objeto, nombres incluidos, medido en el servidor.",
+    "pt": "Qual o tamanho dos documentos de uma coleção — sua distribuição, os maiores, a proximidade do limite de 16 MB — e para onde vão seus bytes, campo a campo e dentro de campos de objeto, nomes incluídos, medido no servidor.",
+    "ko": "컬렉션의 도큐먼트가 얼마나 큰지(분포, 가장 큰 도큐먼트, 16 MB 제한에 얼마나 가까운지)와 바이트가 어디에 쓰이는지를 필드별로, 객체 필드 안쪽까지, 이름을 포함해 서버에서 측정합니다.",
+    "de": "Wie groß die Dokumente einer Collection sind – ihre Verteilung, die größten, wie nah sie dem 16-MB-Limit kommen – und wohin ihre Bytes gehen, Feld für Feld und bis in Objektfelder hinein, Namen eingeschlossen, auf dem Server gemessen.",
+    "fr": "Quelle est la taille des documents d’une collection — leur répartition, les plus gros, leur proximité de la limite de 16 MB — et où vont leurs octets, champ par champ et jusque dans les champs objet, noms compris, mesuré sur le serveur.",
+    "ru": "Насколько велики документы коллекции — их распределение, самые большие, близость к лимиту в 16 MB — и куда уходят их байты: поле за полем и внутри полей-объектов, включая имена; измерение выполняется на сервере."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "size",
+        "title": {
+          "en": "Document size",
+          "tr": "Belge boyutu",
+          "zh": "文档大小",
+          "ja": "ドキュメントサイズ",
+          "es": "Tamaño del documento",
+          "pt": "Tamanho do documento",
+          "ko": "도큐먼트 크기",
+          "de": "Dokumentgröße",
+          "fr": "Taille des documents",
+          "ru": "Размер документов"
+        },
+        "icon": "ruler"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Counts, such as the average number of elements, now take the right plural form in every language.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Ayrıca sayılar, örneğin ortalama öğe sayısı, her dilde doğru çoğul biçimini alır.",
+        "zh": "现已与应用一样支持韩语、德语、法语和俄语。此外，数量（如平均元素数）在各语言中都会使用正确的复数形式。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。また、平均要素数などの数の表記が、各言語で正しい複数形になりました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Además, las cantidades, como el promedio de elementos, usan la forma plural correcta en cada idioma.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o aplicativo. Além disso, as quantidades, como a média de elementos, usam a forma plural correta em cada idioma.",
+        "ko": "앱과 마찬가지로 이제 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 또한 평균 요소 수 같은 개수가 각 언어에서 올바른 복수형으로 표시됩니다.",
+        "de": "Jetzt auch auf Koreanisch, Deutsch, Französisch und Russisch, wie die App. Außerdem stehen Zahlen wie die durchschnittliche Elementzahl in jeder Sprache in der richtigen Pluralform.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. De plus, les nombres, comme la moyenne d’éléments, prennent la bonne forme du pluriel dans chaque langue.",
+        "ru": "Теперь также на корейском, немецком, французском и русском, как и приложение. Кроме того, числа, например среднее число элементов, теперь стоят в правильной форме во всех языках."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现已与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルのポルトガル語に対応しました。ほかに変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o aplicativo. Nada mais muda.",
+        "ko": "앱과 마찬가지로 이제 중국어, 일본어, 스페인어, 브라질 포르투갈어도 지원합니다. 그 외에는 달라진 것이 없습니다.",
+        "de": "Jetzt auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь также на китайском, японском, испанском и бразильском португальском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "First release. A Document size tab measures 1,000 random documents, or all of them, in one read-only pipeline on the server: how many fall in each size range, the 10 largest (each a click away), how near the largest is to MongoDB's 16 MB limit, and each field's share of the bytes — its average, its largest, how many documents hold it, an array's elements, what its name alone takes — going into an object field to measure its own fields. Only sizes, names and the largest documents' _id reach the page.",
+        "tr": "İlk sürüm. Belge boyutu sekmesi rastgele 1.000 belgeyi ya da hepsini sunucuda salt okunur tek bir pipeline ile ölçer: her boyut aralığına kaç belgenin düştüğü, en büyük 10 belge (her biri tek tıkla açılır), en büyüğün MongoDB'nin 16 MB sınırına ne kadar yakın olduğu ve her alanın baytlardaki payı — ortalaması, en büyüğü, kaç belgede olduğu, bir dizinin öğeleri, yalnızca adının kapladığı yer — bir nesne alanının içine girip onun alanlarını da ölçerek. Sayfaya yalnızca boyutlar, adlar ve en büyük belgelerin _id değerleri gelir.",
+        "zh": "首次发布。“文档大小”标签页在服务器上用一条只读管道测量随机 1,000 个文档或全部文档：每个大小区间有多少文档、最大的 10 个文档（点击即可打开）、最大文档距 MongoDB 16 MB 上限有多近，以及每个字段在字节中的占比——平均值、最大值、出现在多少文档中、数组的元素数、仅名称就占用多少——还可深入对象字段，测量其自身的字段。只有大小、名称和最大文档的 _id 会到达页面。",
+        "ja": "初回リリース。「ドキュメントサイズ」タブは、ランダムな 1,000 件のドキュメント、またはすべてのドキュメントを、サーバー上の読み取り専用パイプライン 1 本で測定します。各サイズ範囲のドキュメント数、最大の 10 件（クリックで開けます）、最大のドキュメントが MongoDB の 16 MB 上限にどれだけ近いか、そして各フィールドのバイトに占める割合（平均、最大、含まれるドキュメント数、配列の要素数、名前だけで占める量）を表示し、オブジェクトフィールドの内側に入ってそのフィールドも測定できます。ページに届くのは、サイズ、名前、最大のドキュメントの _id だけです。",
+        "es": "Primera versión. Una pestaña Tamaño del documento mide 1000 documentos al azar, o todos, en un único pipeline de solo lectura en el servidor: cuántos caen en cada rango de tamaño, los 10 mayores (a un clic cada uno), lo cerca que está el mayor del límite de 16 MB de MongoDB y la parte de los bytes que ocupa cada campo —su media, su mayor valor, en cuántos documentos aparece, los elementos de un array, lo que ocupa solo su nombre—, pudiendo entrar en un campo de objeto para medir sus propios campos. A la página solo llegan tamaños, nombres y el _id de los documentos más grandes.",
+        "pt": "Primeira versão. Uma aba Tamanho do documento mede 1.000 documentos aleatórios, ou todos, em um único pipeline somente leitura no servidor: quantos caem em cada faixa de tamanho, os 10 maiores (cada um a um clique), a proximidade do maior em relação ao limite de 16 MB do MongoDB e a participação de cada campo nos bytes — sua média, seu maior valor, em quantos documentos aparece, os elementos de um array, o que só o nome ocupa —, podendo entrar em um campo de objeto para medir os campos dele. Apenas tamanhos, nomes e o _id dos maiores documentos chegam à página.",
+        "ko": "첫 릴리스입니다. 도큐먼트 크기 탭이 서버에서 읽기 전용 파이프라인 하나로 무작위 1,000개 또는 모든 도큐먼트를 측정합니다. 크기 범위별 도큐먼트 수, 가장 큰 도큐먼트 10개(클릭 한 번으로 열기), 가장 큰 도큐먼트가 MongoDB 16 MB 제한에 얼마나 가까운지, 각 필드가 바이트에서 차지하는 비율(평균, 최대, 포함하는 도큐먼트 수, 배열의 요소 수, 이름만으로 차지하는 크기)을 보여 주며, 객체 필드 안으로 들어가 그 필드도 측정할 수 있습니다. 페이지에는 크기, 이름, 가장 큰 도큐먼트의 _id만 전달됩니다.",
+        "de": "Erste Version. Ein Tab „Dokumentgröße“ misst 1.000 zufällige Dokumente oder alle in einer einzigen schreibgeschützten Pipeline auf dem Server: wie viele in jeden Größenbereich fallen, die 10 größten (je einen Klick entfernt), wie nah das größte dem 16-MB-Limit von MongoDB kommt und den Anteil jedes Felds an den Bytes – Durchschnitt, Größtes, in wie vielen Dokumenten es vorkommt, die Elemente eines Arrays, was allein sein Name belegt –, mit der Möglichkeit, in ein Objektfeld zu wechseln und dessen eigene Felder zu messen. Auf die Seite gelangen nur Größen, Namen und die _id der größten Dokumente.",
+        "fr": "Première version. Un onglet Taille des documents mesure 1 000 documents au hasard, ou tous, dans un seul pipeline en lecture seule sur le serveur : combien tombent dans chaque tranche de taille, les 10 plus gros (à un clic chacun), la proximité du plus gros avec la limite de 16 MB de MongoDB et la part de chaque champ dans les octets — sa moyenne, son maximum, dans combien de documents il figure, les éléments d’un tableau, ce que son seul nom occupe —, avec la possibilité d’entrer dans un champ objet pour mesurer ses propres champs. Seuls les tailles, les noms et l’_id des plus gros documents parviennent à la page.",
+        "ru": "Первый выпуск. Вкладка «Размер документов» измеряет 1 000 случайных документов или все документы одним конвейером только для чтения на сервере: сколько документов попадает в каждый диапазон размеров, 10 самых больших (каждый открывается одним щелчком), насколько самый большой близок к лимиту MongoDB в 16 MB и какую долю байтов занимает каждое поле — среднее, наибольшее, в скольких документах оно есть, элементы массива, сколько занимает одно только имя — с возможностью зайти в поле-объект и измерить его собственные поля. На страницу попадают только размеры, имена и _id самых больших документов."
+      }
+    }
+  ]
+}

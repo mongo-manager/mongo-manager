@@ -1,0 +1,47 @@
+Mongo Manager
+Copyright (C) 2026 Gokhan OZGEZER <gokhanozgezer@gmail.com>
+https://github.com/mongo-manager/mongo-manager
+
+This program is free software: you can redistribute it and/or modify it under the terms of the
+GNU Affero General Public License as published by the Free Software Foundation, version 3 of the
+License only (AGPL-3.0-only), with the additional terms below. The license is in the file LICENSE.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Affero General Public License for more details.
+
+=======================================================================
+
+Additional terms under section 7 of the GNU Affero General Public License v3
+
+Copyright (C) 2026 Gokhan OZGEZER
+
+a) Section 7(b): All copies and modified versions of this program, and all works based on it,
+   must preserve the copyright notice
+
+     "Copyright (C) 2026 Gokhan OZGEZER"
+
+   in every source file that carries it and in this NOTICE file, and must convey this NOTICE file
+   with every copy, in source or object form.
+
+b) Section 7(b): All copies and modified versions of this program, and all works based on it,
+   must preserve the following attribution in the screen of each interactive user interface that
+   displays the Appropriate Legal Notices (such as an "About" screen), and in the README or
+   equivalent documentation:
+
+     "Based on Mongo Manager by Gokhan OZGEZER - https://github.com/mongo-manager/mongo-manager"
+
+c) Section 7(c): Modified versions must be marked in reasonable ways as different from the
+   original version, and must not be presented as the original Mongo Manager.
+
+d) Section 7(e): This license does not grant any right to use the name Mongo Manager, or its
+   logos, as a trademark for modified versions.
+
+=======================================================================
+
+The plugin starter in packages/plugins/starter is a template for plugins of your own, licensed
+under the MIT License (see packages/plugins/starter/LICENSE), so that a plugin made from it may
+take any license. The terms above do not apply to it.
+
+Third-party components bundled with Mongo Manager keep their own licenses. Each release lists
+them, with their texts, in THIRD-PARTY-NOTICES.txt.

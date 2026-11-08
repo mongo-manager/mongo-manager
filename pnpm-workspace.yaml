@@ -1,0 +1,59 @@
+packages:
+  - packages/*
+  # Phase 4b §4: first-party plugins, built into packages/plugins/dist/<id>.
+  - packages/plugins/*
+
+# Security review 2026-10-13 (ops): a version published less than three days ago is not taken, the
+# dependencies of dependencies included; most poisoned releases are found and pulled by then.
+minimumReleaseAge: 4320
+# An urgent security fix published today can be let through by name, for as long as it is needed:
+#   minimumReleaseAgeExclude:
+#     - some-package
+
+# Security audit 2026-10-16 (pnpm audit --prod):
+# - source-map-js < 1.2.2 (event-loop DoS on crafted indexed source maps) comes in through Vue's
+#   compiler, at build time only; 1.2.2 (2026-09-30) is older than minimumReleaseAge.
+# - basic-ftp <= 6.2.0 (CPU DoS in its directory listing parser) comes in through
+#   @mongosh/service-provider-node-driver > devtools-connect > devtools-proxy-support >
+#   pac-proxy-agent > get-uri, which wants basic-ftp ^5, so it is not overridden. That path is not
+#   reachable: it loads only for a `pac+…` proxy option, or a proxy in the environment with
+#   useEnvironmentVariableProxies; the shell worker passes no proxy option, gets no environment
+#   but SystemRoot, and may open no connection but its session proxy (test/shell-no-proxy.test.ts).
+#   Its advisory is ignored by `pnpm audit` (CI) for that reason alone; drop the line once get-uri
+#   takes basic-ftp >= 6.2.1.
+# Security audit 2026-11-01 (pnpm audit, CI): two advisories reached through dependencies of
+# dependencies, both fixed in releases older than minimumReleaseAge:
+# - body-parser < 2.4.0 (DoS through trailing bytes after a compressed body), through mongosh's
+#   OIDC plugin (express 5);
+# - follow-redirects 1.16.1 (sensitive headers kept across redirects), through mongodb-memory-server
+#   (tests only);
+# - happy-dom < 21.0.4 (host code execution, SSRF), the one vitest takes where a package names none;
+# - @intlify/* < 11.4.14 (XSS through escapeParameter), through the vue-i18n ESLint plugin; the app's
+#   own vue-i18n is raised in packages/web.
+overrides:
+  source-map-js: 1.2.2
+  body-parser: 2.4.0
+  follow-redirects: 1.16.2
+  happy-dom: 21.0.4
+  '@intlify/core-base': 11.4.16
+  '@intlify/message-compiler': 11.4.16
+  '@intlify/shared': 11.4.16
+auditConfig:
+  ignoreGhsas:
+    - GHSA-c475-qrg2-pj4r
+
+# Install scripts stay disabled (no native builds, spec §3.6).
+# mongodb-memory-server downloads mongod on first test run; ssh2 and cpu-features fall back to pure JS.
+allowBuilds:
+  mongodb-memory-server: false
+  ssh2: false
+  cpu-features: false
+  # vue-demi (via @tanstack/vue-query) defaults to Vue 3 without its postinstall switch.
+  vue-demi: false
+  # Phase 3a-1: the mongosh runtime pulls these optional natives; the shell worker cannot load addons.
+  kerberos: false
+  mongodb-client-encryption: false
+  os-dns-native: false
+  win-export-certificate-and-key: false
+  # CI 2026-10-18: its macOS twin, installed on macOS only (the install there stopped on it).
+  macos-export-certificate-and-key: false

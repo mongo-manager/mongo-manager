@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>键盘快捷键 · Mongo Manager 文档</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager 文档</a>
+      <details class="lang-menu">
+        <summary>简体中文</summary>
+        <span class="langs" role="group" aria-label="语言">
+          <a lang="en" hreflang="en" href="../shortcuts.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/shortcuts.html">Türkçe</a>
+          <strong lang="zh-CN">简体中文</strong>
+          <a lang="ja" hreflang="ja" href="../ja/shortcuts.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/shortcuts.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/shortcuts.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/shortcuts.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/shortcuts.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/shortcuts.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/shortcuts.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">概览</a>
+      <a href="getting-started.html">快速入门</a>
+      <a href="security.html">安全</a>
+      <a href="deployment.html">部署</a>
+      <a href="import-export.html">导入与导出</a>
+      <a href="backup.html">备份与恢复</a>
+      <a href="watch.html">监视变更</a>
+      <a href="sync.html">实时同步</a>
+      <a href="server-admin.html">服务器管理</a>
+      <a href="ai.html">AI 助手</a>
+      <a href="plugins.html">插件</a>
+      <strong>键盘快捷键</strong>
+    </nav>
+    <main>
+      <h1>键盘快捷键</h1>
+      <h2 id="your-own-keys">自定义按键</h2>
+      <p>
+        下列按键是应用自带的默认按键。通用快捷键（命令面板、侧边栏、专注模式、固定、快捷键列表、查询、Ask
+        AI、助手、移动标签页和分屏视图）可在“账户设置 → 键盘快捷键”中改用其他按键：选择“更改”，然后按下新的按键。已被其他快捷键占用的按键、浏览器或编辑操作保留的按键（复制、粘贴、关闭标签页、重新加载等），以及输入时会误触发的单个字母或符号，均会被拒绝，并说明原因。“恢复”可将单个快捷键恢复为自带按键（再次按下这些按键也有同样效果），“全部重置”则恢复所有快捷键；在从服务器读取到自定义按键之前，无法进行任何更改，“重试”会再次读取。新版本已无法使用的按键会恢复为该快捷键自带的按键，设置中会说明一次具体是哪些按键。自定义按键保存在服务器上，因此其他浏览器中也会生效；<kbd>?</kbd>
+        列表、命令面板、工具提示和屏幕阅读器都会显示自定义后的按键。编辑器、列表、表格、示意图和 Shell 的按键保持不变。
+      </p>
+      <h2 id="general">通用</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>打开命令面板</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>K</kbd></td>
+          </tr>
+          <tr>
+            <td>显示或隐藏连接面板</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>B</kbd></td>
+          </tr>
+          <tr>
+            <td>专注模式：隐藏或显示标签页周围的面板</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd></td>
+          </tr>
+          <tr>
+            <td>在主页上固定或取消固定当前标签页的位置</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd></td>
+          </tr>
+          <tr>
+            <td>在命令面板的结果中移动</td>
+            <td><kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>转到当前集合的查询栏</td>
+            <td><kbd>/</kbd></td>
+          </tr>
+          <tr>
+            <td>显示这些快捷键</td>
+            <td><kbd>?</kbd></td>
+          </tr>
+          <tr>
+            <td>打开查询</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd></td>
+          </tr>
+          <tr>
+            <td>就该集合询问 AI 助手</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>I</kbd></td>
+          </tr>
+          <tr>
+            <td>打开或关闭助手</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>.</kbd></td>
+          </tr>
+          <tr>
+            <td>关闭对话框、菜单或弹出层</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="queries-and-editors">查询和编辑器</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>运行查询，或提交单行字段</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>在多行编辑器中运行或保存</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>在多行编辑器中缩进</td>
+            <td><kbd>Tab</kbd></td>
+          </tr>
+          <tr>
+            <td>离开多行编辑器（Escape，然后 Tab）</td>
+            <td><kbd>Escape</kbd> + <kbd>Tab</kbd></td>
+          </tr>
+          <tr>
+            <td>在建议之间移动</td>
+            <td><kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>接受建议项</td>
+            <td><kbd>Tab</kbd> / <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>关闭建议项</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="assistant">助手</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>发送消息</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>在消息中换行</td>
+            <td><kbd>Shift</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>返回工作区</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+          <tr>
+            <td>加宽或缩窄助手（分隔条获得焦点时）</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="workspace-tabs">工作区标签页</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>在标签页之间移动</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd> / <kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+          <tr>
+            <td>关闭当前聚焦的标签页</td>
+            <td><kbd>Delete</kbd></td>
+          </tr>
+          <tr>
+            <td>将当前标签页向左或向右移动</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>←</kbd> / <kbd>→</kbd></td>
+          </tr>
+          <tr>
+            <td>在上一个标签页旁边打开当前标签页；在分屏视图中，移到另一个窗格</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>\</kbd></td>
+          </tr>
+          <tr>
+            <td>打开当前聚焦标签页的菜单（并排打开、关闭窗格、关闭标签页、关闭其他标签页）</td>
+            <td><kbd>Shift</kbd> + <kbd>F10</kbd> / <kbd>Menu</kbd></td>
+          </tr>
+          <tr>
+            <td>调整窗格大小（焦点在分隔条上时）</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd> / <kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <p>
+        <strong>分屏视图</strong>并排显示两个标签页。可通过标签页菜单（其箭头、右键单击或 Shift + F10）中的<em>并排打开</em>、将标签页拖到工作区右侧，或按
+        Ctrl / ⌘ + \ 来打开。标签栏只有一个：屏幕上的两个标签页带有窗格标记，在标签栏中选择的标签页会在当前使用的窗格中打开。当前使用的窗格带有强调色条并标示<em>活动窗格</em>；单击另一个窗格或用
+        Tab 键移入即可使用它。拖动分隔条，或让其获得焦点后使用方向键，可分配宽度（20–80 %）。窗格标题中的<em>关闭窗格</em>会结束分屏并保持两个标签页打开，键盘焦点留在该窗格中；关闭某个窗格的标签页也会结束分屏。主页会隐藏分屏而不结束它：选择其中一个标签页，或在主页上按
+        Ctrl / ⌘ + \，即可再次显示（若未保留分屏，则在主页上按 Ctrl / ⌘ + \ 会将最近使用的两个标签页并排显示）。Ctrl / ⌘
+        + \ 会把键盘焦点移入当前使用的窗格，在窗格之间切换不会在浏览器历史记录中增加条目。重新加载后分屏会恢复，标签页也是如此。窗口宽度低于
+        768 px 时只显示一个标签页（分屏会保留到窗口变宽时），此时“并排打开”只是打开该标签页。屏幕阅读器会将每个窗格识别为以其标签页命名的区域（“orders，左窗格”）。
+      </p>
+      <p>
+        在其他数据库或其他页面中工作时，同一数据库的集合标签页（两个或更多，数据库自身的标签页若已打开也算在内）会合并为一个标签页，以该数据库的名称和所含标签页数量命名；指向或聚焦它时会列出这些标签页。单击它或在其上按
+        Enter 会打开数据库本身（其标签页，若尚未打开则先打开）并重新显示这些标签页；在任何位置打开其中一个集合也会重新显示它们，并使该集合处于活动状态。方向键会停在它上面而不会打开它；Delete、它的关闭按钮或鼠标中键单击会将它们全部关闭，“撤销”可将它们恢复。Ctrl
+        / ⌘ + Shift + 方向键会把活动标签页整体移过一个合并的标签组；标签组可以拖动。
+      </p>
+      <h2 id="tabs-inside-a-screen">界面内的标签页</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>在界面或对话框的标签页之间移动</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd> / <kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="connection-tree">连接树</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>在各项之间移动</td>
+            <td><kbd>↑</kbd> / <kbd>↓</kbd> / <kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+          <tr>
+            <td>展开或折叠</td>
+            <td><kbd>→</kbd> / <kbd>←</kbd></td>
+          </tr>
+          <tr>
+            <td>在标签页中打开</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>就地展开或折叠</td>
+            <td><kbd>Space</kbd></td>
+          </tr>
+          <tr>
+            <td>打开该项的操作</td>
+            <td><kbd>Shift</kbd> + <kbd>F10</kbd> / <kbd>Menu</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="document-table">文档表格</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>编辑当前聚焦的单元格</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>保存单元格</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>取消编辑</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+          <tr>
+            <td>在单元格中打开该行的操作</td>
+            <td><kbd>Shift</kbd> + <kbd>F10</kbd> / <kbd>Menu</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="document-page">文档页面</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>上一个或下一个文档</td>
+            <td><kbd>Alt</kbd> + <kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>在文档中搜索</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>F</kbd></td>
+          </tr>
+          <tr>
+            <td>下一个或上一个匹配</td>
+            <td><kbd>Enter</kbd> / <kbd>Shift</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>撤销或重做树或文本中的编辑</td>
+            <td><kbd>Ctrl / ⌘</kbd> + <kbd>Z</kbd> / <kbd>Ctrl / ⌘</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></td>
+          </tr>
+          <tr>
+            <td>更改树中所选的值</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>格式化文档的文本</td>
+            <td><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd></td>
+          </tr>
+          <tr>
+            <td>重命名所选字段</td>
+            <td><kbd>F2</kbd></td>
+          </tr>
+          <tr>
+            <td>移除所选字段</td>
+            <td><kbd>Delete</kbd></td>
+          </tr>
+          <tr>
+            <td>返回结果</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="data-model-diagram">数据模型示意图</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>放大或缩小（示意图获得焦点时）</td>
+            <td><kbd>+</kbd> / <kbd>-</kbd></td>
+          </tr>
+          <tr>
+            <td>使图适应视图</td>
+            <td><kbd>0</kbd></td>
+          </tr>
+          <tr>
+            <td>移动图</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd> / <kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>选择当前聚焦的集合</td>
+            <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+          </tr>
+          <tr>
+            <td>清除选择</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="shell">Shell</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>运行代码（括号、字符串或语句未结束时则继续输入）</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>插入换行</td>
+            <td><kbd>Shift</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>按原样运行代码</td>
+            <td><kbd>Ctrl</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>停止正在运行的命令，或清除当前行（选中输出时为复制）</td>
+            <td><kbd>Ctrl</kbd> + <kbd>C</kbd></td>
+          </tr>
+          <tr>
+            <td>搜索命令历史（再次按下：更早的匹配项）</td>
+            <td><kbd>Ctrl</kbd> + <kbd>R</kbd></td>
+          </tr>
+          <tr>
+            <td>清除屏幕和结果</td>
+            <td><kbd>Ctrl</kbd> + <kbd>L</kbd></td>
+          </tr>
+          <tr>
+            <td>在行之间移动，然后切换上一条和下一条命令</td>
+            <td><kbd>↑</kbd> / <kbd>↓</kbd></td>
+          </tr>
+          <tr>
+            <td>行首和行尾</td>
+            <td>
+              <kbd>Home</kbd> / <kbd>End</kbd> (<kbd>Ctrl</kbd> + <kbd>A</kbd> / <kbd>Ctrl</kbd> + <kbd>E</kbd>)
+            </td>
+          </tr>
+          <tr>
+            <td>删除到行首或行尾</td>
+            <td><kbd>Ctrl</kbd> + <kbd>U</kbd> / <kbd>Ctrl</kbd> + <kbd>K</kbd></td>
+          </tr>
+          <tr>
+            <td>按单词向前和向后移动</td>
+            <td>
+              <kbd>Alt</kbd> + <kbd>B</kbd> / <kbd>Alt</kbd> + <kbd>F</kbd> (<kbd>Ctrl</kbd> + <kbd>←</kbd> /
+              <kbd>Ctrl</kbd> + <kbd>→</kbd>；Mac 上为 Option)
+            </td>
+          </tr>
+          <tr>
+            <td>删除光标之前或之后的单词</td>
+            <td>
+              <kbd>Ctrl</kbd> + <kbd>W</kbd> / <kbd>Alt</kbd> + <kbd>D</kbd> (<kbd>Ctrl</kbd> +
+              <kbd>Backspace</kbd> / <kbd>Ctrl</kbd> + <kbd>Delete</kbd>)
+            </td>
+          </tr>
+          <tr>
+            <td>补全命令</td>
+            <td><kbd>Tab</kbd></td>
+          </tr>
+          <tr>
+            <td>离开终端</td>
+            <td><kbd>Shift</kbd> + <kbd>Tab</kbd></td>
+          </tr>
+        </table>
+      </div>
+      <h2 id="shell-page">Shell 页面</h2>
+      <div class="table">
+        <table>
+          <tr>
+            <td>加宽或收窄结果区（焦点在其拖动手柄上时）</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd></td>
+          </tr>
+          <tr>
+            <td>以更大的步长调整大小（焦点在手柄上时）</td>
+            <td><kbd>Shift</kbd> + 方向键</td>
+          </tr>
+          <tr>
+            <td>结果区最窄或最宽（焦点在其手柄上时）</td>
+            <td><kbd>Home</kbd> / <kbd>End</kbd></td>
+          </tr>
+          <tr>
+            <td>在终端和结果区之间移动（窄屏），或在各结果视图之间移动</td>
+            <td><kbd>←</kbd> / <kbd>→</kbd></td>
+          </tr>
+        </table>
+      </div>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">本页内容</p>
+      <ol>
+        <li><a href="#your-own-keys">自定义按键</a></li>
+        <li><a href="#general">通用</a></li>
+        <li><a href="#queries-and-editors">查询和编辑器</a></li>
+        <li><a href="#assistant">助手</a></li>
+        <li><a href="#workspace-tabs">工作区标签页</a></li>
+        <li><a href="#tabs-inside-a-screen">界面内的标签页</a></li>
+        <li><a href="#connection-tree">连接树</a></li>
+        <li><a href="#document-table">文档表格</a></li>
+        <li><a href="#document-page">文档页面</a></li>
+        <li><a href="#data-model-diagram">数据模型示意图</a></li>
+        <li><a href="#shell">Shell</a></li>
+        <li><a href="#shell-page">Shell 页面</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

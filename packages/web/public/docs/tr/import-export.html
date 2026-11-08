@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>İçe ve dışa aktarma · Mongo Manager belgeleri</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager belgeleri</a>
+      <details class="lang-menu">
+        <summary>Türkçe</summary>
+        <span class="langs" role="group" aria-label="Dil">
+          <a lang="en" hreflang="en" href="../import-export.html">English</a>
+          <strong lang="tr">Türkçe</strong>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/import-export.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/import-export.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/import-export.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/import-export.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/import-export.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/import-export.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/import-export.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/import-export.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Genel bakış</a>
+      <a href="getting-started.html">Başlarken</a>
+      <a href="security.html">Güvenlik</a>
+      <a href="deployment.html">Kurulum ve dağıtım</a>
+      <strong>İçe ve dışa aktarma</strong>
+      <a href="backup.html">Yedekleme ve geri yükleme</a>
+      <a href="watch.html">Değişiklikleri izleme</a>
+      <a href="sync.html">Canlı senkron</a>
+      <a href="server-admin.html">Sunucu yönetimi</a>
+      <a href="ai.html">AI asistanı</a>
+      <a href="plugins.html">Eklentiler</a>
+      <a href="shortcuts.html">Klavye kısayolları</a>
+    </nav>
+    <main>
+      <h1>İçe ve dışa aktarma</h1>
+      <p>
+        Dosyalar bilgisayarınızla bir koleksiyon arasında arka plan işleri olarak taşınır: diyaloğu kapatıp
+        işi işler listesinden izleyebilirsiniz. Koleksiyonun araç çubuğundan, kenar çubuğundaki koleksiyon
+        menüsünden ya da komut paletinden açılır. SQL dökümleri farklıdır: bir dosyayla bir veritabanının
+        tamamı arasında, kendine ait bir sayfada taşınır (bkz. <a href="#sql">SQL içe ve dışa aktarma</a>).
+      </p>
+      <h2 id="formats">Biçimler</h2>
+      <ul>
+        <li>
+          CSV ve TSV (virgül, noktalı virgül, sekme ya da dikey çizgi; UTF-8, UTF-16, Latin-1, Windows-1252,
+          Windows-1254 ya da ISO-8859-9).
+        </li>
+        <li>JSON: bir belge dizisi ya da tek bir belge.</li>
+        <li>NDJSON: satır başına bir belge, Extended JSON olarak; her BSON tipi olduğu gibi geri gelir.</li>
+        <li>Excel çalışma kitapları (.xlsx), her seferinde bir sayfa.</li>
+        <li>Bunların gzip ile sıkıştırılmış hali (.gz).</li>
+      </ul>
+      <h2 id="importing">İçe aktarma</h2>
+      <ol>
+        <li>Bir dosya seçin, diyaloğa bırakın ya da metin yapıştırın.</li>
+        <li>
+          Nasıl okunduğunu kontrol edin: biçim, ayraç, karakter kodlaması, ilk satırın alan adları olup
+          olmadığı ve çalışma kitabının sayfası. Bir bayt sırası işareti başka bir şey söylemedikçe ya da siz
+          başka bir kodlama seçmedikçe dosya UTF-8 olarak okunur. Baytlar bu kodlamada metin değilse
+          benzedikleri kodlama önerilir (bayt sırası işareti olmayan UTF-16, Türkçe harfler için Windows-1254,
+          aksi hâlde Windows-1252) ve tek tıkla dosya o kodlamayla yeniden okunur; tahmin hiçbir zaman kendi
+          kendine uygulanmaz, çünkü yanlış bir tahmin yanlış harfler yazardı. Seçilen kodlamada yine metin
+          olmayan satırlar reddedilir, asla yerine geçen karakterlerle yazılmaz.
+        </li>
+        <li>
+          Alanları eşleyin: her birinin nereye gideceği (<code>a.b</code> iç içe, <code>a[0]</code> dizi
+          elemanı), tipi ve boş ya da dönüştürülemeyen bir değerin ne olacağı. Tipler ilk bin kayıttan
+          önerilir; başında sıfır ya da <code>+</code> olan değerler metin kalır, böylece kodlar ve telefon
+          numaraları bunları korur. Aynı kural sonraki her kayıt, seçtiğiniz bir tip ve bir sabit için de
+          geçerlidir: bir kod asla sayı olarak, bir sayı da başka bir sayı olacak bir double olarak okunmaz
+          (<code>0.30000000000000004</code> bir double'dır; <code>12345678901234567</code> değildir) — böyle
+          bir değer dönüştürülemeyen bir değer gibi ele alınır. Saat dilimi olmayan tarihler UTC olarak
+          okunur. Başlıktan fazla ya da az alanı olan bir CSV satırı (bir alanda tırnaksız virgül) satır
+          hatasıdır ve olduğu gibi reddedilen kayıtlar dosyasına gider; yalnızca boşluktan oluşan bir satır
+          kayıt sayılmaz. Her alanın altında ilk örnekleri, seçilen tipte nasıl yazılacaklarıyla ya da neden
+          yazılamayacaklarıyla gösterilir.
+        </li>
+        <li>
+          İsterseniz sabit alanlar ekleyin: her belgede aynı değer; içe aktarma zamanı ya da metin, sayı
+          (Int32, Int64, Double, Decimal128), tarih, ObjectId, mantıksal, JSON veya null. Bir sabit, dosyadaki
+          değerlerle aynı kurallarla dönüştürülür; dönüştürülemiyorsa içe aktarma başlamadan reddedilir.
+        </li>
+        <li>
+          Modu seçin; isterseniz önce kuru çalıştırın. Değiştir ya da ekle ve Birleştir için, anahtar
+          alanlardan biriyle başlayan bir dizin yoksa diyalog uyarır: o zaman her kayıt koleksiyon taranarak
+          bulunur.
+        </li>
+      </ol>
+      <h2 id="modes">Modlar</h2>
+      <ul>
+        <li>
+          <strong>Ekle</strong>: her kayıt yeni bir belge olur; <code>_id</code>'si var olan kayıt hata verir.
+        </li>
+        <li>
+          <strong>Değiştir ya da ekle</strong>: anahtar alanları (varsayılan <code>_id</code>) aynı olan belge
+          kayıtla değiştirilir; yoksa kayıt eklenir.
+        </li>
+        <li>
+          <strong>Birleştir</strong>: kaydın alanları, anahtar alanları aynı olan belgeye yazılır; kayıtta
+          olmayan alanlar alt belgelerde de korunur. "Yalnız güncelle", hiçbir şeyle eşleşmeyen kayıtları
+          eklemez. Alan adında nokta olan ya da <code>$</code> ile başlayan bir kayıt birleştirilemez (yol
+          olarak okunurdu); onun için Upsert kullanın.
+        </li>
+      </ul>
+      <p>
+        "Atla ve devam et" seçiliyken hatalı kayıtlar sayılır ve listelenir; "İçe aktarmayı durdur" seçiliyken
+        ilk hataya kadarki kayıtlar yazılır ve içe aktarma orada durur. Kuru çalıştırma dosyanın tamamını
+        okur, dönüştürür ve kontrol eder; hiçbir şey yazmaz. Rapor olanları sayar, eşlenen her alan için kaç
+        değerin dönüştürüldüğünü ve kaçının dönüştürülemediğini gösterir, ilk hataları listeler ve reddedilen
+        kayıtları, düzeltip yeniden içe aktarmak üzere özgün biçimde bir dosya olarak sunar. Bu dosya depolama
+        sınırınızı aşacaksa saklanmaz ve rapor bunu belirtir. Anahtar alanlar değer olarak eşleştirilir ve
+        <code>$</code> ile başlayamaz.
+      </p>
+      <h2 id="exporting">Dışa aktarma</h2>
+      <p>
+        Uyguladığınız sorguyu, koleksiyonun tamamını ya da bir pipeline'ın sonuçlarını dışa aktarın. CSV ve
+        Excel seçip sıraladığınız sütunları alır. Kenar çubuğundan, komut paletinden ya da belge gösterilmeyen
+        bir koleksiyondan açıldığında diyalog sütunları 100 belgelik bir örnekten önerir (kişisel alanlar
+        işaretlenir: onları göremeyen bir kullanıcı için <code>***</code> olarak yazılırlar). Diziler JSON
+        metni olarak, her eleman için bir sütun olarak (<code>tags.0</code>, <code>tags.1</code>… ilk
+        belgelerdeki en uzun dizi kadar, en çok belirlediğiniz sayıda; ötesindeki elemanlar raporda
+        adlandırılır) ya da elemanları seçtiğiniz bir ayırıcıyla birleştirilerek yazılır. Hiç seçmezseniz ilk
+        belgelerin (en fazla 1.000 belge ya da 8 MiB, en fazla 500 sütun) alanları sütun olur; bir belgede
+        değer, başka birinde alt belge olan bir alan değerin tamamını tutan tek bir sütundur. Rapor, hiçbir
+        sütunun tutmadığı her şeyi yoluyla (path) adlandırır. Baştaki boşluklardan sonra <code>=</code>,
+        <code>+</code>, <code>-</code>, <code>@</code>, sekme ya da satır sonu ile başlayan CSV metninin
+        başına <code>'</code> eklenir, böylece tablo programı onu formül olarak çalıştırmaz; dosyayı başka bir
+        program okuyacaksa ya da yeniden içe aktarılacaksa bunu kapatın. JSON ve NDJSON her alanı ve her tipi
+        korur. Excel en fazla 1 048 575 satır ve hücre başına 32 767 karakter alır: daha uzun hücreler kesilir
+        ve raporda sayılır, daha büyük dışa aktarmalar CSV ya da NDJSON önerisiyle reddedilir. İş bitince
+        dosyayı işler listesinden indirin; dosyanın ne zamana kadar saklandığı orada yazar (varsayılan 24
+        saat, <code>MM_TRANSFER_TTL_HOURS</code>), süresi dolduktan sonra dışa aktarmanın yeniden çalışması
+        gerekir.
+      </p>
+      <h2 id="sql">SQL içe ve dışa aktarma</h2>
+      <p>
+        SQL içe ve dışa aktarma, uygulamayla gelen <strong>SQL → MongoDB</strong> eklentisinin parçasıdır. Bir yönetici eklentiyi <a href="plugins.html">Eklentiler</a> sayfasında onaylayıp açana kadar sayfa, kenar çubuğundaki girişi, komut paletindeki komutları ve aşağıdaki veritabanı menü öğeleri görünmez. Sunucu da SQL içe ve dışa aktarmalarını reddeder; bir koleksiyonun SQL olarak dışa aktarılması ve asistanın SQL dışa aktarmaları da buna dahildir.
+      </p>
+      <p>
+        SQL bir koleksiyondan içe ya da dışa aktarılmaz: ne Belgeler araç çubuğunda ne de koleksiyonun Dışa
+        aktar diyaloğunda yer alır. Kendine ait bir sayfası vardır: kenar çubuğundaki
+        <strong>SQL ↔ MongoDB</strong>. Sayfa, üzerinde çalıştığı bağlantıyı ve veritabanını her zaman
+        gösterir. İkisi de en üstte seçilir ve sayfanın adresinde tutulur (<code
+          >/sql/import/&lt;bağlantı&gt;/&lt;veritabanı&gt;</code
+        >
+        ya da <code>/sql/export/…</code>); böylece sayfayı yenilemek ya da paylaşılan bir bağlantıyı açmak
+        aynı yere götürür. Kenar çubuğundaki ağaçta bir veritabanının menüsü "SQL dökümünü içe aktar…" ve "SQL
+        olarak dışa aktar…" seçeneklerini sunar; ikisi de sayfayı o veritabanında açar. Komut paletinde "SQL ↔
+        MongoDB" sayfayı bırakıldığı yerde açar; "SQL olarak dışa aktar" ise dışa aktarmayı bulunduğunuz
+        sekmenin veritabanında açar. İçe ve dışa aktarma her seferinde tek bir veritabanında çalışır. Başka
+        sekmelere ya da sayfanın diğer bölümüne bakarken sayfa açık kalır: hazırlanan bir dosya ya da çalışan
+        bir iş kaybolmaz, hâlâ çalışan bir dışa aktarma geri döndüğünüzde yeniden gösterilir. Hazırlanmış bir
+        dosya ya da çalışan bir içe aktarma varken sayfayı kapatmak ya da uygulamadan çıkmak önce onay ister.
+        Bir işin ilerlemesi sayfada görünürken nasıl bittiği orada söylenir; ayrıca bildirim gösterilmez.
+      </p>
+      <h3>SQL dökümünü içe aktarma (SQL → MongoDB)</h3>
+      <ol>
+        <li>
+          Bir MySQL (mysqldump), PostgreSQL (pg_dump) ya da SQLite (<code>.dump</code>) dosyası seçin ya da
+          sayfaya bırakın; düz ya da gzip ile sıkıştırılmış (.gz) olabilir. Yalnızca tablo tanımları ve
+          satırlar okunur; dosyadaki hiçbir komut çalıştırılmaz. Diğer ifadeler atlananlar olarak listelenir.
+        </li>
+        <li>
+          Dökümdeki tabloları inceleyin: her biri sütunlarını, satır sayısını, birincil anahtarını ve birkaç
+          örnek satırını gösterir. Aktarılacak tabloları seçin ve her birinin gideceği koleksiyonu adlandırın;
+          adın yeni mi yoksa var olan bir koleksiyon mu olduğu belirtilir. Ekleme kipinde birden çok tablo
+          aynı koleksiyona gidebilir; upsert ve birleştirmede her tablo kendi koleksiyonuna gider, çünkü iki
+          tablonun aynı anahtarlı satırları birbirinin yerine yazılırdı.
+        </li>
+        <li>
+          Seçenekleri belirleyin. "Birincil anahtar _id olsun" seçiliyken tek sütunlu birincil anahtar
+          belgenin
+          <code>_id</code> değeri olur; birden çok sütunlu anahtar alan olarak kalır. Mod, dosya içe
+          aktarmadaki gibi "Ekle", "Değiştir ya da ekle" ya da "Birleştir" olabilir (son ikisi
+          <code>_id</code> üzerinden eşleştiği için tek sütunlu birincil anahtarı olmayan bir tablo bunları
+          kullanamaz). Bir satır yazılamadığında "Atla ve devam et" ya da "İçe aktarmayı durdur" seçilir.
+        </li>
+        <li>
+          İsterseniz önce kuru çalıştırın: seçilen her satırı okuyup kontrol eder, hiçbir şey yazmaz. Sonra
+          içe aktarmayı başlatın. Bir arka plan işi olarak çalışır ve formlardan ayrı, kendi sayfasında
+          izlenir: önce ilerlemesi, ardından raporu; "Durdur" onu sonlandırır. Durdurulan, başarısız olan ya
+          da yarıda kalan bir içe aktarma bunu söyler ve bitmeden önce yazdıklarını raporlar.
+        </li>
+      </ol>
+      <p>
+        İçe aktarma var olan bir veritabanına ya da adını sayfada verdiğiniz yeni bir veritabanına yapılır;
+        <code>admin</code>, <code>local</code> ya da <code>config</code> veritabanlarına asla yapılmaz. Var
+        olan bir veritabanından yalnızca büyük/küçük harfle ayrılan yeni bir ad, MongoDB reddettiği için
+        reddedilir. Başka bir veritabanı seçmek hazırlanan dosyayı korur (kuru çalıştırma, çalıştığı
+        veritabanını anlattığı için bırakılır). Okunan dosya bağlantıya ait olduğu için başka bir bağlantıya
+        geçmeden önce, nasıl istenirse istensin (liste, ağaç, komut paleti, bir eklenti ya da tarayıcının Geri
+        düğmesi) onay istenir; vazgeçerseniz sayfa olduğu yerde kalır. Bağlantıda belge yazma ve arka plan işi
+        çalıştırma yetkisi gerekir; bağlantı ve sunucu salt okunur olmamalıdır.
+      </p>
+      <p>
+        İçe ve dışa aktarma tek uzun bir sayfa değil, adım adım ilerler: üstteki adımlar (içe aktarmada Dosya,
+        Tablolar, Seçenekler, İlerleme; dışa aktarmada Koleksiyonlar, Seçenekler, İlerleme) nerede olduğunuzu
+        gösterir. Dosyadan sonra geçilen adımlara geri dönülebilir; seçtikleriniz korunur. "Başka bir dosya
+        seç" başka bir dosyayla baştan başlatır. Kuru çalıştırma denetlediği seçimleri anlatır: bir tabloyu,
+        koleksiyonu, seçeneği ya da veritabanını değiştirmek onu bırakır (hâlâ çalışıyorsa durdurulur). İçe
+        aktarma başladıktan sonra ona verilenler değiştirilemez: sayfası bitene kadar kalır, ardından "Başka
+        bir dosya aktar" baştan başlatır.
+      </p>
+      <h3>SQL olarak dışa aktarma (MongoDB → SQL)</h3>
+      <p>
+        Bir veritabanı seçin (<code>admin</code>, <code>local</code> ve <code>config</code> seçilemez);
+        ardından dışa aktarılacak koleksiyonları, görünümleri ve zaman serisi koleksiyonlarını işaretleyin:
+        başlangıçta hepsi seçilidir, en fazla 500 tane seçilebilir. Tek bir arka plan işi bunları tek bir SQL
+        dosyasına yazar; her biri için bir CREATE TABLE ve INSERT'leri. Dosya kendine ait bir veritabanı ya da
+        şema oluşturmaz; seçtiğiniz veritabanına yüklenir. İki tablo adı çakışacaksa (örneğin yalnızca
+        büyük-küçük harfte ayrılan adlar) biri benzersiz hale getirilir ve rapor bunu söyler. Seçenekler:
+        lehçe (PostgreSQL, MySQL ya da SQLite), INSERT başına satır (1 ile 1000 arası), tablo başına bir işlem
+        (transaction) ve gzip ile sıkıştırma; MySQL’de iç içe değerler, 4.7’den eski phpMyAdmin gibi eski
+        araçlar için <code>JSON</code> yerine <code>LONGTEXT</code> olarak (aynı JSON metniyle) yazılabilir.
+        MySQL’deki ondalık sütun, ilk belgelerdeki değerlerin yazıldığı ondalık basamak sayısını alır
+        (<code>234.20</code>: iki); sondaki ikiden fazla sıfır dolgu sayılır, bu yüzden bir
+        <code>DECIMAL(65,30)</code> sütunundan geri okunan değer kendi basamaklarını korur. Her tutara 30
+        sıfır eklenmez. Daha sonra gelen ve daha fazla ondalık basamağı olan bir değer sütunu
+        <code>ALTER TABLE … MODIFY</code> ile genişletir (MySQL ondan önceki satırları onaylar; işlem ardından
+        yeniden başlar). Önceki değerlerle birlikte hiçbir ondalık sütuna sığmayan bir değer (30’dan fazla
+        ondalık ya da toplamda 65’ten fazla basamak) yuvarlanmaz; NULL yazılır ve raporda sayılır. Sütunlar
+        her koleksiyonun ilk belgelerinden çıkarılır: yalnızca sonraki belgelerde görülen alanlar dosyaya
+        alınmaz ve rapor bunları, çok büyük ya da SQL türü olmadığı için NULL yazılan değerlerle birlikte
+        tablo tablo listeler. Uygulamanın yazdığı bir dosya, tuttuğu belgeler olarak geri içe aktarılır:
+        <code>CHAR(24)</code> sütunları ObjectId, <code>"sub.a"</code> sütunları iç içe alan (oradaki NULL,
+        belgede olmayan bir alan) ve baytları ikili veri olarak. İlerleme, rapor ve indirme bağlantısı kendi
+        sayfasında görünür; "Durdur" çalışan bir dışa aktarmayı sonlandırır, "Yeniden dışa aktar" seçeneklere
+        geri döner.
+      </p>
+      <p>
+        SQL olarak dışa aktarmak için bağlantıda dışa aktarma yetkisi gerekir. Kişisel verileri göremeyen bir
+        kullanıcının dosyasında, her dışa aktarmada olduğu gibi, gizli değerlerin yerinde <code>***</code>
+        bulunur.
+      </p>
+      <h2 id="copy-compare-and-sync">Kopyalama, karşılaştırma ve eşitleme</h2>
+      <p>
+        Bir koleksiyonu (tamamını, uygulanan sorguyu, kopyalama diyaloğuna yazılan bir filtreyi ya da bir
+        pipeline'ın sonuçlarını — toplama oluşturucusundaki "Sonuçları kopyala…") veya bir veritabanının
+        seçilen koleksiyonlarını aynı ya da başka bir bağlantıya kopyalayın. İlk adım kaynağın tahmini
+        boyutunu gösterir; hedef seçilirken ya da yazılırken diyalog onu hemen denetler: var olup olmadığı ve
+        kaç belge tuttuğu, seçilen modun ona ne yapacağı, oradaki rolünüz ve kopyanın reddedeceği her şey. Bir
+        veritabanı kopyası sürerken işler listesi her koleksiyonu kendi ilerlemesiyle gösterir. Ekle, upsert
+        ve birleştir içe aktarmadaki gibi çalışır ve bir hatadan önce yazılanları korur; "Hedefi değiştir"
+        kopyayı geçici bir koleksiyonda kurar ve ancak her belge yazılınca hedefin yerine koyar: reddedilen
+        bir belge, bir hata ya da iptal hedefi olduğu gibi bırakır. Doğrulayıcı, MongoDB'nin kendi
+        kopyalamasındaki gibi belgeler yüklendikten sonra konur; böylece ondan önce saklanmış belgeler de
+        kopyalanır — hedefin kullanıcısı doğrulayıcıyı değiştiremiyorsa (readWrite rolü) önce konur ve rapor
+        bunu söyler. İndeksler, doğrulayıcı ve koleksiyon seçenekleri (capped, collation, time series,
+        clustered) da kopyalanabilir; veritabanı kopyası view'ları en sonda, bağımlılık sırasıyla oluşturur ve
+        view'lar tek tek seçilebilir. Şifreli (Queryable Encryption) koleksiyonlar ve üst veri koleksiyonları
+        kopyalanmaz. Aynı bağlantıda, maskelenecek bir şey yoksa kopyayı MongoDB kendisi yapar ($out ya da
+        $merge) ve veri Mongo Manager'dan geçmez.
+      </p>
+      <p>
+        Mongo Manager'dan geçen kopyalar her belgeyi Node.js MongoDB sürücüsünün okuduğu gibi yazar: eskimiş
+        BSON türlerinden undefined null olarak, DBPointer ise bir DBRef belgesi olarak gelir. MongoDB'nin
+        kendisinin yaptığı kopyalar bunları korur.
+      </p>
+      <p>
+        Özet, bir şey yazılmadan önce her hedefi, var olup olmadığını ve nasıl kopyalanacağını gösterir.
+        Hedefteki belgeleri silen TTL indeksleri onay ister. Kaynağın hedefte olmayan kişisel alan kuralları
+        varsa kopya, kişisel değerlerin orada açık görüneceğinin onaylanmasını ister; hedefin yöneticisi bunun
+        yerine kuralları ekleyebilir. Kişisel alanlar bir sorgunun bulduğu gibi bulunur: view'lar üzerinden ve
+        bir pipeline'ın taşıdığı ya da $lookup ile getirdiği alanlar dahil. Kaynakta kişisel alanlar size
+        gizliyse kopyada yerlerinde *** olur ve kopya her zaman anonimdir; "Anonim kopya" herkes için ***
+        yazar. Kişisel bir _id maskelenerek kopyalanamaz. Hedef kaynaktan ayırt edilemiyorsa özet, kaynağın
+        kendisi olabileceğini söyler.
+      </p>
+      <p>
+        Karşılaştırma iki tarafı _id sırasıyla okur; yalnız kaynakta, yalnız hedefte, farklı ve aynı olan
+        belgeleri örnekler ve alan alan farklarla sayar. Filtre iki tarafa da uygulanır, seçilen alanlar yok
+        sayılabilir. Herhangi bir tarafta kişisel alanlar size gizliyse iki taraf da *** olarak
+        karşılaştırılır; kişisel bir _id karşılaştırılamaz. Eşitleme tamamlanmış bir karşılaştırmayı uygular:
+        eksik belgeleri ekler, farklı olanları değiştirir, ama okunduktan sonra değişmiş bir belgenin üstüne
+        yazmaz. Kopya gibi, hedefte kaynağın kişisel alan kuralları yoksa onay ister. Hedefteki fazla
+        belgeleri silmek varsayılan olarak kapalıdır, hedefin adının yazılmasını ister, kaynak hiç belge
+        okumazsa reddedilir ve karşılaştırmanın bulduğundan bir payla (bu sayının %10'u, en az 100) fazlasını
+        silecek olunca durur. Filtre varsa, kaynağı hâlâ var olan ama artık filtreye uymayan bir hedef belge
+        silinmez, korunur ve raporda sayılır. Kişisel alan kuralları değişince, bağlantılardan birine
+        erişiminiz kalkınca ya da kişisel alanlar size gizlenince raporlar geri çekilir.
+      </p>
+      <h2 id="saved-settings">Kayıtlı ayarlar</h2>
+      <p>
+        Eşlemeler, dışa aktarma ve kopyalama ayarları bir adla kaydedilip bu ya da başka bir koleksiyonda
+        yeniden yüklenebilir. Kayıtlı sorgular gibi şifreli saklanırlar.
+      </p>
+      <h2 id="what-is-kept">Bir dosya neyi tutar, neyi tutamaz</h2>
+      <ul>
+        <li>
+          CSV ve Excel metin, sayı, mantıksal değer ve tarih tutar. Bir belgenin bunların dışındaki türleri
+          (ObjectId, Long, Decimal128, ikili veri, iç içe belgeler ve diziler) metin ya da Extended JSON
+          olarak çıkar; geri okunan bir CSV onlara eşlemesinin söylediği türleri verir. Aynen geri gelen bir
+          dosya için JSON ya da NDJSON (Extended JSON) olarak dışa aktarın.
+        </li>
+        <li>
+          SQL dışa aktarma belgeleri sütunlara düzleştirir; bu uygulamanın yaptığı bir döküm ObjectId'leri, iç
+          içe alanları ve ikili değerleriyle geri okunur, başka yerden gelen bir döküm sütunlarının adını
+          verdiği türlerle okunur.
+        </li>
+        <li>
+          Tarihler MongoDB gibi milisaniyeyi tutar: bir SQL dökümündeki mikrosaniyeler atılır. MySQL'in
+          <code>0000-00-00</code> değeri ("tarih yok") <code>null</code> olarak okunur. Bir SQL dökümünde
+          Decimal128'in tutabileceğinden (34 basamak) uzun bir tamsayı metin olarak, aynen tutulur.
+        </li>
+        <li>
+          Excel'de tarih gösteren bir hücre o tarih ve saat olarak, yazıldığı gibi, UTC'de okunur (hücre bir
+          saat dilimi tutmaz); yalnızca günün saatini gösteren bir hücre <code>SS:DD:SS</code> biçiminde
+          (biçimin gösterdiği saniye kesirleriyle) metin olarak, bir tarih de tutuyorsa tarih ve saat olarak
+          okunur. Bir süre (<code>[h]:mm</code>) metin olarak, saatleri bir günü aşarak sayılarak okunur.
+        </li>
+        <li>
+          Bir dışa aktarma koleksiyonu tek bir anın görüntüsü olarak değil, ilerledikçe okur: bu sırada
+          yazılan belgeler içinde olabilir de olmayabilir de.
+        </li>
+        <li>
+          Duran, başarısız olan ya da iptal edilen bir içe aktarma yazdıklarını korur; raporu bunların kaç
+          kayıt olduğunu söyler. Ekle (insert) ile yeniden çalıştırılırsa o kayıtlar iki kez yazılır:
+          anahtarlı Değiştir ya da ekle (upsert) veya Birleştir (merge) kullanın ya da önce onları kaldırın.
+          Yüklenen dosya her çalışmadan sonra silinir; yeniden çalıştırmak için yeniden yükleyin.
+        </li>
+        <li>
+          Birleştir, kaydın alanlarını yazar, diğerlerini bırakır; kayıttaki boş bir alt belge kayıtlı hiçbir
+          şeyi değiştirmez ve yalnızca yeni bir belgede oluşturulur. "Yalnız güncelle" Değiştir ya da ekle ile
+          Birleştir için aynı şekilde geçerlidir.
+        </li>
+        <li>
+          Reddedilen kayıtlar kaynağın biçiminde ve ayracıyla geri gelir; metin olmayan baytlar
+          <code>�</code> olarak gösterilir, böylece satır bulunup düzeltilebilir.
+        </li>
+      </ul>
+      <h2 id="limits-and-safety">Sınırlar ve güvenlik</h2>
+      <ul>
+        <li>
+          Dosyalar sunucuda 24 saat, kullanıcı başına bir depolama sınırıyla tutulur; yöneticiler ikisini de
+          değiştirebilir (bkz. <a href="deployment.html">Kurulum ve dağıtım</a>).
+        </li>
+        <li>
+          Güvenlik için reddedilenler: makro içeren ve parolalı çalışma kitapları, eski .xls dosyaları,
+          açılınca aşırı büyüyen dosyalar, DTD içeren XML, ve alışılmadık adlara izin verilmedikçe
+          <code>$</code> ile başlayan, nokta içeren ya da <code>__proto__</code> adlı alanlar. gzip ile
+          sıkıştırılmış bir çalışma kitabı ilk okunduğunda bir kez açılır ve ardından çalışma kitabının
+          boyutunu tutar; içeriği düz bir çalışma kitabınınkinden fazla büyüyemez.
+        </li>
+        <li>
+          Kişisel verileri göremeyen kullanıcılar kişisel değerlerin yerinde <code>***</code> olan dosyalar
+          dışa aktarır, kişisel alanlarla eşleme ya da eşleştirme yapamaz ve kişisel alan bulunan yerde
+          belgeleri tamamen değiştiremez. Kişisel alan kuralları değiştikten sonra, önceki dosya artık
+          indirilemez; yeniden dışa aktarın.
+        </li>
+        <li>İzleyiciler yalnızca yönetici o bağlantı için izin verirse dışa aktarabilir.</li>
+        <li>
+          İçe ve dışa aktarma işleriniz yalnızca size ve yöneticilere görünür. Önizleme uzun değerleri
+          kısaltarak gösterir; çok geniş bir dosyada daha az satıra bakılır.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Bu sayfada</p>
+      <ol>
+        <li><a href="#formats">Biçimler</a></li>
+        <li><a href="#importing">İçe aktarma</a></li>
+        <li><a href="#modes">Modlar</a></li>
+        <li><a href="#exporting">Dışa aktarma</a></li>
+        <li><a href="#sql">SQL içe ve dışa aktarma</a></li>
+        <li><a href="#copy-compare-and-sync">Kopyalama, karşılaştırma ve eşitleme</a></li>
+        <li><a href="#saved-settings">Kayıtlı ayarlar</a></li>
+        <li><a href="#what-is-kept">Bir dosya neyi tutar, neyi tutamaz</a></li>
+        <li><a href="#limits-and-safety">Sınırlar ve güvenlik</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

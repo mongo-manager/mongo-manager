@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.mongo-manager.server</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Library/Application Support/Mongo Manager/app/bin/node</string>
+    <string>/Library/Application Support/Mongo Manager/app/dist/cli.cjs</string>
+    <string>start</string>
+    <string>--config</string>
+    <string>/Library/Application Support/Mongo Manager/config.json</string>
+    <string>--no-open</string>
+  </array>
+  <key>UserName</key>
+  <string>_mongomanager</string>
+  <key>GroupName</key>
+  <string>_mongomanager</string>
+  <key>WorkingDirectory</key>
+  <string>/Library/Application Support/Mongo Manager/data</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <dict>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
+  <key>Umask</key>
+  <integer>63</integer>
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>StandardOutPath</key>
+  <string>/Library/Logs/Mongo Manager/mongo-manager.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Library/Logs/Mongo Manager/mongo-manager.log</string>
+</dict>
+</plist>

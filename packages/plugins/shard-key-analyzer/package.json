@@ -1,0 +1,17 @@
+{
+  "name": "@mongo-manager/plugin-shard-key-analyzer",
+  "private": true,
+  "version": "1.2.1",
+  "type": "module",
+  "description": "First-party Mongo Manager plugin: candidate shard keys compared by what analyzeShardKey says — cardinality, frequency, monotonicity (plugins wave 4).",
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "happy-dom": "^21.0.4",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.2"
+  }
+}

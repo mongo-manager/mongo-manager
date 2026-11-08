@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Live-Synchronisierung · Mongo Manager-Dokumentation</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager-Dokumentation</a>
+      <details class="lang-menu">
+        <summary>Deutsch</summary>
+        <span class="langs" role="group" aria-label="Sprache">
+          <a lang="en" hreflang="en" href="../sync.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/sync.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/sync.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/sync.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/sync.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/sync.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/sync.html">한국어</a>
+          <strong lang="de">Deutsch</strong>
+          <a lang="fr" hreflang="fr" href="../fr/sync.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/sync.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Überblick</a>
+      <a href="getting-started.html">Erste Schritte</a>
+      <a href="security.html">Sicherheit</a>
+      <a href="deployment.html">Bereitstellung</a>
+      <a href="import-export.html">Import und Export</a>
+      <a href="backup.html">Sicherung und Wiederherstellung</a>
+      <a href="watch.html">Änderungen beobachten</a>
+      <strong>Live-Synchronisierung</strong>
+      <a href="server-admin.html">Serververwaltung</a>
+      <a href="ai.html">KI-Assistent</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Tastenkombinationen</a>
+    </nav>
+    <main>
+      <h1>Live-Synchronisierung</h1>
+      <p>
+        Eine Live-Synchronisierung kopiert eine Collection oder eine Datenbank von einer Verbindung auf eine
+        andere und wendet dann jede Änderung an der Quelle an, sobald sie erfolgt. Sie läuft auf dem Server,
+        übersteht Neustarts und läuft weiter, bis Sie sie stoppen oder beenden. Sie können sie auf zwei Arten
+        nutzen:
+      </p>
+      <ul>
+        <li>
+          <strong>Als Spiegel</strong>: eine Staging-, Reporting- oder Standby-Kopie, die monatelang aktuell
+          bleibt.
+        </li>
+        <li>
+          <strong>Zum Verschieben von Daten</strong>: kopieren, aufholen lassen, prüfen, dann zu einem von Ihnen
+          gewählten Zeitpunkt beenden (die Umschaltung) und Ihre Anwendungen auf das Ziel ausrichten.
+        </li>
+      </ul>
+      <p>
+        Öffnen Sie <strong>Live-Synchronisierungen</strong> über das Kontomenü oder die Befehlspalette (Ctrl+K).
+        Starten Sie eine über das Menü einer Collection oder einer Datenbank in der Baumansicht
+        (<strong>Live-Synchronisierung…</strong>), über die Palette, während eine Collection geöffnet ist
+        („Diese Collection synchron halten…“), oder über die Zusammenfassung des Kopier-Assistenten
+        (<strong >Kopieren und synchron halten…</strong
+        >).
+      </p>
+
+      <h2 id="requirements">Was synchronisiert werden kann</h2>
+      <ul>
+        <li>
+          Eine Collection auf eine Collection oder eine Datenbank auf eine Datenbank (alle ihre Collections oder
+          die, die Sie ankreuzen).
+        </li>
+        <li>
+          Die Quelle muss ein Replica Set, ein Sharded Cluster oder ein Load-Balanced-Deployment mit MongoDB 6.0
+          oder neuer sein (MongoDB Atlas ist es immer): Eine Live-Synchronisierung liest die Change Streams von
+          MongoDB. Für die Entwicklung genügt ein Replica Set mit einem einzigen Knoten. Das Ziel kann jedes
+          Deployment sein.
+        </li>
+        <li>
+          Eine Datenbanksynchronisierung aller Collections kann auch später erstellten Collections folgen: Sie
+          werden mit den Optionen der Quelle auf dem Ziel erstellt, und ihre Dokumente folgen. Views werden nur
+          mit der anfänglichen Kopie kopiert.
+        </li>
+        <li>
+          Eine Collection-Synchronisierung kann nur die Dokumente übertragen, die ein Filter trifft (<em
+            >Nur die Dokumente, die ein Filter trifft</em
+          >, geschrieben wie in der Shell). Ein Änderungsereignis allein kann nicht sagen, dass eine
+          Aktualisierung ein Dokument aus dem Filter heraus verschoben hat, daher entscheidet die Quelle: Für
+          jeden Stapel wird sie gefragt, welche der geänderten Dokumente jetzt zutreffen; diese werden so
+          geschrieben, wie sie jetzt sind, und die anderen werden vom Ziel entfernt. Die anfängliche Kopie
+          übernimmt nur die passenden Dokumente. Eine maskierte oder anonyme Synchronisierung lehnt einen Filter
+          ab, der ein verborgenes Feld oder ein darüberliegendes Feld liest oder einen Ausdruck verwendet. Ein
+          Filter, der JavaScript auf dem MongoDB-Server ausführt (<code>$where</code>, <code>$function</code>),
+          wird nur akzeptiert, solange der Server es erlaubt; er wird bei jedem Start und vor jedem Stapel erneut
+          beurteilt, und die Synchronisierung wartet („Der Filter führt JavaScript auf dem MongoDB-Server aus …“), sobald die Einstellung
+          ausgeschaltet wird. Eine Datenbanksynchronisierung überträgt ganze Collections.
+        </li>
+        <li>
+          Mit Begründung abgelehnt: <code>admin</code>, <code>local</code>, <code>config</code> und
+          <code>system.*</code> als Quelle oder Ziel; eine Time-Series-Quelle; ein View als Quelle (er hat keinen
+          eigenen Change Stream: synchronisieren Sie die Collection dahinter); ein Capped-Ziel (es kann keine
+          Löschvorgänge aufnehmen); ein Ziel, das die Quelle selbst ist oder sein könnte; und eine
+          Synchronisierung, die eine Schleife schließen würde (A nach B, während B nach A geht, oder eine längere
+          Kette). Ein Deployment, das sich nicht von einem anderen unterscheiden lässt, gilt für diese Prüfungen
+          als dasselbe.
+        </li>
+      </ul>
+
+      <h2 id="start">Starten</h2>
+      <p>Der Assistent fragt, wie die Synchronisierung startet:</p>
+      <ul>
+        <li>
+          <strong>Zuerst kopieren</strong> (Standard): Das Ziel muss fehlen oder leer sein; alles wird kopiert,
+          dann folgen die Änderungen.
+        </li>
+        <li>
+          <strong>Ziel ersetzen</strong>: Das Ziel wird daneben neu aufgebaut und eingetauscht (Sie geben zur
+          Bestätigung seinen Namen ein). Es benötigt das Recht, Collections zu erstellen und zu verwerfen, und
+          wird für ein Sharded-Ziel abgelehnt.
+        </li>
+        <li>
+          <strong>Mit dem Ziel zusammenführen</strong>: Dokumente werden per Upsert über <code>_id</code> auf
+          das vorhandene Material angewendet.
+        </li>
+        <li>
+          <strong>Ab jetzt</strong>: Das Ziel hat die Daten bereits; es werden nur Änderungen ab jetzt
+          angewendet.
+        </li>
+      </ul>
+      <p>
+        Die anfängliche Kopie läuft als Kopierauftrag (sie erscheint in der Auftragsleiste). Zwischen Kopie und
+        Änderungen geht nichts verloren: Bevor die Kopie beginnt, vermerkt die Synchronisierung die Cluster-Zeit
+        der Quelle, und sobald die Kopie fertig ist, wendet sie jede seither erfolgte Änderung an. Das Anwenden
+        ist idempotent, sodass ein Dokument, das nach einer Änderung kopiert oder später erneut geändert wurde,
+        am Ende der Quelle entspricht.
+      </p>
+      <h3 id="scheduled">Später starten</h3>
+      <p>
+        <em>Zu einem von mir gewählten Zeitpunkt starten</em> plant den Start eine Minute bis 30 Tage im Voraus
+        (etwa eine ruhige Nacht). Die Synchronisierung wird sofort mit der von Ihnen bestätigten Zusammenfassung
+        erstellt und wartet als <strong>Pausiert</strong> – <em>Startet …; bis dahin wird nichts kopiert oder
+        gelesen</em>. Zu ihrem Zeitpunkt wird sie als ihr Besitzer neu geplant (Rechte, Regeln, Schleifen, das
+        Ziel, Maskierung, mit den von Ihnen gegebenen Bestätigungen), ihre Cluster-Zeit wird gelesen und ihre
+        Kopie beginnt. Gilt der Plan nicht mehr – das Ziel wurde inzwischen gefüllt, ein Recht ging verloren –,
+        wartet sie mit den Gründen unter <strong>Handlungsbedarf</strong>, und <em>Neu starten</em> plant sie
+        neu. Ihr Besitzer kann mit <em>Jetzt starten</em> früher starten; ein Administrator kann sie stoppen,
+        aber nicht starten (sie startet als ihr Besitzer). Ein Neustart hält sie weiter wartend.
+      </p>
+      <p>
+        Zu ihrem Zeitpunkt und bei <em>Jetzt starten</em> wird zuerst alles geprüft, was eine laufende
+        Synchronisierung vor jedem Stapel prüft: Ihr Besitzer muss weiterhin von der Quelle lesen und
+        exportieren können, die Verbindungen müssen unverändert sein, und die Regeln für personenbezogene Daten
+        müssen die sein, unter denen sie geplant wurde. Seither hinzugekommene Regeln halten sie für eine Prüfung
+        an (<em>Prüfen…</em>): Sie startet, sobald ihr Besitzer sie bestätigt hat. Eine Synchronisierung, die
+        kopieren muss, wartet außerdem auf Platz unter den laufenden Übertragungen ihres Besitzers: Zu ihrem
+        Zeitpunkt versucht sie es etwas später erneut; <em>Jetzt starten</em> sagt es. Sobald die Ursache
+        behoben ist, startet <em>Erneut versuchen</em> eine geplante Synchronisierung, die nie gestartet ist
+        (sie wird dann geplant).
+      </p>
+      <h3 id="oplog">Das Oplog-Fenster</h3>
+      <p>
+        Während der Kopie vorgenommene Änderungen warten im Änderungsverlauf der Quelle (ihrem Oplog). Die
+        Zusammenfassung schätzt, wie lange die Kopie dauert und, wo der Benutzer der Verbindung es lesen darf,
+        wie lange die Quelle ihre Änderungen aufbewahrt. Eine Kopie, die voraussichtlich mehr als die Hälfte
+        dieses Fensters benötigt, muss bestätigt werden: Geht der Verlauf aus, bevor die Kopie endet, kann die
+        Synchronisierung nicht aufholen und endet <em>Fehlgeschlagen</em> mit „Neu starten“. Lässt sich das
+        Fenster nicht lesen, sagt die Zusammenfassung es.
+      </p>
+
+      <h2 id="applying">Wie Änderungen angewendet werden</h2>
+      <ul>
+        <li>
+          Ein Einfügen, Aktualisieren oder Ersetzen schreibt das Dokument so, wie es jetzt in der Quelle ist
+          (über <code>_id</code>, bei Bedarf angelegt); ein Löschen löscht über <code>_id</code>. Innerhalb eines
+          Stapels (höchstens 1.000 Änderungen oder 8 MB) wird nur die letzte Änderung jedes Dokuments
+          geschrieben.
+        </li>
+        <li>
+          Nach jedem vom Ziel akzeptierten Stapel speichert die Synchronisierung ihre Position. Ein Neustart
+          setzt direkt danach fort; höchstens der letzte Stapel wird erneut angewendet, was nichts ändert.
+        </li>
+        <li>
+          <strong>Eine Live-Synchronisierung ist unidirektional.</strong> Schreibvorgänge anderer auf dem Ziel
+          werden nicht erkannt: Die nächste Änderung dieses Dokuments in der Quelle überschreibt sie. Der
+          Assistent bittet Sie, dies zu bestätigen.
+        </li>
+        <li>
+          Neue und verworfene Indizes folgen. Neue Collection-Optionen oder Validatoren nicht: Die
+          Synchronisierung wartet mit „Die Optionen oder der Validator der Quell-Collection haben sich geändert“, und Sie wählen
+          <strong>Optionen der Quelle anwenden</strong> (ihr Validator und ihre Validierungseinstellungen werden
+          auf dem Ziel gesetzt) oder <strong>Ignorieren</strong>.
+        </li>
+        <li>
+          Eine verworfene oder umbenannte Quell-Collection verwirft nie das Ziel: Die Synchronisierung wartet
+          auf Sie, und Sie stoppen oder starten sie neu.
+        </li>
+      </ul>
+
+      <h2 id="verify">Prüfen</h2>
+      <p>
+        <strong>Prüfen</strong> vergleicht Quelle und Ziel Dokument für Dokument, während die Synchronisierung
+        weiterläuft. Als verschieden, fehlend oder überzählig gefundene Dokumente werden erneut gelesen, sobald
+        die Synchronisierung alles bis zum Ende des Vergleichs angewendet hat, sodass noch unterwegs befindliche
+        Änderungen nicht als Unterschiede gemeldet werden (bis zu 10.000 solcher Dokumente pro Collection;
+        darüber hinaus sagt der Bericht, wie viele nicht erneut geprüft wurden). Die Karte zeigt das Ergebnis,
+        zum Beispiel „Geprüft 12:40 — 1.204.331 gleich, 0 verschieden“; die Details listen die weiterhin
+        abweichenden <code>_id</code>s auf. Eine maskierte Synchronisierung wird gegen die maskierte Quelle
+        geprüft.
+      </p>
+      <p>
+        <em>Unterschiede anzeigen</em> in den Details öffnet den Vergleich so, wie die Vergleichsansicht ihn
+        zeigt: für jede Gruppe (verschieden, nur in der Quelle, nur im Ziel) bis zu 10 Dokumente pro Collection
+        und für ein verschiedenes die Felder, die sich vom Ziel zur Quelle geändert haben. Die Stichproben
+        gehören allein dem Besitzer der Synchronisierung (ein Administrator sieht die Zahlen), werden nur
+        gegeben, solange der Besitzer beide Seiten lesen darf und ihm dort seither nichts verborgen ist, und
+        nicht mehr, nachdem sich die Regeln für personenbezogene Felder geändert haben: Prüfen Sie dann erneut.
+      </p>
+
+      <h2 id="finish">Beenden (die Umschaltung)</h2>
+      <ol>
+        <li>
+          Stoppen Sie die Anwendungen, die in die Quelle schreiben. Mongo Manager kann andere Clients nicht
+          stoppen.
+        </li>
+        <li>
+          Wählen Sie <strong>Beenden…</strong> und bestätigen Sie. Die Synchronisierung vermerkt in diesem
+          Moment die Cluster-Zeit der Quelle, wendet jede davor erfolgte Änderung an und endet dann. Eine Änderung
+          danach kann trotzdem noch angewendet werden (sie kann im selben Stapel eintreffen), weshalb zuerst die
+          Schreibvorgänge gestoppt werden.
+        </li>
+        <li>Sie prüft (standardmäßig an; Sie können das Häkchen entfernen).</li>
+        <li>
+          Sie endet <em>Abgeschlossen</em> mit ihren endgültigen Zahlen. Hat die Prüfung Unterschiede
+          gefunden, zeigt der Bericht sie: Die Daten zu beurteilen, ist Ihre Sache.
+        </li>
+      </ol>
+
+      <h2 id="two-way">Bidirektionale Synchronisierung</h2>
+      <p>
+        <em>Bidirektional</em> (eine Collection-Synchronisierung) bringt auch die Änderungen des Ziels zur
+        Quelle zurück. Es sind zwei verknüpfte Synchronisierungen, je eine pro Richtung, dargestellt als zwei
+        Karten (<em>dieser Weg</em> und <em>der Rückweg</em>), die gemeinsam pausieren, fortsetzen, stoppen und
+        gelöscht werden; es gibt keine Umschaltung. Setzen Sie sie mit Bedacht ein: Sie eignet sich für zwei
+        Standorte, die in dieselbe Collection schreiben, nicht für eine Migration.
+      </p>
+      <ul>
+        <li>
+          Sie startet ab jetzt: Beide Collections müssen bereits dieselben Dokumente enthalten (kopieren Sie sie
+          oder beenden Sie zuerst eine unidirektionale Synchronisierung). Sie überträgt ganze Collections (kein
+          Filter), kann nicht maskieren (beide Seiten benötigen dieselben Regeln für personenbezogene Felder, und
+          auf keiner Seite darf jemand eingeschränkt sein), benötigt nicht gesharte Collections und pausiert bei
+          einem abgelehnten Dokument. Zwei Synchronisierungen zählen auf die Limits.
+        </li>
+        <li>
+          Beide Collections benötigen <strong>Pre- und Post-Images</strong>
+          (<code>changeStreamPreAndPostImages</code>, MongoDB 6.0+): <em>Pre- und Post-Images auf beiden
+          Collections aktivieren</em> erledigt das beim Start der Synchronisierung mit <code>collMod</code>. Sie
+          kosten Speicherplatz auf beiden Servern.
+        </li>
+        <li>
+          <strong>Nichts kommt dorthin zurück, woher es kam.</strong> Jede Seite schreibt die Änderungen der
+          anderen in Transaktionen einer eigenen Sitzung; MongoDB kennzeichnet die Änderungsereignisse dieser
+          Schreibvorgänge mit der Sitzung, und der Rückweg überspringt sie. Die Dokumente werden dafür nicht
+          verändert.
+        </li>
+        <li>
+          <strong>Konflikte: Der letzte Schreiber gewinnt.</strong> Eine Änderung wird nur angewendet, wo die
+          andere Seite noch das hält, was die Änderung vorfand (ihr Pre-Image). Haben beide Seiten dasselbe
+          Dokument geändert, bevor eine der Änderungen ankam, gewinnt auf beiden Seiten die Änderung mit der
+          späteren Wanduhrzeit; die andere geht verloren. Jeder Konflikt wird in der Aktivität aufgelistet
+          (seine <code>_id</code> und welche Seite gewann, nie ein Wert), auf der Karte gezählt und als
+          App-Ereignis für Warnungen ausgelöst. Hält die andere Seite etwas anderes und trifft keine eigene
+          Änderung ein, wird die Änderung angewendet und als solche aufgelistet – nur dort geschrieben, wo die
+          andere Seite noch das hält, was sie beim Lesen hielt; hat sie sich inzwischen erneut geändert, wird auf
+          diese neuere Änderung gewartet und sie als Konflikt beigelegt. Dokumente werden mit den Typen ihrer
+          Werte verglichen und geschrieben: Ein Double, das eine ganze Zahl enthält, ist nicht der Int32, und
+          jede Synchronisierung (auch die unidirektionale) schreibt ein Double, ein Long oder ein Decimal128 so,
+          wie die Quelle es speichert.
+        </li>
+        <li>
+          <strong>Uhren.</strong> Ob eine Änderung der anderen Seite noch aussteht, wird anhand der eigenen
+          Cluster-Zeit dieser Seite entschieden: Die Abweichung wird in einem Snapshot dessen gelesen, was die
+          Mehrheit ihrer Mitglieder hält, und die Änderung wartet, bis der Change Stream des Rückwegs über diesen
+          Zeitpunkt hinaus gelesen hat. Die Uhr des Computers, auf dem Mongo Manager läuft, spielt keine Rolle,
+          ebenso wenig ein langsamer Majority Commit: Eine Änderung wartet, statt eine noch nicht eingetroffene
+          zu überschreiben. Welche von zwei in Konflikt stehenden Änderungen gewinnt, vergleicht weiterhin die
+          Wanduhren der beiden Server: Halten Sie beide im Takt (NTP). Laufen sie auseinander, gewinnt die Seite,
+          deren Uhr vorgeht, Konflikte, die sie hätte verlieren müssen – beide Seiten halten am Ende weiterhin
+          dasselbe Dokument, aber es kann die ältere Änderung sein. Auf einem ruhigen Server rückt der Stream des
+          Rückwegs etwa alle 10 Sekunden weiter, sodass eine Änderung, in der sich die andere Seite lediglich
+          unterschied, so lange dauern kann.
+        </li>
+        <li>
+          <strong>Wenn eine Richtung stoppt, stoppt auch die andere.</strong> Eine Richtung, die für eine Person
+          stoppt (ein abgelehntes Dokument, verlorene Rechte, eine Änderung der Optionen) oder fehlschlägt,
+          pausiert die andere („Pausiert, weil die andere Richtung gestoppt wurde“): Sich selbst überlassen, würde sie
+          ihre Änderungen zurückhalten und auf einen Stream warten, der sich nicht bewegt, während ihre Position
+          und das benötigte Oplog zurückfielen. Das Fortsetzen einer Richtung setzt beide fort. Eine Richtung
+          stoppt auch („Zu viele ihrer Änderungen warten …“), wenn mehr als 10.000 ihrer Änderungen auf die
+          andere Seite warten oder wenn das fast volle Oplog der Quelle über die Position hinwegzurollen droht,
+          die sie hält. Das Fortsetzen startet dann zuerst die andere Richtung; diese wartet („Wartet darauf, dass die
+          andere Richtung … aufholt“) und läuft von selbst weiter, sobald jene live ist.
+        </li>
+        <li>
+          <strong>Ein abgelehntes Dokument.</strong> Lehnt eine Seite eine Änderung ab (ein Validator, ein
+          eindeutiger Index), stoppt die Richtung und nennt die <code>_id</code> des Dokuments. Beheben Sie die
+          Ursache und wählen Sie <em>Erneut versuchen</em> oder <em>Dieses Dokument überspringen</em>: Diese
+          Änderung wird endgültig ausgelassen und als verloren vermerkt, sodass beide Seiten bei diesem Dokument
+          abweichen können, bis es sich wieder ändert; prüfen Sie es und kopieren Sie es bei Bedarf von Hand.
+        </li>
+        <li>
+          Werden Pre- und Post-Images auf einer der Collections ausgeschaltet, stoppt ihre Richtung („Pre- und
+          Post-Images wurden deaktiviert“): Ohne sie würde jede Änderung die andere Seite ungeprüft überschreiben.
+          Schalten Sie sie wieder ein (die Seite Beobachten bietet es an), übergehen Sie die Änderung der
+          Optionen, dann <em>Erneut versuchen</em>.
+        </li>
+        <li>
+          Ein Neustart mittendrin liest erneut von vor jeder noch beizulegenden Änderung; bereits angewendete
+          Änderungen werden erkannt, und eine Änderung, die verloren hat, kommt nicht zurück.
+        </li>
+      </ul>
+
+      <h2 id="states">Zustände und was zu tun ist</h2>
+      <ul>
+        <li><strong>Kopiert</strong>: Die anfängliche Kopie läuft; die Karte zeigt ihren Fortschritt.</li>
+        <li>
+          <strong>Holt auf</strong>: Änderungen werden angewendet, mehr als 2 Sekunden im Rückstand; die Karte
+          sagt, wie weit.
+        </li>
+        <li>
+          <strong>Live</strong>: weniger als 2 Sekunden im Rückstand. Die Karte zeichnet, wie weit sie in den
+          letzten 10 Minuten im Rückstand war; der Server bewahrt diesen Verlauf einen Tag auf (der größte
+          Rückstand je 10 Sekunden), sodass er ein Neuladen und einen Neustart übersteht, und die Details der
+          Synchronisierung stellen die letzte Stunde, 6 Stunden oder 24 Stunden dar.
+        </li>
+        <li>
+          <strong>Pausiert</strong>: durch ihren Besitzer oder einen Administrator. Ihre Position bleibt
+          erhalten; Fortsetzen macht weiter.
+        </li>
+        <li>
+          <strong>Handlungsbedarf</strong>: Sie hat aus einem Grund gestoppt, den eine Person ansehen muss – das
+          Ziel hat ein Dokument abgelehnt (Dieses Dokument überspringen oder Erneut versuchen nach der
+          Korrektur), neue Optionen an der Quelle, eine verworfene Quelle, geänderte Regeln für
+          personenbezogene Daten oder eine bearbeitete Verbindung (Zusammenfassung prüfen), verlorene Rechte,
+          schreibgeschützter Modus, der ausgeschaltete Schalter oder ein Change-Stream-Fehler, den Warten nicht
+          behebt (eine Änderung größer als 16 MB, ein Recht, das der Benutzer der Quelle verloren hat: beheben
+          Sie es, dann Erneut versuchen). Eine hinter der Synchronisierung verworfene Ziel-Collection oder eine
+          Bearbeitung, die eine Verbindung auf einen anderen Server zeigen lässt, bittet um
+          <strong>Neu starten</strong>. Die Pause eines Administrators wird von einem Administrator aufgehoben.
+        </li>
+        <li>
+          <strong>Neuer Versuch</strong>: Eine Verbindung ist nicht erreichbar; sie versucht es nach 1 Sekunde
+          erneut, dann in längeren Abständen, bis zu 5 Minuten.
+        </li>
+        <li><strong>Wird abgeschlossen</strong>, dann <strong>Abgeschlossen</strong>: die Umschaltung.</li>
+        <li>
+          <strong>Fehlgeschlagen</strong>: Sie kann von ihrer Position aus nicht fortfahren, meist weil der
+          Änderungsverlauf der Quelle sie nicht mehr erreicht. <strong>Neu starten</strong> erstellt anstelle
+          der alten eine neue Synchronisierung mit denselben Einstellungen, die in das zusammenführt, was das
+          Ziel bereits enthält (die alte zählt dann nicht mehr auf die Limits).
+        </li>
+        <li><strong>Gestoppt</strong>: durch ihren Besitzer oder einen Administrator. Das Ziel behält, was es hat.</li>
+      </ul>
+      <p>
+        Lehnt das Ziel ein Dokument ab (ein doppelter Schlüssel in einem anderen eindeutigen Index, Validierung,
+        Größe), gilt die Wahl des Assistenten: <strong>Pausieren und nachfragen</strong> (Standard) nennt die
+        <code>_id</code> des Dokuments und den Fehler; <strong>Überspringen und protokollieren</strong>
+        überspringt es, listet es im Aktivitätsprotokoll auf (seine <code>_id</code> und den Fehlercode, nie
+        seinen Inhalt) und pausiert nach 1.000.
+      </p>
+      <p>
+        Unter <strong>Überspringen und protokollieren</strong> werden die abgelehnten Dokumente selbst in einer
+        Datei aufbewahrt, eines pro Zeile in Extended JSON, genau so, wie die Synchronisierung sie zu schreiben
+        versuchte (maskiert, wenn die Synchronisierung maskiert); die Details der Synchronisierung bieten sie
+        ihrem Besitzer als <em>Abgelehnte Dokumente herunterladen</em> an. Ein Serverneustart erhält sie, und sie
+        wächst weiter, wenn die Synchronisierung erneut läuft. Die Datei zählt auf den Übertragungsspeicher des
+        Besitzers; ist dieser voll, werden Dokumente weiterhin übersprungen und protokolliert, aber nicht mehr
+        aufbewahrt, und das Aktivitätsprotokoll sagt es. Sie wird nur gegeben, solange der Besitzer weiterhin von
+        der Quelle lesen und exportieren darf: nicht mehr, wenn personenbezogene Werte dort vor ihm verborgen sind
+        (bei einer Synchronisierung, die nicht maskierte), und nicht nach einer Änderung der Regeln der Quelle
+        (bei einer, die maskierte). Das Löschen der Synchronisierung löscht sie.
+      </p>
+
+      <h2 id="personal-data">Personenbezogene Daten</h2>
+      <ul>
+        <li>
+          Dürfen Sie personenbezogene Daten auf der Quelle nicht sehen oder kreuzen Sie
+          <strong>Personenbezogene Daten maskieren</strong> an, wird jedes Dokument, das die Synchronisierung
+          schreibt – die Kopie und jede Änderung –, mit den Regeln der Quelle maskiert (<code>***</code>).
+          Eindeutige Indizes über maskierte Felder werden nicht aufgebaut.
+        </li>
+        <li>
+          Dürfen Sie personenbezogene Daten auf dem Ziel nicht sehen und hat es Regeln, wird die
+          Synchronisierung abgelehnt: Sie schreibt ganze Dokumente, die Ihre Regeln nicht Feld für Feld
+          einhalten können.
+        </li>
+        <li>
+          Eine unmaskierte Synchronisierung auf ein Ziel ohne dieselben Regeln benötigt Ihre Bestätigung oder
+          „Diese Regeln zuerst zum Ziel hinzufügen“ (für Administratoren der Zielverbindung). Beides wird im
+          Audit-Protokoll festgehalten.
+        </li>
+        <li>
+          Ändern sich die Regeln auf einer der beiden Seiten, wartet die Synchronisierung: Bereits geschriebene
+          Werte können jetzt personenbezogen sein. Prüfen Sie die Zusammenfassung, um fortzufahren, oder starten
+          Sie neu.
+        </li>
+      </ul>
+
+      <h2 id="limits">Rechte, Limits und Einstellungen</h2>
+      <ul>
+        <li>
+          Sie benötigen das Recht, von der Quelle zu exportieren, und auf dem Ziel Dokumente zu schreiben,
+          Collections und Indizes zu erstellen und Aufträge auszuführen. Diese Rechte werden vor jedem Stapel
+          erneut gelesen: Der Verlust eines davon oder Ihres Kontos stoppt die Synchronisierung sofort. Das
+          Abmelden tut es nicht.
+        </li>
+        <li>
+          Das Bearbeiten einer Verbindung, die eine Synchronisierung verwendet, stoppt sie, bis Sie die
+          Zusammenfassung prüfen (die Verbindung zeigt möglicherweise jetzt auf einen anderen Server); das
+          Löschen der Verbindung stoppt sie endgültig.
+        </li>
+        <li>
+          Jeder Benutzer darf 3 Live-Synchronisierungen haben, die nicht beendet sind; ein Server führt höchstens
+          <code>MM_LIVE_SYNC_MAX</code> aus (standardmäßig 10). <code>MM_LIVE_SYNC=0</code> schaltet die Funktion
+          aus: Laufende Synchronisierungen warten und machen weiter, wenn sie wieder eingeschaltet wird. Siehe
+          <a href="deployment.html#live-sync">Bereitstellung</a>.
+        </li>
+        <li>
+          Administratoren sehen jede Synchronisierung und dürfen sie pausieren, fortsetzen, prüfen, stoppen und
+          löschen; nur der Besitzer beendet sie oder bestätigt eine Prüfung.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Auf dieser Seite</p>
+      <ol>
+        <li><a href="#requirements">Was synchronisiert werden kann</a></li>
+        <li><a href="#start">Starten</a></li>
+        <li><a href="#applying">Wie Änderungen angewendet werden</a></li>
+        <li><a href="#verify">Prüfen</a></li>
+        <li><a href="#finish">Beenden (die Umschaltung)</a></li>
+        <li><a href="#two-way">Bidirektionale Synchronisierung</a></li>
+        <li><a href="#states">Zustände und was zu tun ist</a></li>
+        <li><a href="#personal-data">Personenbezogene Daten</a></li>
+        <li><a href="#limits">Rechte, Limits und Einstellungen</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

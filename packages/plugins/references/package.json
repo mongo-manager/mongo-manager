@@ -1,0 +1,17 @@
+{
+  "name": "@mongo-manager/plugin-references",
+  "private": true,
+  "version": "1.4.1",
+  "type": "module",
+  "description": "First-party Mongo Manager plugin: the fields holding other documents' ObjectIds, the collections they refer to, and the referenced documents' names beside the ids (plugins wave 2).",
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "happy-dom": "^21.0.4",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.2"
+  }
+}

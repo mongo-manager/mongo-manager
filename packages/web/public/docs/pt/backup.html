@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Backup e restauração · Documentação do Mongo Manager</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Documentação do Mongo Manager</a>
+      <details class="lang-menu">
+        <summary>Português (Brasil)</summary>
+        <span class="langs" role="group" aria-label="Idioma">
+          <a lang="en" hreflang="en" href="../backup.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/backup.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/backup.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/backup.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/backup.html">Español</a>
+          <strong lang="pt-BR">Português (Brasil)</strong>
+          <a lang="ko" hreflang="ko" href="../ko/backup.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/backup.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/backup.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/backup.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Visão geral</a>
+      <a href="getting-started.html">Primeiros passos</a>
+      <a href="security.html">Segurança</a>
+      <a href="deployment.html">Implantação</a>
+      <a href="import-export.html">Importação e exportação</a>
+      <strong>Backup e restauração</strong>
+      <a href="watch.html">Monitoramento de alterações</a>
+      <a href="sync.html">Sincronização em tempo real</a>
+      <a href="server-admin.html">Administração do servidor</a>
+      <a href="ai.html">Assistente de IA</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Atalhos de teclado</a>
+    </nav>
+    <main>
+      <h1>Backup e restauração</h1>
+      <p>
+        Faça backup de uma coleção, de um banco de dados ou do servidor inteiro e depois baixe o arquivo ou
+        mantenha-o no servidor por um tempo. Restaure qualquer um dos seus backups, um arquivo do mongodump ou
+        um zip de uma pasta do mongodump nos namespaces que você escolher. Ambos rodam como tarefas em segundo
+        plano que você pode acompanhar na lista de tarefas.
+      </p>
+      <p>
+        Comece pelo menu de uma coleção ou de um banco de dados na barra lateral, pelo menu da conexão, pela aba Backups de uma conexão, pela seção Backups de um banco de dados ou de uma coleção, ou pela paleta de
+        comandos (“Fazer backup…”, “Restaurar um backup…”).
+      </p>
+
+      <h2 id="taking-a-backup">Fazendo um backup</h2>
+      <p>
+        O backup abre em uma única tela com a escolha recomendada para o lugar de onde você o abriu: um backup
+        criptografado quando os dados contêm campos pessoais, um arquivo compactado caso contrário. As
+        verificações ao lado se atualizam conforme você altera qualquer coisa: o tamanho e o tempo esperados,
+        o seu espaço livre para backups, os campos pessoais que ficariam legíveis no arquivo e tudo o que foi
+        deixado de fora. Cada verificação que pode ser corrigida tem um botão para isso. “Personalizar…” abre
+        as etapas: escopo, mecanismo, conteúdo, proteção e um resumo.
+      </p>
+      <p>
+        O backup roda em segundo plano: feche a caixa de diálogo quando quiser. Ao começar, abre-se a seção Backups do que ele copia: a da coleção, a do banco de dados ou a da conexão. Enquanto ele roda, a seção
+        Backups e a lista de tarefas mostram cada namespace com o seu próprio progresso (quantos já terminaram,
+        o que está sendo lido e a fase). Quando ele termina, o aviso oferece “Baixar” e “Abrir relatório”.
+      </p>
+      <p>
+        Um backup e uma restauração precisam do servidor da conexão e só são mostrados enquanto o Mongo Manager
+        está conectado a ele (seus bancos de dados foram lidos). Enquanto ele se conecta, ou enquanto não
+        consegue (um tempo esgotado, uma falha de rede, de DNS ou de TLS, uma autenticação recusada, um
+        servidor indisponível), a página da conexão mostra apenas a sua visão geral com o erro, Tentar
+        novamente e Editar: sem Desempenho, Monitorar, Usuários e funções, Alertas, Dados pessoais ou Backups,
+        sem Novo banco de dados nem shell; a página de um banco de dados não mostra Modelo, Monitorar nem
+        Backups. Os menus da árvore e dessas páginas omitem fazer backup, restaurar, sincronização em tempo
+        real, o shell, criar, renomear e descartar, e os comandos da paleta de comandos para o servidor dizem
+        que não há conexão. Um backup ou uma restauração aberto de outra forma informa isso, com Tentar
+        novamente, e não inicia nada. Uma resposta que não trata de alcançar o servidor (todas as conexões
+        ocupadas por um momento, uma consulta que passou do limite de tempo) não oculta nada. Tudo volta
+        assim que os bancos de dados são lidos: Tentar novamente, Atualizar, um teste de conexão bem-sucedido,
+        ou por si só quando a causa passa sozinha (a rede, um tempo esgotado, o DNS, um servidor indisponível):
+        uma página aberta tenta de novo a cada 15 segundos enquanto o navegador a exibe. Uma autenticação que o
+        servidor recusou (um nome de usuário ou uma senha, uma autenticação SSH, uma chave de host SSH que
+        mudou) é mantida por cinco minutos, ou até que a conexão seja editada, a pessoa dela entre novamente
+        (uma conexão em que cada pessoa se autentica) ou um teste de conexão seja bem-sucedido: nesse meio
+        tempo, nada no Mongo Manager (páginas, widgets, a verificação de integridade, tarefas, o shell) se
+        autentica de novo por ela, e enquanto ela é mantida somente os administradores da conexão podem
+        testá-la novamente, para que as regras de bloqueio de um diretório não bloqueiem a conta, e o erro
+        diz como tentar de novo.
+      </p>
+
+      <h2 id="formats">Formatos</h2>
+      <ul>
+        <li>
+          <code>.archive</code>: um arquivo do mongodump; ele abre com <code>mongorestore --archive</code>.
+        </li>
+        <li>
+          <code>.archive.gz</code>: o mesmo arquivo compactado com gzip;
+          <code>mongorestore --archive --gzip</code>.
+        </li>
+        <li>
+          <code>.mmbak</code>: compactado com Zstandard e depois selado com AES-256-GCM em partes que são
+          verificadas individualmente ao serem lidas. A senha precisa ter pelo menos 12 caracteres; “Gerar uma
+          senha forte” cria uma para você. A senha não é armazenada em lugar nenhum e não pode ser recuperada:
+          sem ela, o backup não pode ser aberto. Abra-o no Mongo Manager, ou transforme-o em um arquivo simples
+          com <code>mongo-manager backup decrypt &lt;file&gt; -o &lt;file.archive&gt;</code> (a senha é
+          pedida sem eco, ou lida de um pipe com <code>--password-stdin</code>).
+          <code>mongo-manager backup inspect &lt;file&gt;</code> lista o que qualquer backup contém.
+        </li>
+      </ul>
+
+      <h2 id="engines">Mecanismos</h2>
+      <ul>
+        <li>
+          Integrado: lê por meio do Mongo Manager, então as regras de campos pessoais e o mascaramento se
+          aplicam. Funciona em toda instalação, e seus arquivos abrem com o mongorestore.
+        </li>
+        <li>
+          mongodump e mongorestore: as próprias ferramentas do MongoDB, que podem ser mais rápidas com volumes
+          de dados muito grandes. Elas são oferecidas aos administradores da conexão que veem valores
+          pessoais, não por túneis SSH. Instale o MongoDB Database Tools 100.9 ou posterior (100.16 ou
+          posterior para o MongoDB 8.3 e posteriores, o que as ferramentas da própria imagem Docker ainda não
+          são: lá ele usa o mecanismo integrado) e defina <code>MM_MONGODB_TOOLS_PATH</code>, ou use a imagem
+          Docker, que as inclui. As credenciais chegam às ferramentas em um arquivo de configuração privado e
+          temporário, que é excluído quando elas terminam, nunca na linha de comando.
+        </li>
+      </ul>
+
+      <h2 id="time-series">Séries temporais</h2>
+      <p>
+        Uma série temporal é mantida como o mongodump a mantém para a versão do servidor: a partir do MongoDB
+        8.3 com o seu próprio nome, lida e gravada por meio dele com <code>rawData</code>; antes da 8.3 em
+        <code>system.buckets.&lt;name&gt;</code>. O mecanismo integrado restaura qualquer um dos dois tipos, do
+        Mongo Manager ou do mongodump, em qualquer versão compatível, e um backup da 8.3 também em um servidor
+        mais antigo. O mongorestore precisa da 100.16 ou posterior para um backup ou um destino da 8.3 ou
+        posterior, e só encontra a série temporal de um backup da 8.3 quando o mongodump 100.16 ou posterior,
+        ou esta versão do Mongo Manager, o criou: para um criado de outra forma, o plano oferece o mecanismo
+        integrado. Um servidor que não informa a sua versão nunca é adivinhado: a sua série temporal é deixada
+        de fora de um backup, com o motivo, a restauração de uma é recusada no plano, e um teste de
+        restauração de uma para antes de gravar qualquer um dos seus documentos, com o banco de dados
+        temporário descartado. Com autenticação no MongoDB 8.3 e posteriores, a conta que faz backup ou
+        restaura uma série temporal também precisa do privilégio <code>performRawDataOperations</code> (a
+        função <code>backup</code> do MongoDB o tem; para uma restauração, conceda-o junto com
+        <code>restore</code>).
+      </p>
+
+      <h2 id="personal-data">Dados pessoais</h2>
+      <ul>
+        <li>
+          Um usuário que não pode ver valores pessoais faz backup de <code>***</code> no lugar deles: esse
+          backup é sempre anônimo. Qualquer pessoa pode escolher um backup anônimo.
+        </li>
+        <li>
+          Séries temporais com campos pessoais e visualizações cuja definição contém um valor que seria
+          mascarado são deixadas de fora de um backup mascarado. Uma coleção cujo validador contém um valor
+          assim mantém os dados mascarados, sem o validador. O relatório diz o que foi deixado de fora e por
+          quê.
+        </li>
+        <li>
+          Um backup mascarado não pode mais ser baixado nem restaurado depois que as regras de campos pessoais
+          mudam.
+        </li>
+        <li>
+          Restaurar um backup mascarado sobre documentos existentes exige uma confirmação, pois
+          <code>***</code> substitui os valores armazenados.
+        </li>
+      </ul>
+
+      <h2 id="restoring">Restaurando</h2>
+      <ol>
+        <li>
+          Solte um arquivo, escolha um ou selecione um dos seus backups mantidos. Arquivos grandes são
+          enviados em partes e continuam depois de uma conexão perdida; o que o arquivo contém é mostrado
+          enquanto ele ainda está sendo enviado. Um backup criptografado pede a sua senha.
+        </li>
+        <li>
+          Escolha o que restaurar e onde: renomeie o banco de dados de todos os namespaces de uma vez,
+          acrescente <code>_restored</code> aos nomes, ou “Em um novo banco de dados” (com o nome do banco de
+          dados do backup e a data, nunca um que o destino já tenha; um backup de vários bancos de dados recebe
+          um novo banco de dados para cada um, de modo que coleções com o mesmo nome nunca se encontrem). Os
+          destinos que já existem são marcados com a sua contagem de documentos. “Restaurar aqui…” em uma
+          coleção restaura nela: um backup de uma coleção vai para essa coleção, qualquer que fosse o seu
+          nome.
+        </li>
+        <li>
+          Escolha como gravar: adicionar (um documento cujo <code>_id</code> já exista é recusado e listado),
+          upsert por campos-chave ou substituir. Uma substituição restaura em uma coleção temporária e só a
+          coloca no lugar quando tudo chegou, então uma restauração que falhe ou seja cancelada deixa o destino
+          como estava. Com o mecanismo integrado, o que uma substituição não toma do backup (seus índices, ou
+          suas opções e validador, quando são deixados de fora) continua sendo do próprio destino: se um dos
+          índices dele não puder ser reconstruído, ou se o seu próprio limite (cap) mantiver menos documentos
+          do que foram gravados, nada é substituído. O mongorestore não consegue mantê-los. Uma série temporal
+          não pode ser substituída, nem no backup nem no destino; restaure-a em uma nova coleção. Uma
+          restauração executada de novo encontra os documentos que já gravou como estavam e os conta como já
+          existentes em vez de recusá-los, uma simulação também.
+        </li>
+        <li>
+          Confirme o que precisa de confirmação: os índices TTL e a expiração de coleção que a coleção gravada
+          terá, os do backup ou os do próprio destino mantidos por uma substituição (o relatório, e uma
+          simulação, contam os documentos excluídos assim que são gravados, com datas já vencidas, incluindo o
+          TTL do próprio destino), as regras de campos pessoais que o destino não tem (um administrador pode
+          adicioná-las) e o nome de cada destino não vazio que uma substituição sobrescreve, digitado.
+        </li>
+        <li>
+          Execute uma simulação para ver o que aconteceria e depois “Restaurar agora com estas
+          configurações”, ou inicie a restauração. O checksum de cada namespace é verificado; uma divergência
+          faz a restauração falhar. O progresso é mostrado por namespace, depois os índices e as visualizações
+          que ela constrói; quando termina, o seu aviso e a sua linha na lista de tarefas abrem o que ela
+          gravou (“Abrir coleção”, ou “Abrir banco de dados” para vários) e o seu relatório.
+        </li>
+      </ol>
+
+      <h2 id="kept-backups">Backups mantidos</h2>
+      <p>
+        A seção Backups de uma conexão, de um banco de dados ou de uma coleção lista os seus backups (a de uma coleção, os que a contêm) com a proteção, o
+        tamanho, a idade e quando expiram, e o seu uso do espaço de backup. O menu “…” de um backup o baixa, o
+        envia ou o restaura, ou o exclui (com cinco segundos para desfazer). Os backups são somente seus; eles
+        são retirados quando você perde o acesso à conexão deles ou quando os valores pessoais passam a ficar
+        ocultos para você ali.
+      </p>
+
+      <h2 id="destinations">Destinos</h2>
+      <p>
+        Um backup também pode ser enviado para outro lugar: uma pasta no servidor, um armazenamento compatível
+        com S3, o Google Drive ou um servidor WebDAV. Os administradores definem os destinos em
+        <em>Menu da conta → Destinos de backup</em>
+        e escolhem quem pode usar cada um; todos os demais veem apenas o nome de um destino, nunca o seu
+        endereço nem as suas chaves. As chaves são armazenadas criptografadas e só podem ser substituídas,
+        nunca lidas de volta.
+      </p>
+      <ul>
+        <li>
+          <strong>Pasta do servidor:</strong> um caminho absoluto dentro de uma das pastas listadas em
+          <code>MM_BACKUP_FOLDER_ROOTS</code>, fora da pasta de dados. Sem essa configuração, nenhum destino de
+          pasta pode ser criado.
+        </li>
+        <li>
+          <strong>Armazenamento compatível com S3:</strong> um endpoint, uma região, um bucket, um id de chave
+          de acesso e um segredo. As predefinições preenchem o que podem para Amazon S3, MinIO, Cloudflare R2
+          (o id da sua conta), Backblaze B2, DigitalOcean Spaces, DigitalOcean Spaces Cold Storage, Wasabi ou
+          qualquer outro serviço S3.
+        </li>
+        <li>
+          <strong>Google Drive:</strong> o seu próprio cliente OAuth do Google Cloud, conectado com um código
+          mostrado na tela, ou uma conta de serviço que grava em um Drive compartilhado (veja abaixo).
+        </li>
+        <li>
+          <strong>WebDAV:</strong> o endereço do servidor, um nome de usuário e uma senha de app (Nextcloud,
+          ownCloud ou qualquer servidor WebDAV). O Nextcloud e o ownCloud aceitam backups grandes em partes
+          retomáveis.
+        </li>
+        <li>
+          <strong>Google Cloud Storage:</strong> um bucket, um prefixo opcional, a classe de armazenamento em
+          que os backups são gravados (Standard, Nearline, Coldline ou Archive — toda classe é lida
+          imediatamente; as mais frias cobram um tempo mínimo) e a chave JSON de uma conta de serviço com a
+          função <em>Storage Object User</em> (suficiente: ela lê, grava, lista e exclui objetos) no bucket. A
+          chave é selada no servidor; somente o endereço da conta é mostrado. Os envios continuam depois de
+          uma conexão perdida, e cada cópia é verificada com o MD5 do Google.
+        </li>
+        <li>
+          <strong>Azure Blob Storage:</strong> uma conta de armazenamento, um contêiner, um prefixo opcional e
+          a camada de acesso em que os backups são gravados (o padrão da conta, Hot, Cool, Cold ou Archive),
+          assinados com um token SAS ou com a chave da conta. Um token SAS somente para o contêiner, com
+          permissão para ler, adicionar, criar, gravar, excluir e listar, é a concessão mais restrita; ele
+          deixa de funcionar na sua data final. Somente os campos que um token SAS pode conter são aceitos, e
+          somente a credencial que a forma de assinatura escolhida usa é mantida. Um backup pequeno é
+          verificado por inteiro com o seu MD5. Backups grandes são enviados em blocos, cada um verificado
+          pelo Azure com o seu MD5, e o blob concluído é comparado pelo seu tamanho (o Azure não guarda
+          checksum de um blob feito de blocos); um envio interrompido continua somente a partir dos seus
+          próprios blocos — cada envio marca os seus blocos, então blocos que outra tentativa deixou nunca são
+          tomados por deste. Um blob na camada Archive é mostrado como arquivado: <em>Descongelar…</em> o
+          reidrata para Cool (onde ele permanece) com prioridade padrão ou alta. Os manifestos nunca são
+          gravados em Archive. <em>Avançado</em> aceita o endpoint e um certificado de CA de outra nuvem do
+          Azure.
+        </li>
+        <li>
+          <strong>SFTP:</strong> um servidor, a sua porta, um nome de usuário, uma pasta opcional (a pasta de
+          login quando vazia; ela deve existir) e uma senha ou uma chave privada (com a sua frase secreta). A
+          chave de host do servidor é fixada pela sua impressão digital SHA-256: deixe a impressão digital
+          vazia, execute <em>Testar a conexão</em>, compare a chave que ele mostra com a do próprio servidor
+          (por exemplo <code>ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub</code> no servidor) e escolha
+          <em>Confiar nesta chave e testar novamente</em>. Nada é enviado a um servidor cuja chave não seja a
+          confiável; uma chave alterada pede a senha ou a chave novamente. Os backups são gravados como
+          arquivos <code>.part</code>, renomeados quando completos, e um envio interrompido continua de onde
+          parou — depois que o conteúdo do arquivo parcial foi lido de volta e reconhecido como o começo do
+          backup (mesmo com a leitura de volta desativada); um arquivo parcial que não seja isso recomeça. O
+          SFTP não guarda checksum, então cada cópia é lida de volta por inteiro, a menos que <em>Verificar
+          lendo de volta</em> esteja desativado. Um manifesto gravado de novo substitui o antigo de uma só vez
+          onde o servidor oferece <code>posix-rename@openssh.com</code> (o OpenSSH oferece). Um download que
+          não recebe nada por um minuto é abandonado. A conexão passa pelas mesmas verificações de endereço e
+          pelo mesmo proxy que os outros destinos.
+        </li>
+      </ul>
+      <p>
+        Em <em>Acesso</em>, escolha quem mais pode usar o destino: <em>Enviar</em> permite que um usuário envie
+        os próprios backups para lá e restaure os que enviou; <em>Navegar por tudo</em> permite que ele leia
+        todos os backups ali, inclusive os de outros usuários. Os administradores sempre podem usar todos os
+        destinos.
+      </p>
+
+      <h3 id="testing">Testando um destino</h3>
+      <p>
+        A última etapa do editor, <em>Testar e salvar</em>, executa <em>Testar a conexão</em> no destino real e
+        mostra cada etapa com o seu tempo: <em>Localizar o endereço</em>, <em>Conectar com segurança</em>,
+        <em>Entrar</em>, <em>Gravar um arquivo de teste</em>, <em>Lê-lo de volta</em> e <em>Excluí-lo</em>.
+        Para uma pasta do servidor, as duas primeiras mostram <em>Neste servidor</em>. Uma etapa que falha diz
+        por quê; as etapas seguintes mostram <em>Não executado</em>. Uma configuração alterada depois do teste
+        pede um novo teste. <em>Salvar</em> depois de um teste que falhou pergunta antes
+        <em>Salvar sem um teste bem-sucedido?</em>; <em>Salvar mesmo assim</em> mantém o destino como está,
+        para ser corrigido depois. <em>Testar agora</em> no menu de um destino testa de novo um destino já
+        salvo. O cartão dele mostra o resultado: <em>Saudável</em>, <em>Requer atenção</em>,
+        <em>É preciso reconectar</em> (Google Drive, veja abaixo) ou <em>Ainda não testado</em>.
+      </p>
+
+      <h3 id="google-drive">Google Drive</h3>
+      <p>
+        O Mongo Manager se conecta ao Drive com o seu próprio cliente OAuth do Google Cloud, ou com uma conta
+        de serviço no Google Workspace. Ele pede apenas o escopo <code>drive.file</code>: vê os arquivos e
+        pastas que ele mesmo criou e nada mais nesse Drive.
+      </p>
+      <p><strong>Com a sua conta do Google</strong> (<em>Minha conta do Google</em> no editor):</p>
+      <ol>
+        <li>
+          No console do Google Cloud, escolha ou crie um projeto. Em
+          <em>APIs e serviços → Biblioteca</em>, ative a <em>Google Drive API</em>.
+        </li>
+        <li>
+          Configure primeiro a <em>tela de consentimento OAuth</em> (nos consoles mais novos ela é a
+          <em>Google Auth Platform</em>, com <em>Identidade visual</em> e <em>Público-alvo</em>). No Google
+          Workspace, escolha o tipo de usuário <em>Interno</em>: somente as contas da sua organização podem se
+          conectar. Caso contrário, escolha <em>Externo</em> e depois <em>Publicar app</em>, para que o seu
+          status seja <em>Em produção</em>; <code>drive.file</code> é um escopo não sensível, então a
+          publicação não exige análise do Google. Não deixe um app Externo em <em>Teste</em>: o Google faz as
+          autenticações dele expirarem após 7 dias, e o destino passa a mostrar <em>É preciso reconectar</em>.
+        </li>
+        <li>
+          Vá a <em>Credenciais → Criar credenciais → ID do cliente OAuth</em> e escolha o tipo
+          <em>TVs e dispositivos de entrada limitada</em>. Nenhum endereço de redirecionamento é necessário.
+          Guarde o id do cliente e o segredo do cliente.
+        </li>
+        <li>
+          No editor, informe o <em>ID do cliente OAuth</em> e o <em>Segredo do cliente OAuth</em> e escolha
+          <em>Conectar conta do Google</em>. Abra o endereço mostrado (google.com/device) e digite o código com
+          a conta do Google que deve guardar os backups, antes que a contagem regressiva termine. O editor
+          então mostra <em>Conectado como</em> essa conta. Os backups vão para uma pasta que o app cria
+          (<em>Nome da pasta</em>, “Mongo Manager backups”, a menos que você a altere).
+        </li>
+        <li>
+          Quando o Google deixa de aceitar a conexão (o acesso foi removido na conta do Google, ela não foi
+          usada por seis meses ou o app ficou em Teste), o destino mostra <em>É preciso reconectar</em>. Abra
+          <em>Editar…</em>, escolha <em>Reconectar</em>, informe o novo código e salve. O segredo do cliente
+          armazenado é usado para isso: você não o informa de novo, e ele nunca volta ao navegador.
+        </li>
+      </ol>
+      <p>
+        <strong>Com uma conta de serviço</strong> (Google Workspace, <em>Conta de serviço</em> no editor):
+      </p>
+      <ol>
+        <li>
+          No mesmo projeto, em <em>IAM e administrador → Contas de serviço</em>, crie uma conta de serviço (ela
+          não precisa de nenhuma função). Em suas <em>Chaves</em>, escolha <em>Adicionar chave → Criar nova
+          chave</em> do tipo JSON.
+        </li>
+        <li>
+          No Google Drive, abra o Drive compartilhado que deve guardar os backups, escolha
+          <em>Gerenciar membros</em> e adicione o endereço da conta de serviço como <em>Gerente de
+          conteúdo</em> (uma conta de serviço não tem armazenamento próprio). O id do Drive compartilhado é a
+          última parte do seu endereço (<code>drive.google.com/drive/folders/&lt;id&gt;</code>).
+        </li>
+        <li>
+          No editor, cole a chave ou solte o arquivo dela em <em>Chave da conta de serviço (JSON)</em> e
+          informe o <em>ID do Drive compartilhado</em>. Somente o endereço da conta permanece na tela.
+        </li>
+      </ol>
+
+      <h3>Enviando um backup</h3>
+      <p>
+        Escolha os destinos em <em>Onde</em> ao fazer um backup, ou use <em>Enviar…</em> em um backup mantido.
+        Cada cópia aparece na linha do backup: <em>Enviando para</em> um destino com o seu progresso,
+        <em>Em</em> um destino depois de verificada, ou <em>Não enviado para</em> um com o motivo.
+      </p>
+      <ul>
+        <li>
+          Um destino aceita <strong>somente backups criptografados</strong>, a menos que um administrador
+          desative isso (a alteração é auditada).
+        </li>
+        <li>
+          Um backup de dados com regras de campos pessoais só vai para um destino quando está criptografado ou
+          mascarado, seja qual for a configuração do destino.
+        </li>
+        <li>
+          Uma cópia só conta como enviada depois de verificada. Todo destino compara o tamanho. O
+          armazenamento compatível com S3 também verifica cada parte enviada com o seu SHA-256 à medida que ela
+          chega, e o Google Drive compara o checksum que informa. Uma pasta do servidor lê o arquivo inteiro
+          de volta e compara o seu SHA-256; o WebDAV também faz isso quando <em>Verificar cada envio lendo-o
+          de volta</em> está ativado (o que dobra o tráfego). Sem isso, o WebDAV verifica somente o tamanho, e
+          a caixa de diálogo informa. Uma cópia que falha na verificação é removida do destino.
+        </li>
+        <li>
+          <em>Excluir a cópia local após um envio verificado</em> depende dessa verificação: a cópia do
+          servidor só é excluída quando todos os destinos escolhidos verificaram a sua cópia. Se algum falhar,
+          a cópia local é mantida por 7 dias, o tempo em que um envio pode ser repetido, e a tarefa informa
+          isso; um envio cancelado nunca a exclui.
+        </li>
+        <li>
+          Cada destino executa um número limitado de transferências ao mesmo tempo
+          (<code>MM_BACKUP_DEST_TRANSFERS</code>, 2 por padrão, para envios e downloads juntos). As demais
+          esperam, e a tarefa mostra <em>Aguardando</em> esse destino até que haja uma vaga livre.
+        </li>
+        <li>
+          <em>Tentar novamente</em> em uma cópia que não foi enviada a envia de novo e mantém a escolha
+          <em>Excluir a cópia local</em> dela: quando ela e as outras cópias enviadas com essa escolha estão
+          verificadas, a cópia local é excluída. <em>Descartar</em> abandona a cópia que falhou e o seu envio
+          inacabado.
+        </li>
+        <li>
+          Um envio interrompido por uma reinicialização do servidor se torna uma cópia não enviada, com o
+          motivo “O servidor foi reiniciado enquanto ela era enviada.”; <em>Tentar novamente</em> o continua a
+          partir das partes já enviadas, onde o provedor as mantém (envios multipart do S3, partes do
+          Nextcloud).
+        </li>
+      </ul>
+
+      <h3>O que é armazenado ali</h3>
+      <p>
+        Os arquivos vão para <code>mongo-manager/&lt;year&gt;/&lt;month&gt;/</code> na pasta ou no prefixo do
+        destino, com nomes formados por data, hora e um id curto, ao lado de um pequeno manifesto
+        <code>.json</code> com o tamanho, o formato e o checksum, gravado por último, depois que o arquivo é
+        verificado. Nem os nomes nem o manifesto contêm nomes de bancos de dados ou de coleções.
+      </p>
+
+      <h3>Restaurando a partir de um destino</h3>
+      <p>
+        Escolha a aba do destino no cartão Backups, ou <em>De um destino</em> na folha de restauração, e
+        selecione um backup. Restaurar exige o direito de gravar na conexão de destino. O arquivo é baixado
+        para o servidor e visualizado enquanto chega; a restauração pode começar quando o download estiver
+        completo e o seu checksum coincidir com o registrado quando ele foi enviado, ou com o do manifesto.
+        Um arquivo cujo checksum difere é removido. Um arquivo sem manifesto (colocado ali por outra
+        ferramenta, ou à mão) é listado como <em>De outra instalação</em>: ele pode ser restaurado, mas nada
+        pode verificá-lo antes, e a folha de restauração informa isso.
+      </p>
+      <p>
+        Um download que falha mantém o que recebeu: escolher o mesmo backup de novo o retoma. Um download
+        cancelado é descartado, assim como um cuja parte recebida não tem utilidade (o checksum difere ou o
+        arquivo sumiu). A parte já recebida conta contra o seu espaço de backup até ser retomada, descartada
+        ou expirar (<code>MM_BACKUP_TTL_HOURS</code>).
+      </p>
+      <p>
+        Em uma nova instalação, defina o destino de novo com as mesmas configurações: a mesma pasta; o mesmo
+        endpoint, bucket e prefixo; o mesmo endereço e a mesma pasta do WebDAV. Para o Google Drive, use o
+        mesmo cliente OAuth (ou a mesma conta de serviço e o mesmo Drive compartilhado) e o mesmo nome de
+        pasta: com <code>drive.file</code>, um cliente vê somente os arquivos que ele mesmo criou. Os
+        administradores então veem todos os backups ali, inclusive os da instalação antiga. Qualquer outra
+        pessoa precisa de <em>Navegar por tudo</em>: <em>Enviar</em> mostra somente os backups que esse
+        usuário enviou a partir desta instalação.
+      </p>
+
+      <h3>Cold Storage e classes de armazenamento de arquivamento</h3>
+      <p>
+        O DigitalOcean Spaces Cold Storage guarda os backups de forma barata e eles continuam legíveis
+        imediatamente, mas cada objeto é cobrado por pelo menos 30 dias, e o provedor pode cobrar por
+        recuperações além de uma franquia: excluir ou restaurar logo depois de enviar custa dinheiro.
+      </p>
+      <p>
+        A <em>Classe de armazenamento</em> de um destino S3 (em <em>Avançado</em>, <code>STANDARD</code> por
+        padrão) se aplica aos arquivos de backup; os manifestos permanecem em <code>STANDARD</code>. Arquivos
+        em <code>GLACIER</code> ou <code>DEEP_ARCHIVE</code> não podem ser lidos até serem descongelados: a
+        lista do destino os mostra como arquivados com uma ação <em>Descongelar…</em>, que pergunta por quanto
+        tempo a cópia descongelada permanece legível (1 a 30 dias) e com que rapidez o provedor trabalha
+        (Standard, Bulk — a mais barata e mais lenta — ou Expedited, não para Deep Archive). O provedor cobra
+        o descongelamento e esses dias. Enquanto ele roda, a cópia aparece como em descongelamento; depois de
+        descongelada, pode ser restaurada a partir da lista até que os dias acabem. Quem pode restaurar a
+        partir do destino pode descongelar (um remetente, as próprias cópias), no máximo 10 descongelamentos
+        por minuto, cada um auditado. <code>GLACIER_IR</code>, <code>STANDARD_IA</code>,
+        <code>ONEZONE_IA</code> e <code>INTELLIGENT_TIERING</code> são lidos imediatamente.
+      </p>
+
+      <h2 id="scheduled">Backups agendados</h2>
+      <p>
+        Um agendamento faz o mesmo backup repetidamente, envia cada um aos destinos que você escolher e mantém
+        tantos quantos a sua regra de retenção determinar. Abra <em>Menu da conta → Backups agendados</em>, a
+        paleta de comandos (“Abrir backups agendados”) ou <em>Agendar…</em> na seção Backups de uma conexão ou
+        de um banco de dados, que inicia um agendamento para ele. O editor tem seis etapas: o quê, quando,
+        proteção, onde, retenção e um resumo com as verificações do servidor.
+      </p>
+
+      <h3 id="scheduled-who">Quem pode agendar</h3>
+      <ul>
+        <li>
+          Quem pode fazer backup da conexão pode agendá-lo (ler documentos, executar tarefas e exportar ali).
+          Cada execução usa os direitos do dono como estão naquele momento, nunca como estavam quando o
+          agendamento foi salvo.
+        </li>
+        <li>
+          Um direito que se perdeu pausa o agendamento antes de qualquer dado ser lido, com o motivo no seu
+          cartão: a conta do dono está desativada, o dono não pode mais fazer backup da conexão nem enviar a um
+          destino, um destino foi excluído, a chave de backup não está ativa, o escopo agora contém dados
+          pessoais para um agendamento sem criptografia, um destino agora aceita somente backups
+          criptografados, este servidor não consegue ler a sua cadência ou fuso horário (um fuso horário que
+          outra build conhecia) ou as cópias que ele mantém neste servidor ocupam todo o seu espaço de backup.
+          Retome-o quando o motivo deixar de existir.
+        </li>
+        <li>
+          Os administradores veem todos os agendamentos e podem pausá-los, retomá-los, executá-los e
+          excluí-los; não editam o agendamento de outro usuário. Um agendamento que um administrador pausou é
+          retomado por um administrador. Um usuário pode ter no máximo 10 agendamentos.
+        </li>
+      </ul>
+
+      <h3 id="cadence">Quando ele roda</h3>
+      <ul>
+        <li><strong>A cada N horas</strong> (1 a 24), em um minuto escolhido da hora.</li>
+        <li><strong>Diariamente</strong>, em até quatro horários do dia.</li>
+        <li><strong>Semanalmente</strong>, nos dias que você escolher, em um horário.</li>
+        <li>
+          <strong>Mensalmente</strong>, em um dia de 1 a 28 ou no último dia do mês, em um horário.
+        </li>
+        <li>
+          <strong>Avançado</strong>: uma expressão cron de cinco campos (minuto, hora, dia do mês, mês, dia da
+          semana), relida em palavras enquanto você digita. Ela segue as regras clássicas do Vixie: quando o
+          dia do mês e o dia da semana estão ambos restritos, basta que um dos dois coincida; um campo que
+          começa com <code>*</code> conta como irrestrito. Não há atalhos com <code>@</code>, nem segundos, nem
+          <code>L</code>, <code>W</code> ou <code>#</code>.
+        </li>
+      </ul>
+      <p>
+        As execuções devem ter pelo menos uma hora de intervalo, e uma cadência deve rodar dentro dos próximos
+        cinco anos; o editor mostra as próximas execuções no fuso horário do agendamento e avisa quando uma
+        das duas regras é violada.
+      </p>
+
+      <h3 id="time-zones">Fusos horários e horário de verão</h3>
+      <p>
+        Cada agendamento tem o seu próprio fuso horário (o seu, por padrão); os horários são horários de
+        relógio ali. Quando os relógios avançam, um horário que não existe naquele dia roda no primeiro
+        minuto depois da mudança. Quando eles recuam, um horário que acontece duas vezes roda uma vez, na sua
+        primeira ocorrência. Um agendamento por hora perde uma execução na hora que se repete, em vez de rodar
+        duas vezes dentro de uma hora.
+      </p>
+
+      <h3 id="missed-runs">Execuções perdidas, sobreposição e a fila</h3>
+      <ul>
+        <li>
+          Quando o servidor estava parado em um horário previsto, a próxima inicialização executa um backup de
+          recuperação se o último horário perdido não for mais antigo que o intervalo do próprio agendamento
+          (no máximo um dia). Todos os outros horários perdidos são registrados como perdidos; nunca há mais de
+          uma recuperação.
+        </li>
+        <li>
+          Uma execução que chega ao horário enquanto a anterior ainda está rodando, ou ainda esperando a sua
+          vez, é ignorada e registrada como ignorada, com qual das duas era.
+        </li>
+        <li>
+          No máximo <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code> execuções agendadas trabalham ao mesmo tempo
+          (padrão 2). As outras esperam, na ordem de vencimento, por até seis horas; uma execução que espera
+          mais do que isso é ignorada.
+        </li>
+        <li>
+          Um relógio que salta para a frente gera no máximo uma recuperação; um relógio que volta não executa
+          nada duas vezes.
+        </li>
+      </ul>
+
+      <h3 id="run-history">Executar agora e o histórico de execuções</h3>
+      <p>
+        <em>Executar agora</em> inicia uma execução imediatamente sem mover a próxima; um agendamento roda uma
+        execução por vez. Cada cartão mostra as últimas execuções como uma faixa: verde bem-sucedida, âmbar
+        parcial (um destino falhou), vermelho com falha, cinza ignorada, um contorno tracejado perdida e uma
+        marca pulsante para a execução em andamento. O histórico de execuções lista cada execução com o seu
+        resultado, duração e tamanho, para onde foi cada cópia, o que a retenção removeu e, para uma execução
+        que não foi bem-sucedida, por quê. As últimas 200 execuções de cada agendamento são mantidas. Um
+        cartão cuja última execução concluída falhou ou foi parcial informa isso, com o motivo. As tarefas
+        iniciadas por um agendamento levam o nome dele na lista de tarefas, e um agendamento seu pausado ou
+        com falhas marca o menu da conta.
+      </p>
+
+      <h3 id="scheduled-protection">Proteção e para onde vai</h3>
+      <ul>
+        <li>
+          Por padrão, cada execução é um <code>.mmbak</code> criptografado, selado com a sua chave de backup
+          (veja <a href="security.html#backup-keys">Chaves de backup</a>): nenhuma senha para digitar, e o seu
+          kit de recuperação o abre em qualquer lugar. Crie antes uma chave em
+          <em>Configurações da conta → Chaves de backup</em>.
+        </li>
+        <li>
+          Um formato simples (<code>.archive</code> ou <code>.archive.gz</code>) só é permitido quando o
+          escopo não contém dados pessoais e todos os destinos escolhidos aceitam backups sem criptografia;
+          ambos são verificados de novo antes de cada execução.
+        </li>
+        <li>
+          Cada execução vai para os destinos compartilhados com você que você escolher, e então a cópia neste
+          servidor é excluída quando todos os destinos tiverem uma cópia verificada.
+          <em>Manter também no servidor</em> a mantém aqui também, sob a mesma retenção e no seu espaço de
+          backup; o editor informa aproximadamente quanto espaço elas ocuparão. Desativar essa opção dá às
+          cópias mantidas até então o tempo de vida normal.
+        </li>
+      </ul>
+
+      <h3 id="restore-drills">Testes de restauração</h3>
+      <p>
+        Um backup só vale o quanto vale a sua restauração. “Testar se os backups são restaurados” (na etapa de
+        retenção) executa um teste de restauração a cada tantas execuções (1 a 30): o backup da execução,
+        aberto com a sua chave de backup, é restaurado em um novo banco de dados temporário na mesma conexão
+        (<code>mm_drill_</code> e 12 caracteres aleatórios), cada namespace é lido de volta e comparado com o
+        backup — o número de documentos e cada documento byte a byte — e o banco de dados temporário é
+        descartado, seja qual for o resultado. Enquanto ele existe, fica fechado para todos, administradores
+        inclusive: não aparece na árvore, na página Desempenho, nas consultas lentas nem nas operações em
+        execução (nem é contado no tamanho total dos bancos de dados), e nenhuma página, requisição, comando
+        de shell, assistente, feed de alterações, sincronização em tempo real, cópia, comparação, backup ou
+        restauração o lê ou grava nele — uma requisição que o nomeia é recusada. Duas coisas permanecem fora
+        do alcance do app: a resposta de <code>listDatabases</code> no shell de um administrador da conexão
+        ainda mostra o nome dele (ele não pode ser aberto), e o que o teste grava aparece, como toda gravação,
+        no oplog (<code>local.oplog.rs</code>, somente administradores) e em um change stream de toda a
+        implantação aberto no shell de um administrador. Ele também carrega as regras de dados pessoais do
+        que contém (as do backup e as da conexão para esses namespaces), então os valores dele ficam ocultos
+        para quem não pode vê-los; essas regras não são adicionadas à lista da conexão e vão embora com o
+        banco de dados. As coleções são restauradas sem as suas opções (um validador ou um limite (cap) o
+        tornaria um teste do destino), e as visualizações não são verificadas. A execução mantém a sua cópia
+        no servidor até o teste terminar, e então a libera como de costume. O histórico de execuções diz se
+        cada teste passou ou falhou (e em quais namespaces), o relatório do teste está na lista de tarefas, e
+        um teste que falha gera um alerta. Um teste precisa do direito de criar bancos de dados na conexão;
+        sem ele (ou em uma conexão somente leitura), o teste é ignorado, nunca o backup. Ele grava tanto
+        quanto o backup contém, e as gravações vão para o primário, seja qual for o membro que a conexão
+        nomeia: escolha um horário tranquilo. Antes de gravar qualquer coisa, ele verifica se o usuário do
+        MongoDB da conexão pode descartar bancos de dados (um teste que não consegue limpar falha de
+        imediato), escolhe um nome temporário que nenhum banco de dados tem e mantém o que grava abaixo de
+        metade do espaço livre em disco do servidor — o do shard mais cheio, por meio de um mongos — e abaixo
+        de <code>MM_BACKUP_DRILL_MAX_MB</code> quando ele está definido, o que um servidor que não informa o
+        seu espaço livre (camadas compartilhadas do Atlas) exige — um backup maior faz o teste falhar, dito
+        como tal. Um direito de descartar que não pode ser lido não é presumido: o teste não começa. Se o
+        banco de dados temporário não puder ser descartado no final, o teste falha, um alerta de aviso é
+        gerado e o relatório nomeia o banco de dados: os administradores da conexão o veem na página da
+        conexão e o descartam ali digitando o seu nome (não enquanto algum teste estiver rodando). Nesse meio
+        tempo ele fica fechado para todos, e uma reinicialização o descarta.
+      </p>
+
+      <h2 id="retention">Retenção</h2>
+      <p>
+        A retenção decide quais backups um agendamento mantém em cada local (cada destino, e este servidor
+        quando ele mantém cópias). São quatro níveis, contados no fuso horário do agendamento; um backup
+        permanece quando qualquer nível o mantém:
+      </p>
+      <ul>
+        <li><strong>Mais recentes</strong>: os N backups mais recentes (1 a 100).</li>
+        <li>
+          <strong>Diariamente</strong>: o backup mais recente de cada dia do calendário, durante essa
+          quantidade de dias (0 a 90).
+        </li>
+        <li>
+          <strong>Semanalmente</strong>: o mais recente de cada semana ISO (segunda a domingo), durante essa
+          quantidade de semanas (0 a 52).
+        </li>
+        <li>
+          <strong>Mensalmente</strong>: o mais recente de cada mês do calendário, durante essa quantidade de
+          meses (0 a 60).
+        </li>
+      </ul>
+      <p>
+        Predefinições: <em>Diariamente por 30 dias</em> (os 7 mais recentes e um por dia durante 30 dias),
+        <em>Padrão</em> (os 7 mais recentes, 14 dias, 8 semanas e 12 meses), <em>Longa</em> (os 7 mais
+        recentes, 30 dias, 26 semanas e 60 meses) e <em>Personalizada</em>. O editor desenha o que permanece
+        em uma linha do tempo.
+      </p>
+      <ul>
+        <li>
+          Somente as cópias completas e verificadas do próprio agendamento em um local são removidas; uma
+          cópia enviada manualmente, mesmo de um backup agendado, nunca é. Nada é removido em um destino que o
+          seu dono não possa mais usar.
+        </li>
+        <li>O backup mais recente nunca é removido, e uma execução que falha não remove nada.</li>
+        <li>
+          A remoção em um local acontece depois que a cópia desta execução ali está completa, no máximo 100
+          remoções por local e por execução; uma remoção que falha é tentada de novo depois da próxima
+          execução. Toda remoção fica no log de auditoria com o nome do arquivo.
+        </li>
+        <li>
+          Uma mudança de regra, fuso horário, destinos ou manutenção que removeria mais de dez backups de uma
+          vez pede que você confirme antes o número.
+        </li>
+        <li>
+          O DigitalOcean Spaces Cold Storage cobra cada objeto por pelo menos 30 dias: o editor avisa quando
+          uma regra manteria ali os backups por menos tempo.
+        </li>
+      </ul>
+
+      <h2 id="opening-scheduled">Abrindo um backup agendado</h2>
+      <ul>
+        <li>
+          Neste servidor, restaure-o como qualquer outro backup: ele abre com a sua chave de backup, inclusive
+          as chaves aposentadas, e a restauração diz qual chave o abriu.
+        </li>
+        <li>
+          Em outro lugar, ou quando nenhuma das suas chaves o abre, a restauração pede o kit de recuperação do
+          backup (cole-o ou escolha o arquivo dele). O kit é usado para essa restauração e não é guardado, a
+          menos que você marque <em>Importar esta chave</em>, que adiciona a chave às suas chaves de backup.
+        </li>
+        <li>
+          Sem o app:
+          <code
+            >mongo-manager backup decrypt &lt;file.mmbak&gt; --key-file &lt;kit.txt&gt; -o
+            &lt;file.archive&gt;</code
+          >
+          grava o arquivo simples, que abre com <code>mongorestore --archive</code>. Sem
+          <code>--key-file</code>, um arquivo que só abre com a sua chave de backup informa isso antes de
+          perguntar qualquer coisa.
+        </li>
+      </ul>
+
+      <h2 id="limits-and-settings">Limites e configurações</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_QUOTA</code>: espaço de backup por usuário, em MiB (padrão 20 480).
+        </li>
+        <li>
+          <code>MM_BACKUP_TOTAL_QUOTA</code>: espaço de backup para todos os usuários, em MiB (padrão 102 400).
+        </li>
+        <li>
+          <code>MM_BACKUP_MAX_UPLOAD</code>: o maior arquivo a restaurar, em MiB (padrão 20 480).
+        </li>
+        <li>
+          <code>MM_BACKUP_TTL_HOURS</code>: por quanto tempo os backups e envios são mantidos (padrão 24).
+        </li>
+        <li>
+          <code>MM_BACKUP_MAX_JOB_HOURS</code>: o máximo que um backup ou uma restauração pode rodar (padrão
+          12).
+        </li>
+        <li>
+          <code>MM_BACKUP_CHUNK_MB</code>: o tamanho de parte padrão dos backups criptografados (padrão 64).
+        </li>
+        <li><code>MM_MONGODB_TOOLS_PATH</code>: a pasta do mongodump e do mongorestore.</li>
+        <li>
+          No máximo 10 000 namespaces em um arquivo; um zip de uma pasta do mongodump deve ter menos de 4 GiB.
+        </li>
+        <li>
+          <code>MM_BACKUP_SCHEDULES</code> e <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code>: agendamento ativado
+          ou desativado, e execuções agendadas simultâneas (veja
+          <a href="deployment.html#scheduled-backups">Implantação</a>).
+        </li>
+      </ul>
+
+      <h2 id="not-covered">O que não está coberto</h2>
+      <p>
+        Usuários e funções, o oplog e a restauração para um ponto no tempo. Um backup lê coleção após coleção,
+        não um único instante: documentos gravados nesse meio tempo podem estar parcialmente nele. Para uma
+        cópia de um único instante, faça backup de um membro do conjunto de réplicas em que as gravações
+        pararam, ou use os próprios snapshots do MongoDB.
+      </p>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Nesta página</p>
+      <ol>
+        <li><a href="#taking-a-backup">Fazendo um backup</a></li>
+        <li><a href="#formats">Formatos</a></li>
+        <li><a href="#engines">Mecanismos</a></li>
+        <li><a href="#time-series">Séries temporais</a></li>
+        <li><a href="#personal-data">Dados pessoais</a></li>
+        <li><a href="#restoring">Restaurando</a></li>
+        <li><a href="#kept-backups">Backups mantidos</a></li>
+        <li><a href="#destinations">Destinos</a></li>
+        <li><a href="#scheduled">Backups agendados</a></li>
+        <li><a href="#retention">Retenção</a></li>
+        <li><a href="#opening-scheduled">Abrindo um backup agendado</a></li>
+        <li><a href="#limits-and-settings">Limites e configurações</a></li>
+        <li><a href="#not-covered">O que não está coberto</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

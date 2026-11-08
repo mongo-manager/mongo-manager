@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Suivi des modifications · Documentation de Mongo Manager</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Documentation de Mongo Manager</a>
+      <details class="lang-menu">
+        <summary>Français</summary>
+        <span class="langs" role="group" aria-label="Langue">
+          <a lang="en" hreflang="en" href="../watch.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/watch.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/watch.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/watch.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/watch.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/watch.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/watch.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/watch.html">Deutsch</a>
+          <strong lang="fr">Français</strong>
+          <a lang="ru" hreflang="ru" href="../ru/watch.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Vue d’ensemble</a>
+      <a href="getting-started.html">Prise en main</a>
+      <a href="security.html">Sécurité</a>
+      <a href="deployment.html">Déploiement</a>
+      <a href="import-export.html">Import et export</a>
+      <a href="backup.html">Sauvegarde et restauration</a>
+      <strong>Suivi des modifications</strong>
+      <a href="sync.html">Synchronisation en continu</a>
+      <a href="server-admin.html">Administration du serveur</a>
+      <a href="ai.html">Assistant IA</a>
+      <a href="plugins.html">Plug-ins</a>
+      <a href="shortcuts.html">Raccourcis clavier</a>
+    </nav>
+    <main>
+      <h1>Suivi des modifications</h1>
+      <p>
+        La section Surveillance affiche en temps réel les modifications que MongoDB apporte à vos données :
+        chaque insertion, mise à jour, remplacement et suppression, ainsi que, sur demande, les changements de
+        schéma comme la création d’index. Elle s’appuie sur les flux de modifications (change streams) de
+        MongoDB. Rien n’est stocké : un flux démarre à son ouverture et affiche ce qui se passe à partir de ce
+        moment.
+      </p>
+
+      <h2 id="requirements">Où la trouver</h2>
+      <ul>
+        <li>Onglet d’une collection → <strong>Surveillance</strong> : les modifications de cette collection.</li>
+        <li>
+          Onglet d’une base de données → <strong>Surveillance</strong> : les modifications de toutes les
+          collections de la base.
+        </li>
+        <li>
+          Onglet d’une connexion → <strong>Surveillance</strong> : les modifications de toutes les bases de
+          données de la connexion.
+        </li>
+        <li>
+          La palette de commandes (Ctrl+K) : « Watch changes… » ouvre la section Surveillance de l’onglet en
+          cours.
+        </li>
+      </ul>
+      <p>
+        Les flux de modifications nécessitent un jeu de réplicas, un cluster partitionné ou un déploiement avec
+        répartition de charge (MongoDB Atlas en est toujours un). Un serveur autonome ne peut pas être surveillé ;
+        la section l’indique. Un jeu de réplicas à un seul nœud suffit pour le développement : lancez
+        <code>mongod --replSet rs0</code>, puis exécutez <code>rs.initiate()</code> une seule fois. Les vues
+        ne peuvent pas être surveillées : la section Surveillance d’une vue propose la collection dont elle lit
+        les données. Une collection qui n’existe pas encore peut être surveillée ; ses modifications
+        apparaissent dès sa création.
+      </p>
+
+      <h2 id="who-may-watch">Qui peut surveiller</h2>
+      <p>
+        Toute personne autorisée à lire des documents sur la connexion peut la surveiller, quelle que soit
+        l’étendue. L’utilisateur de base de données de la connexion doit disposer des privilèges
+        <code>changeStream</code> et <code>find</code> sur ce qui est surveillé (le rôle intégré
+        <code>read</code> possède les deux). Les collections d’identifiants comme <code>system.users</code> ne
+        sont montrées qu’aux administrateurs de la connexion.
+      </p>
+
+      <h2 id="the-feed">Le flux</h2>
+      <p>
+        La barre située au-dessus du flux indique son état : En direct, En pause, En retard (de plus de deux
+        secondes, avec le retard accumulé), Reconnexion ou Terminé, ainsi que le nombre de modifications reçues
+        et leur débit. Les modifications les plus récentes figurent en haut. Chaque ligne indique le type de
+        modification (en toutes lettres et en couleur), la collection dans les flux de base de données et de
+        connexion, le <code>_id</code> du document, les noms des champs modifiés pour les mises à jour, et
+        l’ancienneté de la modification (l’heure exacte au survol). Lorsque vous faites défiler la liste vers le
+        bas, les nouvelles modifications attendent derrière un bouton « nouveaux événements » au lieu de
+        déplacer ce que vous lisez. Les 2 000 dernières modifications sont conservées ; les plus anciennes
+        quittent la liste.
+      </p>
+      <p>
+        Sélectionnez une modification pour l’afficher à droite : les champs modifiés, le document entier pour
+        les insertions et les remplacements, ou l’événement au format JSON. « Ouvrir le document » ouvre la
+        section Documents de la collection, filtrée sur le <code>_id</code> de ce document. « Copier en EJSON »
+        copie la modification en Extended JSON.
+      </p>
+
+      <h2 id="pause-resume-and-reconnects">Pause, reprise et reconnexions</h2>
+      <p>
+        La pause arrête la liste sans perdre votre position : MongoDB conserve les modifications côté serveur.
+        Reprenez avec « Rattraper » pour voir ce qui s’est passé pendant la pause, ou avec « À partir de
+        maintenant » pour l’ignorer. La barre d’espace, lorsque la barre d’outils du flux a le focus, met en
+        pause et reprend. Un flux en pause le reste lorsque vous changez de section ou d’onglet, jusqu’à la
+        fermeture de son onglet ; un flux en cours s’arrête quelques secondes après que vous avez quitté sa
+        section.
+      </p>
+      <p>
+        Lorsque la connexion à l’application est interrompue, le flux se reconnecte de lui-même. En moins de
+        deux minutes, il reprend juste après la dernière modification reçue par votre navigateur, sans rien
+        manquer ni répéter, et l’indique ; un flux en pause revient en pause. S’il ne peut plus reprendre à cet
+        endroit (après une très longue rafale), il reprend là où en était le serveur et signale que certaines
+        modifications peuvent manquer ; au bout de deux minutes, il repart de maintenant et l’indique à la
+        place. Le point de reprise d’un flux (le jeton de reprise de MongoDB) reste sur le serveur.
+      </p>
+
+      <h2 id="filters">Filtres</h2>
+      <p>
+        Les pastilles choisissent les types de modification : insertion, mise à jour, remplacement et
+        suppression. « Inclure les modifications de schéma » ajoute des changements tels que la création ou la
+        suppression de collections et d’index, et la modification d’options. « Afficher le document entier
+        après les mises à jour » lit le document après chaque mise à jour, ce qui coûte une lecture par mise à
+        jour.
+      </p>
+      <p>
+        « Modifier le filtre » accepte un <code>$match</code> appliqué à chaque événement de modification,
+        écrit comme une requête, par exemple :
+      </p>
+      <ul>
+        <li>
+          <code>{ 'updateDescription.updatedFields.status': 'paid' }</code> : les mises à jour qui définissent
+          le statut à paid.
+        </li>
+        <li>
+          <code>{ 'fullDocument.total': { $gt: 1000 } }</code> : les insertions et remplacements de commandes
+          importantes.
+        </li>
+        <li><code>{ 'documentKey._id': ObjectId('…') }</code> : un seul document.</li>
+        <li>
+          <code>{ 'ns.coll': 'orders' }</code> : une seule collection, dans un flux de base de données ou de
+          connexion.
+        </li>
+      </ul>
+      <p>
+        Un filtre peut peser jusqu’à 12 Ko et comporter 20 niveaux d’imbrication. Les opérateurs qui exécutent
+        du JavaScript sur le serveur (<code>$where</code>, <code>$function</code>, <code>$accumulator</code>)
+        ne sont jamais acceptés. Modifier un filtre quelconque relance le flux à partir de maintenant, et le
+        flux l’indique.
+      </p>
+
+      <h2 id="pre-images">Voir les valeurs avant une modification</h2>
+      <p>
+        MongoDB indique quels champs une mise à jour a modifiés et leurs nouvelles valeurs. Pour voir aussi les
+        valeurs précédentes, activez les préimages pour la collection ; le flux affiche alors une comparaison
+        complète avant/après pour les mises à jour, et le document tel qu’il était pour les suppressions. Sur
+        la page Surveillance d’une collection, une personne autorisée à modifier les options de la collection
+        (les règles de validation, par exemple) voit <em>Activer les préimages et postimages</em> tant
+        qu’elles sont désactivées ; la page indique ce que cela coûte, puis exécute la même commande (auditée).
+        Vous pouvez aussi passer par le shell :
+      </p>
+      <pre><code>db.runCommand({ collMod: 'orders', changeStreamPreAndPostImages: { enabled: true } })</code></pre>
+      <p>
+        Les préimages sont conservées dans le stockage du serveur aussi longtemps que les paramètres de flux de
+        modifications du serveur l’indiquent, et occupent donc de l’espace disque sur les collections très
+        actives. Sans elles, le flux affiche les valeurs mises à jour, les noms des champs supprimés et la
+        façon dont les tableaux ont été raccourcis.
+      </p>
+
+      <h2 id="recordings">Enregistrement, relecture et alertes</h2>
+      <p>
+        <em>Enregistrer dans un fichier</em> (dans les filtres, pour les personnes autorisées à exporter depuis
+        la connexion) conserve sur le serveur les événements du flux, exactement tels qu’ils vous ont été
+        envoyés — masqués lorsqu’ils l’ont été — à raison d’un événement par ligne. Un enregistrement est votre
+        propre fichier de transfert : il compte dans votre espace de transfert, pèse 64 Mo au maximum (au-delà,
+        l’enregistrement s’arrête et le flux continue, et la page Surveillance l’indique), et il est conservé
+        pendant la durée de conservation des fichiers de transfert une fois son flux terminé. Une reconnexion
+        qui enregistre démarre un nouveau fichier. Un redémarrage du serveur met fin à un enregistrement : ce
+        qui a atteint le disque est conservé, comme un enregistrement terminé. Un fichier est marqué masqué ou
+        non selon la façon dont ses événements ont été envoyés : lorsque votre masquage change pendant le flux
+        (des valeurs personnelles qui vous sont désormais masquées, ou ne le sont plus, ou des règles
+        modifiées), le fichier s’arrête là et un nouveau commence avec le nouveau marquage — la liste des
+        enregistrements montre les deux.
+        <em>Enregistrements</em>, dans la barre d’outils, liste les vôtres pour cette connexion :
+        <em>Rejouer</em> en affiche un à la place du flux en direct (avec la même liste et les mêmes
+        détails) — les 500 premiers événements, puis 500 de plus chaque fois que vous choisissez
+        <em>Charger plus d’événements</em>, jusqu’à 5 000 (le fichier contient le reste) —
+        <em>Télécharger</em> fournit le fichier (NDJSON), et les enregistrements peuvent être supprimés. Nul
+        autre que vous, administrateurs compris, ne peut les lire. Un enregistrement n’est pas remis dès lors
+        que des valeurs personnelles vous sont masquées sur la connexion (s’il a été enregistré non masqué), ni
+        dès lors que ses règles ont changé (s’il a été enregistré masqué).
+      </p>
+      <p>
+        <em>Déclencher une alerte en cas de correspondance</em> signale aux alertes de l’application (l’événement
+        <code>watch.matched</code>) que des événements ont passé le filtre du flux : au plus toutes les
+        10 secondes, avec leur nombre et le type du dernier, jamais une valeur. Cela fonctionne tant que le flux
+        est actif.
+      </p>
+
+      <h2 id="personal-data">Données personnelles</h2>
+      <p>
+        Pour un utilisateur qui n’a pas le droit de voir les données personnelles, chaque modification est
+        affichée avec les champs personnels remplacés par <code>***</code> : le document, sa clé, les valeurs
+        avant et les valeurs mises à jour, par chemin de champ, positions dans les tableaux comprises. Un filtre
+        sur un champ masqué est refusé, et, dans les flux de base de données et de connexion, un tel
+        utilisateur ne peut filtrer que sur le type de modification, l’espace de noms et l’heure. Les exports
+        du flux contiennent ce qui a été affiché, valeurs masquées comprises, sous la forme <code>***</code>.
+      </p>
+
+      <h2 id="limits-and-settings">Limites et paramètres</h2>
+      <ul>
+        <li>
+          3 flux en direct par fenêtre de navigateur, 5 par utilisateur et 50 sur le serveur
+          (<code>MM_WATCH_MAX_FEEDS</code>).
+        </li>
+        <li>
+          Un document de plus de 256 Ko n’est pas envoyé dans le flux ; « Ouvrir le document » l’affiche.
+        </li>
+        <li>
+          Au plus 200 modifications par seconde parviennent au navigateur pour chaque flux ; lorsqu’il y en a
+          davantage, le flux indique son retard et le rattrape.
+        </li>
+        <li><code>MM_WATCH=0</code> désactive la surveillance sur le serveur.</li>
+        <li>
+          Le démarrage et l’arrêt d’un flux sont consignés dans le journal d’audit, avec l’empreinte du filtre
+          mais jamais ses valeurs.
+        </li>
+      </ul>
+
+      <h2 id="when-a-feed-ends">Fin d’un flux</h2>
+      <ul>
+        <li>
+          La collection a été supprimée ou renommée : le flux se termine ; « Redémarrer à partir de maintenant »
+          surveille de nouveau la collection portant ce nom.
+        </li>
+        <li>
+          L’historique du serveur (oplog) ne remonte plus jusqu’à la position du flux, par exemple après une
+          longue absence : redémarrez à partir de maintenant.
+        </li>
+        <li>
+          Votre accès, la connexion ou ses paramètres ont changé : le flux se termine et en indique la raison.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Sur cette page</p>
+      <ol>
+        <li><a href="#requirements">Où la trouver</a></li>
+        <li><a href="#who-may-watch">Qui peut surveiller</a></li>
+        <li><a href="#the-feed">Le flux</a></li>
+        <li><a href="#pause-resume-and-reconnects">Pause, reprise et reconnexions</a></li>
+        <li><a href="#filters">Filtres</a></li>
+        <li><a href="#pre-images">Voir les valeurs avant une modification</a></li>
+        <li><a href="#recordings">Enregistrement, relecture et alertes</a></li>
+        <li><a href="#personal-data">Données personnelles</a></li>
+        <li><a href="#limits-and-settings">Limites et paramètres</a></li>
+        <li><a href="#when-a-feed-ends">Fin d’un flux</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

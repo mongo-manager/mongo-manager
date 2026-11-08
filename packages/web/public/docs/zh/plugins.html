@@ -1,0 +1,1380 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>插件 · Mongo Manager 文档</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager 文档</a>
+      <details class="lang-menu">
+        <summary>简体中文</summary>
+        <span class="langs" role="group" aria-label="语言">
+          <a lang="en" hreflang="en" href="../plugins.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/plugins.html">Türkçe</a>
+          <strong lang="zh-CN">简体中文</strong>
+          <a lang="ja" hreflang="ja" href="../ja/plugins.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/plugins.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/plugins.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/plugins.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/plugins.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/plugins.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/plugins.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">概览</a>
+      <a href="getting-started.html">快速入门</a>
+      <a href="security.html">安全</a>
+      <a href="deployment.html">部署</a>
+      <a href="import-export.html">导入与导出</a>
+      <a href="backup.html">备份与恢复</a>
+      <a href="watch.html">监视变更</a>
+      <a href="sync.html">实时同步</a>
+      <a href="server-admin.html">服务器管理</a>
+      <a href="ai.html">AI 助手</a>
+      <strong>插件</strong>
+      <a href="shortcuts.html">键盘快捷键</a>
+    </nav>
+    <main>
+      <h1>构建插件</h1>
+      <p>
+        插件可以为 Mongo Manager 添加视图、操作或页面，例如集合中地点的地图、图表、重复项查找器、SQL
+        转换器。本指南面向插件开发者，涵盖插件由哪些文件组成、插件可以向应用请求哪些内容、应用强制执行的规则，以及如何打包、测试和发布插件。管理员在
+        <strong>插件</strong>页面安装并批准插件；批准模型请参阅<a href="security.html#plugins">安全</a>。该页面列出全部插件，并可按状态筛选：已启用的、需要管理员处理的（等待批准、已更改或已损坏）、已停用的；也可按来源筛选，或通过搜索按名称、描述、ID、版本、所请求的权限或所添加的内容查找。
+      </p>
+      <ul class="toc-inline">
+        <li><a href="#what">什么是插件</a></li>
+        <li><a href="#quick-start">快速开始</a></li>
+        <li><a href="#files">文件与文件夹结构</a></li>
+        <li><a href="#manifest">清单</a></li>
+        <li><a href="#contributions">贡献点</a></li>
+        <li><a href="#context">上下文</a></li>
+        <li><a href="#bridge">桥接 API</a></li>
+        <li><a href="#permissions">权限</a></li>
+        <li><a href="#sandbox">沙箱</a></li>
+        <li><a href="#scan">安全扫描</a></li>
+        <li><a href="#ui">界面与主题</a></li>
+        <li><a href="#localization">语言</a></li>
+        <li><a href="#readme">README 与发布说明</a></li>
+        <li><a href="#versions">版本与批准</a></li>
+        <li><a href="#packaging">打包</a></li>
+        <li><a href="#github">在 GitHub 上发布</a></li>
+        <li><a href="#testing">在自己的服务器上测试</a></li>
+        <li><a href="#ai-files">借助 AI 助手构建</a></li>
+        <li><a href="#checklist">发布前检查清单</a></li>
+      </ul>
+
+      <h2 id="what">什么是插件</h2>
+      <p>
+        插件是一个由<strong>静态文件</strong>组成的文件夹：一个 HTML 页面及其脚本、样式、图片和字体，外加一个名为
+        <code>mongo-manager-plugin.json</code> 的清单，用于说明插件添加了什么、允许做什么。应用在<strong>沙箱框架</strong>中显示该页面，页面只通过消息与应用通信：页面请求文档，应用以当前登录用户的身份作答，沿用该用户的权限和应用的脱敏规则。
+      </p>
+      <ul>
+        <li>
+          <strong>没有服务器代码。</strong>插件的任何部分都不会在服务器上运行。服务器只负责存储插件文件、检查文件，并将其提供给框架。
+        </li>
+        <li>
+          <strong>没有网络。</strong>页面无法从任何地址获取数据，包括其来源服务器。页面没有 Cookie、没有存储，也无法访问应用的页面。浏览器仍留有两条出路：只有强制执行策略中 <code>webrtc</code>
+          指令的浏览器才会阻止 WebRTC，而基于 Chromium 的浏览器（Chrome、Edge）自 149 版起会忽略该指令，Firefox 也不可依赖，因此在这些浏览器上，插件仍可通过 WebRTC 发送其读取到的内容；此外，预取提示（<code>dns-prefetch</code>、<code>preconnect</code>）可以触发域名解析。框架会要求浏览器不要预取，扫描也会将这两者标记为高风险，但扫描只是在文件文本中查找已知模式：为绕过扫描而编写的代码无法被发现。请只批准信任的插件。
+        </li>
+        <li>
+          <strong>未经批准不运行。</strong>只有管理员批准了插件的确切文件及其所请求的权限后，插件才会运行。文件的任何更改都需要重新批准。
+        </li>
+        <li>
+          <strong>更改需经用户确认。</strong>可以更改文档的插件需要提出请求；应用在自己的对话框中显示更改内容，由用户决定。插件准备的查询或管道会放入用户自己的编辑器，在用户运行之前不会执行任何操作。
+        </li>
+      </ul>
+      <p>
+        Mongo Manager 自带多个插件（地图、图表、模式健康度、重复项查找器、值搜索、引用、文档差异、SQL 转 MongoDB、时间提示、二进制预览、数据字典、本地时间、日志分析器、测试数据、重塑、匿名化、搜索试验场、分片键分析器、存储报告、验证检查、旧版 UUID、日期筛选、索引脚本、过期（TTL）、个人数据查找器、文档大小）。它们运行在同一个沙箱中，通过同一个桥接通信，并以同样的方式扫描；由于是应用自带的代码，批准它们时从不要求输入其 ID（参阅<a href="#versions">版本与批准</a>）。可以通过
+        <code>MM_PLUGINS=0</code> 为整个服务器关闭插件功能（参阅<a href="deployment.html#plugins">部署</a>）。
+      </p>
+
+      <h2 id="quick-start">快速开始</h2>
+      <p>
+        从入门模板开始：在<strong>插件</strong>页面的<strong>构建自己的插件</strong>下，选择<strong>下载入门模板（.zip）</strong>（它也是 Mongo Manager 源代码中的
+        <code>packages/plugins/starter</code> 文件夹）。它是一个完整的纯 JavaScript 插件，无需构建步骤，也没有依赖项：包含一个集合标签页和一个侧边栏页面，用于列出集合中的文档。
+      </p>
+      <ol>
+        <li>将其解压，或复制该文件夹，放入自己的新仓库。</li>
+        <li>
+          在 <code>mongo-manager-plugin.json</code> 中修改 <code>id</code>、<code>name</code>、
+          <code>author</code> 和 <code>repository</code>。ID 必须唯一：它决定插件在每台服务器上的文件夹名称。
+        </li>
+        <li>在 <code>main.js</code> 和 <code>style.css</code> 中编写页面。</li>
+        <li>
+          在自己的服务器上试用：
+          <code>node scripts/pack.mjs --folder ~/.mongo-manager/plugins</code>，然后点击
+          <strong>插件 → 重新扫描</strong>，查看扫描结果并批准。参阅<a href="#testing">在自己的服务器上测试</a>。
+        </li>
+        <li>
+          用 <code>node scripts/pack.mjs</code> 打包，它会生成
+          <code>&lt;id&gt;-&lt;version&gt;.tgz</code>，将该文件附加到 GitHub 发布版本。参阅<a href="#github">在 GitHub 上发布</a>。
+        </li>
+      </ol>
+      <p>
+        入门模板还包含面向 AI 编码助手的说明文件（<code>CLAUDE.md</code>、
+        <code>AGENTS.md</code>、<code>GEMINI.md</code> 和 <code>.github/copilot-instructions.md</code>）；参阅<a href="#ai-files">借助 AI 助手构建</a>。
+      </p>
+
+      <h2 id="files">文件与文件夹结构</h2>
+      <pre><code>hello-documents/
+  mongo-manager-plugin.json   the manifest (required, at the top)
+  index.html                  the entry page every contribution opens
+  main.js                     the page's script (an ES module)
+  style.css                   the page's styles
+  README.md                   shown to administrators on the plugin's details page
+  README.tr.md, README.zh.md  the same in another language of the app (optional)
+  scripts/pack.mjs            packaging (not part of the plugin: left out of the archive)
+  CLAUDE.md, AGENTS.md, ...   AI assistant files (left out of the archive)</code></pre>
+      <p>应用对插件所含文件的规则如下：</p>
+      <ul>
+        <li>
+          文件总数最多 <strong>500 个</strong>，总大小最多 <strong>25 MB</strong>；清单最大 64 KB。
+        </li>
+        <li>
+          每个路径都必须是相对的普通路径：每一段以字母、数字、<code>_</code> 或
+          <code>-</code> 开头，仅包含字母、数字、<code>.</code>、<code>_</code> 和 <code>-</code>，每段最多 100 个字符；最多 16 层深，总长度最多 240 个字符。不允许隐藏文件或文件夹（名称以
+          <code>.</code> 开头）、空格、设备名称（<code>con</code>、<code>nul</code>、
+          <code>com1</code>……），也不允许 <code>__proto__</code>、<code>constructor</code> 或
+          <code>prototype</code>。
+        </li>
+        <li>只能包含文件和文件夹：链接、联接点和特殊文件会使插件无法使用。</li>
+        <li>不允许两个路径仅在字母大小写上不同。</li>
+        <li>
+          提供文件时，类型取自其扩展名：<code>html</code>、<code>js</code>、
+          <code>mjs</code>、<code>css</code>、<code>json</code>、<code>map</code>、<code>txt</code>、
+          <code>svg</code>、<code>png</code>、<code>jpg</code>、<code>jpeg</code>、<code>gif</code>、
+          <code>webp</code>、<code>avif</code>、<code>ico</code>、<code>woff</code>、<code>woff2</code>、
+          <code>ttf</code>、<code>otf</code>。其他扩展名的文件只会作为字节提供，永远不会运行。
+        </li>
+      </ul>
+
+      <h2 id="manifest">清单</h2>
+      <p>
+        <code>mongo-manager-plugin.json</code> 会被严格检查：未知字段、类型错误或超出范围的值都会使插件无法使用，插件页面会指出哪个字段有误。供人阅读的文本（名称、标题、备注）不得包含控制字符，也不得包含隐藏或反转文本的字符。
+      </p>
+      <pre><code>{
+  "id": "hello-documents",
+  "name": { "en": "Hello documents", "tr": "Merhaba belgeler" },
+  "version": "0.1.0",
+  "description": { "en": "Lists the documents of a collection.", "tr": "Bir koleksiyonun belgelerini listeler." },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [{ "id": "list", "title": { "en": "Hello", "tr": "Merhaba" }, "icon": "table" }],
+    "sidebarPanels": [{ "id": "page", "title": { "en": "Hello documents" }, "icon": "puzzle" }]
+  },
+  "settings": {},
+  "author": { "name": "Your Name", "url": "https://example.com" },
+  "homepage": "https://example.com/hello-documents",
+  "repository": "https://github.com/your-name/hello-documents",
+  "license": "MIT",
+  "publishedAt": "2026-10-11",
+  "changelog": [
+    { "version": "0.1.0", "date": "2026-10-11", "notes": { "en": "First release.", "tr": "İlk sürüm." } }
+  ]
+}</code></pre>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>字段</th>
+              <th>必填</th>
+              <th>规则</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td>是</td>
+              <td>
+                小写字母和数字，以短横线分隔（<code>geojson-map</code>），最多 64 个字符。必须与插件的文件夹名称一致。不能使用 Mongo Manager 自带插件的 ID，也不能使用读起来像应用保留名称的 ID（见下文）。
+              </td>
+            </tr>
+            <tr>
+              <td><code>name</code></td>
+              <td>是</td>
+              <td>
+                本地化文本，最多 60 个字符：<code>{ "en": "...", "tr": "..." }</code>。不得包含不可见字符（零宽字符、标签字符、变体选择符；表情符号自带的除外），也不得使用读起来像应用自身消息的名称：<em>Mongo Manager</em>（或以此开头的名称）、<em>MongoDB</em>、
+                <em>System</em>、<em>Session</em>、<em>Security</em>、<em>Admin</em>、<em>Server</em>、
+                <em>Update</em> 及类似名称，应用的任何语言均在此列，按读起来的样子比较，不区分大小写、空格、重音和形近字母。每个单词中的字母必须全为拉丁字母或全不是（不得混用希腊字母和西里尔字母），括号内不得出现读起来像 ID 的内容（<code>(value-search)</code>；<code>(beta)</code> 可以）。应用显示插件的消息和提问时，会在其名称旁标注其 ID。
+              </td>
+            </tr>
+            <tr>
+              <td><code>version</code></td>
+              <td>是</td>
+              <td>
+                语义化版本：<code>major.minor.patch</code>，可带预发布标识
+                （<code>1.2.0-beta.1</code>），最多 64 个字符。
+              </td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td>否</td>
+              <td>本地化文本，最多 300 个字符。</td>
+            </tr>
+            <tr>
+              <td><code>entry</code></td>
+              <td>是</td>
+              <td>
+                每个贡献点打开的页面：指向插件中某个 <code>.html</code> 文件的普通路径。
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions</code></td>
+              <td>否</td>
+              <td>
+                可取 <code>documents:read</code>、<code>documents:write</code>、<code>collection:read</code>、
+                <code>database:read</code> 中的任意项，每项至多出现一次。默认：无。参阅
+                <a href="#permissions">权限</a>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>contributes</code></td>
+              <td>否</td>
+              <td>
+                <code>collectionTabs</code>、<code>documentActions</code>、<code>sidebarPanels</code> 和
+                <code>cellRenderers</code>：每个列表最多 5 项，列表内 ID 唯一。参阅
+                <a href="#contributions">贡献点</a>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>settings</code></td>
+              <td>否</td>
+              <td>
+                最多 10 项，以键标识（以字母开头，后接字母和数字，最多 32 个字符）：
+                <code>{ "type": "url" | "text" | "boolean", "title": 最多 60 个字符的本地化文本 }</code>。
+                值由管理员设置；页面通过上下文读取。
+              </td>
+            </tr>
+            <tr>
+              <td><code>author</code></td>
+              <td>否</td>
+              <td><code>{ "name": 最多 80 个字符的文本, "url": https 地址（可选） }</code>。</td>
+            </tr>
+            <tr>
+              <td><code>homepage</code>、<code>repository</code></td>
+              <td>否</td>
+              <td>
+                带主机名的 <code>https://</code> 地址，最多 300 个字符，不得含凭据、空格或反斜杠。
+              </td>
+            </tr>
+            <tr>
+              <td><code>license</code></td>
+              <td>否</td>
+              <td>
+                SPDX 表达式，最多 40 个字符：<code>MIT</code>、<code>Apache-2.0 OR MIT</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>publishedAt</code></td>
+              <td>否</td>
+              <td>真实存在的日期，格式 <code>YYYY-MM-DD</code>，范围在 1900 年至 2100 年之间。</td>
+            </tr>
+            <tr>
+              <td><code>changelog</code></td>
+              <td>否</td>
+              <td>
+                最多 50 条
+                <code>{ "version", "date": "YYYY-MM-DD", "notes": 最多 1000 个字符的本地化文本 }</code>；每个版本至多出现一次，且不得晚于清单的 <code>version</code>。
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        本地化文本是一个对象，其中 <code>en</code> 必填，另外可按需包含应用支持的其他语言：<code>tr</code>、<code>zh</code>（简体中文）、<code>ja</code>、<code>es</code>、
+        <code>pt</code>（巴西葡萄牙语）、<code>ko</code>、<code>de</code>、<code>fr</code> 和
+        <code>ru</code>；读者所用语言缺失时显示英文。贡献点的格式为
+        <code>{ "id", "title": 最多 40 个字符的本地化文本, "icon" }</code>：其 ID 以小写字母开头，后接小写字母、数字和短横线，最多 32 个字符；图标取
+        <code>map</code>、<code>chart</code>、<code>table</code>、<code>file</code>、<code>image</code>、
+        <code>globe</code>、<code>layers</code>、<code>puzzle</code>、<code>book</code>、<code>wand</code>、
+        <code>shapes</code>、<code>scroll</code>、<code>code</code>、<code>calendar</code>、
+        <code>hourglass</code>、<code>shield</code>、<code>fingerprint</code>、<code>ruler</code> 之一（均为应用自带图标：插件不能自带图标）。单元格渲染器则为
+        <code>{ "id", "match" }</code>，并可带可选的 <code>"display"</code>：<code>inline</code>（默认）或 <code>tooltip</code>。
+      </p>
+      <p>
+        <code>url</code> 类型的设置必须是不含凭据的 https 地址（仅限本机时可用明文 http：<code>localhost</code>、<code>127.0.0.1</code> 或 <code>[::1]</code>）；其协议、主机和端口会加入框架允许加载的图片来源（对于地图瓦片：开头的
+        <code>{s}.</code> 表示任意子域名，仅限用在由两段或更多段组成的名称之前，不适用于 IP 地址）。图片地址可能携带数据：插件可以将其读取到的内容发送给该服务器，批准界面和设置中都会对此作出说明。<code>text</code> 类型的设置最多 500 个字符。插件的每个用户都能读取其设置：切勿要求填写机密信息。服务器会用自己的密钥加密存储这些设置，与其他所有已保存的值一样。
+      </p>
+
+      <h2 id="contributions">贡献点</h2>
+      <p>
+        每个贡献点都打开同一个入口页面。页面通过地址的片段 <code>#&lt;kind&gt;=&lt;id&gt;</code>（例如 <code>#collectionTab=list</code>）以及上下文中的
+        <code>contribution</code> 得知自己是哪一个贡献点。
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>类型</th>
+              <th>出现位置及打开方式</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>collectionTabs</code></td>
+              <td>
+                每个集合的一个标签页，位于应用自带标签页之后，视图上同样有。框架填满该标签页。其
+                <code>place</code> 为该集合，并带有用户在“文档”中设置的 <code>filter</code>。每次显示该标签页时页面都会重新加载，除非页面通过
+                <code>ui.keepOpen</code> 要求保持打开：此时当该集合标签页的其他部分显示时，页面仍保持已加载状态（不可见时，页面可以读取但不能执行操作：<code>not_visible</code>）。
+              </td>
+            </tr>
+            <tr>
+              <td><code>documentActions</code></td>
+              <td>
+                “文档”中某个文档的操作菜单里的一项，仅对已获 <code>documents:read</code> 批准的插件显示。它会打开一个显示该页面的对话框；<code>place.documentId</code> 为该文档的
+                <code>_id</code>。插件放入查询或管道（<code>ui.useQuery</code>、<code>ui.useQueryIn</code>、<code>ui.useAggregation</code>）后，对话框随即关闭。
+              </td>
+            </tr>
+            <tr>
+              <td><code>sidebarPanels</code></td>
+              <td>
+                侧边栏中的一项，打开自己的页面，即位于
+                <code>/plugin/&lt;id&gt;/&lt;contribution&gt;</code> 的工作区标签页。在某个集合的标签页处于活动状态时点击，页面会在该集合上打开
+                （<code>/plugin/&lt;id&gt;/&lt;contribution&gt;/&lt;connection&gt;/&lt;db&gt;/&lt;collection&gt;</code>），
+                <code>place</code> 指明该集合；从其他位置打开时 <code>place</code> 为 <code>null</code>。通过链接打开的页面在读取该集合之前会询问用户，用户也可以不选择集合而继续。其他标签页显示时，该页面仍保持已加载状态；不可见时，页面仍可读取但不能执行操作（<code>not_visible</code>）。
+              </td>
+            </tr>
+            <tr>
+              <td><code>cellRenderers</code></td>
+              <td>
+                在“文档”显示值的各处（表格、树、卡片、文档页面、变更流详情）附加的一段简短文本，例如 ObjectId 的创建日期：显示在值旁边
+                （<code>"display": "inline"</code>，默认）或显示在工具提示中（<code>"display": "tooltip"</code>），当鼠标悬停或焦点位于其单元格或行上时，工具提示显示在完整值下方，并标有插件名称。工具提示中的文本为纯文本，其 <code>tone</code> 不起作用；屏幕阅读器会连同值一并朗读。插件在值旁边和工具提示中各说一段文本：每个位置采用第一个作出回答的渲染器。页面运行在隐藏的框架中，每个插件一个，仅对已获
+                <code>documents:read</code> 批准的插件运行，且自身从不显示。<code>match</code> 取
+                <code>geojson</code>、<code>string</code>、<code>number</code>、<code>date</code>、
+                <code>object</code>、<code>objectId</code>、<code>binary</code>（不含 UUID）之一。参阅
+                <a href="#cells">单元格渲染器</a>。
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="cells">单元格渲染器</h3>
+      <p>
+        应用通过 <code>cells.render</code> 消息向隐藏框架询问其所显示的值，每批最多 200 个。使用 kit 时，通过
+        <code>client.onCells</code> 作答：
+      </p>
+      <pre><code>client.onCells((renderer, values, locale, paths, place) =&gt;
+  values.map((v) =&gt; (typeof v?.$oid === 'string' ? { text: createdAt(v.$oid, locale), tone: 'info' } : null)),
+)</code></pre>
+      <ul>
+        <li>
+          <code>renderer</code> 为贡献点的 ID，<code>values</code> 为规范 Extended JSON 格式的值，<code>locale</code> 为应用的语言，<code>paths</code> 为各值的字段路径（或
+          <code>null</code>），<code>place</code> 为值所属的集合（或 <code>null</code>）。
+        </li>
+        <li>
+          <code>binary</code> 值只发送开头部分，绝不发送完整内容：
+          <code>{ "$binaryHead": { "base64", "subType", "length" } }</code>，包含其前 2,048 个字节，足以判断图片的类型和大小。
+        </li>
+        <li>
+          按值的顺序，每个值答复一项：<code>{ "text", "tone" }</code>；无文本时为 <code>null</code>；要稍后再次被询问时为
+          <code>{ "retry": true }</code>。长度不一致的列表会被忽略。
+        </li>
+        <li>
+          文本以纯文本显示（值旁边最多 80 个字符，工具提示中最多 200 个字符），其中的控制字符和隐藏字符会被移除。
+          <code>tone</code> 取 <code>neutral</code>、<code>info</code>、<code>success</code>、
+          <code>warning</code>、<code>danger</code> 之一。
+        </li>
+        <li>
+          答复必须在 3 秒内给出；否则保留原始值，并在 30 秒后再次询问该值。答复按值、语言和插件设置分别缓存：插件设置更改后会重新询问；超过一分钟的答复会在下次显示该值时重新请求，新答复到来之前沿用旧答复（重新请求失败时也继续沿用）。<code>binary</code> 值的答复按其长度、子类型和开头部分的哈希缓存。
+        </li>
+        <li>
+          渲染器在作答前可以先读取数据（例如引用其他文档）：它传入请求中给定的
+          <code>place</code>，即 <code>{ place, filter, ... }</code>，并且只能在该处读取。其上下文中的 <code>place</code> 为 <code>null</code>。
+        </li>
+      </ul>
+
+      <h2 id="context">上下文</h2>
+      <p>
+        <code>context.get</code> 返回页面所处的位置以及应有的外观。请首先调用它；当某个集合处于打开状态时，应用需要检查它是否为视图，因此响应最多可能需要 3 秒。
+      </p>
+      <pre><code>{
+  "plugin": { "id": "hello-documents", "version": "0.1.0" },
+  "contribution": { "kind": "collectionTab", "id": "list" },
+  "locale": "en",
+  "theme": "dark",
+  "accent": "emerald",
+  "place": {
+    "connectionId": "6650...",
+    "connectionName": "Production",
+    "db": "shop",
+    "coll": "orders",
+    "view": false,
+    "documentId": null,
+    "filter": { "status": "open" }
+  },
+  "settings": { "tileUrl": "https://tile.example.org/{z}/{x}/{y}.png" }
+}</code></pre>
+      <ul>
+        <li>
+          <code>kind</code> 为 <code>collectionTab</code>、<code>documentAction</code>、
+          <code>sidebarPanel</code> 或 <code>cellRenderer</code>。
+        </li>
+        <li><code>locale</code> 为应用的语言：<code>en</code>、<code>tr</code>、<code>zh</code>、<code>ja</code>、<code>es</code>、<code>pt</code>、<code>ko</code>、<code>de</code>、<code>fr</code>、<code>ru</code>。</li>
+        <li><code>theme</code> 为 <code>light</code> 或 <code>dark</code>。</li>
+        <li>
+          <code>accent</code> 为用户的强调色：<code>emerald</code>、<code>indigo</code>、
+          <code>violet</code>、<code>ocean</code> 或 <code>rose</code>。其他任何值均按
+          <code>emerald</code> 处理。
+        </li>
+        <li>
+          页面在未打开任何集合的情况下被打开时（侧边栏页面、单元格渲染器），<code>place</code> 为 <code>null</code>。<code>connectionName</code> 可能为 <code>null</code>。<code>view</code> 对视图为 true：视图只能读取，不能写入，也没有索引。<code>documentId</code> 是文档操作所针对的文档，采用规范 Extended JSON 格式，否则为 <code>null</code>。<code>filter</code> 对集合标签页是“文档”中的筛选条件，否则为 <code>{}</code>。两者都属于数据：没有 <code>documents:read</code> 的插件得到的是 <code>null</code> 和 <code>{}</code>。
+        </li>
+        <li>
+          <code>hidden</code> 列出个人数据规则在该集合中对用户隐藏的字段路径，每条路径是一组键的列表（<code>[["contact", "phone"]]</code>；<code>"*"</code> 表示一个键，
+          <code>"**"</code> 表示任意数量的键，可位于任意深度），仅包含名称，且仅提供给具有
+          <code>documents:read</code> 的插件，否则为 <code>[]</code>；应用未能及时判断（3 秒）时为 <code>null</code>。此类字段的值会以 <code>"***"</code> 形式到达：切勿将其当作该字段的类型。
+        </li>
+        <li><code>settings</code> 包含管理员设置的值；未设置的设置项不存在。</li>
+      </ul>
+      <p>
+        当用户更改语言、主题或强调色时，应用会发送
+        <code>context.changed</code>，其中带有 <code>locale</code>、<code>theme</code> 和 <code>accent</code>（即 kit 的
+        <code>client.onContext</code>）。请立即应用：页面不应显示与当前设置不符的主题或语言。对于可以读取文档的插件，当其页面已加载期间“文档”的筛选条件发生变化时，同样会发送 <code>context.changed</code>，已调用 <code>ui.keepOpen</code> 的集合标签页即使不可见，也会收到用户设置的每一次筛选。请再次调用
+        <code>context.get</code> 以获取新的 <code>place</code>。
+      </p>
+
+      <h2 id="bridge">桥接 API</h2>
+      <h3 id="protocol">协议</h3>
+      <p>
+        页面与应用通过 <code>postMessage</code> 交换纯 JSON。kit
+        （<code>packages/plugins/kit/src/client.ts</code>）和入门模板的 <code>main.js</code> 均已实现该协议；若自行编写，规则如下：
+      </p>
+      <ol>
+        <li>
+          只读取 <code>event.source</code> 为 <code>window.parent</code> 且
+          <code>mm</code> 为 <code>1</code> 的消息。
+        </li>
+        <li>
+          页面加载完成后，应用会向其问候：
+          <code>{ "mm": 1, "type": "hello", "token": "..." }</code>。保留第一个令牌。在此之前不要发送任何内容。
+        </li>
+        <li>
+          请求的格式为
+          <code>{ "mm": 1, "id": 1, "method": "documents.find", "params": { ... }, "token": "..." }</code>，
+          以 <code>'*'</code> 为目标发送到 <code>window.parent</code>（框架的源是不透明的）。ID 为数字或最多 64 个字符的字符串；应用会忽略不带令牌的请求。
+        </li>
+        <li>
+          应答带有相同的 ID：<code>{ "mm": 1, "id": 1, "result": ... }</code> 或
+          <code>{ "mm": 1, "id": 1, "error": { "code": "...", "message": "..." } }</code>。
+        </li>
+        <li>
+          用户更改相关设置时，应用会发送 <code>{ "mm": 1, "type": "context.changed", "locale", "theme", "accent" }</code>（对具有 <code>documents:read</code> 的插件，还会在“文档”的筛选条件变化时发送），并向单元格渲染器询问
+          <code>{ "mm": 1, "id": "h1", "method": "cells.render", "params": { ... } }</code>，其应答为
+          <code>{ "mm": 1, "id": "h1", "token", "result": [...] }</code>。
+        </li>
+      </ol>
+      <p>
+        页面不得离开其所在地址。如果页面加载了另一个页面（链接、表单或 <code>location</code> 的更改），应用会关闭桥接并移除框架，用户必须重新打开该插件。请将所有内容保持在同一个页面中。
+      </p>
+      <pre><code>import { createClient, askMessage, AskError } from './kit/client'
+
+const client = createClient()                       // requests time out after 15 s ("timeout")
+client.onContext((locale, theme, accent) =&gt; restyle(locale, theme, accent))
+client.onReady(async () =&gt; {
+  const context = await client.ask('context.get')
+  if (!context.place) return showNoCollection()
+  try {
+    const { documents, hasMore } = await client.ask('documents.find', { filter: context.place.filter, limit: 100 })
+    show(documents, hasMore)
+  } catch (e) {
+    showError(askMessage(e, context.locale))         // the app's code, in the user's language
+  }
+})</code></pre>
+
+      <h3 id="methods">方法</h3>
+      <p>
+        双向传递的值均采用规范 Extended JSON：ObjectId 为 <code>{ "$oid": "..." }</code>，日期为
+        <code>{ "$date": { "$numberLong": "..." } }</code>，整数为 <code>{ "$numberInt": "3" }</code>。每次读取都以用户身份运行，沿用用户的权限和应用的脱敏规则。标注为“在其集合上”的方法作用于 <code>place</code> 中的集合，没有该集合时会以
+        <code>no_collection</code> 失败。
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>方法与权限</th>
+              <th>参数 → 结果</th>
+              <th>规则</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>context.get</code><br />无</td>
+              <td>无 → 上下文</td>
+              <td>参阅<a href="#context">上下文</a>。</td>
+            </tr>
+            <tr>
+              <td><code>documents.find</code><br /><code>documents:read</code></td>
+              <td>
+                <code>{ filter?, projection?, sort?, limit?, fit? }</code> →
+                <code>{ documents, hasMore, cut? }</code>
+              </td>
+              <td>
+                在其集合上。<code>limit</code> 为 1 到 1000，默认 100。最长 10 秒。用户无权查看的文档会被省略。不计入用户最近的查询。
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.get</code><br /><code>documents:read</code></td>
+              <td><code>{ id }</code> → 该文档，或 <code>null</code></td>
+              <td>在其集合上。<code>id</code> 为 <code>_id</code> 的值。</td>
+            </tr>
+            <tr>
+              <td><code>documents.aggregate</code><br /><code>documents:read</code></td>
+              <td><code>{ pipeline, limit?, fit? }</code> → <code>{ documents, truncated, cut? }</code></td>
+              <td>
+                在其集合上。仅限读取类阶段：<code>$match</code>、<code>$group</code>、
+                <code>$sort</code>、<code>$limit</code>、<code>$skip</code>、<code>$project</code>、
+                <code>$addFields</code>、<code>$set</code>、<code>$unset</code>、<code>$count</code>、
+                <code>$unwind</code>、<code>$sortByCount</code>、<code>$bucket</code>、<code>$bucketAuto</code>、
+                <code>$facet</code>（其内部不得再有 <code>$facet</code>）、<code>$replaceRoot</code>、
+                <code>$replaceWith</code>、<code>$sample</code>；最多 50 个阶段。具有
+                <code>database:read</code> 时，还可使用仅含 <code>from</code>、
+                <code>localField</code>、<code>foreignField</code> 和 <code>as</code> 的普通 <code>$lookup</code>，来源为同一数据库中的集合。<code>limit</code> 为 1 到 1000，默认 100。最长 10 秒，绝不溢出到磁盘，一次只能运行一个管道（<code>busy</code>：kit 的 <code>serialAsk</code> 会将它们排队）。
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.update</code><br /><code>documents:write</code></td>
+              <td><code>{ id, set?, unset? }</code> → <code>{ modified }</code></td>
+              <td>
+                在其集合上，仅在可见时，且仅在紧接着用户在插件页面中点击之后。
+                <code>set</code> 是字段和值组成的对象，<code>unset</code> 是字段名列表；至少要有一项更改；字段名含控制字符、换行符或方向字符时会被拒绝
+                （<code>bad_params</code>）。应用会在提问的第一行逐一引用每个被更改的字段，然后显示完整的更改内容，所有隐藏或不可见字符都会明确拼出，只有用户同意后才会应用；其“确认”按钮在一段时间无按键、且指针已移到其上之后，点击才有效。以下情况会被拒绝：针对视图（<code>read_only</code>）、更改过长无法显示（超过 2000 个字符：<code>too_large</code>）、另一个提问仍在等待（<code>busy</code>），以及用户两次拒绝之后（<code>blocked</code>，直到插件被重新打开）。用户拒绝时返回 <code>declined</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>indexes.list</code><br /><code>collection:read</code></td>
+              <td><code>{ coll? }</code> → <code>[{ name, key, options, usage }]</code></td>
+              <td>
+                在其集合上，或其数据库的另一个集合上（<code>coll</code>，必须是 <code>collections.list</code> 列出的集合），后者还需要 <code>database:read</code>。视图没有索引：返回 <code>[]</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>collections.list</code><br /><code>database:read</code></td>
+              <td>无 → <code>[{ name, type }]</code></td>
+              <td>
+                其数据库的集合和视图，不含 <code>system.</code> 开头的，最多 500 个，缓存 30 秒。
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.findIn</code><br /><code>database:read</code></td>
+              <td><code>{ coll, filter?, projection?, limit?, fit? }</code> → <code>{ documents }</code></td>
+              <td>
+                同一数据库的另一个集合，必须是 <code>collections.list</code> 列出的集合。
+                <code>limit</code> 为 1 到 200，默认 50。最长 10 秒。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.toast</code><br />无</td>
+              <td><code>{ message, kind? }</code> → <code>true</code></td>
+              <td>
+                在应用中显示一条简短消息，前面带有插件的名称和 ID。<code>kind</code>：
+                <code>info</code>（默认）、<code>success</code> 或 <code>error</code>。最多显示 200 个字符，不含控制字符、方向字符或不可见字符；每分钟最多 5 条消息，与 <code>ui.copy</code> 共用。仅在可见时。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.openDocument</code><br />无</td>
+              <td><code>{ id }</code> → <code>true</code></td>
+              <td>
+                在其集合上，仅在可见时。在“文档”中显示该文档。<code>id</code> 必须是
+                <code>_id</code> 的值，不能是查询。仅在紧接着用户在插件页面中点击之后；每分钟最多 30 次。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.resize</code><br />无</td>
+              <td><code>{ height }</code> → <code>true</code></td>
+              <td>框架的高度（像素），限制在 80 到 2000 之间。</td>
+            </tr>
+            <tr>
+              <td><code>ui.keepOpen</code><br />无</td>
+              <td>– → <code>true</code> / <code>false</code></td>
+              <td>
+                集合标签页的页面在其他部分显示时仍保持已加载状态（在其他任何位置返回 <code>false</code>）。仅当页面在 <code>context.changed</code> 时会再次读取 <code>context.get</code> 才应请求；不可见时页面可以读取但不能执行操作。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.copy</code><br />无</td>
+              <td><code>{ text }</code> → <code>true</code></td>
+              <td>
+                将文本（最多 100,000 个字符）复制到剪贴板。仅在紧接着用户在其页面中点击之后；每分钟最多 5 次，与 <code>ui.toast</code> 共用。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useQuery</code><br />无</td>
+              <td><code>{ filter?, projection?, sort? }</code> → <code>true</code></td>
+              <td>
+                在其集合上。将查询放入该集合标签页的“文档”中，如同用户亲自输入。仅在紧接着用户在其页面中点击之后；每分钟最多 10 次，与其他
+                <code>ui.use…</code> 和 SQL 方法共用。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useQueryIn</code><br /><code>database:read</code></td>
+              <td><code>{ coll, filter?, projection?, sort? }</code> → <code>true</code></td>
+              <td>
+                在其数据库的另一个集合上，必须是 <code>collections.list</code> 给出的集合。将查询放入该集合标签页的“文档”中，如同 <code>ui.useQuery</code> 在自己的集合上所做的那样（“引用”插件用它来显示引用某个文档的文档）；该标签页将其作为用户输入的查询来运行。一次只能放入一个（有一个正在放入时返回 <code>busy</code>），仅在其页面可见时，且仅在紧接着用户在其页面中点击之后；每分钟最多 10 次，与其他 <code>ui.use…</code> 和 SQL 方法共用。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.suggestPersonalData</code><br /><code>documents:read</code></td>
+              <td><code>{ fields: string[] }</code> → <code>true</code></td>
+              <td>
+                将其集合中的字段建议为个人数据：1 到 50 个由普通名称组成的路径
+                （<code>contact.phone</code>；不含 <code>*</code>，键不以 <code>$</code> 开头）。不会保存任何内容：该集合的“个人数据”部分会打开并列出这些字段，并注明建议来自该插件；它只提供集合样本中确实存在的字段，由管理员逐个添加（或一次性全部添加，一次保存）。名称前后不得有隐藏字符或空格；仅限该连接的管理员，针对集合（不是视图，也不是 <code>system.*</code>），且仅在紧接着用户在其页面中点击之后；与 <code>ui.use…</code> 方法一并计数。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useAggregation</code><br />无</td>
+              <td><code>{ stages }</code> → <code>true</code></td>
+              <td>
+                在其集合上。将这些阶段以卡片形式放入“聚合”；若已有管道则先询问用户是否替换；在用户运行之前不会执行任何操作。最多 50 个阶段；除写入类或运行代码的阶段外，其他阶段均可。仅在紧接着用户在其页面中点击之后；<code>declined</code>、
+                <code>busy</code> 和 <code>blocked</code> 的含义与 <code>documents.update</code> 相同。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.importSql</code><br />无</td>
+              <td>无 → <code>true</code></td>
+              <td>
+                在其集合上。在该集合所在数据库中，打开应用的 <a href="import-export.html#sql">SQL ↔ MongoDB</a> 页面的导入部分。插件不传递任何内容，也看不到导入的任何内容；由用户选择文件并启动导入。仅在紧接着用户在其页面中点击之后；当用户无权在该处写入文档和运行任务，或针对系统数据库时，返回
+                <code>not_permitted</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.exportSql</code><br />无</td>
+              <td>无 → <code>true</code></td>
+              <td>
+                在其集合上。在该集合所在数据库中，打开应用的 <a href="import-export.html#sql">SQL ↔ MongoDB</a> 页面的导出部分，并已选中该集合。由用户选择选项并启动导出。仅在紧接着用户在其页面中点击之后；当用户无权从该连接导出时，返回 <code>not_permitted</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>validation.get</code><br /><code>collection:read</code></td>
+              <td>
+                <code>{ coll? }</code> → <code>{ validator, validationLevel, validationAction }</code> 或
+                <code>null</code>
+              </td>
+              <td>
+                该集合的验证规则，与“验证”部分所读取的一致（没有验证规则时 <code>validator</code> 为 <code>null</code>）；视图返回 <code>null</code>。数据库的另一个集合（<code>coll</code>）还需要 <code>database:read</code>。规则中关于对用户隐藏的字段的内容（其类型、模式或范围）会被省略：其模式为 <code>{}</code>，涉及它的查询规则或 <code>$expr</code> 会被丢弃，但其名称保留（例如在 <code>required</code> 中）；当无法判断哪些内容被隐藏时返回 <code>failed</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>database.model</code><br /><code>database:read</code></td>
+              <td>无 → 数据模型</td>
+              <td>
+                数据库的模型，与“数据库”标签页所绘制的一致：
+                <code>{ db, sampleSize, collections, references, skipped, at }</code>，即每个集合的字段及其类型和占比（对用户隐藏的字段只给出名称，带 <code>masked: true</code>，不含类型），以及发现的集合之间的引用。每个集合最多采样 200 个文档。为框架读取一次，缓存 60 秒；读取进行期间发出的请求共用同一次读取（最长 90 秒：服务器在 60 秒时结束模型读取），失败的结果不会缓存。
+              </td>
+            </tr>
+            <tr>
+              <td><code>storage.stats</code><br /><code>database:read</code></td>
+              <td>无 → <code>{ collections, more }</code></td>
+              <td>
+                数据库的存储情况，与其“存储报告”所读取的一致：每个集合的
+                <code>{ name, type, count, size, storageSize, freeBytes, indexSize, indexFreeBytes, indexes }</code>
+                （每个索引的 <code>{ name, size, freeBytes }</code>），按名称取前 500 个（还有更多时 <code>more</code> 为真）。MongoDB 未提供的数值为 <code>null</code>（<code>unread</code>），个人数据规则隐藏的大小也是如此（<code>sizesHidden</code>）。每个数据库只读取一次并缓存 30 秒，供所有框架共用，在该数据库执行压缩后即作废。
+              </td>
+            </tr>
+            <tr>
+              <td><code>storage.compactEstimate</code><br /><code>collection:read</code></td>
+              <td>
+                <code>{ coll? }</code> → <code>{ available, estimatedBytes }</code> 或
+                <code>{ available: false, reason }</code>
+              </td>
+              <td>
+                <code>compact</code> 可以回收多少空间（MongoDB 8.0 及更高版本），针对其集合，或在具有
+                <code>database:read</code> 时针对其数据库的另一个集合。<code>reason</code> 为
+                <code>version</code>、<code>mongos</code> 或 <code>timeseries</code>；针对视图时为 <code>read_only</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.compact</code><br /><code>collection:read</code></td>
+              <td><code>{ coll? }</code> → <code>{ bytesFreed }</code></td>
+              <td>
+                在应用自己的对话框中压缩该集合，对话框会注明插件和集合，只有用户输入该集合的名称后才会运行。适用于有权管理数据库的用户、非只读连接，且绝不适用于时间序列集合、视图或受个人数据规则影响的集合；同一时间只能压缩一个集合（<code>busy</code>）。仅在紧接着用户在其页面中点击之后；与 <code>ui.use…</code> 方法一并计数；用户不继续时返回 <code>declined</code> 或
+                <code>unanswered</code>，两次拒绝后返回 <code>blocked</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>shardKey.analyze</code><br /><code>documents:read</code></td>
+              <td><code>{ key }</code> → 分析结果，或 <code>{ available: false, reason }</code></td>
+              <td>
+                候选分片键的特征（<code>analyzeShardKey</code>）：<code>key</code> 为一到五个字段，每个为 <code>1</code> 或 <code>"hashed"</code>（最多一个）。返回
+                <code>{ numDocsTotal, numDocsSampled, numDistinctValues, avgDocSizeBytes, isUnique,
+                  mostCommonValues, monotonicity }</code>
+                ，其中的常见值属于数据，采用规范 Extended JSON；<code>reason</code> 为
+                <code>version</code>、<code>standalone</code> 或 <code>no_index</code>。
+                针对视图时为 <code>read_only</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>searchIndexes.list</code><br /><code>collection:read</code></td>
+              <td>无 → <code>{ supported, reason?, indexes }</code></td>
+              <td>
+                该集合的搜索索引（Atlas Search、向量搜索）：每个为
+                <code>{ name, type, status, queryable, dynamic, fields }</code>，字段为
+                <code>{ path, type, numDimensions?, similarity? }</code>。对用户隐藏的字段会被省略，与 <code>validation.get</code> 相同；当无法判断哪些内容被隐藏时返回 <code>failed</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.download</code><br />无</td>
+              <td><code>{ name, type, text? | base64? | html? }</code> → <code>true</code></td>
+              <td>
+                由插件生成、由应用保存的文件（框架本身无法下载）。<code>type</code> 为
+                <code>markdown</code>、<code>mermaid</code>、<code>csv</code>、<code>json</code>、
+                <code>text</code>（配合 <code>text</code>）、<code>png</code>（配合 <code>base64</code>，必须是 PNG）或 <code>html</code>（配合 <code>{ title, css, body }</code>）：应用负责组装页面，先加上一条不运行任何脚本、不加载任何内容的策略；标题按文本处理（最多 200 个字符）；样式不得含标记、转义（<code>\</code>）、<code>@import</code>、
+                <code>@font-face</code>、图像集、<code>src()</code>、表达式，也不得含除 <code>data:</code> 之外的地址；正文则经过结构化元素白名单过滤（不允许脚本、表单、框架、图片、<code>svg</code>、MathML、模板、除 <code>#anchor</code> 以外的链接、注释或 <code>on…</code> 属性）。文本、样式和正文各自最多 1,000,000 个字符。在 CSV 中，以公式形式开头的单元格（<code>=</code>、<code>+</code>、
+                <code>-</code>、<code>@</code>、制表符或回车符，且不是数字）会在前面加上 <code>'</code> 写入。文件名中的路径、保留的设备名称（<code>CON</code>、
+                <code>COM¹</code>、<code>CONIN$</code>……）、隐藏或反转字符会被去除，其中的点号会替换为 <code>_</code>：唯一的扩展名由类型决定。仅在紧接着用户在其页面中点击之后；与 <code>ui.use…</code> 方法一并计数；如果刚在应用的其他位置按过键，则会先询问用户（参阅<a href="#limits">限制</a>）。
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.importDocuments</code><br />无</td>
+              <td><code>{ ndjson }</code> → <code>true</code></td>
+              <td>
+                在其集合上。打开应用的导入向导，并以这些文档作为其文件：每行一个 JSON 对象，最多 1,000,000 个字符，整条消息作为 JSON 最多 1 MB（其中的引号或反斜杠按两个字符计算）。由用户检查、映射并启动导入，使用用户自己的权限。仅在紧接着用户在其页面中点击之后；与 <code>ui.use…</code> 方法一并计数；如果刚在应用的其他位置按过键，则会先询问；应用中有对话框打开时返回 <code>busy</code>；用户无权在该处写入文档和运行任务，或针对系统数据库时返回 <code>not_permitted</code>；针对视图时返回 <code>read_only</code>。
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        在 <code>documents.find</code>、<code>documents.findIn</code> 和 <code>ui.useQuery</code> 的筛选、投影和排序中，以及在 <code>documents.aggregate</code> 中，操作符 <code>$where</code>、<code>$function</code>、<code>$accumulator</code>、
+        <code>$out</code>、<code>$merge</code>、<code>$lookup</code>、<code>$graphLookup</code> 和
+        <code>$unionWith</code> 在任何深度都会被拒绝（上述顶层的普通 <code>$lookup</code> 除外）。<code>ui.useAggregation</code> 的阶段可以读取其他集合，因为由用户以自己的权限运行，但绝不能包含 <code>$where</code>、
+        <code>$function</code>、<code>$accumulator</code>、<code>$out</code> 或 <code>$merge</code>。读取会立即执行；<code>ui.useQuery</code> 和 <code>ui.useAggregation</code> 只是把工作交给用户。
+      </p>
+
+      <h3 id="limits">限制</h3>
+      <ul>
+        <li>
+          消息在任一方向上最大为 1 MB；更大的应答会以 <code>too_large</code> 失败。请求更少的文档，或投影更少的字段；也可以在 <code>documents.find</code>、<code>documents.findIn</code> 或 <code>documents.aggregate</code> 中传入 <code>fit: true</code>：应用会按顺序返回一个应答所能容纳的尽可能多的完整文档，并用 <code>cut: true</code> 表示省略了其余文档（此时 <code>hasMore</code> 或 <code>truncated</code> 为 true）。抽样可以直接使用收到的文档；分页读取则从收到的最后一个文档之后继续。如果连一个文档都放不下，仍然返回 <code>too_large</code>。
+        </li>
+        <li>同时最多有 8 个请求在等待（<code>too_many</code>）。</li>
+        <li>
+          每个框架每分钟最多 60 次读取（<code>documents.find</code>、<code>.get</code>、
+          <code>.aggregate</code>、<code>.findIn</code>、<code>collections.list</code>、
+          <code>database.model</code>），此外另有 120 次定义读取
+          （<code>indexes.list</code>、<code>validation.get</code>）：包含 50 个集合的数据字典需要 1 次模型读取和 100 次定义读取。
+        </li>
+        <li>
+          <strong>紧接着在插件页面中点击之后。</strong><code>ui.copy</code>、
+          <code>ui.useQuery</code>、<code>ui.useAggregation</code>、<code>ui.importSql</code>、
+          <code>ui.exportSql</code>、<code>ui.openDocument</code>、<code>ui.download</code>、
+          <code>ui.importDocuments</code> 和 <code>documents.update</code> 仅在用户于插件自己的页面中的点击或按键仍然有效时才会被接受：框架必须拥有焦点，因此在应用其他位置的点击从不算数。请在点击处理函数中直接调用它们，先于任何 await；否则它们会以 <code>no_activation</code> 失败。对 <code>ui.copy</code>、<code>ui.use…</code>、SQL 页面或 <code>ui.openDocument</code> 的每次尝试，无论是否被拒绝，都计入该方法的限额：反复尝试并等待点击的插件会耗尽当前这一分钟的限额（<code>too_many</code>）；<code>documents.update</code> 则由一次只能有一个提问以及两次拒绝的规则限制。框架无需点击也可以获得焦点，因此若 <code>ui.copy</code>、
+          <code>ui.download</code> 或 <code>ui.importDocuments</code> 是在应用其他位置的点击或按键后 5 秒内（浏览器激活状态持续的时间）发出的，应用不会听信插件的一面之词：它会询问用户，并注明插件及其意图（多少个字符及文本的开头，隐藏字符会明确拼出；文件的名称和大小；为哪个集合导入多少个文档），并在用户点击应用自己的<strong>复制</strong>、<strong>保存</strong>或<strong>打开</strong>后才执行；插件的应答会等待此结果（用户关闭提示时返回 <code>declined</code>，无人应答时返回 <code>unanswered</code>，已有一个在等待时返回 <code>busy</code>）。应用为插件提出的每个问题（上述这些、更改、放入的阶段）在 150 秒后结束，即使鼠标仍指向它；kit 对这些请求等待 180 秒，因此页面听到的是应用的答复，而不是自己的超时。
+        </li>
+        <li>
+          <strong>可见时。</strong>从单元格渲染器，或在其他标签页显示期间保持加载的页面发出的 <code>documents.update</code>、<code>ui.openDocument</code> 及上述各方法，会以 <code>not_visible</code> 失败。
+        </li>
+      </ul>
+
+      <h3 id="errors">错误</h3>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>代码</th>
+              <th>含义</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>bad_params</code></td>
+              <td>参数缺失、类型错误、超出范围，或包含被拒绝的操作符。</td>
+            </tr>
+            <tr>
+              <td><code>not_permitted</code></td>
+              <td>插件未获该权限的批准，或用户无权执行此操作。</td>
+            </tr>
+            <tr>
+              <td><code>unknown_method</code></td>
+              <td>没有这个方法。</td>
+            </tr>
+            <tr>
+              <td><code>unavailable</code></td>
+              <td>此位置不提供该方法。</td>
+            </tr>
+            <tr>
+              <td><code>no_collection</code></td>
+              <td>页面是在没有集合的情况下打开的。</td>
+            </tr>
+            <tr>
+              <td><code>not_visible</code></td>
+              <td>框架不可见（单元格渲染器、后台页面）。</td>
+            </tr>
+            <tr>
+              <td><code>no_activation</code></td>
+              <td>不是紧接着在插件页面中点击或按键之后。</td>
+            </tr>
+            <tr>
+              <td><code>too_many</code></td>
+              <td>等待中的请求过多，或最近一分钟内请求过多。</td>
+            </tr>
+            <tr>
+              <td><code>too_large</code></td>
+              <td>消息超过 1 MB，或更改过长无法向用户显示。</td>
+            </tr>
+            <tr>
+              <td><code>busy</code></td>
+              <td>此框架的某个管道仍在运行，或有提问在等待用户。</td>
+            </tr>
+            <tr>
+              <td><code>declined</code></td>
+              <td>用户选择了拒绝。</td>
+            </tr>
+            <tr>
+              <td><code>unanswered</code></td>
+              <td>
+                用户未在规定时间内回答应用的提问；未执行任何操作。从不算作拒绝。
+              </td>
+            </tr>
+            <tr>
+              <td><code>blocked</code></td>
+              <td>用户拒绝了两次；必须重新打开该插件。</td>
+            </tr>
+            <tr>
+              <td><code>read_only</code></td>
+              <td>视图，或应用以只读方式运行。</td>
+            </tr>
+            <tr>
+              <td><code>not_found</code></td>
+              <td>没有这个文档。</td>
+            </tr>
+            <tr>
+              <td><code>timeout</code></td>
+              <td>未在规定时间内收到应答（由 kit 的客户端在 15 秒后设定）。</td>
+            </tr>
+            <tr>
+              <td><code>failed</code></td>
+              <td>其他任何情况；应用从不转发其内部错误。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        服务器自身的拒绝也以小写形式到达，例如 <code>forbidden</code>、
+        <code>conflict</code>（文档在此期间已更改）或 <code>validation_error</code>。kit 的
+        <code>askMessage(error, locale)</code> 会把常见代码转换成读者所用语言的句子。
+      </p>
+
+      <h2 id="permissions">权限</h2>
+      <p>
+        管理员按插件列出的权限批准插件，权限名称与插件页面所显示的一致。请只申请必需的最少权限：每多一项，管理员就多一个拒绝的理由。
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>权限</th>
+              <th>管理员看到的说明</th>
+              <th>允许的操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>documents:read</code></td>
+              <td>读取文档</td>
+              <td>
+                <code>documents.find</code>、<code>.get</code>、<code>.aggregate</code>；文档操作和单元格渲染器只有在具备该权限时才会提供。
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents:write</code></td>
+              <td>更改文档（每次更改都需确认）</td>
+              <td>
+                <code>documents.update</code>，每次更改都由用户确认。申请该权限本身始终会产生一条中等级别的扫描发现。
+              </td>
+            </tr>
+            <tr>
+              <td><code>collection:read</code></td>
+              <td>读取此集合的索引</td>
+              <td><code>indexes.list</code>。</td>
+            </tr>
+            <tr>
+              <td><code>database:read</code></td>
+              <td>读取同一数据库中的其他集合（名称和文档）</td>
+              <td>
+                <code>collections.list</code>、<code>documents.findIn</code>、普通的 <code>$lookup</code>。
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        没有任何权限的插件仍可显示页面、读取其上下文和设置，并使用 <code>ui.*</code> 方法。权限从不超出用户自身的权限：无权读取某个集合的用户，也无法通过插件读取它。
+      </p>
+
+      <h2 id="sandbox">沙箱</h2>
+      <p>
+        页面加载在带有 <code>sandbox="allow-scripts"</code> 的 <code>iframe</code> 中，来自一个已签名并经加密的地址，该地址标明了插件、其版本、其已批准的文件以及用户的会话（即票据：页面必须在 10 分钟内加载完成，其他文件在会话持续期间均可加载，最长 12 小时；原地续期的会话，例如在另一个标签页登录或更改密码，会被沿用；退出登录后，该地址不再提供任何内容，浏览器也不会保留其任何文件）。提供的每个文件都会对照其已批准的 SHA-256 进行检查。其策略（Content-Security-Policy）以及
+        <code>X-DNS-Prefetch-Control: off</code> 如下：
+      </p>
+      <pre><code>default-src 'none'; script-src &lt;its files&gt;; style-src &lt;its files&gt;;
+img-src &lt;its files&gt; data: blob: &lt;the origins of its url settings&gt;; font-src &lt;its files&gt;;
+connect-src 'none'; webrtc 'block'; frame-ancestors 'self'; base-uri 'none'; form-action 'none';
+sandbox allow-scripts</code></pre>
+      <p>这对代码意味着：</p>
+      <ul>
+        <li>
+          <strong>完全没有网络。</strong>不能向任何地址发出请求，包括插件自己的文件：请将数据放入脚本模块（<code>data.js</code>），而不是要加载的 <code>.json</code> 文件。也不要使用 WebRTC 或预取提示：并非所有浏览器都会阻止它们，而且扫描会将其标记为高风险。
+        </li>
+        <li>
+          <strong>没有内联代码或样式。</strong>脚本和样式只能来自插件的文件。不得有内联 <code>&lt;script&gt;</code>、<code>&lt;style&gt;</code> 元素、style 属性、内联事件处理程序或 <code>eval</code>。在脚本中设置属性（<code>el.style.width = '40px'</code>）是可行的。
+        </li>
+        <li>
+          <strong>不透明的源。</strong>没有 Cookie，没有 <code>localStorage</code>，没有 IndexedDB：它们都会失败。请将状态保存在内存中；管理员选择的设置来自清单的 <code>settings</code>。
+        </li>
+        <li>
+          <strong>没有弹窗、对话框、表单或下载。</strong><code>window.open</code>、
+          <code>alert</code>、<code>confirm</code> 和表单提交都不起作用。请用 <code>ui.copy</code> 复制；通过应用自己的导入和导出将文件交给用户。
+        </li>
+        <li>
+          <strong>无法触及应用。</strong>页面无法读取应用的页面、会话或存储，只能与应用交换消息。
+        </li>
+        <li>
+          <strong>字体和图片是自己的文件</strong>（或 <code>data:</code> 和 <code>blob:</code> 图片）。
+        </li>
+      </ul>
+
+      <h2 id="scan">安全扫描</h2>
+      <p>
+        每个插件的文件在被发现或安装时，都会在管理员批准之前进行扫描。扫描逐行读取脚本（<code>.js</code>、<code>.mjs</code>、<code>.cjs</code>）、标记（<code>.html</code>、<code>.htm</code>、<code>.svg</code>）和样式（<code>.css</code>）文件，包括注释，并列出每项发现的严重程度、规则、文件、行号和摘录。标记文件还会被整体读取，因此跨越多行的 <code>&lt;script&gt;</code> 标签或内联处理程序同样能被发现。打包进插件的库与你自己的代码一样会被扫描。扫描是一种启发式方法：它在文本中查找已知模式，因此为躲避扫描而编写的代码（例如用片段拼出名称）无法被发现，扫描结果干净并不能证明安全。存在<strong>高</strong>风险发现的插件，只有管理员输入其 ID 以接受风险之后才能被批准；这一点由服务器强制执行，审计日志会记录扫描的各项计数以及是否接受了风险。请避免所有高风险发现，并将中等风险发现控制在自己能够解释的范围内。
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>严重程度</th>
+              <th>规则</th>
+              <th>标记的内容</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>高</td>
+              <td><code>code-from-text</code></td>
+              <td>
+                <code>eval(</code>（也包括 <code>eval?.(</code>）、间接调用的 <code>eval</code>（<code>(0, eval)(…)</code>、<code>['eval']</code>）、直接调用或带 <code>new</code> 调用的 <code>Function(</code>（也包括 <code>window.Function(</code>, <code>self.</code>, <code>globalThis.</code> 或 <code>global.Function(</code>, <code>['Function']</code>, <code>Function.call(</code>, <code>.apply(</code> 或 <code>.bind(</code>, <code>Reflect.apply(Function</code> 或 <code>Reflect.construct(Function</code>；其他对象的 <code>.Function(</code> 不会被标记），以及传入字符串的 <code>setTimeout</code> 或
+                <code>setInterval</code>。
+              </td>
+            </tr>
+            <tr>
+              <td>高</td>
+              <td><code>html-injection</code></td>
+              <td>
+                被赋值（<code>=</code>）或被追加（<code>+=</code>）的 <code>.innerHTML</code> 和 <code>.outerHTML</code>，方括号写法同样适用（<code>['innerHTML'] =</code>）；
+                <code>insertAdjacentHTML(</code>、<code>document.write(</code> 和
+                <code>document.writeln(</code>（也包括以 <code>?.(</code> 方式调用）；
+                <code>createContextualFragment(</code>；<code>setHTMLUnsafe(</code>。<code>innerHTML ===</code> 这样的比较不会被标记。
+              </td>
+            </tr>
+            <tr>
+              <td>高</td>
+              <td><code>remote-code</code></td>
+              <td>
+                <code>src</code> 以 <code>http</code> 或 <code>//</code> 开头的 <code>&lt;script&gt;</code>，标签跨多行时同样如此；<code>import("http…")</code>；静态的 <code>import … from "https://…"</code> 或 <code>import "//…"</code>；
+                <code>export … from "https://…"</code>；<code>importScripts(</code>；以及指向此类地址的 CSS <code>@import</code>。
+              </td>
+            </tr>
+            <tr>
+              <td>高</td>
+              <td><code>escape-attempt</code></td>
+              <td>
+                <code>parent.document</code>、<code>parent.location</code>、<code>top.document</code>、
+                <code>top.location</code>、<code>window.opener</code>、<code>self.opener</code>、
+                <code>globalThis.opener</code>、<code>opener.document</code>、<code>opener.location</code>、
+                <code>opener.postMessage</code>、<code>frameElement</code>。名为
+                <code>opener</code> 的变量不会被标记。
+              </td>
+            </tr>
+            <tr>
+              <td>高</td>
+              <td><code>packed-code</code></td>
+              <td><code>eval(atob(</code> 或 <code>Function(atob(</code>。</td>
+            </tr>
+            <tr>
+              <td>高</td>
+              <td><code>webrtc</code></td>
+              <td>
+                单词 <code>RTCPeerConnection</code>（也包括 <code>webkitRTCPeerConnection</code>、
+                <code>mozRTCPeerConnection</code>）和 <code>RTCDataChannel</code>。对等连接可以越过 <code>connect-src 'none'</code> 向外连接；框架的 <code>webrtc 'block'</code> 只在认识该指令的浏览器中才能阻止它。
+              </td>
+            </tr>
+            <tr>
+              <td>高</td>
+              <td><code>prefetch-hint</code></td>
+              <td>
+                任何位置的 <code>dns-prefetch</code>，以及设为链接 <code>rel</code> 的 <code>preconnect</code>、<code>prefetch</code> 或
+                <code>prerender</code>（在标记中、作为 <code>.rel =</code>、
+                <code>setAttribute('rel', …)</code> 或 <code>relList.add(…)</code>）。提前解析的名称是任何策略都看不到的请求：数据可以藏在名称里。
+              </td>
+            </tr>
+            <tr>
+              <td>中</td>
+              <td><code>network</code></td>
+              <td>
+                全局的 <code>fetch(</code>（也包括 <code>window.fetch(</code>、<code>self.fetch(</code> 或
+                <code>globalThis.fetch(</code>；其他对象的 <code>.fetch(</code> 不会被标记），以及单词 <code>XMLHttpRequest</code>、<code>WebSocket</code>、<code>EventSource</code>、
+                <code>sendBeacon</code>。沙箱会阻止它们全部；该发现表明了意图。
+              </td>
+            </tr>
+            <tr>
+              <td>中</td>
+              <td><code>inline-handler</code></td>
+              <td>
+                在标记中：标签内的 <code>on…=</code> 属性（标签跨多行时同样如此），以及任何位置的 <code>javascript:</code>。
+              </td>
+            </tr>
+            <tr>
+              <td>中</td>
+              <td><code>workers</code></td>
+              <td><code>new Worker(</code>、<code>new SharedWorker(</code>、<code>WebAssembly.</code>。</td>
+            </tr>
+            <tr>
+              <td>中</td>
+              <td><code>unusual-encoding</code></td>
+              <td>
+                被扫描的文件保存为 UTF-16（以字节顺序标记开头；扫描按浏览器的方式读取它）或包含 NUL 字节。
+              </td>
+            </tr>
+            <tr>
+              <td>中</td>
+              <td><code>write-permission</code></td>
+              <td>清单申请了 <code>documents:write</code>。</td>
+            </tr>
+            <tr>
+              <td>低</td>
+              <td><code>storage</code></td>
+              <td>
+                <code>localStorage</code>、<code>sessionStorage</code>、<code>indexedDB</code>、
+                <code>document.cookie</code>（它们在沙箱中会失败）。
+              </td>
+            </tr>
+            <tr>
+              <td>信息</td>
+              <td><code>minified</code></td>
+              <td>脚本中某一行超过 2000 个字符（压缩或生成的代码），每个文件标记一次。</td>
+            </tr>
+            <tr>
+              <td>信息</td>
+              <td><code>data-blob</code></td>
+              <td>约 10 KB 或更长的一段 base64。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>如何通过扫描：</p>
+      <ul>
+        <li>
+          用 <code>textContent</code>、<code>append('text')</code> 或 kit 的 <code>h()</code> 辅助函数写入文本；用 <code>document.createElement</code> 构建元素。要清空某个元素，请使用 <code>replaceChildren()</code>。这些写法都不会被标记；而赋值或追加标记（<code>innerHTML =</code> 或 <code>innerHTML +=</code>）则一定会被标记。
+        </li>
+        <li>用 <code>addEventListener</code> 附加处理程序，绝不要写在标记中。</li>
+        <li>
+          向 <code>setTimeout</code> 和 <code>setInterval</code> 传入函数。只通过
+          <code>window.parent.postMessage</code> 与应用通信。
+        </li>
+        <li>所有文件均保存为 UTF-8，不含 NUL 字节（绝不要保存为 UTF-16）。</li>
+        <li>
+          不要发布会向外连接的代码，即使从未使用：请检查库带来了什么。优先选择未压缩的构建，或在 README 中解释 <code>minified</code> 发现，并且不要把大量数据放入 base64 字符串。
+        </li>
+        <li>
+          请记住注释也会被扫描：提到 <code>eval(</code> 或
+          <code>innerHTML =</code> 的注释同样会产生发现。
+        </li>
+        <li>
+          在 README 中说明每项遗留发现为何是安全的：来自哪个库、哪一行、为何从不运行，或为何沙箱会阻止它。
+        </li>
+      </ul>
+      <p>
+        只有脚本、标记和样式文件会被扫描；清单则会被检查是否申请了 <code>documents:write</code>（始终是一条中等级别的发现：仅当插件确实要更改文档时才申请）。同一文件中同一规则最多列出 10 项发现，总共最多列出 200 项（最严重的优先）；计数始终涵盖全部发现。每个模式都以线性时间运行，因此扫描对任何文件都能很快完成。如果扫描本身失败，插件不会被标记为已损坏：它只是没有扫描结果，并且（除非是 Mongo Manager 自带的）只能在输入其 ID 后才能被批准，与存在高风险发现时相同。Mongo Manager 自带插件的扫描结果同样会显示，但批准它们时从不要求输入其 ID。
+      </p>
+
+      <h2 id="ui">界面与主题</h2>
+      <p>
+        插件应当看起来像应用的一部分：采用用户所选主题和强调色下的颜色、字体和间距。Mongo Manager 自带的插件使用 <code>packages/plugins/kit</code> 中的插件 kit：
+      </p>
+      <ul>
+        <li>
+          <code>kit/src/ui.css</code>：应用的设计令牌（<code>--ds-surface</code>、
+          <code>--ds-fg</code>、<code>--ds-accent</code>……），涵盖浅色、深色及每种强调色，以及组件（<code>mm-btn</code>、<code>mm-table</code>、<code>mm-empty</code>、
+          <code>mm-callout</code>……）。其字体是 <code>@fontsource</code> 软件包中的文件：请将它们随插件一起打包，或删除 <code>@font-face</code> 规则以使用系统字体。
+        </li>
+        <li>
+          <code>kit/src/ui.ts</code>：<code>applyLook(theme, accent)</code> 设置 <code>html.dark</code> 和
+          <code>html[data-accent]</code>；<code>h(tag, props, ...children)</code> 构建元素，其中的文本始终是文本；此外还有 <code>icon</code>、<code>button</code>、<code>segmented</code>、
+          <code>switchControl</code>、<code>chip</code>、<code>badge</code>、<code>pageHeader</code>、
+          <code>emptyState</code>、<code>skeleton</code>、<code>callout</code>、<code>table</code>、
+          <code>valueView</code>、<code>describeValue</code>、<code>formatNumber</code>、
+          <code>statusLine</code>、<code>setBusy</code>、<code>serialAsk</code>。
+        </li>
+        <li>
+          <code>kit/src/client.ts</code>：<code>createClient</code>、<code>AskError</code>、
+          <code>askMessage</code>。
+        </li>
+      </ul>
+      <p>
+        kit 是 TypeScript 代码，需要打包使用：将 <code>kit/src</code> 复制到自己的项目中，用 Vite（或其他打包工具）构建为不含内联脚本的相对路径，如同自带插件的
+        <code>vite.config.ts</code>：<code>base: './'</code>、<code>modulePreload: { polyfill: false }</code>、
+        <code>assetsInlineLimit: 0</code>。打包的应是构建产物，而不是源代码。入门模板则自带一份用纯 JavaScript 和 CSS 编写的简短客户端和配色副本。
+      </p>
+      <pre><code>import './kit/ui.css'
+import { createClient } from './kit/client'
+import { applyLook, h, pageHeader, emptyState, button } from './kit/ui'
+
+const client = createClient()
+client.onContext((locale, theme, accent) =&gt; applyLook(theme, accent))
+client.onReady(async () =&gt; {
+  const context = await client.ask('context.get')
+  applyLook(context.theme, context.accent)
+  document.body.append(
+    h('div', { class: 'mm-page' },
+      pageHeader({ icon: 'table', title: 'Hello', description: context.place?.coll ?? '' }),
+      emptyState({ icon: 'search', title: 'Nothing yet', action: button({ label: 'Load', variant: 'primary' }) }),
+    ),
+  )
+})</code></pre>
+      <p>
+        请针对页面出现的位置进行设计：集合标签页很宽，文档操作是对话框，侧边栏页面填满工作区。没有内容可显示时显示空状态，<code>place</code> 为 <code>null</code> 时同样如此；读取时显示骨架屏；遇到拒绝时使用应用的措辞。请使用按钮和真正的控件，使页面可通过键盘操作。
+      </p>
+
+      <h2 id="localization">语言</h2>
+      <p>
+        应用支持英语、土耳其语、简体中文、日语、西班牙语、巴西葡萄牙语、韩语、德语、法语和俄语：<code>context.locale</code> 为 <code>en</code>、<code>tr</code>、
+        <code>zh</code>、<code>ja</code>、<code>es</code>、<code>pt</code>、<code>ko</code>、
+        <code>de</code>、<code>fr</code> 和 <code>ru</code> 之一。插件应尽可能多地支持这些语言，并且始终支持英语：
+      </p>
+      <ul>
+        <li>在清单中，为每个本地化文本在 <code>en</code> 之外补充你所拥有的每种语言。</li>
+        <li>
+          在页面中，按语言保存文本表，依据 <code>context.locale</code> 选择（没有对应语言时使用英语），将 <code>document.documentElement.lang</code>
+          设为文本实际所用的语言（回退到英语时为 <code>en</code>；中文和葡萄牙语分别用 <code>zh-CN</code> 和 <code>pt-BR</code>，以便显示正确的字形），用同一语言格式化数字，并在 <code>context.changed</code> 时重新渲染。
+        </li>
+        <li>单元格渲染器使用每批请求所带的 <code>locale</code> 作答。</li>
+        <li>
+          按语言格式化数字和日期（<code>Intl.NumberFormat</code>、
+          <code>Intl.DateTimeFormat</code>）。
+        </li>
+        <li>
+          为每种语言在 <code>README.md</code> 旁添加 <code>README.&lt;language&gt;.md</code>
+          （<code>README.tr.md</code>、<code>README.zh.md</code>、……），并在每种语言中提供发布说明。
+        </li>
+      </ul>
+
+      <h2 id="readme">README 与发布说明</h2>
+      <p>
+        插件顶层的 <code>README.md</code> 会显示在其详情页上，管理员在批准插件之前会阅读它；<code>README.&lt;language&gt;.md</code>（<code>README.tr.md</code>、<code>README.ja.md</code>、……）则会显示给使用该语言的应用用户。只有当 <code>README.md</code> 也存在时，才会显示本地化的 README。它以安全的 Markdown 显示：标题、段落、列表（一层）、粗体、斜体、行内代码和代码块。链接、图片、表格和 HTML 会显示为纯文本。最多显示 64 KB。
+      </p>
+      <p>好的 README 应按以下顺序说明：</p>
+      <ol>
+        <li>插件的功能，两三句话。</li>
+        <li>出现的位置：哪个标签页、操作、页面或单元格文本。</li>
+        <li>如何使用，分步骤说明，并附示例。</li>
+        <li>每项权限及其用途。</li>
+        <li>设置项（如有）。</li>
+        <li>限制：读取多少个文档，哪些情况不处理。</li>
+        <li>每项遗留的扫描发现及其为何安全。</li>
+      </ol>
+      <p>
+        发布说明写在清单的 <code>changelog</code> 中，最新的在前，每个版本一条，包含日期以及英文和你所支持的每种语言的说明。详情页会显示这些内容；更新后，自上一版以来的各版本会标记为新。
+      </p>
+
+      <h2 id="versions">版本与批准</h2>
+      <ul>
+        <li>
+          批准针对的是确切的文件：即其摘要，由每个文件的路径和 SHA-256 计算得出的 SHA-256。管理员在批准前可以看到它。
+        </li>
+        <li>
+          已上传的插件或插件文件夹中<strong>任何文件的任何更改</strong>（新版本、修正 README 中的错别字）都会使其停用，直到管理员再次批准。每次发布都请提升 <code>version</code> 并添加更新日志条目，使管理员知道自己批准的是什么。
+        </li>
+        <li>
+          上传一个 ID 已安装的插件会将其替换；只有文件与已批准的完全一致时，它才会保持启用。只要新清单仍以相同类型声明这些设置，其设置就会保留。
+        </li>
+        <li>
+          手动放置的插件文件夹由手动管理：上传相同 ID 的插件会被拒绝，在应用中删除它只是让应用不再记录它，而不会删除该文件夹。
+        </li>
+        <li>
+          只有 Mongo Manager 自带的插件才会在更新后保留其批准，并且仅限于它们已启用且更新未请求新权限的情况；此时不会要求管理员做任何操作，插件详情页会说明它保留了批准。由管理员手动批准的更新会注明其由管理员批准。
+        </li>
+      </ul>
+
+      <h2 id="packaging">打包</h2>
+      <p>
+        插件以 gzip 压缩的 tar 归档（<code>.tgz</code>）形式分发，文件位于归档根目录，其中包括 <code>mongo-manager-plugin.json</code>。也接受将所有内容放在单个顶层文件夹中的做法（如同 <code>npm pack</code> 的 <code>package/</code>），该文件夹会被去掉。归档只能包含普通文件（文件夹是隐含的）；链接、设备、特殊条目、不规范的路径以及重复的路径都会被拒绝；解压后最多 500 个文件、25 MB，上传大小最多 30 MB。
+      </p>
+      <p>入门模板的 <code>scripts/pack.mjs</code> 仅用 Node.js 即可完成这项工作：</p>
+      <pre><code>node scripts/pack.mjs
+Packed 14 files (64.6 KB):
+  README.de.md
+  README.es.md
+  README.fr.md
+  README.ja.md
+  README.ko.md
+  README.md
+  README.pt.md
+  README.ru.md
+  README.tr.md
+  README.zh.md
+  index.html
+  main.js
+  mongo-manager-plugin.json
+  style.css
+
+hello-documents-0.1.0.tgz
+digest (sha256): 9ac77c4a...</code></pre>
+      <p>
+        它会像应用一样检查路径和限制，排除不属于插件的内容（隐藏文件、<code>scripts/</code>、<code>node_modules/</code>、AI 助手文件、包文件和归档；可编辑其 <code>SKIP</code> 列表以适应自己的需要），写出
+        <code>&lt;id&gt;-&lt;version&gt;.tgz</code>，并打印管理员将会看到的摘要。如果使用打包工具构建，请改为打包构建输出文件夹，其清单位于顶层。
+      </p>
+
+      <h2 id="github">在 GitHub 上发布</h2>
+      <p>
+        在设置为允许此功能的服务器上（<code>MM_PLUGINS_GITHUB=1</code>；默认关闭），管理员可以直接从公开的 GitHub 仓库安装插件。在插件页面中，他们粘贴下列地址之一：
+      </p>
+      <ul>
+        <li>
+          <code>https://github.com/&lt;owner&gt;/&lt;repo&gt;</code>、<code>…/releases</code> 或
+          <code>…/releases/latest</code>，对应<strong>最新发布版本</strong>；
+        </li>
+        <li>
+          <code>https://github.com/&lt;owner&gt;/&lt;repo&gt;/releases/tag/&lt;tag&gt;</code>，对应指定的发布版本。
+          标签可以包含斜杠（最多 4 段）。
+        </li>
+      </ul>
+      <p>
+        地址中不得包含其他内容：不得有查询字符串、片段、端口或凭据。已重命名的仓库会被跟随：发布版本自身的页面地址会指明其所属仓库。应用会下载该发布版本的插件归档，即名称以 <code>.tgz</code> 或 <code>.tar.gz</code> 结尾的唯一附件。没有此类附件或有多个此类附件的发布版本会被拒绝。标签和附件名称必须是可打印的 ASCII 字符。附件必须属于该仓库的发布版本，且大小不得超过上传的上限（30 MB），无论声明大小还是实际读取的大小。
+      </p>
+      <p>
+        应用只与 <code>github.com</code>、<code>api.github.com</code>、
+        <code>objects.githubusercontent.com</code> 和 <code>release-assets.githubusercontent.com</code> 通信，使用 https，仅限公网地址，并且不发送服务器的任何信息（不含 Cookie、令牌或凭据）。它最多跟随 4 次重定向，且仅限在这些主机之间，最多读取发布版本说明 5 MB，整个安装过程限时 4 分钟。插件安装后处于停用状态并附有扫描结果，与上传一样等待批准。它会记住自己的来源（仓库、发布版本和归档），并显示在其详情页上。
+      </p>
+      <p>
+        安装失败时，插件页面会说明原因：仓库没有已发布的版本、达到了 GitHub 的速率限制、GitHub 拒绝了请求（仓库不是公开的）、服务器无法连接 GitHub、重定向到了不被允许的主机、重定向次数过多、发布版本没有归档或有多个归档，或者归档不在该仓库的发布版本上。
+      </p>
+      <ol>
+        <li>
+          提升 <code>version</code>，添加 <code>changelog</code> 条目，并设置 <code>publishedAt</code>。
+        </li>
+        <li>运行 <code>node scripts/pack.mjs</code>。</li>
+        <li>
+          创建 GitHub 发布版本（例如标签 <code>v0.1.0</code>），并将
+          <code>hello-documents-0.1.0.tgz</code> 作为附件。不要附加其他 <code>.tgz</code> 或
+          <code>.tar.gz</code> 文件。
+        </li>
+        <li>
+          将其标记为最新发布版本。把 <code>pack.mjs</code> 打印的摘要放入发布说明，以便管理员将其与应用显示的内容比对。
+        </li>
+      </ol>
+      <p>
+        除非设置了 <code>MM_PLUGINS_GITHUB=1</code>，否则无法从 GitHub 安装；服务器也可能无法连接 GitHub，或只能通过代理连接（安装时直接连接 GitHub，不使用 HTTP 代理设置）；此时管理员需要下载 <code>.tgz</code>，并通过<strong>上传插件</strong>上传。
+      </p>
+
+      <p>
+        要让别人找到你的插件，请把它收录到 Awesome Mongo
+        Manager（<code>github.com/mongo-manager/awesome-mongo-manager</code>）：在那里提交一个在其 README
+        中添加一行的拉取请求。它的检查会下载你的最新发布版本，并像从 GitHub 安装时一样，用应用自己的代码进行检查；随后维护者会在收录之前阅读该插件。
+      </p>
+
+      <h2 id="testing">在自己的服务器上测试</h2>
+      <ol>
+        <li>
+          在开启插件的情况下（默认）运行 Mongo Manager，并以管理员身份登录。找到其数据目录：除非 <code>MM_DATA_DIR</code> 另有指定，否则为 <code>~/.mongo-manager</code>。
+        </li>
+        <li>
+          将插件复制到 <code>&lt;data-dir&gt;/plugins/&lt;id&gt;</code>：
+          <code>node scripts/pack.mjs --folder ~/.mongo-manager/plugins</code>。文件夹名称必须是 ID，且不得包含隐藏文件（因此该脚本只复制插件的文件）。<code>~/</code> 在所有 shell 中都表示你的主目录；在 cmd 和 PowerShell 中用 <code>~\</code>，或使用引号（bash 和 zsh 会丢弃未加引号的反斜杠，脚本随后会拒绝剩下的内容）。脚本只会替换这样的目录：属于该插件的、仅包含它本可复制的文件和文件夹（没有脚本、隐藏文件、链接、管道或套接字），并且其上或其中没有挂载文件系统；它会换入新的副本，因此中途停止时目录保持原样。如果目标是插件自己的文件夹、位于其内部或包含它，无论路径以何种方式指向（符号链接、联接点或共享），脚本都会拒绝；此时不会写入任何内容。
+        </li>
+        <li>
+          打开<strong>插件</strong>，点击<strong>重新扫描</strong>。无法使用的插件会说明原因（某个清单字段、某个路径）。打开其详情：像管理员那样阅读扫描发现、权限和 README。
+        </li>
+        <li>点击<strong>批准并启用</strong>，然后打开一个集合，试用每个贡献点。</li>
+        <li>
+          每次更改后，重新复制，点击<strong>重新扫描</strong>并再次批准（文件已更改），然后重新打开标签页、页面或对话框。试用多种语言、两种主题、一个视图、一个没有文档的集合，以及不带集合打开的侧边栏页面。
+        </li>
+        <li>
+          最后，在一台干净的服务器上通过<strong>上传插件</strong>上传 <code>.tgz</code> 本身，就像你的用户那样。
+        </li>
+      </ol>
+      <p>
+        浏览器的开发者工具可以在框架内部使用：在控制台中选择插件的框架即可查看其错误和消息。控制台中出现策略违规，说明页面尝试了沙箱禁止的操作。
+      </p>
+
+      <h2 id="ai-files">借助 AI 助手构建</h2>
+      <p>
+        入门模板包含若干说明文件，向 AI 编码助手传授本页的全部内容：清单规则、桥接方法和权限、沙箱、扫描、语言、README、打包和发布。请将它们放在插件仓库的顶层；<code>pack.mjs</code> 会将它们排除在归档之外。<strong>插件</strong>页面可将入门模板保存为 <code>.zip</code>，也可以在<strong>给 AI 助手的说明</strong>下单独保存每个文件，以便添加到已有的插件中；Copilot 的文件保存为 <code>copilot-instructions.md</code>，应放入仓库的 <code>.github</code> 文件夹。
+      </p>
+      <ul>
+        <li><code>CLAUDE.md</code>：Claude Code。</li>
+        <li><code>AGENTS.md</code>：OpenAI Codex 以及其他读取 <code>AGENTS.md</code> 的智能体。</li>
+        <li><code>GEMINI.md</code>：Gemini CLI。</li>
+        <li><code>.github/copilot-instructions.md</code>：GitHub Copilot。</li>
+      </ul>
+      <p>
+        告诉助手你的插件应当做什么；它应当给出能通过扫描和下方检查清单的代码。发布之前请阅读它写的内容：管理员信任的是你。
+      </p>
+
+      <h2 id="checklist">发布前检查清单</h2>
+      <ul>
+        <li>
+          ID 唯一且与文件夹名称一致；版本已提升，并有一条带当天日期的更新日志条目。
+        </li>
+        <li>
+          每个本地化文本都有 <code>en</code> 和 <code>tr</code>；页面遵循
+          <code>locale</code> 和 <code>context.changed</code>。
+        </li>
+        <li>权限是能满足需求的最少权限，且 README 说明了每项权限的用途。</li>
+        <li>扫描中没有高风险发现，且 README 解释了其他每一项发现。</li>
+        <li>
+          文本使用 <code>textContent</code> 或 <code>h()</code> 写入；不从文本构建标记。
+        </li>
+        <li>
+          没有任何内容访问网络（没有 <code>fetch</code>、WebRTC 或预取提示）、使用存储、打开弹窗或离开页面。
+        </li>
+        <li>没有内联脚本、样式或事件处理程序；所有路径均为相对路径（<code>./main.js</code>）。</li>
+        <li>所有文件均保存为 UTF-8，不含 NUL 字节。</li>
+        <li>页面遵循主题和强调色，并且可通过键盘操作。</li>
+        <li>
+          能处理 <code>place</code> 为 <code>null</code>、视图、空集合以及可能遇到的每个错误代码的情况。
+        </li>
+        <li>需要点击的调用直接在点击处理函数中发出。</li>
+        <li>大规模读取受到限制：使用 <code>limit</code>、投影，一次只运行一个管道。</li>
+        <li>
+          <code>README.md</code> 及其译文描述了插件；已设置 <code>license</code>、
+          <code>author</code> 和 <code>repository</code>。
+        </li>
+        <li>已将 <code>.tgz</code> 上传到干净的服务器，并在那里完成扫描、批准和试用。</li>
+        <li>
+          GitHub 发布版本恰好有一个插件归档，名为
+          <code>&lt;id&gt;-&lt;version&gt;.tgz</code>。
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">本页内容</p>
+      <ol>
+        <li><a href="#what">什么是插件</a></li>
+        <li><a href="#quick-start">快速开始</a></li>
+        <li><a href="#files">文件与文件夹结构</a></li>
+        <li><a href="#manifest">清单</a></li>
+        <li><a href="#contributions">贡献点</a></li>
+        <li><a href="#context">上下文</a></li>
+        <li><a href="#bridge">桥接 API</a></li>
+        <li><a href="#permissions">权限</a></li>
+        <li><a href="#sandbox">沙箱</a></li>
+        <li><a href="#scan">安全扫描</a></li>
+        <li><a href="#ui">界面与主题</a></li>
+        <li><a href="#localization">语言</a></li>
+        <li><a href="#readme">README 与发布说明</a></li>
+        <li><a href="#versions">版本与批准</a></li>
+        <li><a href="#packaging">打包</a></li>
+        <li><a href="#github">在 GitHub 上发布</a></li>
+        <li><a href="#testing">在自己的服务器上测试</a></li>
+        <li><a href="#ai-files">借助 AI 助手构建</a></li>
+        <li><a href="#checklist">发布前检查清单</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

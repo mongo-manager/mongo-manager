@@ -1,0 +1,6 @@
+# Mongo Manager behind Caddy (automatic HTTPS; X-Forwarded-* and WebSockets are handled).
+# Start Mongo Manager with:
+#   mongo-manager start --auth --host 127.0.0.1 --trusted-proxies 127.0.0.1 --allowed-hosts mm.example.com
+mm.example.com {
+	reverse_proxy 127.0.0.1:4321
+}
