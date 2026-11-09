@@ -1,0 +1,16 @@
+{
+  "name": "@mongo-manager/plugin-time-hints",
+  "private": true,
+  "version": "1.3.0",
+  "type": "module",
+  "description": "First-party Mongo Manager plugin: the moment an ObjectId was made and Unix times as dates, in a tooltip over their cells (plugins wave 1).",
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "vite": "^8.3.4",
+    "vitest": "^5.0.2"
+  }
+}

@@ -1,0 +1,108 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 Gokhan OZGEZER */
+/* Storage report (plugins wave 4): what the kit (kit/src/ui.css) does not already give. */
+.sr-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sr-muted {
+  margin: 0;
+  color: var(--ds-fg-muted);
+}
+.sr-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.sr-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--ds-line);
+  border-radius: 10px;
+  background: var(--ds-surface);
+}
+.sr-tile-label {
+  font-size: 12px;
+  color: var(--ds-fg-muted);
+}
+.sr-tile-value {
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.sr-tile-hint {
+  font-size: 12px;
+  color: var(--ds-fg-muted);
+}
+.sr-totals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sr-table {
+  overflow-x: auto;
+}
+.sr-name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.sr-selected td {
+  background: var(--ds-accent-soft);
+}
+.sr-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.sr-bar {
+  position: relative;
+  width: 64px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--ds-line);
+}
+.sr-bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--ds-accent);
+}
+.sr-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--ds-line);
+  border-radius: 12px;
+}
+.sr-detail-title,
+.sr-compact-title {
+  margin: 0;
+  font-size: 15px;
+}
+.sr-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sr-estimate {
+  min-height: 1.4em;
+  margin: 0;
+}
+.sr-warning {
+  color: var(--ds-warning);
+}
+.sr-danger {
+  color: var(--ds-danger);
+}

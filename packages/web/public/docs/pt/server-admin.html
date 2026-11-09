@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Administração do servidor · Documentação do Mongo Manager</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Documentação do Mongo Manager</a>
+      <details class="lang-menu">
+        <summary>Português (Brasil)</summary>
+        <span class="langs" role="group" aria-label="Idioma">
+          <a lang="en" hreflang="en" href="../server-admin.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/server-admin.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/server-admin.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/server-admin.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/server-admin.html">Español</a>
+          <strong lang="pt-BR">Português (Brasil)</strong>
+          <a lang="ko" hreflang="ko" href="../ko/server-admin.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/server-admin.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/server-admin.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/server-admin.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Visão geral</a>
+      <a href="getting-started.html">Primeiros passos</a>
+      <a href="security.html">Segurança</a>
+      <a href="deployment.html">Implantação</a>
+      <a href="import-export.html">Importação e exportação</a>
+      <a href="backup.html">Backup e restauração</a>
+      <a href="watch.html">Monitoramento de alterações</a>
+      <a href="sync.html">Sincronização em tempo real</a>
+      <strong>Administração do servidor</strong>
+      <a href="ai.html">Assistente de IA</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Atalhos de teclado</a>
+    </nav>
+    <main>
+      <h1>Administração do servidor</h1>
+      <p>
+        Além dos seus dados, o Mongo Manager gerencia o próprio servidor MongoDB: os usuários e as funções do
+        banco de dados, o sharding de um cluster, os alertas quando algo dá errado e a saúde de cada conexão em
+        um relance.
+      </p>
+
+      <h2 id="users-roles">Usuários e funções</h2>
+      <p>
+        A página de uma conexão → <strong>Usuários e funções</strong> gerencia as contas do próprio MongoDB,
+        como o <em>Database Access</em> no Atlas. Essas são as contas que aplicativos e pessoas usam para entrar
+        no MongoDB, não os usuários do Mongo Manager.
+      </p>
+      <h3>Quem pode usar</h3>
+      <ul>
+        <li>
+          Usuários com a permissão do app <code>databases:admin</code> na conexão: administradores do app ou um
+          usuário com administração concedida nessa conexão. Um usuário de quem um administrador oculta os dados pessoais nunca vê esta seção; quem os oculta de si mesmo a vê.
+        </li>
+        <li>
+          Os direitos do próprio MongoDB também se aplicam: a conta com a qual a conexão entra precisa de
+          <code>userAdmin</code> no banco de dados, ou de <code>userAdminAnyDatabase</code>
+          (<code>viewUser</code> e <code>viewRole</code> bastam para listar). Quando o MongoDB recusa, a página
+          informa que o MongoDB recusou, e qual comando — e não o app.
+        </li>
+        <li>Em uma conexão somente leitura, usuários e funções são listados, mas nunca alterados.</li>
+      </ul>
+      <h3>A lista</h3>
+      <p>
+        Usuários de todos os bancos de dados ou de um só (o filtro de banco de dados), com busca. As funções de
+        cada usuário aparecem como chips, "readWrite on shop", por exemplo. A conta com a qual a própria conexão
+        entra é marcada como <strong>Esta conexão</strong>.
+      </p>
+      <h3>Adicionar um usuário</h3>
+      <ul>
+        <li>
+          <strong>Banco de dados de autenticação</strong>: onde o usuário entra. Recomenda-se
+          <code>admin</code> (os usuários ali podem ter funções em qualquer banco de dados), mas qualquer banco
+          de dados funciona. <code>$external</code> é para usuários x.509, LDAP, Kerberos e AWS IAM, que não têm
+          senha: o nome deve corresponder exatamente ao que essa origem envia.
+        </li>
+        <li><strong>Nome de usuário.</strong></li>
+        <li>
+          <strong>Senha</strong>: digite uma ou pressione <strong>Gerar</strong> para obter 24 caracteres
+          aleatórios criados no seu navegador a partir da fonte aleatória do sistema, seguros em uma string de
+          conexão e exibidos para que você os copie.
+        </li>
+        <li>
+          <strong>Funções</strong>: funções integradas, cada uma com o que permite, ou as suas funções
+          personalizadas, cada uma em um banco de dados. As funções que existem somente em <code>admin</code>
+          (<code>clusterMonitor</code>, <code>backup</code>, <code>root</code> e semelhantes) ficam fixas nele.
+        </li>
+      </ul>
+      <p>
+        As senhas usam SCRAM-SHA-256 e precisam ter pelo menos 12 caracteres. Uma senha é enviada ao MongoDB uma
+        única vez; o Mongo Manager nunca a armazena, registra em log nem grava no log de auditoria. Copie a
+        senha gerada antes de fechar o formulário. Conceder direitos amplos pede uma confirmação antes, e o
+        servidor os recusa sem confirmação: as funções integradas <code>root</code>,
+        <code>userAdminAnyDatabase</code>, <code>userAdmin</code>, <code>dbOwner</code>,
+        <code>clusterAdmin</code>, <code>clusterManager</code>, <code>hostManager</code>, <code>backup</code>,
+        <code>restore</code>, <code>readWriteAnyDatabase</code> e <code>dbAdminAnyDatabase</code>, todas as
+        outras funções integradas do banco de dados admin (<code>readAnyDatabase</code>,
+        <code>clusterMonitor</code>, <code>enableSharding</code>), qualquer função de <code>local</code> (ele
+        contém o oplog, toda gravação feita) ou de <code>config</code> (os metadados de sharding) e qualquer
+        função personalizada que herde uma delas ou tenha um privilégio sobre o cluster, sobre qualquer
+        recurso, sobre todos os bancos de dados de uma só vez ou sobre <code>local</code> e
+        <code>config</code>, ou que crie usuários ou funções (<code>createUser</code>,
+        <code>grantRole</code>, <code>changePassword</code> e semelhantes).
+        Essas funções personalizadas são marcadas como amplas, e criar uma também exige confirmação.
+      </p>
+      <h3>Alterar e descartar usuários</h3>
+      <ul>
+        <li>
+          <strong>Editar</strong> define uma nova senha, novas funções ou ambos. As funções que você salva
+          substituem a lista do usuário.
+        </li>
+        <li>
+          Alterar ou descartar a conta da própria conexão avisa que isso pode bloquear o acesso da conexão e
+          exige confirmação. O mesmo vale para alterar ou descartar uma função personalizada que essa conta
+          possui. Qual é essa conta, o próprio MongoDB informa (não as configurações da conexão, que um
+          registro SRV ou um certificado podem alterar). Depois de uma nova senha, edite também a conexão.
+        </li>
+        <li>Descartar um usuário ou uma função pede que você digite o nome dele.</li>
+      </ul>
+      <h3>Funções personalizadas</h3>
+      <p>
+        As <strong>Funções personalizadas</strong> dão a uma equipe exatamente as ações de que ela precisa, e
+        nada além disso. Uma função tem um banco de dados, um nome, privilégios e funções herdadas.
+      </p>
+      <ul>
+        <li>
+          Cada privilégio se aplica a um banco de dados e uma coleção (se deixado vazio, qualquer banco de
+          dados ou qualquer coleção), ao cluster ou a qualquer recurso.
+        </li>
+        <li>
+          As ações são escolhidas na lista do MongoDB, agrupadas em consulta e gravação, gerenciamento de banco
+          de dados, usuários e funções, implantação, replicação e sharding.
+        </li>
+        <li>
+          Uma função fora de <code>admin</code> herda apenas funções do próprio banco de dados (regra do
+          MongoDB); uma função em <code>admin</code> pode herdar funções de qualquer banco de dados.
+        </li>
+      </ul>
+      <p>
+        Toda alteração fica no log de auditoria como <code>mongo.users.create</code>,
+        <code>mongo.users.update</code>, <code>mongo.users.grant</code>, <code>mongo.users.revoke</code>,
+        <code>mongo.users.drop</code>, <code>mongo.roles.create</code>, <code>mongo.roles.update</code> e
+        <code>mongo.roles.drop</code>, com os nomes e as listas de funções, nunca uma senha.
+      </p>
+
+      <h2 id="sharding">Sharding</h2>
+      <p>
+        A página de uma conexão → <strong>Sharding</strong> aparece quando a conexão é com um
+        <code>mongos</code>. Todos que podem observar o servidor veem o estado do balanceador, a distribuição
+        de chunks e a visão geral do cluster. As alterações exigem <code>databases:admin</code> e uma conexão
+        que não seja somente leitura.
+      </p>
+      <h3>Distribuição de chunks</h3>
+      <p>
+        Uma barra por coleção fragmentada, uma cor por shard, com as contagens também em texto para leitores de
+        tela.
+      </p>
+      <h3>O balanceador</h3>
+      <ul>
+        <li>
+          Inicie-o ou pare-o; parar pede confirmação antes. Enquanto estiver parado, nenhum chunk se move entre
+          shards; uma migração em andamento termina primeiro. Pare-o para um backup ou uma manutenção e depois
+          inicie-o novamente.
+        </li>
+        <li>
+          <strong>Janela ativa</strong>: de–até, no relógio do servidor de configuração. Os chunks então se
+          movem apenas dentro desses horários. <strong>A qualquer momento</strong> a remove.
+        </li>
+      </ul>
+      <h3>Fragmentar uma coleção</h3>
+      <ol>
+        <li>Escolha o banco de dados e a coleção.</li>
+        <li>
+          Monte a chave de shard campo a campo. Cada campo é por intervalo (ranged) ou com hash, com no máximo
+          um campo com hash. A ordem importa: mova os campos para cima e para baixo.
+        </li>
+        <li>
+          <strong>Verificar esta chave</strong>: o servidor coleta uma amostra de 1000 documentos e responde
+          apenas com contagens, de modo que nenhum valor sai do MongoDB: a proporção de documentos que têm cada
+          campo, o número de valores distintos, a proporção do valor mais comum, se os valores crescem com o
+          tempo (ObjectId, datas) e se existe um índice que começa com os campos da chave. O veredicto é bom,
+          razoável ou ruim.
+        </li>
+        <li>
+          Opções: <strong>única</strong> (apenas chaves por intervalo); <strong>criar chunks
+          antecipadamente</strong> (uma chave com hash em uma coleção vazia, MongoDB 6.0 e anteriores, de 1 a
+          8192 chunks); <strong>criar chunks por zona</strong> (uma chave com hash, com zonas já definidas).
+        </li>
+        <li>Fragmentar não pode ser desfeito: confirme digitando o namespace.</li>
+      </ol>
+      <p>
+        Um campo que cresce com o tempo, usado como chave por intervalo, envia cada novo documento para um único
+        shard: use hash nele ou coloque outro campo primeiro. Uma coleção com dados precisa de um índice que
+        comece com os campos da chave antes de poder ser fragmentada. Os namespaces do próprio MongoDB e os de
+        sistema (<code>admin</code>, <code>config</code>, <code>local</code>, <code>system.*</code>) são
+        recusados.
+      </p>
+      <h3>Zonas</h3>
+      <ul>
+        <li>Cada shard lista suas zonas; adicione uma zona a um shard ou remova uma.</li>
+        <li>
+          Intervalos de chave por coleção: os limites são Extended JSON dos campos da chave de shard, com
+          <code>{"$minKey":1}</code> e <code>{"$maxKey":1}</code> para extremos abertos, por exemplo
+          <code>{"region": "eu"}</code> até <code>{"region": "us"}</code>. Operadores são recusados. O início
+          é incluído; o fim, não.
+        </li>
+        <li>Remova um intervalo quando os documentos dele puderem voltar a ficar em qualquer shard.</li>
+      </ul>
+      <p>
+        O log de auditoria registra <code>sharding.collection.shard</code>, <code>sharding.zone.shard</code>,
+        <code>sharding.zone.range</code> (o namespace e a zona, nunca os valores dos limites),
+        <code>sharding.balancer</code> e <code>sharding.balancer.window</code>. Os testes do Mongo Manager
+        executam essas telas com respostas gravadas de um <code>mongos</code>.
+      </p>
+
+      <h2 id="alerts">Alertas</h2>
+      <p>
+        Os alertas avisam quando um servidor ultrapassa um limite ou quando uma das tarefas do próprio app
+        falha: no sino, por e-mail ou em um webhook.
+      </p>
+      <h3>Limites de alerta</h3>
+      <p>
+        A página de uma conexão → <strong>Alertas</strong>, para administradores do app
+        (<code>settings:manage</code>). Um limite de alerta observa uma métrica:
+      </p>
+      <ul>
+        <li><strong>Conexões</strong>: conexões de clientes abertas (uma contagem).</li>
+        <li><strong>Operações</strong>: operações por segundo, de todos os tipos juntos.</li>
+        <li>
+          <strong>Atraso de replicação</strong>: segundos de atraso do secundário mais distante (conjuntos de
+          réplicas).
+        </li>
+        <li><strong>Cache do WiredTiger</strong>: quão cheio está o cache, em porcentagem.</li>
+        <li>
+          <strong>Uso de disco</strong>: porcentagem do disco dos arquivos de dados em uso (MongoDB 4.4 e
+          posteriores).
+        </li>
+        <li>
+          <strong>Operações lentas</strong>: a contagem de operações em execução por mais segundos do que você
+          escolher (exige <code>clusterMonitor</code>).
+        </li>
+      </ul>
+      <p>
+        O servidor os avalia uma vez por minuto, a partir da mesma amostragem de <code>serverStatus</code> do
+        histórico de métricas. Os alertas coletam amostras de uma conexão mesmo quando o histórico dela está
+        desativado; as amostras só são armazenadas quando o histórico está ativado. No máximo 50 conexões são
+        amostradas, somando histórico e alertas.
+      </p>
+      <p>
+        Sem oscilação: um alerta dispara quando o valor permanece acima do limite de alerta pelos minutos que
+        você escolheu (de 1 a 60, padrão 2) e só é resolvido depois de permanecer em 90% do limite de alerta ou
+        abaixo disso pelo mesmo tempo. Um limite de alerta de 80% de ocupação do cache é resolvido em 72% ou
+        menos.
+      </p>
+      <h3>Alertas de evento</h3>
+      <p>Na página Alertas, para todas as conexões ou uma só, ou na seção de uma conexão:</p>
+      <ul>
+        <li><strong>Backup com falha</strong>: uma tarefa de backup, envio ou busca falhou.</li>
+        <li>
+          <strong>Backup agendado com falha</strong>: uma execução falhou ou alcançou apenas alguns dos seus
+          destinos.
+        </li>
+        <li>
+          <strong>Sincronização em tempo real parada</strong>: ela falhou, parou ou precisa de atenção por
+          conta própria — não quando uma pessoa a parou.
+        </li>
+        <li><strong>Tarefa com falha</strong>: qualquer outra tarefa (um teste de restauração tem o seu próprio evento).</li>
+        <li>
+          <strong>Teste de restauração com falha</strong>: um teste de restauração agendado não conseguiu
+          restaurar o backup, encontrou dados diferentes ou não conseguiu descartar o banco de dados temporário
+          (um aviso: os dados correspondiam). Um teste que passou fica no histórico do agendamento, não é um
+          alerta.
+        </li>
+        <li>
+          <strong>A sincronização bidirecional resolveu conflitos</strong>: os dois lados de uma sincronização
+          em tempo real bidirecional alteraram os mesmos documentos; prevaleceu quem gravou por último (os
+          <code>_id</code>s estão na atividade da sincronização).
+        </li>
+        <li>
+          <strong>O monitoramento correspondeu ao filtro de alerta</strong>: um feed de Observar cujo
+          proprietário pediu alertas teve alterações que passaram pelo filtro (no máximo a cada 10 segundos,
+          enquanto o feed estiver em execução).
+        </li>
+      </ul>
+      <p>
+        As notificações carregam apenas nomes e números: nunca valores de documentos, textos de erro, strings de
+        conexão nem hosts.
+      </p>
+      <h3>Relatórios agendados</h3>
+      <p>
+        Na página Alertas (administradores do app): um relatório informa algumas contagens de uma conexão em um
+        agendamento — toda manhã, toda segunda-feira, com frequência de até uma hora — no sino, por e-mail ou
+        em webhooks, da mesma forma que os alertas são enviados. Cada contagem tem seu rótulo, uma coleção e um
+        filtro opcional (JSON; sem filtro, conta todos os documentos, a estimativa da coleção); uma contagem
+        acima de um milhão diz "pelo menos". Execute um agora, altere-o, desative-o ou exclua-o na linha dele;
+        as contagens da última execução são mostradas ali.
+      </p>
+      <p>
+        Apenas números, nunca um valor. Um filtro que cita um campo pessoal — ou que as regras de dados pessoais
+        interpretariam de outro modo — é recusado quando o relatório é salvo e, quando as regras mudam depois,
+        é omitido, com o motivo informado; o mesmo vale para os namespaces do próprio MongoDB, JavaScript de
+        servidor, visualizações e séries temporais (o pipeline de uma visualização poderia escolher por um campo
+        pessoal). Um relatório conta como credenciais da própria conexão: uma conexão em que cada pessoa entra
+        por conta própria é recusada, assim como um filtro em uma conexão que criptografa campos no cliente
+        (ele não corresponderia a nada que ela consiga ler). No sino e no histórico, os administradores veem as
+        contagens de uma execução pelos rótulos delas; os demais veem que um relatório foi executado, não as
+        contagens. As últimas 30 execuções de cada relatório são mantidas no histórico; um relatório cujo
+        agendamento não pode mais ser calculado é desativado, com o motivo informado.
+      </p>
+      <h3>Canais</h3>
+      <ul>
+        <li>
+          <strong>O sino.</strong> Cada usuário ativa <em>Mostrar alertas no sino</em> para si mesmo, em
+          Preferências ou na página Alertas. Cada um vê alertas apenas das conexões cujo servidor pode observar
+          (<code>server:monitor</code>).
+        </li>
+        <li>
+          <strong>E-mail.</strong> O servidor SMTP, a porta e o TLS desde o início (geralmente 465) ou STARTTLS
+          (geralmente 587): um servidor que não oferece nenhum dos dois é recusado, e o e-mail nunca é enviado
+          em texto simples. Um nome de usuário e uma senha (protegidos), o endereço De e até 20 destinatários.
+          Um novo servidor, porta, criptografia ou nome de usuário exige que a senha seja digitada novamente: a
+          senha salva nunca é enviada a outro servidor. <em>Enviar mensagem de teste</em> envia com as
+          configurações salvas. Uma sessão que não conclui o handshake TLS ou a troca a tempo é abandonada. O
+          e-mail passa pelo cliente do próprio Mongo Manager e pela proteção de saída (egress guard): endereços
+          públicos e endereços privados somente dentro de <code>MM_ALERTS_PRIVATE_NETWORKS</code>.
+        </li>
+        <li>
+          <strong>Webhooks.</strong> Um endereço https; http simples somente para endereços dentro de
+          <code>MM_ALERTS_PRIVATE_NETWORKS</code>. Sem credenciais no endereço, endereços de metadados de nuvem
+          e link-local nunca, e os redirecionamentos não são seguidos. O servidor cria o segredo de assinatura
+          de cada webhook e o mostra uma única vez; <em>Gerar novo segredo</em> o substitui, e o antigo deixa de
+          funcionar imediatamente.
+        </li>
+      </ul>
+      <p>Cada regra escolhe para onde é enviada; uma regra sem canal apenas é registrada.</p>
+
+      <h3 id="webhook-delivery">Entregas de webhook</h3>
+      <p>Cada entrega é um POST com um corpo JSON:</p>
+      <pre><code>{
+  "type": "alert.firing",
+  "id": "…",
+  "at": "2026-10-16T09:30:00.000Z",
+  "alert": {
+    "metric": "cacheFill",
+    "event": null,
+    "state": "firing",
+    "value": 91,
+    "threshold": 80,
+    "unit": "percent",
+    "startedAt": "2026-10-16T09:28:00.000Z",
+    "resolvedAt": null,
+    "connection": { "id": "…", "name": "Production" },
+    "detail": {}
+  }
+}</code></pre>
+      <p>
+        <code>type</code> é <code>alert.firing</code>, <code>alert.resolved</code>,
+        <code>alert.event</code> ou <code>alert.test</code> (um teste carrega apenas <code>type</code> e
+        <code>at</code>). Os alertas de evento definem <code>event</code> (<code>backup.failed</code>,
+        <code>schedule.failed</code>, <code>liveSync.stopped</code>, <code>job.failed</code>) em vez de
+        <code>metric</code>. Os cabeçalhos:
+      </p>
+      <ul>
+        <li><code>x-mm-event</code>: o tipo novamente.</li>
+        <li><code>x-mm-delivery</code>: um id único da entrega, o mesmo em cada nova tentativa.</li>
+        <li><code>x-mm-timestamp</code>: segundos Unix em que esta tentativa foi assinada.</li>
+        <li>
+          <code>x-mm-signature</code>: <code>sha256=</code> seguido do HMAC-SHA256 em hexadecimal, com o
+          segredo do webhook, do timestamp, um ponto e o corpo.
+        </li>
+      </ul>
+      <p>
+        Verifique a assinatura sobre o corpo bruto, antes de interpretá-lo, e recuse timestamps com mais de 5
+        minutos. Em Node.js:
+      </p>
+      <pre><code>const crypto = require('node:crypto')
+
+function verify(secret, headers, rawBody) {
+  const timestamp = headers['x-mm-timestamp']
+  const signature = headers['x-mm-signature'] ?? ''
+  if (!/^\d+$/.test(timestamp ?? '')) return false
+  if (Math.abs(Date.now() / 1000 - Number(timestamp)) &gt; 300) return false
+  const expected =
+    'sha256=' + crypto.createHmac('sha256', secret).update(timestamp + '.' + rawBody).digest('hex')
+  const a = Buffer.from(signature)
+  const b = Buffer.from(expected)
+  return a.length === b.length &amp;&amp; crypto.timingSafeEqual(a, b)
+}</code></pre>
+      <p>Em Python:</p>
+      <pre><code>import hashlib, hmac, time
+
+def verify(secret: bytes, headers, raw_body: bytes) -&gt; bool:
+    timestamp = headers.get("x-mm-timestamp", "")
+    if not timestamp.isdigit() or abs(time.time() - int(timestamp)) &gt; 300:
+        return False
+    mac = hmac.new(secret, timestamp.encode() + b"." + raw_body, hashlib.sha256)
+    expected = "sha256=" + mac.hexdigest()
+    return hmac.compare_digest(headers.get("x-mm-signature", ""), expected)</code></pre>
+      <p>
+        Uma entrega é tentada até mais três vezes, após 2 segundos, 10 segundos e 60 segundos, em caso de erro
+        de rede, resposta 5xx, 408 ou 429; nunca em qualquer outro 4xx, nem para um endereço que a proteção
+        recusa. Cada tentativa é assinada novamente com um timestamp novo. Use <code>x-mm-delivery</code> para
+        ignorar uma entrega que você já tratou.
+      </p>
+
+      <h3>Adiar, pausar e reconhecer</h3>
+      <ul>
+        <li>
+          <strong>Adiar</strong> uma regra por 1 hora, 8 horas ou 1 dia: os alertas continuam sendo
+          registrados, mas nada é enviado. <strong>Reativar agora</strong> encerra o adiamento antes do
+          prazo.
+        </li>
+        <li>Pause e retome uma regra com o interruptor dela.</li>
+        <li>
+          Os administradores <strong>reconhecem</strong> um alerta para todos, que então veem quem o fez; os
+          demais <strong>dispensam</strong> o alerta do próprio sino. Fora os administradores, o sino mostra o
+          que aconteceu (seus códigos), mas não qual sincronização, tarefa, agendamento ou namespace.
+        </li>
+        <li>
+          As entregas saem poucas por vez a partir de uma única fila, não importa quantos canais e alertas
+          disparem juntos.
+        </li>
+        <li>
+          O <strong>Histórico</strong>, na página Alertas e na seção de cada conexão, guarda 90 dias (no máximo
+          20.000 entradas), com o resultado de cada entrega e quantas tentativas foram necessárias.
+        </li>
+      </ul>
+      <p>
+        <code>MM_ALERTS=0</code> desativa os alertas no servidor: nada é avaliado nem enviado (veja
+        <a href="deployment.html#alerts">Implantação</a>). O log de auditoria registra
+        <code>alerts.rule.create</code>, <code>alerts.rule.update</code>, <code>alerts.rule.delete</code>,
+        <code>alerts.rule.snooze</code>, <code>alerts.email.update</code>, <code>alerts.email.test</code>,
+        <code>alerts.webhook.create</code>, <code>alerts.webhook.update</code>,
+        <code>alerts.webhook.delete</code>, <code>alerts.webhook.test</code> e
+        <code>alerts.acknowledge</code> — nunca a senha SMTP nem o segredo de um webhook.
+      </p>
+
+      <h2 id="health">Saúde em tempo real</h2>
+      <p>
+        Os cartões de conexão na Visão geral mostram a latência de ping, a versão do MongoDB, a topologia de
+        cada conexão e os alertas disparados nela. A página de uma conexão mostra o mesmo em seu cabeçalho, com
+        um ponto de status.
+      </p>
+      <ul>
+        <li>O servidor mantém cada resposta por 30 segundos.</li>
+        <li>
+          A lista nunca se conecta por conta própria: uma conexão que não está aberta mostra
+          <strong>Não conectado</strong>. Abrir a página de uma conexão a verifica, como listar seus bancos de
+          dados faria.
+        </li>
+        <li>As contagens de alertas são mostradas apenas para conexões cujo servidor você pode observar.</li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Nesta página</p>
+      <ol>
+        <li><a href="#users-roles">Usuários e funções</a></li>
+        <li><a href="#sharding">Sharding</a></li>
+        <li><a href="#alerts">Alertas</a></li>
+        <li><a href="#health">Saúde em tempo real</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

@@ -1,0 +1,82 @@
+{
+  "version": "hand-made",
+  "note": "W5 review I6: a mongos aggregation whose shards answer with the whole pipeline in the query plan (slot-based engine, a join pushed in as EQ_LOOKUP), one shard stopped at its time limit. Numbers chosen by hand.",
+  "raw": {
+    "mergeType": "router",
+    "splitPipeline": {
+      "shardsPart": [{ "$lookup": { "from": "other", "localField": "g", "foreignField": "k", "as": "o" } }],
+      "mergerPart": [{ "$mergeCursors": { "nss": "shop.items" } }]
+    },
+    "shards": {
+      "shard0": {
+        "host": "capture-host",
+        "explainVersion": "2",
+        "queryPlanner": {
+          "namespace": "shop.items",
+          "winningPlan": {
+            "isCached": false,
+            "queryPlan": {
+              "stage": "EQ_LOOKUP",
+              "planNodeId": 2,
+              "foreignCollection": "shop.other",
+              "localField": "g",
+              "foreignField": "k",
+              "asField": "o",
+              "inputStage": { "stage": "COLLSCAN", "planNodeId": 1 }
+            }
+          },
+          "rejectedPlans": []
+        },
+        "executionStats": {
+          "executionSuccess": true,
+          "nReturned": 1500,
+          "executionTimeMillis": 40,
+          "totalKeysExamined": 0,
+          "totalDocsExamined": 1502,
+          "executionStages": {
+            "stage": "eq_lookup",
+            "planNodeId": 2,
+            "nReturned": 1500,
+            "executionTimeMillisEstimate": 40
+          }
+        }
+      },
+      "shard1": {
+        "host": "capture-host",
+        "explainVersion": "2",
+        "queryPlanner": {
+          "namespace": "shop.items",
+          "winningPlan": {
+            "isCached": false,
+            "queryPlan": {
+              "stage": "EQ_LOOKUP",
+              "planNodeId": 2,
+              "foreignCollection": "shop.other",
+              "localField": "g",
+              "foreignField": "k",
+              "asField": "o",
+              "inputStage": { "stage": "COLLSCAN", "planNodeId": 1 }
+            }
+          },
+          "rejectedPlans": []
+        },
+        "executionStats": {
+          "executionSuccess": false,
+          "errorMessage": "operation exceeded time limit",
+          "errorCode": 50,
+          "nReturned": 700,
+          "executionTimeMillis": 30000,
+          "totalKeysExamined": 0,
+          "totalDocsExamined": 702,
+          "executionStages": {
+            "stage": "eq_lookup",
+            "planNodeId": 2,
+            "nReturned": 700,
+            "executionTimeMillisEstimate": 30000
+          }
+        }
+      }
+    },
+    "ok": 1
+  }
+}

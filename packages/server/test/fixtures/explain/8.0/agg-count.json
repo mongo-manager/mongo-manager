@@ -1,0 +1,333 @@
+{
+  "version": "8.0.32",
+  "raw": {
+    "explainVersion": "2",
+    "stages": [
+      {
+        "$cursor": {
+          "queryPlanner": {
+            "namespace": "shop.items",
+            "parsedQuery": {
+              "g": {
+                "$eq": {
+                  "$numberInt": "1"
+                }
+              }
+            },
+            "indexFilterSet": false,
+            "queryHash": "5EAAC480",
+            "planCacheShapeHash": "5EAAC480",
+            "planCacheKey": "3BE733AA",
+            "optimizationTimeMillis": {
+              "$numberInt": "0"
+            },
+            "maxIndexedOrSolutionsReached": false,
+            "maxIndexedAndSolutionsReached": false,
+            "maxScansToExplodeReached": false,
+            "prunedSimilarIndexes": false,
+            "winningPlan": {
+              "isCached": false,
+              "queryPlan": {
+                "stage": "GROUP",
+                "planNodeId": {
+                  "$numberInt": "2"
+                },
+                "inputStage": {
+                  "stage": "COUNT_SCAN",
+                  "planNodeId": {
+                    "$numberInt": "1"
+                  },
+                  "keyPattern": {
+                    "g": {
+                      "$numberInt": "1"
+                    }
+                  },
+                  "indexName": "g_1",
+                  "isMultiKey": false,
+                  "multiKeyPaths": {
+                    "g": []
+                  },
+                  "isUnique": false,
+                  "isSparse": false,
+                  "isPartial": false,
+                  "indexVersion": {
+                    "$numberInt": "2"
+                  },
+                  "indexBounds": {
+                    "startKey": {
+                      "g": {
+                        "$numberInt": "1"
+                      }
+                    },
+                    "startKeyInclusive": true,
+                    "endKey": {
+                      "g": {
+                        "$numberInt": "1"
+                      }
+                    },
+                    "endKeyInclusive": true
+                  }
+                }
+              },
+              "slotBasedPlan": {
+                "slots": "$$RESULT=s6 env: {  }",
+                "stages": "[2] project [s6 = newObj(\"_id\", s4, \"n\", s5)] \n[2] project [s4 = null, s5 = (convert ( s3, int32) ?: s3)] \n[2] group [] [s3 = count()] spillSlots[s2] mergingExprs[sum(s2)] \n[1] ixseek KS(2B020104) KS(2B02FE04) none s1 none none [] @\"16c4e5c4-a402-4df5-92bd-64534b7f63f0\" @\"g_1\" true "
+              }
+            },
+            "rejectedPlans": []
+          },
+          "executionStats": {
+            "executionSuccess": true,
+            "nReturned": {
+              "$numberInt": "1"
+            },
+            "executionTimeMillis": {
+              "$numberInt": "1"
+            },
+            "totalKeysExamined": {
+              "$numberInt": "429"
+            },
+            "totalDocsExamined": {
+              "$numberInt": "0"
+            },
+            "executionStages": {
+              "stage": "project",
+              "planNodeId": {
+                "$numberInt": "2"
+              },
+              "nReturned": {
+                "$numberInt": "1"
+              },
+              "executionTimeMillisEstimate": {
+                "$numberInt": "0"
+              },
+              "opens": {
+                "$numberInt": "1"
+              },
+              "closes": {
+                "$numberInt": "1"
+              },
+              "saveState": {
+                "$numberInt": "1"
+              },
+              "restoreState": {
+                "$numberInt": "1"
+              },
+              "isEOF": {
+                "$numberInt": "1"
+              },
+              "projections": {
+                "6": "newObj(\"_id\", s4, \"n\", s5) "
+              },
+              "inputStage": {
+                "stage": "project",
+                "planNodeId": {
+                  "$numberInt": "2"
+                },
+                "nReturned": {
+                  "$numberInt": "1"
+                },
+                "executionTimeMillisEstimate": {
+                  "$numberInt": "0"
+                },
+                "opens": {
+                  "$numberInt": "1"
+                },
+                "closes": {
+                  "$numberInt": "1"
+                },
+                "saveState": {
+                  "$numberInt": "1"
+                },
+                "restoreState": {
+                  "$numberInt": "1"
+                },
+                "isEOF": {
+                  "$numberInt": "1"
+                },
+                "projections": {
+                  "4": "null ",
+                  "5": "(convert ( s3, int32) ?: s3) "
+                },
+                "inputStage": {
+                  "stage": "group",
+                  "planNodeId": {
+                    "$numberInt": "2"
+                  },
+                  "nReturned": {
+                    "$numberInt": "1"
+                  },
+                  "executionTimeMillisEstimate": {
+                    "$numberInt": "0"
+                  },
+                  "opens": {
+                    "$numberInt": "1"
+                  },
+                  "closes": {
+                    "$numberInt": "1"
+                  },
+                  "saveState": {
+                    "$numberInt": "1"
+                  },
+                  "restoreState": {
+                    "$numberInt": "1"
+                  },
+                  "isEOF": {
+                    "$numberInt": "1"
+                  },
+                  "groupBySlots": [],
+                  "expressions": {
+                    "3": "count() ",
+                    "initExprs": {
+                      "3": null
+                    }
+                  },
+                  "mergingExprs": {
+                    "2": "sum(s2) "
+                  },
+                  "usedDisk": false,
+                  "spills": {
+                    "$numberInt": "0"
+                  },
+                  "spilledBytes": {
+                    "$numberInt": "0"
+                  },
+                  "spilledRecords": {
+                    "$numberInt": "0"
+                  },
+                  "spilledDataStorageSize": {
+                    "$numberInt": "0"
+                  },
+                  "inputStage": {
+                    "stage": "ixseek",
+                    "planNodeId": {
+                      "$numberInt": "1"
+                    },
+                    "nReturned": {
+                      "$numberInt": "429"
+                    },
+                    "executionTimeMillisEstimate": {
+                      "$numberInt": "0"
+                    },
+                    "opens": {
+                      "$numberInt": "1"
+                    },
+                    "closes": {
+                      "$numberInt": "1"
+                    },
+                    "saveState": {
+                      "$numberInt": "1"
+                    },
+                    "restoreState": {
+                      "$numberInt": "1"
+                    },
+                    "isEOF": {
+                      "$numberInt": "1"
+                    },
+                    "indexName": "g_1",
+                    "keysExamined": {
+                      "$numberInt": "429"
+                    },
+                    "seeks": {
+                      "$numberInt": "1"
+                    },
+                    "numReads": {
+                      "$numberInt": "430"
+                    },
+                    "recordIdSlot": {
+                      "$numberInt": "1"
+                    },
+                    "outputSlots": [],
+                    "indexKeysToInclude": "00000000000000000000000000000000",
+                    "seekKeyLow": "KS(2B020104) ",
+                    "seekKeyHigh": "KS(2B02FE04) "
+                  }
+                }
+              }
+            }
+          }
+        },
+        "nReturned": {
+          "$numberInt": "1"
+        },
+        "executionTimeMillisEstimate": {
+          "$numberInt": "0"
+        }
+      },
+      {
+        "$project": {
+          "n": true,
+          "_id": false
+        },
+        "nReturned": {
+          "$numberInt": "1"
+        },
+        "executionTimeMillisEstimate": {
+          "$numberInt": "0"
+        }
+      }
+    ],
+    "queryShapeHash": "AB19CF3E6780634EE8DBE28EAD96C655C365E94BB38554277EAC1A6C7F47E1B3",
+    "serverInfo": {
+      "host": "capture-host",
+      "port": {
+        "$numberInt": "57616"
+      },
+      "version": "8.0.32",
+      "gitVersion": "f9eb55a7cc900f33a722a5b32a0fdbf54385c749"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFacetMaxOutputDocSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceGroupMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryMaxBlockingSortMemoryUsageBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryProhibitBlockingMergeOnMongoS": {
+        "$numberInt": "0"
+      },
+      "internalQueryMaxAddToSetBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": {
+        "$numberInt": "104857600"
+      },
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": {
+        "$numberInt": "1"
+      }
+    },
+    "command": {
+      "aggregate": "items",
+      "pipeline": [
+        {
+          "$match": {
+            "g": {
+              "$numberInt": "1"
+            }
+          }
+        },
+        {
+          "$count": "n"
+        }
+      ],
+      "cursor": {},
+      "maxTimeMS": {
+        "$numberInt": "30000"
+      },
+      "$db": "shop"
+    },
+    "ok": {
+      "$numberInt": "1"
+    }
+  }
+}

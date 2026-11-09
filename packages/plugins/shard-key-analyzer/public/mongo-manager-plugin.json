@@ -1,0 +1,119 @@
+{
+  "id": "shard-key-analyzer",
+  "name": {
+    "en": "Shard key analyzer",
+    "tr": "Parça anahtarı çözümleyici",
+    "zh": "分片键分析器",
+    "ja": "シャードキーアナライザー",
+    "es": "Analizador de claves de fragmentación",
+    "pt": "Analisador de chaves de shard",
+    "ko": "샤드 키 분석기",
+    "de": "Shard-Schlüssel-Analysator",
+    "fr": "Analyseur de clés de partition",
+    "ru": "Анализатор ключей шардирования"
+  },
+  "version": "1.2.1",
+  "description": {
+    "en": "Compares candidate shard keys for a collection by what MongoDB's analyzeShardKey says of them — distinct values, how common the most common value is, whether the key grows with each insert — and judges each as MongoDB's guidance has it.",
+    "tr": "Aday parça anahtarlarını MongoDB'nin analyzeShardKey komutunun söylediklerine göre karşılaştırır — farklı değerler, en sık değerin yaygınlığı, her eklemeyle büyüyüp büyümediği — ve her birini MongoDB'nin yönergelerine göre değerlendirir.",
+    "zh": "依据 MongoDB 的 analyzeShardKey 给出的结果比较集合的候选分片键——不同值的数量、最常见值的占比、键是否随每次插入而增长——并按 MongoDB 的指南逐一评判。",
+    "ja": "MongoDB の analyzeShardKey の結果に基づいて、コレクションのシャードキー候補を比較します。一意な値の数、最頻値の割合、挿入のたびにキーが増加するかどうかを調べ、MongoDB のガイダンスに沿って評価します。",
+    "es": "Compara las claves de fragmentación candidatas de una colección según lo que indica analyzeShardKey de MongoDB (valores distintos, frecuencia del valor más común, si la clave crece con cada inserción) y valora cada una según las pautas de MongoDB.",
+    "pt": "Compara as chaves de shard candidatas de uma coleção pelo que o analyzeShardKey do MongoDB informa (valores distintos, frequência do valor mais comum, se a chave cresce a cada inserção) e avalia cada uma conforme as orientações do MongoDB.",
+    "ko": "MongoDB analyzeShardKey의 결과를 기준으로 컬렉션의 후보 샤드 키를 비교합니다. 서로 다른 값의 수, 가장 흔한 값의 비중, 삽입할 때마다 키가 증가하는지 여부를 살펴보고, MongoDB 가이드라인에 따라 각각을 평가합니다.",
+    "de": "Vergleicht Kandidaten für den Shard-Schlüssel einer Collection anhand der Ergebnisse von analyzeShardKey in MongoDB – verschiedene Werte, Häufigkeit des häufigsten Werts, Wachstum des Schlüssels bei jedem Einfügen – und bewertet jeden nach den Richtlinien von MongoDB.",
+    "fr": "Compare les clés de partition candidates d’une collection d’après les résultats de analyzeShardKey de MongoDB (valeurs distinctes, fréquence de la valeur la plus courante, croissance de la clé à chaque insertion) et juge chacune selon les recommandations de MongoDB.",
+    "ru": "Сравнивает кандидаты в ключи шардирования коллекции по результатам analyzeShardKey в MongoDB — различные значения, частота самого частого значения, растет ли ключ с каждой вставкой — и оценивает каждый по рекомендациям MongoDB."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "shard-key",
+        "title": {
+          "en": "Shard key",
+          "tr": "Parça anahtarı",
+          "zh": "分片键",
+          "ja": "シャードキー",
+          "es": "Clave de fragmentación",
+          "pt": "Chave de shard",
+          "ko": "샤드 키",
+          "de": "Shard-Schlüssel",
+          "fr": "Clé de partition",
+          "ru": "Ключ шардирования"
+        },
+        "icon": "layers"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-11-07",
+  "changelog": [
+    {
+      "version": "1.2.1",
+      "date": "2026-11-07",
+      "notes": {
+        "en": "Opens on a collection of large documents, such as API logs: the fields it offers are read from as many sampled documents as one answer to the page can hold. Before, the tab stopped with \"This is too large to send\".",
+        "tr": "API günlükleri gibi büyük belgeli bir koleksiyonda da açılır: önerdiği alanlar, sayfaya giden tek bir cevaba sığacak kadar örnek belgeden okunur. Önceden sekme \"Bu, göndermek için fazla büyük\" diyerek duruyordu.",
+        "zh": "现在可以在大文档组成的集合（例如 API 日志）上打开：提供的字段从页面一次应答能容纳的采样文档中读取。以前该标签页会停在“内容太大，无法发送”。",
+        "ja": "API ログのような大きなドキュメントのコレクションでも開けるようになりました。候補のフィールドは、ページへの 1 回の応答に収まるだけのサンプルドキュメントから読み取ります。以前は「大きすぎて送信できません」で止まっていました。",
+        "es": "Se abre en una colección de documentos grandes, como registros de API: los campos que ofrece se leen de tantos documentos de muestra como caben en una respuesta a la página. Antes, la pestaña se detenía con «Es demasiado grande para enviarlo».",
+        "pt": "Abre em uma coleção de documentos grandes, como logs de API: os campos oferecidos são lidos de tantos documentos de amostra quantos cabem em uma resposta à página. Antes, a aba parava com \"É grande demais para enviar\".",
+        "ko": "API 로그처럼 큰 도큐먼트로 된 컬렉션에서도 열립니다. 제안하는 필드는 페이지로 가는 한 번의 응답에 담길 만큼의 샘플 도큐먼트에서 읽습니다. 이전에는 탭이 \"너무 커서 보낼 수 없습니다\"에서 멈췄습니다.",
+        "de": "Öffnet sich auch auf einer Collection großer Dokumente, etwa API-Logs: Die angebotenen Felder werden aus so vielen Stichprobendokumenten gelesen, wie eine Antwort an die Seite fassen kann. Vorher hielt der Tab mit „Das ist zu groß zum Senden“ an.",
+        "fr": "S’ouvre sur une collection de documents volumineux, comme des journaux d’API : les champs proposés sont lus dans autant de documents échantillonnés qu’une réponse à la page peut en contenir. Auparavant, l’onglet s’arrêtait sur « C’est trop volumineux pour être envoyé ».",
+        "ru": "Открывается и на коллекции больших документов, например журналов API: предлагаемые поля читаются из стольких документов выборки, сколько помещается в один ответ странице. Раньше вкладка останавливалась на «Слишком большой объем для отправки»."
+      }
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. The average document size now reads right in the singular and plural of each language.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Ortalama belge boyutu artık her dilin tekil ve çoğul biçimiyle doğru yazılır.",
+        "zh": "现已与应用一样支持韩语、德语、法语和俄语。平均文档大小现在会按各语言的单复数形式正确显示。",
+        "ja": "アプリと同じく、韓国語・ドイツ語・フランス語・ロシア語に対応しました。平均ドキュメントサイズが、各言語の単数形・複数形で正しく表示されるようになりました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. El tamaño medio del documento ahora se escribe bien en singular y plural en cada idioma.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o app. O tamanho médio do documento agora é escrito corretamente no singular e no plural de cada idioma.",
+        "ko": "이제 앱과 같이 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 평균 문서 크기가 이제 각 언어의 단수·복수 형태에 맞게 올바르게 표시됩니다.",
+        "de": "Jetzt wie die App auch auf Koreanisch, Deutsch, Französisch und Russisch. Die durchschnittliche Dokumentgröße steht jetzt in jeder Sprache im richtigen Singular und Plural.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. La taille moyenne d’un document s’écrit désormais correctement au singulier et au pluriel dans chaque langue.",
+        "ru": "Теперь, как и приложение, также на корейском, немецком, французском и русском. Средний размер документа теперь пишется правильно в единственном и множественном числе каждого языка."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现已与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容保持不变。",
+        "ja": "アプリと同じく、中国語・日本語・スペイン語・ブラジルポルトガル語に対応しました。それ以外の変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o app. Nada mais muda.",
+        "ko": "앱과 같이 중국어, 일본어, 스페인어, 브라질 포르투갈어를 지원합니다. 그 밖의 변경 사항은 없습니다.",
+        "de": "Jetzt wie die App auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь, как и приложение, также на китайском, японском, испанском и бразильском португальском. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-27",
+      "notes": {
+        "en": "First release. A Shard key tab builds candidate keys from the collection's sampled fields (ascending or hashed, up to five fields, one hashed at most; hidden fields, arrays and objects never offered), has MongoDB's analyzeShardKey analyse each (7.0 and later, on a replica set or a sharded cluster), and sets up to six side by side: distinct values, the share of the most common value, monotonicity, uniqueness, the most common values, each judged good, fair or poor. Where no index supports a key it names the index to create.",
+        "tr": "İlk sürüm. Parça anahtarı sekmesi koleksiyonun örneklenen alanlarından aday anahtarlar kurar (artan ya da hash, en fazla beş alan, en fazla biri hash; gizli alanlar, diziler ve nesneler hiç sunulmaz), her birini MongoDB'nin analyzeShardKey komutuna çözümletir (7.0 ve sonrası, bir replica set'te ya da parçalı kümede) ve en fazla altısını yan yana koyar: farklı değerler, en sık değerin payı, monotonluk, benzersizlik, en sık değerler; her biri iyi, orta ya da zayıf olarak değerlendirilir. Bir anahtarı destekleyen indeks yoksa oluşturulacak indeksi söyler.",
+        "zh": "首个版本。“分片键”标签页根据集合的采样字段构建候选键（升序或哈希，最多五个字段，最多一个哈希字段；隐藏字段、数组和对象不会提供），让 MongoDB 的 analyzeShardKey 逐一分析（7.0 及更高版本，需在副本集或分片集群上），并最多并排对比六个：不同值的数量、最常见值的占比、单调性、唯一性、最常见的值，每项评为良好、一般或较差。若没有索引支持某个键，会指出需要创建的索引。",
+        "ja": "初回リリース。「シャードキー」タブは、コレクションのサンプリングしたフィールドから候補キー（昇順またはハッシュ、最大 5 フィールド、ハッシュは 1 つまで。非表示のフィールド、配列、オブジェクトは提示されません）を組み立て、MongoDB の analyzeShardKey（7.0 以降、レプリカセットまたはシャーディングされたクラスター）で分析し、最大 6 件を並べて比較します。一意な値の数、最頻値の割合、単調性、一意性、頻出する値を、それぞれ良好・普通・不良で評価します。キーをサポートするインデックスがない場合は、作成すべきインデックスを示します。",
+        "es": "Primera versión. Una pestaña Clave de fragmentación crea claves candidatas a partir de los campos muestreados de la colección (ascendentes o hasheadas, hasta cinco campos y uno hasheado como máximo; nunca se ofrecen campos ocultos, arreglos ni objetos), hace que analyzeShardKey de MongoDB analice cada una (7.0 o posterior, en un conjunto de réplicas o un clúster particionado) y coloca hasta seis en paralelo: valores distintos, proporción del valor más común, monotonía, unicidad y valores más frecuentes, cada uno valorado como bueno, aceptable o deficiente. Si ningún índice respalda una clave, indica el índice que hay que crear.",
+        "pt": "Primeira versão. Uma aba Chave de shard cria chaves candidatas a partir dos campos amostrados da coleção (crescentes ou hasheadas, até cinco campos e no máximo um hasheado; campos ocultos, arrays e objetos nunca são oferecidos), faz o analyzeShardKey do MongoDB analisar cada uma (7.0 ou posterior, em um conjunto de réplicas ou cluster fragmentado) e coloca até seis lado a lado: valores distintos, proporção do valor mais comum, monotonicidade, unicidade e valores mais frequentes, cada um avaliado como bom, razoável ou ruim. Quando nenhum índice dá suporte a uma chave, indica o índice a criar.",
+        "ko": "첫 릴리스. 샤드 키 탭은 컬렉션에서 샘플링한 필드로 후보 키(오름차순 또는 해시, 최대 5개 필드, 해시는 최대 1개이며, 숨겨진 필드·배열·객체는 제공하지 않음)를 만들고, MongoDB의 analyzeShardKey(7.0 이상, 레플리카 세트 또는 샤드 클러스터)로 각각을 분석하게 하며, 최대 6개를 나란히 비교합니다. 서로 다른 값의 수, 가장 흔한 값의 비중, 단조성, 고유성, 가장 흔한 값을 각각 좋음·보통·나쁨으로 평가합니다. 키를 지원하는 인덱스가 없으면 만들어야 할 인덱스를 알려 줍니다.",
+        "de": "Erste Version. Ein Tab „Shard-Schlüssel“ baut Kandidatenschlüssel aus den per Stichprobe ermittelten Feldern der Collection (aufsteigend oder gehasht, bis zu fünf Felder, höchstens ein gehashtes; versteckte Felder, Arrays und Objekte werden nie angeboten), lässt jeden von analyzeShardKey in MongoDB analysieren (ab 7.0, auf einem Replica Set oder einem Sharded Cluster) und stellt bis zu sechs nebeneinander: verschiedene Werte, Anteil des häufigsten Werts, Monotonie, Eindeutigkeit und häufigste Werte, jeweils bewertet als gut, mittel oder schlecht. Wenn kein Index einen Schlüssel unterstützt, nennt er den zu erstellenden Index.",
+        "fr": "Première version. Un onglet Clé de partition construit des clés candidates à partir des champs échantillonnés de la collection (croissantes ou hachées, jusqu’à cinq champs, dont un seul haché au maximum ; les champs masqués, les tableaux et les objets ne sont jamais proposés), fait analyser chacune par analyzeShardKey de MongoDB (7.0 et versions ultérieures, sur un jeu de réplicas ou un cluster partitionné) et en place jusqu’à six côte à côte : valeurs distinctes, part de la valeur la plus courante, monotonie, unicité et valeurs les plus courantes, chacune jugée bonne, correcte ou mauvaise. Lorsqu’aucun index ne prend en charge une clé, l’onglet indique l’index à créer.",
+        "ru": "Первый выпуск. Вкладка «Ключ шардирования» составляет ключи-кандидаты из полей коллекции, взятых в выборку (по возрастанию или хешированные, до пяти полей, не более одного хешированного; скрытые поля, массивы и объекты не предлагаются), поручает MongoDB проанализировать каждый с помощью analyzeShardKey (версии 7.0 и новее, на наборе реплик или шардированном кластере) и выводит до шести рядом: различные значения, доля самого частого значения, монотонность, уникальность, самые частые значения; каждое оценивается как хорошее, приемлемое или плохое. Если ключ не поддерживается ни одним индексом, вкладка называет индекс, который нужно создать."
+      }
+    }
+  ]
+}

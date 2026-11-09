@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>部署 · Mongo Manager 文档</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager 文档</a>
+      <details class="lang-menu">
+        <summary>简体中文</summary>
+        <span class="langs" role="group" aria-label="语言">
+          <a lang="en" hreflang="en" href="../deployment.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/deployment.html">Türkçe</a>
+          <strong lang="zh-CN">简体中文</strong>
+          <a lang="ja" hreflang="ja" href="../ja/deployment.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/deployment.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/deployment.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/deployment.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/deployment.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/deployment.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/deployment.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">概览</a>
+      <a href="getting-started.html">快速入门</a>
+      <a href="security.html">安全</a>
+      <strong>部署</strong>
+      <a href="import-export.html">导入与导出</a>
+      <a href="backup.html">备份与恢复</a>
+      <a href="watch.html">监视变更</a>
+      <a href="sync.html">实时同步</a>
+      <a href="server-admin.html">服务器管理</a>
+      <a href="ai.html">AI 助手</a>
+      <a href="plugins.html">插件</a>
+      <a href="shortcuts.html">键盘快捷键</a>
+    </nav>
+    <main>
+      <h1>部署</h1>
+      <h2 id="as-a-system-service">作为系统服务</h2>
+      <pre><code>sudo mongo-manager service install          # Linux, macOS
+mongo-manager service install               # Windows, elevated prompt
+mongo-manager service status
+mongo-manager service logs
+sudo mongo-manager service open             # local mode: a one-time link that opens it
+sudo mongo-manager service uninstall        # keeps data, config and key</code></pre>
+      <p>
+        该服务以独立的非特权账户运行，程序文件夹仅管理员可修改，以团队模式监听
+        <code>127.0.0.1:4321</code>。首次启动时，一次性设置令牌保存在数据文件夹的
+        <code>setup-token</code> 中，只有服务账户和管理员可以读取；<code>service install</code>
+        会打印读取方法。令牌绝不会写入日志，首个管理员创建后该文件即被删除。
+      </p>
+      <p>
+        以本地模式（<code>--no-auth</code>）安装时，服务只能通过一次性启动链接打开：<code>service install</code>
+        会打印一个链接，之后随时可用 <code>service open</code> 打印新的链接（需以管理员身份运行：链接由数据文件夹中的
+        <code>launch.key</code> 生成）。请在自己的浏览器而非提升权限的浏览器中打开；该浏览器只要保留本站数据，就会保持登录状态，最长为最后一次使用后的六个月。
+      </p>
+      <h2 id="docker">Docker</h2>
+      <p>
+        该镜像以非特权用户在只读根文件系统上运行，采用团队模式。数据保存在 <code>/data</code>
+        卷中。离线机器可使用 <code>docker load -i</code> 加载镜像归档。首次启动的设置令牌：
+        <code>docker exec &lt;container&gt; cat /data/setup-token</code>。compose
+        文件仅在主机的回环地址上发布端口（<code>127.0.0.1:4321</code>）；如需为其他机器提供服务，请在前面放置
+        HTTPS 反向代理，而不要发布明文 HTTP。主机上的代理通过 compose 网络的网关访问容器：请信任
+        <code>MM_TRUSTED_PROXIES=172.31.240.1</code>，而不是 <code>127.0.0.1</code>。
+      </p>
+      <p>
+        容器内的服务器监听所有地址，因此在未设置 <code>MM_ALLOWED_HOSTS</code> 时，它只响应 IP 地址和
+        <code>localhost</code>（每次启动都会说明这一点）。凡是通过名称访问它的请求，包括转发公共域名的代理、通过服务名访问的另一个容器（例如抓取
+        <code>mongo-manager:4321</code> 的 Prometheus）、Kubernetes 服务，在该名称被列出之前都会收到
+        403：<code>MM_ALLOWED_HOSTS=mongo-manager,mm.example.com</code>。
+      </p>
+      <p>
+        在本地模式（<code>MM_AUTH=0</code>）下，容器日志只会给出打印链接的命令，而不会给出链接本身：
+        <code>docker exec &lt;container&gt; node /app/dist/cli.cjs open --no-open</code>。链接中的端口是服务器在容器内监听的端口：如果发布到主机的其他端口（<code
+          >-p 127.0.0.1:8080:4321</code
+        >），请在打开前把链接中的端口改为主机端口。
+      </p>
+      <p>
+        在服务器上，请在前面放置一个以 <code>mongo.example.com</code> 提供服务的 HTTPS 反向代理，并按如下方式启动；最后一行读取设置令牌。请立即完成设置：在第一个管理员创建之前，任何拿到该令牌的人都可以成为管理员。
+      </p>
+      <pre><code>docker run -d --name mongo-manager --restart unless-stopped \
+  -p 127.0.0.1:4321:4321 \
+  -e MM_ALLOWED_HOSTS=mongo.example.com \
+  -e MM_TRUSTED_PROXIES=172.17.0.1 \
+  -v mm-data:/data \
+  --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true \
+  ghcr.io/mongo-manager/mongo-manager:&lt;version&gt;
+docker exec mongo-manager cat /data/setup-token</code></pre>
+      <p>
+        <code>MM_TRUSTED_PROXIES</code> 是主机上的代理访问容器时所用的地址，即 Docker 网络的网关，在默认 bridge 网络上通常是 <code>172.17.0.1</code>（可用 <code>docker network inspect bridge -f '{{(index .IPAM.Config 0).Gateway}}'</code> 查看）。不设置它时，所有请求看起来都来自网关，审计日志和登录封禁就无法区分用户。设置 <code>MM_ALLOWED_HOSTS</code> 后，只接受其中列出的名称：如果还想在主机上打开 <code>http://127.0.0.1:4321</code>，请把 <code>127.0.0.1</code> 也加进去。<code>--read-only</code>、<code>--tmpfs /tmp</code>、<code>--cap-drop ALL</code> 和 <code>no-new-privileges</code> 就是 compose 文件所采用的加固措施。
+      </p>
+      <h2 id="docker-mongodb">从容器访问 MongoDB</h2>
+      <p>
+        在容器内，<code>localhost</code> 指的是容器本身，因此即使 MongoDB 运行在同一台机器上，<code>mongodb://localhost:27017</code> 也会以 <code>ECONNREFUSED</code> 失败。
+      </p>
+      <ul>
+        <li><strong>另一个容器中的 MongoDB：</strong>把两个容器放到同一个 Docker 网络中（<code>docker network create mm</code>，然后 <code>docker network connect mm mongo-manager</code> 和 <code>docker network connect mm my-mongodb</code>，或在启动时使用 <code>--network mm</code>），并连接到 <code>mongodb://my-mongodb:27017</code>。</li>
+        <li><strong>主机上的 MongoDB，Docker Desktop（Windows、macOS）：</strong><code>mongodb://host.docker.internal:27017</code>。</li>
+        <li><strong>主机上的 MongoDB，Linux：</strong>使用 <code>--network host</code> 运行 Mongo Manager（此时 <code>localhost</code> 就是主机；用 <code>-e MM_HOST=127.0.0.1</code> 使其不对外开放，在前面放置代理，并以 <code>127.0.0.1</code> 信任它），或者添加 <code>--add-host=host.docker.internal:host-gateway</code>。后者只能访问监听 bridge 网关地址的 MongoDB：无法访问只绑定在主机 <code>127.0.0.1</code> 上的 MongoDB，也无法访问只在那里发布的容器（<code>-p 127.0.0.1:27018:27017</code>）；这些情况请使用共享网络或主机网络。</li>
+        <li>如果副本集的成员名为 <code>localhost:27017</code>，驱动程序会被引回 <code>localhost</code>：请添加 <code>?directConnection=true</code>。</li>
+      </ul>
+      <h2 id="updating">更新</h2>
+      <p>
+        管理员可在账户菜单中的“关于 Mongo Manager”页面上看到已安装的版本。<strong>立即检查</strong>会向 GitHub 查询最新发布的版本；<strong>自动检查更新</strong>每天检查一次。在管理员开启之前，每日检查处于关闭状态，并且不会随之发送任何关于您、您的服务器或您数据的信息：只返回最新的版本号。草稿和预发布版本从不提供。
+      </p>
+      <p>
+        只有当发布的 <code>SHA256SUMS</code> 带有 Mongo Manager 的签名（Ed25519）且其中列出了 <code>release.json</code> 时，才会提供该发布。<strong>更新</strong>会把发布下载到数据目录的 <code>app/</code> 中，按签名的校验和检查每个字节，复制数据库，然后重新启动。每次启动时，所运行版本的每个文件都会被再次检查。被发现改动过的版本不会运行：它会被重新下载（除非已关闭更新），或改为运行安装它之前的版本，并在“关于 Mongo Manager”页面中说明。启动时不会下载其他任何内容。新版本若在一分钟内未能启动，就会回滚：恢复数据库副本，重新运行之前的版本，并在“关于 Mongo Manager”页面中说明。
+      </p>
+      <ul>
+        <li><strong>npm 包、独立可执行文件、系统服务：</strong>已安装的程序保持不变，并启动保存在 <code>app/</code> 中最新的已验证版本。由较早版本安装的服务需要重新安装一次（<code>mongo-manager service install</code>）：之后其服务单元以 <code>--isolate-account</code> 启动，这样在更新后的版本被检查并启动之前，会先结束服务账户的其他进程。在 Linux 和 macOS 上，这只对 <code>service install</code> 创建的账户进行，绝不以 root 身份进行；在 LocalService 与其他服务共用的 Windows 上，只结束本安装的程序和之前程序自己的进程。</li>
+        <li><strong>Docker：</strong>新版本保存在 <code>/data</code> 卷中，并在您现有的镜像中运行。在它被检查并启动之前，会结束容器中该用户的其他进程（容器以 root 运行或共用主机进程时绝不这样做）。只有当应用无法在您现有的镜像中运行（需要更新的 Node.js）时，发布才需要更新的镜像；此时“关于 Mongo Manager”页面会说明如何获取，而不是提供更新。只带来系统安全修复的更新镜像绝不会阻止更新：页面会在更新旁边推荐它。使用 Docker Compose：<code>docker compose pull &amp;&amp; docker compose up -d</code>。使用 docker run：<code>docker pull ghcr.io/mongo-manager/mongo-manager:&lt;version&gt;</code>，然后删除容器，并使用相同的选项和相同的 <code>/data</code> 卷从新镜像重新启动（数据保留在卷中）。超过 90 天的镜像也会被指出：请拉取更新的镜像，以获得 Node.js 和系统的安全修复。</li>
+        <li><strong>从源代码运行：</strong>请用 git 更新。</li>
+        <li>第一个能自行更新的版本需要手动安装。</li>
+      </ul>
+      <ul>
+        <li><code>MM_UPDATES</code>：设为 <code>off</code>（或 <code>0</code>、<code>false</code>）可完全关闭更新：没有检查、设置、按钮或请求，“关于 Mongo Manager”页面也会说明。默认：开启，每日检查在管理员开启之前处于关闭状态。</li>
+        <li><code>MM_UPDATE_PROXY</code>：访问 GitHub 时使用的 HTTP(S) 代理，与 <code>MM_BACKUP_PROXY</code> 相同。默认：无。</li>
+      </ul>
+      <h2 id="behind-a-reverse-proxy">位于反向代理之后</h2>
+      <ul>
+        <li>
+          只信任该代理：<code>--trusted-proxies 127.0.0.1</code>。否则服务器无法判断请求是否通过 HTTPS
+          到达，会话 Cookie 也不会标记为 Secure；团队模式启动时会提示这一点，并在登录信息将通过明文 HTTP
+          在网络中传输时给出提示。
+        </li>
+        <li>指定公共主机名：<code>--allowed-hosts mm.example.com</code>。</li>
+        <li>使用 <code>--base-path /mm/</code> 在子路径下提供服务。</li>
+        <li>
+          每个客户端地址每分钟最多可发出 600 个 API 请求；当许多人共用一个地址时，可通过
+          <code>MM_API_RATE_LIMIT</code>（60–100000）调高。
+        </li>
+        <li>
+          同时最多打开 1000 个连接（<code>MM_MAX_CONNECTIONS</code>，16–100000），同一地址最多 256
+          个（<code>MM_MAX_CONNECTIONS_PER_IP</code>，2–100000）；超出的连接会被关闭，日志每分钟对每个地址说明一次。浏览器会保持约六个连接，因此当许多人从同一个地址访问
+          Mongo Manager 时（位于 NAT、VPN 或 Docker Desktop 之后），请调高
+          <code>MM_MAX_CONNECTIONS_PER_IP</code>。在受信任代理之后，只适用总数限制：所有连接都来自代理，应由代理自行限制其客户端。
+        </li>
+        <li>
+          导入和导出的文件保存在 <code>&lt;data directory&gt;/transfer</code> 下：
+          <code>MM_TRANSFER_MAX_UPLOAD</code> 为最大上传大小（MiB，默认 1024，1–65536），
+          <code>MM_TRANSFER_QUOTA</code> 为每个用户可占用的存储空间（MiB，默认 5120，16–1048576），
+          <code>MM_TRANSFER_TOTAL_QUOTA</code> 为所有用户合计可占用的空间（MiB，默认 51200，若
+          <code>MM_TRANSFER_QUOTA</code> 更大则取其值；16–16777216），
+          <code>MM_TRANSFER_TTL_HOURS</code> 为文件的保留时长（默认 24，1–720），
+          <code>MM_TRANSFER_MAX_JOB_HOURS</code> 为一次导入或导出的最长运行时间（默认 6，1–72）。请为该磁盘预留总配额大小的空间；如果更小，则预留配额乘以传输文件的人数。
+        </li>
+      </ul>
+      <h2 id="settings">设置和环境变量</h2>
+      <p>
+        每项服务器设置都可以通过命令行选项、环境变量或由 <code>--config</code> 或 <code>MM_CONFIG</code>
+        指定的 JSON 配置文件来提供。命令行优先于环境变量，环境变量优先于配置文件。开关接受
+        <code>1</code>/<code>0</code>、<code>true</code>/<code>false</code>、<code>yes</code>/<code>no</code> 或
+        <code>on</code>/<code>off</code>。各功能的设置见下文对应的章节。
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>变量</th>
+              <th>选项</th>
+              <th>作用</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>MM_WEB_PORT</code></td>
+              <td><code>-p</code>, <code>--web-port</code></td>
+              <td>Web 界面的端口（默认 4321）。</td>
+            </tr>
+            <tr>
+              <td><code>MM_HOST</code></td>
+              <td><code>--host</code></td>
+              <td>
+                监听的地址（默认 <code>127.0.0.1</code>）。使用网络地址需要团队模式，或设置
+                <code>MM_UNSAFE_NO_AUTH</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_AUTH</code></td>
+              <td><code>--auth</code></td>
+              <td>团队模式：用户、角色和登录（默认关闭）。</td>
+            </tr>
+            <tr>
+              <td><code>MM_DATA_DIR</code></td>
+              <td><code>--data-dir</code></td>
+              <td>数据目录（默认 <code>~/.mongo-manager</code>）。</td>
+            </tr>
+            <tr>
+              <td><code>MM_CONFIG</code></td>
+              <td><code>--config</code></td>
+              <td>
+                JSON 配置文件。在 Linux 和 macOS 上，包含机密信息的配置文件不得被其他用户读取，否则服务器会拒绝使用。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_SECRET_KEY</code></td>
+              <td></td>
+              <td>加密密钥，用于替代数据目录中的 <code>secret.key</code>。</td>
+            </tr>
+            <tr>
+              <td><code>MM_OPEN</code></td>
+              <td><code>--open</code></td>
+              <td>启动时打开浏览器（默认开启）：仅在本地模式、回环地址上、从终端启动时生效。</td>
+            </tr>
+            <tr>
+              <td><code>MM_URI</code></td>
+              <td><code>--uri</code></td>
+              <td>
+                仅在首次启动时创建的连接。带密码的连接字符串请使用环境变量：其他用户可以看到命令行。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_READ_ONLY</code></td>
+              <td><code>--read-only</code></td>
+              <td>无论连接自身如何设置，所有连接都不能更改数据。</td>
+            </tr>
+            <tr>
+              <td><code>MM_TRUSTED_PROXIES</code></td>
+              <td><code>--trusted-proxies</code></td>
+              <td>其 <code>X-Forwarded-*</code> 标头会被采信的代理地址或 CIDR 范围。</td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOWED_HOSTS</code></td>
+              <td><code>--allowed-hosts</code></td>
+              <td>
+                服务器唯一响应的主机名。未设置时，若监听回环地址，则响应回环名称；否则只响应回环名称和 IP
+                地址，绝不响应其他名称（用于防御 DNS 重绑定；启动时会说明）。请在此列出人们用来访问它的每个主机名。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_BASE_PATH</code></td>
+              <td><code>--base-path</code></td>
+              <td>在子路径下提供应用，例如 <code>/mm/</code>。</td>
+            </tr>
+            <tr>
+              <td><code>MM_UNSAFE_NO_AUTH</code></td>
+              <td><code>--unsafe-no-auth</code></td>
+              <td>允许在不启用团队模式的情况下使用网络地址。任何能访问它的人都拥有完全访问权限。</td>
+            </tr>
+            <tr>
+              <td><code>MM_LOG_LEVEL</code></td>
+              <td><code>--log-level</code></td>
+              <td>
+                <code>fatal</code>、<code>error</code>、<code>warn</code>、<code>info</code>（默认）、
+                <code>debug</code>、<code>trace</code> 或 <code>silent</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_LOG_FILE</code></td>
+              <td><code>--log-file</code></td>
+              <td>
+                将 JSON 日志追加到该文件，而不是标准输出。文件会被设为私有（模式 0600；在 Windows
+                上会取消所有用户的访问权限，仅此账户、SYSTEM 和 Administrators 保留访问权限），并在达到 10 MiB
+                时轮转，上一部分保存为 <code>&lt;file&gt;.1</code>。如果路径是链接、具有其他名称的文件（硬链接）或不是常规文件，则会被拒绝，启动失败并给出说明：请删除或重命名它，或指定另一个日志文件。无法写入的行（磁盘已满）会被丢弃，并在标准错误中说明一次。请求按其路径记录，所有查询值和
+                GridFS 文件的 ID 都写为 <code>***</code>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_REQUIRE_ADMIN_2FA</code></td>
+              <td></td>
+              <td>
+                每位管理员必须先设置双重验证登录才能进行其他操作；此后无法在应用中将其关闭。未设置该变量时，管理员可以在应用中提出同样的要求。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_REQUIRE_2FA</code></td>
+              <td></td>
+              <td>
+                每位用户，无论角色如何，必须先设置双重验证登录才能进行其他操作；此后无法在应用中将其关闭。未设置该变量时，管理员可以在应用中提出同样的要求。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_METRICS_TOKEN</code></td>
+              <td></td>
+              <td>
+                在 <code>&lt;base path&gt;metrics</code> 开启 Prometheus 指标，以此令牌作为 Bearer
+                令牌读取（至少 32 个字符）。这些数值不包含任何用户、连接、数据库或集合的名称。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_GRIDFS_MAX_MB</code></td>
+              <td></td>
+              <td>上传到 GridFS 的最大文件，单位 MB（默认 512，1–10240）。</td>
+            </tr>
+            <tr>
+              <td><code>MM_MODEL_MAX_DOCS</code></td>
+              <td></td>
+              <td>
+                一个数据模型（数据库的“模型”部分）总共可采样的文档数（默认 20000，100–1000000）：集合较多时，每个集合的样本会相应缩小，该部分会说明这一点。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOW_KERBEROS</code></td>
+              <td></td>
+              <td>
+                团队模式：允许 Kerberos (GSSAPI) 连接（默认关闭）。它们使用服务器所运行账户的 Kerberos
+                票据登录，因此此类连接的每个用户都以该账户的身份登录。参见
+                <a href="security.html#server-identity">安全</a>。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOW_WORKLOAD_IDENTITY</code></td>
+              <td></td>
+              <td>
+                团队模式：允许 OIDC 连接在连接中选择时使用机器的工作负载身份（Azure、GCP、Kubernetes）（默认关闭）。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_OIDC_DEVICE_FLOW</code></td>
+              <td></td>
+              <td>
+                使用代码的 OIDC 登录（设备流程），适用于无法将浏览器重定向回此服务器的身份提供商。谁批准该代码，谁就会登录，因此在团队模式下默认关闭，除非在此开启；在本地模式下默认开启。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_OIDC_PRIVATE_NETWORKS</code></td>
+              <td></td>
+              <td>
+                OIDC 身份提供商可位于其中的私有网络（以逗号分隔的 CIDR）；仅在这些网络内允许使用明文
+                http。未设置时，它们必须是公共 https 地址。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_CRYPT_SHARED_LIB_PATH</code></td>
+              <td></td>
+              <td>
+                用于客户端加密的 crypt_shared 库 (mongo_crypt_v1) 的绝对路径。在团队模式下，只会加载这一个库。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_KMS_PRIVATE_NETWORKS</code></td>
+              <td></td>
+              <td>
+                密钥管理服务（例如本地部署的 KMIP 服务器）可位于其中的私有网络（以逗号分隔的 CIDR）。未设置时，它们必须是公共地址。
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_KMS_ALLOWED_HOSTS</code></td>
+              <td></td>
+              <td>
+                连接除可访问各提供商自己的服务（AWS KMS、使用 Microsoft 登录的 Azure Key Vault 和 Managed
+                HSM、Google Cloud KMS）以及其设置中指明的端点（VPC 端点、KMIP
+                服务器）之外，还可访问的密钥管理服务主机（以逗号分隔，<code>host</code> 或
+                <code>host:port</code>，端口默认为 443）。任何其他主机或其他端口都会被拒绝：数据密钥的主密钥无法将 KMS 令牌发送到别处。
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h2 id="optional-packages">Kerberos 和客户端加密（npm 包）</h2>
+      <p>
+        Kerberos (GSSAPI) 以及客户端字段级加密 / Queryable Encryption 需要原生包，Mongo Manager
+        不会自行安装它们：安装 Mongo Manager 不会运行任何包的安装脚本。要使用它们，请将这些包安装在 npm
+        包旁边，然后重启：
+      </p>
+      <pre><code>npm i -g @mongo-manager/app kerberos mongodb-client-encryption</code></pre>
+      <p>
+        Mongo Manager 只会从存放 <code>mongo-manager</code>
+        本身的全局 <code>node_modules</code>
+        文件夹中加载它们（按其真实路径检查，绝不会使用其上层的文件夹），并且只在某个连接首次需要时才加载；连接表单会说明缺少哪一个以及如何安装。独立二进制文件、Docker
+        镜像（它设置了 <code>MM_DISTRIBUTION=docker</code>）以及 Windows
+        服务运行所用的副本都不包含原生模块：在这些环境中，这两项功能会提示在此软件包中不可用，请改用 npm
+        包并在前台运行。Queryable Encryption 的自动加密还需要 crypt_shared 库（<code>MM_CRYPT_SHARED_LIB_PATH</code>）或
+        mongocryptd，以及 MongoDB Enterprise 或 Atlas；MongoDB Community 只能解密。MONGODB-OIDC
+        不需要任何包：身份提供商必须将此服务器的
+        <code>&lt;address&gt;&lt;base path&gt;oidc/callback</code>
+        设为重定向地址（或连接中指定的其他地址），在无法重定向的情况下，用户可以使用代码登录。
+      </p>
+      <h2 id="install-as-an-app">安装为应用</h2>
+      <p>
+        在 Chrome 或 Edge 中，选择地址栏中的<em>安装 Mongo Manager</em>，即可在桌面或开始菜单中以独立窗口打开它。
+      </p>
+      <h2 id="backup-destinations">备份目标</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_FOLDER_ROOTS</code>：服务器文件夹类备份目标可使用的文件夹，以绝对路径表示，用系统的路径分隔符分隔（Linux 和 macOS 上为
+          <code>:</code>，Windows 上为 <code>;</code>），最多 16 个。默认：无，因此无法创建文件夹类备份目标。使用相对路径会使服务器在启动时停止。请授予服务账户对每个根目录的写入权限，并将这些根目录放在数据目录之外：位于数据目录内的文件夹类备份目标会被拒绝。每次启动都会记录服务器无法写入的根目录。对于
+          Linux 服务：
+          <ul>
+            <li>
+              安装时，其沙箱只允许它写入数据目录，以及其配置和环境文件中指明的根目录：更改它们之后，请再次运行
+              <code>sudo mongo-manager service install</code>（它会保留数据、配置和密钥），并在创建了此前缺失的根目录之后重启服务。在其他位置设置的根目录，例如附加配置中的
+              <code>Environment=</code>，安装程序看不到：这些文件夹对服务保持只读。
+            </li>
+            <li>
+              安装时会排除位于 <code>/home</code>、<code>/root</code>、<code>/run/user</code>、
+              <code>/tmp</code>、<code>/var/tmp</code> 或 <code>/dev</code>
+              下的根目录（服务无法访问它们），以及会破坏沙箱的根目录：包含系统目录（<code>/</code>、
+              <code>/var</code>、<code>/var/lib</code> 等）的根目录，或位于 <code>/etc</code>、
+              <code>/usr</code>、<code>/run</code> 或其他系统目录内的根目录（在 <code>/var</code>
+              下，只有 <code>/var/backups</code> 内的文件夹是开放的）。适合使用 <code>/srv</code>、
+              <code>/opt</code> 内的文件夹，或 <code>/mnt</code>、<code>/media</code>
+              下的挂载点，但不能使用这些文件夹本身；在可移动或网络文件系统上，控制磁盘或共享的人也就控制了其上的文件夹，因此请把挂载点本身作为根目录（用户的
+              FUSE 挂载对其所有者和链接的说法并不可靠）。位于另一个根目录内的根目录，由那个根目录纳入沙箱。如果
+              <code>/srv</code>、<code>/opt</code> 或 <code>/mnt</code> 本身是指向 <code>/var</code>
+              的链接（如 ostree 系统：Fedora Silverblue、CoreOS），安装程序会说明根目录指向何处，并在这种情况下予以拒绝：请选择
+              <code>/var/backups</code> 内的文件夹。
+            </li>
+            <li>
+              链接按其指向的位置来判断，单元文件会写入该位置；指向不存在位置的链接会被排除：对于指向尚未创建的文件夹的链接，请先创建该文件夹，然后再次运行
+              service install；对于循环链接或经过文件的链接，请选择另一个文件夹或删除该链接。根目录上方的每个文件夹，以及其路径上各链接所在的文件夹（包括链接目标中的链接），都应归
+              root 所有，并对其组和其他用户关闭权限，以防任何人在那里用链接替换某个文件夹；在其他人可写入的文件夹中（无论是否设置粘滞位），请让 root
+              拥有其中的文件夹，并将根目录设在其内。
+            </li>
+            <li>
+              位于服务用户可更改的文件夹之下的根目录，无论在到 <code>/</code>
+              的哪一级，也无论是否沿路径上的链接，都会被排除：包括该用户拥有的文件夹，以及该用户通过其所属组、ACL 或“任何人均可写入”而能写入的文件夹，因为以该用户身份运行的进程可以在那里用指向
+              <code>/etc</code> 的链接替换某个文件夹。这也包括位于另一个根目录中的链接，服务会写入该根目录。以
+              <code>sudo</code> 运行的 install 和 doctor 还会询问系统：借助 <code>setpriv</code>，它们以该用户身份运行
+              <code>test -w</code>，从而由内核应用其所属组（单元通过 <code>Group=</code> 或
+              <code>SupplementaryGroups=</code> 授予服务的组，包括附加配置中的）和 ACL。没有 <code>setpriv</code>
+              或没有 root 权限时，只读取文件夹的模式和用户所属的组，并且两者都会说明这一点。即使 ACL
+              取消了权限，模式允许的权限仍会计入，因此这样的文件夹同样会使其下的根目录被排除。
+            </li>
+            <li>
+              安装程序会询问 systemd 由谁运行该服务，并读取所有附加配置。如果某个附加配置以 <code>--user</code>
+              之外的用户（或以 root）运行服务，或使用 <code>DynamicUser=yes</code> 而没有同名账户，或使用与用户自己的组不同的
+              <code>Group=</code>，或使用系统不认识的组（systemd 会因此拒绝启动），安装会在数据目录和配置发生更改之前停止；它会说明原因，并让服务保持停止和禁用状态。如果组的查询失败，或无法询问
+              systemd，则所有根目录都会被排除。
+            </li>
+            <li>
+              <code>sudo mongo-manager doctor --config /etc/mongo-manager/config.json</code>
+              检查已安装的服务（单独运行 <code>mongo-manager doctor</code>
+              检查的是您自己的数据目录，并会说明它检查的不是该服务）。它会检查每个根目录：是否存在，是否是服务器可写入的目录，是否位于沙箱内，以及是否不在数据目录内；它还会指出沙箱允许服务写入、但已没有任何根目录指明的文件夹，或通过可被非
+              root 用户更改的链接指向某个根目录或数据目录的文件夹，并对以 root
+              运行的服务、无人所属或查询失败的组，以及没有同名账户的 <code>DynamicUser=yes</code>
+              发出警告。它检查的是服务的配置和环境文件中指明的根目录，因此需要 <code>sudo</code>：只有 root
+              可以读取环境文件，服务的密钥也保存在其中。它以服务所运行的用户身份检查写入权限；以 root
+              运行时，它改为读取根目录的所有者和模式（针对数据目录所属的用户），并在该用户可写入时采信系统的判断。根目录上方的文件夹，则按单元运行服务所用的用户（其
+              <code>User=</code>）来判断。
+            </li>
+          </ul>
+        </li>
+        <li>
+          <code>MM_BACKUP_PRIVATE_NETWORKS</code>：备份目标可访问的私有范围，为以逗号分隔的列表，最多 64 个 CIDR（例如
+          <code>10.0.5.0/24</code>）；在这些范围内允许使用明文 HTTP。默认：无。可接受回环、10/8、172.16/12、192.168/16、CGNAT
+          (100.64.0.0/10) 和唯一本地 (fc00::/7) 范围。公共范围会使服务器在启动时停止，位于链路本地或云元数据范围（169.254.0.0/16、fe80::/10、169.254.169.254、fd00:ec2::254、100.100.100.200）内的范围同样如此，无论采用何种形式，包括
+          IPv4 映射和 NAT64；提示信息会指明该范围。这些地址即使位于列出的范围内也永远无法访问。
+        </li>
+        <li>
+          <code>MM_BACKUP_PROXY</code>：访问备份目标所经过的 HTTP(S) 代理，例如
+          <code>http://proxy.corp:3128</code> 或 <code>https://user:password@proxy.corp</code>；不含路径或查询。默认：无（绝不会读取任何环境代理变量）。Mongo
+          Manager 仍会自行解析并检查每个备份目标的地址，再要求代理连接到该地址，因此上述地址规则在通过代理时同样有效；TLS
+          在到备份目标之间端到端运行，其证书的检查方式与不使用代理时相同。位于
+          <code>MM_BACKUP_PRIVATE_NETWORKS</code>
+          内的备份目标则直接访问。位于链路本地或元数据地址的代理会使服务器在启动时停止。请避免让代理的密码出现在共享的 shell
+          历史记录中：它是地址的一部分。只有备份目标使用它：告警渠道（电子邮件和 Webhook）、AI
+          服务商和插件绝不会经过它。选择代理前需要了解：<code>http://</code>
+          代理会以明文（Basic）接收用户名和密码，因此应优先选择 <code>https://</code>
+          或受信任网络内的代理；只允许对列出的主机名执行 CONNECT 的代理会拒绝这些连接，因为请求的是 IP 地址；<code>https://</code>
+          代理的证书必须由 Node.js 信任的机构签发（其内置列表，或通过 <code>NODE_EXTRA_CA_CERTS</code>
+          添加的机构）：无法指定其专用的 CA。
+        </li>
+        <li><code>MM_BACKUP_DEST_PART_MB</code>：上传分块大小，16 到 512 MiB（默认 64）。</li>
+        <li>
+          <code>MM_BACKUP_DRILL_MAX_MB</code>：一次恢复演练最多写入的数据量，单位 MiB。默认：无，此时演练写入量保持在 MongoDB
+          报告的可用磁盘空间的一半以下（通过 mongos 时按最满的分片计算）。在 MongoDB
+          不报告可用空间的地方（Atlas 共享层），只有设置了此项才会运行演练。
+        </li>
+        <li>
+          <code>MM_BACKUP_DEST_TRANSFERS</code>：每个备份目标上同时进行的发送和下载数量，1 到 8（默认
+          2）。其余的会等待，在任务列表中显示为“等待”该备份目标。
+        </li>
+      </ul>
+      <h2 id="scheduled-backups">计划备份</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_SCHEDULES</code>：调度器，默认开启。<code>0</code>
+          将其关闭：计划保留其设置，但不会运行任何计划，“计划备份”标签页会说明调度已关闭。服务器停止时未完成的运行会在启动时被关闭。
+        </li>
+        <li>
+          <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code>：同时进行的计划运行数量，1 到 8（默认 2）。其余到期的运行最多等待六小时。
+        </li>
+      </ul>
+      <h2 id="watch">监视变更</h2>
+      <ul>
+        <li>
+          <code>MM_WATCH</code>：变更流数据源，默认开启。<code>0</code>
+          将其关闭：“监视”部分会说明监视已关闭，也不会在 MongoDB 上打开任何内容。
+        </li>
+        <li>
+          <code>MM_WATCH_MAX_FEEDS</code>：此服务器上同时存在的实时数据源数量，1 到 500（默认 50）。每个用户最多 5 个，每个浏览器窗口最多 3
+          个。每个数据源都会在 MongoDB 上占用一个变更流游标。
+        </li>
+        <li>
+          监视需要副本集、分片集群或负载均衡部署，并且连接的数据库用户需要对被监视对象拥有
+          <code>changeStream</code> 和 <code>find</code> 权限。参见
+          <a href="watch.html">监视变更</a>。
+        </li>
+      </ul>
+      <h2 id="live-sync">实时同步</h2>
+      <ul>
+        <li>
+          <code>MM_LIVE_SYNC</code>：连接之间的实时同步，默认开启。<code>0</code>
+          将其关闭：正在运行的同步会等待并说明原因，不会读取或写入任何内容；新的同步会被拒绝。重新开启后，它们从中断处继续。
+        </li>
+        <li>
+          <code>MM_LIVE_SYNC_MAX</code>：此服务器上尚未结束的实时同步数量，1 到 100（默认 10）。每个用户最多 3
+          个。每个正在运行的同步会在其源上占用一个变更流，并保持两个连接处于打开状态。
+        </li>
+        <li>
+          源必须是副本集、分片集群或负载均衡部署（MongoDB 6.0 或更高版本）；可能比源的 oplog 存活得更久的副本需要确认。参见
+          <a href="sync.html">实时同步</a>。
+        </li>
+      </ul>
+      <h2 id="alerts">告警</h2>
+      <ul>
+        <li>
+          <code>MM_ALERTS</code>（配置文件：<code>alerts.enabled</code>）：告警，默认开启。
+          <code>0</code> 将其关闭：不会评估或发送任何内容，“告警”页面会说明告警已关闭。
+        </li>
+        <li>
+          <code>MM_ALERTS_PRIVATE_NETWORKS</code>（配置文件：<code>alerts.privateNetworks</code>，列表）：告警的邮件服务器和
+          Webhook 除公共地址外还可访问的网络，为以逗号分隔的列表，最多 64 个 CIDR（例如
+          <code>10.0.5.0/24</code>）。默认：无。仅在这些网络内允许对 Webhook 使用明文 http。接受和拒绝的范围与
+          <code>MM_BACKUP_PRIVATE_NETWORKS</code> 相同：链路本地和云元数据地址永远无法访问。
+        </li>
+        <li>
+          在配置文件中：
+          <code>"alerts": { "enabled": true, "privateNetworks": ["10.0.5.0/24"] }</code>。参见
+          <a href="server-admin.html#alerts">服务器管理</a>。
+        </li>
+      </ul>
+      <h2 id="the-advanced-shell">高级 Shell</h2>
+      <ul>
+        <li>使用 <code>--no-shell</code>（或 <code>MM_SHELL_ENABLED=0</code>）将其完全禁用。</li>
+        <li>
+          限制项：<code>MM_SHELL_MAX_PER_USER</code>、<code>MM_SHELL_MAX_TOTAL</code>、
+          <code>MM_SHELL_COMMAND_TIMEOUT_MS</code>、<code>MM_SHELL_IDLE_MS</code>、
+          <code>MM_SHELL_LIFETIME_MS</code>。其页面持有的 Shell 无论多久未使用都会保持打开，与 Compass
+          相同；没有页面持有的 Shell 会在其页面消失两分钟后关闭。空闲限制默认关闭（0），除非自行设置（10000 到 86400000
+          ms）；Shell 最长存活 12 小时，除非设置了其他生存期（60000 到 86400000 ms，或 0 表示不限）。保持打开的 Shell
+          在其页面关闭之前计入 <code>MM_SHELL_MAX_TOTAL</code>；在许多人共用的服务器上，请设置
+          <code>MM_SHELL_IDLE_MS</code>，以便释放被遗留且未使用的 Shell。开启登录后，Shell
+          还会在其用户的登录会话结束、用户的角色变更或账户被禁用时结束。
+        </li>
+        <li>
+          <code>MM_SHELL_RSS_MB</code>：Shell 进程可占用的内存，128 到 16384 MB（默认 384）。服务器自行从操作系统测得该值（在
+          Windows 上使用 <code>tasklist</code>，在 macOS 上使用 <code>ps</code>），并重启超出该值的 Shell；Shell
+          的变量会丢失。在没有命令运行的情况下停止响应 15 秒的 Shell 也会被重启。
+          <code>MM_SHELL_OUTPUT_MB</code>：单个命令的输出，1 到 64 MB（默认 5）；其余部分会被截断。
+          <code>MM_SHELL_COMMANDS_PER_SECOND</code>：每个 Shell 每秒可执行的命令数，1 到 1000（默认 20）。
+        </li>
+        <li>
+          在以 root 运行的 POSIX 服务器上，Shell 工作进程会降权为 <code>MM_SHELL_UID</code>/<code>MM_SHELL_GID</code>（默认
+          65534）；请勿以 root 身份运行该服务。
+        </li>
+      </ul>
+      <h2 id="ai">AI 助手</h2>
+      <ul>
+        <li>
+          <code>MM_AI</code>：AI 助手，默认开启；只有在管理员添加服务商（设置 → AI 助手）之后才会显示。<code>0</code>
+          会在所有位置隐藏它并拒绝请求。
+        </li>
+        <li>
+          <code>MM_AI_PRIVATE_NETWORKS</code>：服务商除公共地址外还可位于其中的网络（CIDR，以逗号分隔），例如位于
+          <code>10.0.0.5</code> 的 Ollama；仅在这些网络内允许使用明文 http。云元数据和链路本地地址永远无法访问。在本地模式下，始终允许本机。
+        </li>
+        <li>
+          <code>MM_AI_PER_MINUTE</code>（默认 10，1–120）和 <code>MM_AI_PER_DAY</code>（默认 200，1–10,000）：每人的请求数。
+          <code>MM_AI_MAX_CONCURRENT</code>（默认 8，1–64）：服务器上同时进行的请求数；每人最多 2 个。
+          <code>MM_AI_AGENT_PER_MINUTE</code>（默认 30，1–120）：智能体在一条消息内向服务商发出的后续请求，每人每分钟的上限（它们同样计入每日限额）。
+        </li>
+        <li>
+          <code>MM_AI_CHAT_DAYS</code>（默认 30，0–365）：对话在最后一条消息之后的保留时长。
+          <code>0</code> 表示对话仅保存在内存中（12 小时），并在服务器启动时删除按早前设置保存的对话。
+        </li>
+      </ul>
+      <h2 id="plugins">插件</h2>
+      <ul>
+        <li>
+          <code>MM_PLUGINS</code>：插件，默认开启。每个插件在通过安全扫描后，仍需管理员批准。<code>0</code>
+          表示不查找、安装或运行任何插件（参见
+          <a href="plugins.html">插件</a>）。
+        </li>
+        <li>
+          <code>MM_PLUGINS_GITHUB</code>：从公共 GitHub 仓库的发布版本安装插件，默认关闭（插件通过上传或从文件夹安装）；<code>1</code>
+          表示允许。此后服务器会通过 https 访问 <code>api.github.com</code>、<code>github.com</code> 以及 GitHub
+          的发布资源主机，且不发送任何自身信息。保持关闭时，服务器绝不会访问 GitHub。服务器直接连接
+          GitHub：不使用 HTTP 代理设置，因此只能通过代理对外访问的服务器应通过上传安装插件。系统服务从其
+          <code>config.json</code> 中以 <code>"pluginsGithub": true</code> 读取该设置（Linux 为
+          <code>/etc/mongo-manager/config.json</code>，Windows 为
+          <code>%ProgramData%\Mongo Manager\config.json</code>，macOS 为
+          <code>/Library/Application Support/Mongo Manager/config.json</code>）；之后请重启服务。
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">本页内容</p>
+      <ol>
+        <li><a href="#as-a-system-service">作为系统服务</a></li>
+        <li><a href="#docker">Docker</a></li>
+        <li><a href="#docker-mongodb">从容器访问 MongoDB</a></li>
+        <li><a href="#updating">更新</a></li>
+        <li><a href="#behind-a-reverse-proxy">位于反向代理之后</a></li>
+        <li><a href="#settings">设置和环境变量</a></li>
+        <li><a href="#optional-packages">Kerberos 和客户端加密（npm 包）</a></li>
+        <li><a href="#install-as-an-app">安装为应用</a></li>
+        <li><a href="#backup-destinations">备份目标</a></li>
+        <li><a href="#scheduled-backups">计划备份</a></li>
+        <li><a href="#watch">监视变更</a></li>
+        <li><a href="#live-sync">实时同步</a></li>
+        <li><a href="#alerts">告警</a></li>
+        <li><a href="#the-advanced-shell">高级 Shell</a></li>
+        <li><a href="#ai">AI 助手</a></li>
+        <li><a href="#plugins">插件</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Synchronisation en continu · Documentation de Mongo Manager</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Documentation de Mongo Manager</a>
+      <details class="lang-menu">
+        <summary>Français</summary>
+        <span class="langs" role="group" aria-label="Langue">
+          <a lang="en" hreflang="en" href="../sync.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/sync.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/sync.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/sync.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/sync.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/sync.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/sync.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/sync.html">Deutsch</a>
+          <strong lang="fr">Français</strong>
+          <a lang="ru" hreflang="ru" href="../ru/sync.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Vue d’ensemble</a>
+      <a href="getting-started.html">Prise en main</a>
+      <a href="security.html">Sécurité</a>
+      <a href="deployment.html">Déploiement</a>
+      <a href="import-export.html">Import et export</a>
+      <a href="backup.html">Sauvegarde et restauration</a>
+      <a href="watch.html">Suivi des modifications</a>
+      <strong>Synchronisation en continu</strong>
+      <a href="server-admin.html">Administration du serveur</a>
+      <a href="ai.html">Assistant IA</a>
+      <a href="plugins.html">Plug-ins</a>
+      <a href="shortcuts.html">Raccourcis clavier</a>
+    </nav>
+    <main>
+      <h1>Synchronisation en continu</h1>
+      <p>
+        Une synchronisation en continu copie une collection ou une base de données d’une connexion vers une
+        autre, puis applique chaque modification effectuée dans la source au fil de l’eau. Elle s’exécute sur
+        le serveur, survit aux redémarrages et se poursuit jusqu’à ce que vous l’arrêtiez ou la terminiez. Deux
+        usages sont possibles :
+      </p>
+      <ul>
+        <li>
+          <strong>Comme miroir</strong> : une copie de préproduction, de reporting ou de secours qui reste à
+          jour pendant des mois.
+        </li>
+        <li>
+          <strong>Pour déplacer des données</strong> : copier, laisser rattraper le retard, vérifier, puis
+          terminer au moment de votre choix (la bascule) et pointer vos applications vers la cible.
+        </li>
+      </ul>
+      <p>
+        Ouvrez <strong>Synchronisations en continu</strong> depuis le menu du compte ou la palette de commandes
+        (Ctrl+K). Lancez-en une depuis le menu d’une collection ou d’une base de données dans l’arborescence
+        (<strong>Synchronisation en continu…</strong>), depuis la palette lorsqu’une collection est ouverte
+        (« Synchroniser cette collection en continu… »), ou depuis le récapitulatif de l’assistant de copie
+        (<strong>Copier et garder synchronisé…</strong>).
+      </p>
+
+      <h2 id="requirements">Ce qui peut être synchronisé</h2>
+      <ul>
+        <li>
+          Une collection vers une collection, ou une base de données vers une base de données (toutes ses
+          collections, ou celles que vous cochez).
+        </li>
+        <li>
+          La source doit être un jeu de réplicas, un cluster partitionné ou un déploiement avec répartition de
+          charge sous MongoDB 6.0 ou version ultérieure (MongoDB Atlas l’est toujours) : une synchronisation en
+          continu lit les flux de modifications de MongoDB. Un jeu de réplicas à nœud unique suffit pour le
+          développement. La cible peut être n’importe quel déploiement.
+        </li>
+        <li>
+          Une synchronisation de base de données portant sur toutes les collections peut aussi suivre les
+          collections créées ultérieurement : elles sont créées sur la cible avec les options de la source, et
+          leurs documents suivent. Les vues ne sont copiées que lors de la copie initiale.
+        </li>
+        <li>
+          Une synchronisation de collection peut ne transporter que les documents qu’un filtre retient
+          (<em>Uniquement les documents correspondant à un filtre</em>, écrit comme dans le shell). Un
+          événement de modification ne peut pas indiquer à lui seul qu’une mise à jour a fait sortir un
+          document du filtre, c’est donc la source qui tranche : pour chaque lot, on lui demande lesquels des
+          documents modifiés correspondent maintenant ; ceux-là sont écrits tels qu’ils sont à présent, et les
+          autres sont supprimés de la cible. La copie initiale ne prend que les documents correspondants. Une
+          synchronisation masquée ou anonyme refuse un filtre qui lit un champ masqué ou un champ situé au-dessus
+          d’un tel champ, ou qui utilise une expression. Un filtre qui exécute du JavaScript sur le serveur
+          MongoDB (<code>$where</code>, <code>$function</code>) n’est accepté que tant que le serveur l’autorise ;
+          il est réévalué à chaque démarrage et avant chaque lot, et la synchronisation attend (« Son filtre
+          exécute du JavaScript… ») dès que ce paramètre est désactivé. Une synchronisation de base de données
+          transporte des collections entières.
+        </li>
+        <li>
+          Refusés, avec la raison indiquée : <code>admin</code>, <code>local</code>, <code>config</code> et
+          <code>system.*</code> comme source ou comme cible ; une source de séries chronologiques ; une vue comme
+          source (elle n’a pas de flux de modifications propre : synchronisez la collection qui la sous-tend) ;
+          une cible plafonnée (elle ne peut pas accepter de suppressions) ; une cible qui est, ou peut être, la
+          source elle-même ; et une synchronisation qui fermerait une boucle (A vers B pendant que B va vers A,
+          ou une chaîne plus longue). Un déploiement impossible à distinguer d’un autre est considéré comme le
+          même pour ces vérifications.
+        </li>
+      </ul>
+
+      <h2 id="start">Démarrage</h2>
+      <p>L’assistant demande comment la synchronisation démarre :</p>
+      <ul>
+        <li>
+          <strong>Copier d’abord</strong> (par défaut) : la cible doit être absente ou vide ; tout est copié,
+          puis les modifications suivent.
+        </li>
+        <li>
+          <strong>Remplacer la cible</strong> : la cible est reconstruite à part puis mise en place (vous
+          saisissez son nom pour confirmer). Cela exige le droit de créer et de supprimer des collections, et
+          est refusé pour une cible partitionnée.
+        </li>
+        <li>
+          <strong>Fusionner dans la cible</strong> : les documents sont insérés ou mis à jour (upsert) par
+          <code>_id</code> sur ce qui s’y trouve déjà.
+        </li>
+        <li>
+          <strong>À partir de maintenant</strong> : la cible contient déjà les données ; seules les
+          modifications à partir de maintenant sont appliquées.
+        </li>
+      </ul>
+      <p>
+        La copie initiale s’exécute comme une tâche de copie (elle apparaît dans la zone des tâches). Rien n’est
+        perdu entre la copie et les modifications : avant le début de la copie, la synchronisation note le
+        cluster time de la source et, une fois la copie terminée, elle applique toutes les modifications
+        effectuées depuis. L’application est idempotente : un document copié après avoir été modifié, ou modifié
+        de nouveau ensuite, finit identique à la source.
+      </p>
+      <h3 id="scheduled">Démarrer plus tard</h3>
+      <p>
+        <em>Démarrer à un moment de mon choix</em> planifie le démarrage de une minute à 30 jours à l’avance
+        (une nuit calme, par exemple). La synchronisation est créée immédiatement, avec le récapitulatif que
+        vous avez confirmé, et attend <strong>En pause</strong> — <em>Démarre … ; rien n’est copié ni lu d’ici
+        là</em>. Au moment prévu, elle est planifiée à nouveau en tant que son propriétaire (droits, règles,
+        boucles, cible, masquage, avec les confirmations que vous avez données), son cluster time est lu et sa
+        copie démarre. Si le plan ne tient plus — la cible a été remplie entre-temps, un droit a été perdu —,
+        elle attend dans <strong>Nécessite une intervention</strong> avec les raisons, et <em>Redémarrer</em>
+        la planifie de nouveau. Son propriétaire peut <em>Démarrer maintenant</em> plus tôt ; un administrateur
+        peut l’arrêter mais pas la démarrer (elle démarre en tant que son propriétaire). Un redémarrage la
+        maintient en attente.
+      </p>
+      <p>
+        À l’heure prévue, et sur <em>Démarrer maintenant</em>, tout ce qu’une synchronisation en cours vérifie
+        avant chaque lot est d’abord vérifié : son propriétaire doit toujours pouvoir lire et exporter depuis la
+        source, les connexions doivent être inchangées, et les règles de données personnelles doivent être
+        celles sous lesquelles elle a été planifiée. Les règles ajoutées depuis l’arrêtent pour examen
+        (<em>Examiner…</em>) : elle démarre dès que son propriétaire les a confirmées. Une synchronisation qui
+        doit copier attend aussi qu’il y ait de la place parmi les transferts en cours de son propriétaire : à
+        l’heure prévue, elle réessaie un peu plus tard ; <em>Démarrer maintenant</em> l’indique. Une fois la
+        cause corrigée, <em>Réessayer</em> démarre une synchronisation planifiée qui n’a jamais démarré (elle
+        est alors planifiée).
+      </p>
+      <h3 id="oplog">La fenêtre de l’oplog</h3>
+      <p>
+        Les modifications effectuées pendant la copie attendent dans l’historique des modifications de la
+        source (son oplog). Le récapitulatif estime la durée de la copie et, lorsque l’utilisateur de la
+        connexion peut le lire, la durée pendant laquelle la source conserve ses modifications. Une copie dont
+        la durée prévue dépasse la moitié de cette fenêtre doit être confirmée : si l’historique est épuisé
+        avant la fin de la copie, la synchronisation ne peut plus rattraper son retard et se termine en
+        <em>Échec</em>, avec « Redémarrer ». Lorsque la fenêtre ne peut pas être lue, le récapitulatif
+        l’indique.
+      </p>
+
+      <h2 id="applying">Comment les modifications sont appliquées</h2>
+      <ul>
+        <li>
+          Une insertion, une mise à jour ou un remplacement écrit le document tel qu’il est maintenant dans la
+          source (par <code>_id</code>, en le créant si nécessaire) ; une suppression supprime par
+          <code>_id</code>. Dans un lot (au plus 1 000 modifications ou 8 Mo), seule la dernière modification de
+          chaque document est écrite.
+        </li>
+        <li>
+          Après chaque lot accepté par la cible, la synchronisation enregistre sa position. Un redémarrage
+          reprend juste après ; au plus le dernier lot est appliqué de nouveau, ce qui ne change rien.
+        </li>
+        <li>
+          <strong>Une synchronisation en continu est à sens unique.</strong> Les écritures faites sur la cible
+          par quelqu’un d’autre ne sont pas détectées : la prochaine modification de ce document dans la source
+          l’écrase. L’assistant vous demande de le confirmer.
+        </li>
+        <li>
+          Les index créés et supprimés sont suivis. Les nouvelles options de collection ou les nouveaux
+          validateurs ne le sont pas : la synchronisation attend avec « Les options ou le validateur de la
+          collection source ont changé », et vous choisissez <strong>Appliquer les options de la source</strong>
+          (son validateur et ses paramètres de validation sont appliqués à la cible) ou
+          <strong>Ignorer</strong>.
+        </li>
+        <li>
+          Une collection source supprimée ou renommée ne supprime jamais la cible : la synchronisation vous
+          attend, et vous l’arrêtez ou la redémarrez.
+        </li>
+      </ul>
+
+      <h2 id="verify">Vérifier</h2>
+      <p>
+        <strong>Vérifier</strong> compare la source et la cible document par document pendant que la
+        synchronisation continue de s’exécuter. Les documents différents, manquants ou en trop sont relus une
+        fois que la synchronisation a tout appliqué jusqu’à la fin de la comparaison, de sorte que les
+        modifications encore en route ne sont pas signalées comme des différences (jusqu’à 10 000 documents de
+        ce type par collection ; au-delà, le rapport indique combien n’ont pas été revérifiés). La carte affiche
+        le résultat, par exemple « Vérifié à 12 :40 — 1 204 331 identiques, 0 différent » ; les détails listent
+        les <code>_id</code> encore différents. Une synchronisation masquée est vérifiée par rapport à la source
+        masquée.
+      </p>
+      <p>
+        <em>Afficher les différences</em> dans les détails ouvre la comparaison telle que l’affiche la vue de
+        comparaison : pour chaque groupe (différents, uniquement dans la source, uniquement dans la cible),
+        jusqu’à 10 documents par collection et, pour un document différent, les champs qui ont changé de la
+        cible vers la source. Les échantillons sont réservés au propriétaire de la synchronisation (un
+        administrateur voit les nombres), ne sont fournis que tant que le propriétaire peut lire les deux côtés
+        et que rien ne lui y est masqué depuis, et plus une fois que les règles de champs personnels ont changé :
+        vérifiez alors de nouveau.
+      </p>
+
+      <h2 id="finish">Terminer (la bascule)</h2>
+      <ol>
+        <li>
+          Arrêtez les applications qui écrivent dans la source. Mongo Manager ne peut pas arrêter les autres
+          clients.
+        </li>
+        <li>
+          Choisissez <strong>Terminer…</strong> et confirmez. La synchronisation note le cluster time de la
+          source à cet instant, applique toutes les modifications effectuées avant, puis se termine. Une
+          modification effectuée après peut encore être appliquée (elle peut arriver dans le même lot), c’est
+          pourquoi les écritures doivent être arrêtées d’abord.
+        </li>
+        <li>Elle vérifie (activé par défaut ; vous pouvez décocher l’option).</li>
+        <li>
+          Elle se termine en <em>Terminée</em> avec ses décomptes finaux. Si la vérification a trouvé des
+          différences, le rapport les montre : c’est à vous d’en juger.
+        </li>
+      </ol>
+
+      <h2 id="two-way">Synchronisation bidirectionnelle</h2>
+      <p>
+        <em>Bidirectionnelle</em> (pour une synchronisation de collection) ramène aussi les modifications de
+        la cible vers la source. Ce sont deux synchronisations liées, une dans chaque sens, affichées comme
+        deux cartes (<em>ce sens</em> et <em>le sens inverse</em>) qui se mettent en pause, reprennent,
+        s’arrêtent et sont supprimées ensemble ; il n’y a pas de bascule. À utiliser avec précaution : elle
+        convient à deux sites qui écrivent dans la même collection, pas à une migration.
+      </p>
+      <ul>
+        <li>
+          Elle démarre à partir de maintenant : les deux collections doivent déjà contenir les mêmes documents
+          (copiez-les, ou terminez d’abord une synchronisation à sens unique). Elle transporte des collections
+          entières (pas de filtre), ne peut pas masquer (les deux côtés ont besoin des mêmes règles de champs
+          personnels, et personne ne doit être restreint d’un côté comme de l’autre), exige des collections non
+          partitionnées et se met en pause sur un document refusé. Deux synchronisations comptent dans les
+          limites.
+        </li>
+        <li>
+          Les deux collections ont besoin de <strong>préimages et postimages</strong>
+          (<code>changeStreamPreAndPostImages</code>, MongoDB 6.0 et versions ultérieures) :
+          <em>Activer les préimages et postimages sur les deux collections</em> le fait avec
+          <code>collMod</code> au démarrage de la synchronisation. Elles consomment de l’espace de stockage sur
+          les deux serveurs.
+        </li>
+        <li>
+          <strong>Rien ne revient là d’où cela vient.</strong> Chaque côté écrit les modifications de l’autre
+          dans des transactions de sa propre session ; MongoDB marque les événements de modification de ces
+          écritures avec la session, et le sens inverse les ignore. Les documents ne sont pas touchés pour cela.
+        </li>
+        <li>
+          <strong>Conflits : le dernier à écrire l’emporte.</strong> Une modification n’est appliquée que si
+          l’autre côté contient encore ce que la modification avait trouvé (sa préimage). Lorsque les deux côtés
+          ont modifié le même document avant que l’une ou l’autre modification soit arrivée, celle dont
+          l’horodatage est le plus récent l’emporte des deux côtés ; l’autre est perdue. Chaque conflit est
+          listé dans l’activité (son <code>_id</code> et le côté gagnant, jamais une valeur), compté sur la
+          carte et émis comme événement de l’application pour les alertes. Lorsque l’autre côté contient autre
+          chose et qu’aucune modification propre n’arrive, la modification est appliquée et listée comme telle —
+          écrite seulement si l’autre côté contient encore ce qu’il contenait lors de sa lecture ; s’il a
+          encore changé entre-temps, cette modification plus récente est attendue puis réglée comme un conflit.
+          Les documents sont comparés et écrits avec le type de leurs valeurs : un Double qui contient un entier
+          n’est pas l’Int32, et toute synchronisation (à sens unique aussi) écrit un Double, un Long ou un
+          Decimal128 tel que la source le stocke.
+        </li>
+        <li>
+          <strong>Horloges.</strong> Savoir si une modification de l’autre côté est encore à venir se décide sur
+          le cluster time propre à ce côté : l’écart est lu dans un instantané de ce que détient une majorité de
+          ses membres, et la modification attend que le flux de modifications du sens inverse ait lu au-delà de
+          cet instant. L’horloge de l’ordinateur qui exécute Mongo Manager n’intervient pas, ni un majority
+          commit lent : une modification attend plutôt que d’en écraser une qui n’est pas encore arrivée. Ce qui
+          départage deux modifications en conflit compare toujours les horloges murales des deux serveurs :
+          gardez-les à l’heure (NTP). Si elles dérivent, le côté dont l’horloge avance l’emporte sur des
+          conflits qu’il aurait dû perdre — les deux côtés finissent quand même par contenir le même document,
+          mais ce peut être la modification la plus ancienne. Sur un serveur calme, le flux du sens inverse
+          avance environ toutes les 10 secondes ; une modification sur laquelle l’autre côté ne faisait que
+          différer peut donc prendre ce temps.
+        </li>
+        <li>
+          <strong>Quand un sens s’arrête, l’autre aussi.</strong> Un sens qui s’arrête pour une personne (un
+          document refusé, des droits perdus, un changement d’options) ou qui échoue met l’autre en pause
+          (« En pause car l’autre sens s’est arrêté ») : laissé seul, il garderait ses modifications en
+          attendant un flux qui n’avance pas, tandis que sa position, et l’oplog dont il a besoin, prendraient
+          du retard. Reprendre l’un des sens reprend les deux. Un sens s’arrête aussi (« Trop de ses
+          modifications sont en attente… ») lorsque plus de 10 000 de ses modifications attendent l’autre côté,
+          ou lorsque l’oplog de la source, presque plein, est sur le point de dépasser la position qu’il
+          détient. La reprise démarre alors d’abord l’autre sens ; celui-ci attend (« En attente que l’autre
+          sens … rattrape son retard ») et repart de lui-même dès que l’autre est en continu.
+        </li>
+        <li>
+          <strong>Un document refusé.</strong> Lorsqu’un côté refuse une modification (un validateur, un index
+          unique), le sens s’arrête et indique l’<code>_id</code> du document. Corrigez la cause puis
+          <em>Réessayer</em>, ou <em>Ignorer ce document</em> : cette modification est écartée définitivement
+          et retenue comme perdue, de sorte que les deux côtés peuvent différer sur ce document jusqu’à ce qu’il
+          change de nouveau ; vérifiez-le et copiez-le à la main si nécessaire.
+        </li>
+        <li>
+          Si les préimages et postimages sont désactivées sur l’une des collections, son sens s’arrête (« Les
+          préimages et postimages ont été désactivées ») : sans elles, chaque modification écraserait l’autre
+          côté sans contrôle. Réactivez-les (la page Suivi des modifications le propose), passez sur le
+          changement d’options, puis <em>Réessayer</em>.
+        </li>
+        <li>
+          Un redémarrage en cours de route relit depuis avant toute modification encore en cours de
+          règlement ; les modifications déjà appliquées sont reconnues et une modification qui a perdu ne
+          revient pas.
+        </li>
+      </ul>
+
+      <h2 id="states">États et conduite à tenir</h2>
+      <ul>
+        <li><strong>Copie en cours</strong> : la copie initiale s’exécute ; la carte affiche sa progression.</li>
+        <li>
+          <strong>Rattrapage</strong> : application des modifications, avec plus de 2 secondes de retard ; la
+          carte indique l’ampleur du retard.
+        </li>
+        <li>
+          <strong>En continu</strong> : moins de 2 secondes de retard. La carte trace le retard des 10 dernières
+          minutes ; le serveur conserve cet historique pendant un jour (le plus grand retard de chaque tranche
+          de 10 secondes), il survit donc à un rechargement et à un redémarrage, et les détails de la
+          synchronisation tracent la dernière heure, les 6 dernières heures ou les 24 dernières heures.
+        </li>
+        <li>
+          <strong>En pause</strong> : par son propriétaire ou par un administrateur. Sa position est conservée ;
+          Reprendre la fait continuer.
+        </li>
+        <li>
+          <strong>Nécessite une intervention</strong> : elle s’est arrêtée pour une raison qu’une personne doit
+          examiner — la cible a refusé un document (Ignorer ce document, ou Réessayer après correction), de
+          nouvelles options sur la source, une source supprimée, des règles de données personnelles modifiées ou
+          une connexion modifiée (Examiner le récapitulatif), des droits perdus, le mode lecture seule,
+          l’interrupteur désactivé, ou une erreur de flux de modifications que l’attente ne résoudra pas (une
+          modification de plus de 16 Mo, un droit perdu par l’utilisateur de la source : corrigez-le, puis
+          Réessayer). Une collection cible supprimée dans le dos de la synchronisation, ou une modification qui
+          fait pointer une connexion vers un autre serveur, demande de <strong>Redémarrer</strong>. La pause
+          d’un administrateur est levée par un administrateur.
+        </li>
+        <li>
+          <strong>Nouvelle tentative</strong> : une connexion est injoignable ; elle réessaie après 1 seconde,
+          puis de plus en plus tard, jusqu’à 5 minutes.
+        </li>
+        <li><strong>Finalisation</strong>, puis <strong>Terminée</strong> : la bascule.</li>
+        <li>
+          <strong>Échec</strong> : elle ne peut pas continuer depuis sa position, généralement parce que
+          l’historique de la source ne remonte plus jusqu’à elle. <strong>Redémarrer</strong> crée une nouvelle
+          synchronisation avec les mêmes paramètres, qui fusionne dans ce que la cible contient déjà, à la place
+          de l’ancienne (qui ne compte alors plus dans les limites).
+        </li>
+        <li><strong>Arrêtée</strong> : par son propriétaire ou par un administrateur. La cible conserve ce qu’elle a.</li>
+      </ul>
+      <p>
+        Lorsque la cible refuse un document (clé en double sur un autre index unique, validation, taille), le
+        choix fait dans l’assistant s’applique : <strong>Mettre en pause et demander</strong> (par défaut)
+        indique l’<code>_id</code> du document et l’erreur ; <strong>Ignorer et consigner</strong> l’ignore, le
+        liste dans le journal d’activité (son <code>_id</code> et le code d’erreur, jamais son contenu), et met
+        en pause après 1 000.
+      </p>
+      <p>
+        Avec <strong>Ignorer et consigner</strong>, les documents refusés eux-mêmes sont conservés dans un
+        fichier, un par ligne en Extended JSON, exactement tels que la synchronisation a tenté de les écrire
+        (masqués lorsque la synchronisation masque) ; les détails de la synchronisation l’offrent à son
+        propriétaire sous <em>Télécharger les documents refusés</em>. Un redémarrage du serveur le conserve, et
+        il continue de grossir lorsque la synchronisation s’exécute de nouveau. Le fichier compte dans l’espace
+        de transfert du propriétaire ; une fois celui-ci plein, les documents sont toujours ignorés et
+        consignés mais plus conservés, et le journal d’activité l’indique. Il n’est fourni que tant que le
+        propriétaire peut encore lire et exporter depuis la source : plus une fois que les valeurs personnelles
+        lui y sont masquées (pour une synchronisation qui ne masquait pas), ni après que les règles de la source
+        ont changé (pour une qui masquait). Supprimer la synchronisation le supprime.
+      </p>
+
+      <h2 id="personal-data">Données personnelles</h2>
+      <ul>
+        <li>
+          Si vous ne pouvez pas voir les données personnelles sur la source, ou si vous cochez
+          <strong>Masquer les données personnelles</strong>, chaque document que la synchronisation écrit — la
+          copie et chaque modification — est masqué avec les règles de la source (<code>***</code>). Les index
+          uniques portant sur des champs masqués ne sont pas construits.
+        </li>
+        <li>
+          Si vous ne pouvez pas voir les données personnelles sur la cible et qu’elle a des règles, la
+          synchronisation est refusée : elle écrit des documents entiers, qui ne peuvent pas respecter vos
+          règles champ par champ.
+        </li>
+        <li>
+          Une synchronisation non masquée vers une cible qui n’a pas les mêmes règles exige votre confirmation,
+          ou « Ajouter d’abord ces règles à la cible » (pour les administrateurs de la connexion cible). Les
+          deux sont consignés dans le journal d’audit.
+        </li>
+        <li>
+          Si les règles changent d’un côté ou de l’autre, la synchronisation attend : les valeurs déjà écrites
+          peuvent désormais être personnelles. Examinez le récapitulatif pour continuer, ou redémarrez.
+        </li>
+      </ul>
+
+      <h2 id="limits">Droits, limites et paramètres</h2>
+      <ul>
+        <li>
+          Vous avez besoin du droit d’exporter depuis la source, et d’écrire des documents, de créer des
+          collections et des index et d’exécuter des tâches sur la cible. Ces droits sont relus avant chaque
+          lot : en perdre un, ou perdre votre compte, arrête immédiatement la synchronisation. Se déconnecter
+          ne l’arrête pas.
+        </li>
+        <li>
+          Modifier une connexion utilisée par une synchronisation l’arrête jusqu’à ce que vous examiniez le
+          récapitulatif (la connexion peut désormais pointer vers un autre serveur) ; supprimer la connexion
+          l’arrête définitivement.
+        </li>
+        <li>
+          Chaque utilisateur peut avoir 3 synchronisations en continu non terminées ; un serveur en exécute au
+          plus <code>MM_LIVE_SYNC_MAX</code> (10 par défaut). <code>MM_LIVE_SYNC=0</code> désactive la
+          fonctionnalité : les synchronisations en cours attendent et reprennent lorsqu’elle est réactivée.
+          Voir <a href="deployment.html#live-sync">Déploiement</a>.
+        </li>
+        <li>
+          Les administrateurs voient toutes les synchronisations et peuvent les mettre en pause, les reprendre,
+          les vérifier, les arrêter et les supprimer ; seul le propriétaire la termine ou confirme un examen.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Sur cette page</p>
+      <ol>
+        <li><a href="#requirements">Ce qui peut être synchronisé</a></li>
+        <li><a href="#start">Démarrage</a></li>
+        <li><a href="#applying">Comment les modifications sont appliquées</a></li>
+        <li><a href="#verify">Vérifier</a></li>
+        <li><a href="#finish">Terminer (la bascule)</a></li>
+        <li><a href="#two-way">Synchronisation bidirectionnelle</a></li>
+        <li><a href="#states">États et conduite à tenir</a></li>
+        <li><a href="#personal-data">Données personnelles</a></li>
+        <li><a href="#limits">Droits, limites et paramètres</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

@@ -1,0 +1,1814 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Plugins · Documentação do Mongo Manager</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Documentação do Mongo Manager</a>
+      <details class="lang-menu">
+        <summary>Português (Brasil)</summary>
+        <span class="langs" role="group" aria-label="Idioma">
+          <a lang="en" hreflang="en" href="../plugins.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/plugins.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/plugins.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/plugins.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/plugins.html">Español</a>
+          <strong lang="pt-BR">Português (Brasil)</strong>
+          <a lang="ko" hreflang="ko" href="../ko/plugins.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/plugins.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/plugins.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/plugins.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Visão geral</a>
+      <a href="getting-started.html">Primeiros passos</a>
+      <a href="security.html">Segurança</a>
+      <a href="deployment.html">Implantação</a>
+      <a href="import-export.html">Importação e exportação</a>
+      <a href="backup.html">Backup e restauração</a>
+      <a href="watch.html">Monitoramento de alterações</a>
+      <a href="sync.html">Sincronização em tempo real</a>
+      <a href="server-admin.html">Administração do servidor</a>
+      <a href="ai.html">Assistente de IA</a>
+      <strong>Plugins</strong>
+      <a href="shortcuts.html">Atalhos de teclado</a>
+    </nav>
+    <main>
+      <h1>Criação de plugins</h1>
+      <p>
+        Um plugin adiciona uma visualização, uma ação ou uma página ao Mongo Manager: um mapa dos locais de uma
+        coleção, um gráfico, um localizador de duplicatas, um tradutor de SQL. Este guia é para quem cria um
+        plugin. Ele descreve os arquivos de que um plugin é feito, tudo o que ele pode pedir ao app, as regras
+        que o app aplica e como empacotar, testar e publicar. Os administradores instalam e aprovam plugins na
+        página <strong>Plugins</strong>; veja o modelo de aprovação em <a href="security.html#plugins">Segurança</a>.
+        Essa página lista todos eles e restringe a lista aos ativados, aos que precisam de um administrador
+        (aguardando aprovação, alterados ou com defeito) ou aos desativados, a uma origem, e aos que uma busca
+        encontra por nome, descrição, id, versão, permissões solicitadas ou o que eles adicionam.
+      </p>
+      <ul class="toc-inline">
+        <li><a href="#what">O que é um plugin</a></li>
+        <li><a href="#quick-start">Início rápido</a></li>
+        <li><a href="#files">Arquivos e estrutura de pastas</a></li>
+        <li><a href="#manifest">O manifesto</a></li>
+        <li><a href="#contributions">Pontos de contribuição</a></li>
+        <li><a href="#context">O contexto</a></li>
+        <li><a href="#bridge">A API da ponte</a></li>
+        <li><a href="#permissions">Permissões</a></li>
+        <li><a href="#sandbox">O sandbox</a></li>
+        <li><a href="#scan">A verificação de segurança</a></li>
+        <li><a href="#ui">Interface e temas</a></li>
+        <li><a href="#localization">Idiomas</a></li>
+        <li><a href="#readme">README e notas de versão</a></li>
+        <li><a href="#versions">Versões e aprovação</a></li>
+        <li><a href="#packaging">Empacotamento</a></li>
+        <li><a href="#github">Publicação no GitHub</a></li>
+        <li><a href="#testing">Testes no seu próprio servidor</a></li>
+        <li><a href="#ai-files">Criação com um assistente de IA</a></li>
+        <li><a href="#checklist">Lista de verificação antes de publicar</a></li>
+      </ul>
+
+      <h2 id="what">O que é um plugin</h2>
+      <p>
+        Um plugin é uma pasta de <strong>arquivos estáticos</strong>: uma página HTML, seus scripts, estilos,
+        imagens e fontes, e um manifesto chamado <code>mongo-manager-plugin.json</code> que diz o que ele
+        adiciona e o que pode fazer. O app exibe a página em um <strong>frame isolado (sandbox)</strong> e a
+        página conversa com o app apenas por mensagens: ela pede documentos e o app responde como o usuário
+        conectado, com os direitos desse usuário e com o mascaramento do app.
+      </p>
+      <ul>
+        <li>
+          <strong>Sem código de servidor.</strong> Nada de um plugin é executado no servidor. O servidor
+          armazena os arquivos dele, verifica-os e os entrega ao frame.
+        </li>
+        <li>
+          <strong>Sem rede.</strong> A página não pode buscar nada em nenhum endereço, nem mesmo no servidor
+          de onde veio. Ela não tem cookies, nem armazenamento, nem acesso à página do app. Restam duas saídas
+          que dependem do navegador: o WebRTC só é bloqueado por navegadores que aplicam a diretiva
+          <code>webrtc</code> da política — os navegadores baseados em Chromium (Chrome, Edge) a ignoram a
+          partir da versão 149, e não conte com o Firefox também — portanto, neles um plugin ainda pode enviar
+          o que lê por WebRTC; e uma dica de prefetch (<code>dns-prefetch</code>, <code>preconnect</code>)
+          pode fazer um nome ser consultado. O frame pede ao navegador que não faça prefetch e a verificação
+          sinaliza ambos como riscos altos — mas a verificação lê o texto dos arquivos em busca de padrões
+          conhecidos: código escrito para escapar dela não é encontrado. Aprove apenas plugins em que você
+          confia.
+        </li>
+        <li>
+          <strong>Nada sem aprovação.</strong> Um plugin só é executado depois que um administrador aprova seus
+          arquivos exatos e as permissões que ele pede. Toda alteração nos arquivos exige uma nova aprovação.
+        </li>
+        <li>
+          <strong>As alterações passam pelo usuário.</strong> Um plugin que pode alterar documentos pede; o app
+          mostra a alteração em uma caixa de diálogo própria e o usuário decide. Uma consulta ou um pipeline
+          que um plugin prepara é colocado nos editores do próprio usuário, onde nada é executado até que o
+          usuário o execute.
+        </li>
+      </ul>
+      <p>
+        O Mongo Manager inclui vários plugins próprios (Mapa, Gráficos, Saúde do esquema, Localizador de
+        duplicatas, Busca de valores, Referências, Comparação de documentos, SQL para MongoDB, Dicas de tempo,
+        Visualização de binários, Dicionário de dados, Hora local, Analisador de logs, Dados de teste,
+        Remodelagem, Anonimizador, Playground de busca, Analisador de chave de shard, Relatório de
+        armazenamento, Verificação de validação, UUIDs legados, Filtros de data, Script de índice, Expiração
+        (TTL), Localizador de dados pessoais, Tamanho do documento). Eles são executados no mesmo sandbox,
+        conversam pela mesma ponte e são verificados da mesma forma que os seus; por serem código do próprio
+        app, aprovar um deles nunca pede o id (veja <a href="#versions">Versões e aprovação</a>). Os plugins
+        podem ser desativados em todo o servidor com <code>MM_PLUGINS=0</code> (veja
+        <a href="deployment.html#plugins">Implantação</a>).
+      </p>
+
+      <h2 id="quick-start">Início rápido</h2>
+      <p>
+        Comece pelo modelo inicial: na página <strong>Plugins</strong>, em
+        <strong>Crie seu próprio plugin</strong>, escolha <strong>Baixar o modelo inicial (.zip)</strong> (ele
+        também é a pasta <code>packages/plugins/starter</code> do código-fonte do Mongo Manager). É um plugin
+        completo em JavaScript simples, sem etapa de build e sem dependências: uma aba de coleção e uma página
+        da barra lateral que listam os documentos de uma coleção.
+      </p>
+      <ol>
+        <li>Descompacte-o, ou copie a pasta, para um novo repositório seu.</li>
+        <li>
+          Em <code>mongo-manager-plugin.json</code>, altere <code>id</code>, <code>name</code>,
+          <code>author</code> e <code>repository</code>. O id deve ser único: ele dá nome à pasta do plugin em
+          todos os servidores.
+        </li>
+        <li>Escreva sua página em <code>main.js</code> e <code>style.css</code>.</li>
+        <li>
+          Experimente no seu próprio servidor:
+          <code>node scripts/pack.mjs --folder ~/.mongo-manager/plugins</code>, depois
+          <strong>Plugins → Verificar novamente</strong>, veja a verificação e aprove. Veja
+          <a href="#testing">Testes no seu próprio servidor</a>.
+        </li>
+        <li>
+          Empacote com <code>node scripts/pack.mjs</code>, que grava
+          <code>&lt;id&gt;-&lt;version&gt;.tgz</code>, e anexe esse arquivo a um release do GitHub. Veja
+          <a href="#github">Publicação no GitHub</a>.
+        </li>
+      </ol>
+      <p>
+        O modelo inicial também contém arquivos de instruções para assistentes de programação com IA
+        (<code>CLAUDE.md</code>, <code>AGENTS.md</code>, <code>GEMINI.md</code> e
+        <code>.github/copilot-instructions.md</code>); veja
+        <a href="#ai-files">Criação com um assistente de IA</a>.
+      </p>
+
+      <h2 id="files">Arquivos e estrutura de pastas</h2>
+      <pre><code>hello-documents/
+  mongo-manager-plugin.json   the manifest (required, at the top)
+  index.html                  the entry page every contribution opens
+  main.js                     the page's script (an ES module)
+  style.css                   the page's styles
+  README.md                   shown to administrators on the plugin's details page
+  README.tr.md, README.zh.md  the same in another language of the app (optional)
+  scripts/pack.mjs            packaging (not part of the plugin: left out of the archive)
+  CLAUDE.md, AGENTS.md, ...   AI assistant files (left out of the archive)</code></pre>
+      <p>As regras do app para os arquivos de um plugin:</p>
+      <ul>
+        <li>
+          No máximo <strong>500 arquivos</strong> e <strong>25 MB</strong> no total; o manifesto, no máximo 64
+          KB.
+        </li>
+        <li>
+          Todo caminho é relativo e simples: cada parte começa com uma letra, um dígito, <code>_</code> ou
+          <code>-</code> e contém apenas letras, dígitos, <code>.</code>, <code>_</code> e <code>-</code>, com
+          no máximo 100 caracteres; no máximo 16 níveis de profundidade e 240 caracteres no total. Sem
+          arquivos ou pastas ocultos (um nome que começa com <code>.</code>), sem espaços, sem nomes de
+          dispositivo (<code>con</code>, <code>nul</code>, <code>com1</code>...), sem
+          <code>__proto__</code>, <code>constructor</code> ou <code>prototype</code>.
+        </li>
+        <li>
+          Somente arquivos e pastas: links, junções e arquivos especiais tornam o plugin inutilizável.
+        </li>
+        <li>Nenhum par de caminhos que difira apenas por maiúsculas e minúsculas.</li>
+        <li>
+          Os arquivos são servidos com um tipo tirado da extensão: <code>html</code>, <code>js</code>,
+          <code>mjs</code>, <code>css</code>, <code>json</code>, <code>map</code>, <code>txt</code>,
+          <code>svg</code>, <code>png</code>, <code>jpg</code>, <code>jpeg</code>, <code>gif</code>,
+          <code>webp</code>, <code>avif</code>, <code>ico</code>, <code>woff</code>, <code>woff2</code>,
+          <code>ttf</code>, <code>otf</code>. Qualquer outro é servido como bytes e nunca é executado.
+        </li>
+      </ul>
+
+      <h2 id="manifest">O manifesto</h2>
+      <p>
+        O <code>mongo-manager-plugin.json</code> é verificado de forma rigorosa: um campo desconhecido, um tipo
+        errado ou um valor fora do intervalo torna o plugin inutilizável, e a página Plugins diz qual campo
+        está errado. Textos que uma pessoa lê (nomes, títulos, notas) não podem conter caracteres de controle
+        nem caracteres que ocultam ou invertem texto.
+      </p>
+      <pre><code>{
+  "id": "hello-documents",
+  "name": { "en": "Hello documents", "tr": "Merhaba belgeler" },
+  "version": "0.1.0",
+  "description": { "en": "Lists the documents of a collection.", "tr": "Bir koleksiyonun belgelerini listeler." },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [{ "id": "list", "title": { "en": "Hello", "tr": "Merhaba" }, "icon": "table" }],
+    "sidebarPanels": [{ "id": "page", "title": { "en": "Hello documents" }, "icon": "puzzle" }]
+  },
+  "settings": {},
+  "author": { "name": "Your Name", "url": "https://example.com" },
+  "homepage": "https://example.com/hello-documents",
+  "repository": "https://github.com/your-name/hello-documents",
+  "license": "MIT",
+  "publishedAt": "2026-10-11",
+  "changelog": [
+    { "version": "0.1.0", "date": "2026-10-11", "notes": { "en": "First release.", "tr": "İlk sürüm." } }
+  ]
+}</code></pre>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Campo</th>
+              <th>Obrigatório</th>
+              <th>Regras</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td>sim</td>
+              <td>
+                Letras minúsculas e dígitos, separados por hífen (<code>geojson-map</code>), com no máximo 64
+                caracteres. Deve ser igual ao nome da pasta do plugin. O id de um plugin incluído no Mongo Manager
+                não pode ser usado, nem um que se leia como um nome que o app reserva (abaixo).
+              </td>
+            </tr>
+            <tr>
+              <td><code>name</code></td>
+              <td>sim</td>
+              <td>
+                Texto localizado, com no máximo 60 caracteres: <code>{ "en": "...", "tr": "..." }</code>. Sem
+                caracteres invisíveis (largura zero, tag, seletor de variação — os próprios de um emoji são
+                permitidos) e nunca um nome que se leia como mensagens do próprio app: <em>Mongo Manager</em> (ou
+                um que comece assim), <em>MongoDB</em>, <em>System</em>, <em>Session</em>, <em>Security</em>,
+                <em>Admin</em>, <em>Server</em>, <em>Update</em> e semelhantes, em qualquer idioma do app,
+                comparados como são lidos: sem considerar maiúsculas, espaços, acentos e letras parecidas. Em
+                cada palavra, as letras são todas latinas ou nenhuma delas (nunca grego e cirílico juntos), e
+                nenhum parêntese contém o que se leia como um id (<code>(value-search)</code>;
+                <code>(beta)</code> é permitido). O app mostra as mensagens e perguntas de um plugin com o id ao
+                lado do nome.
+              </td>
+            </tr>
+            <tr>
+              <td><code>version</code></td>
+              <td>sim</td>
+              <td>
+                Versionamento semântico: <code>major.minor.patch</code>, opcionalmente com uma pré-versão
+                (<code>1.2.0-beta.1</code>), com no máximo 64 caracteres.
+              </td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td>não</td>
+              <td>Texto localizado, com no máximo 300 caracteres.</td>
+            </tr>
+            <tr>
+              <td><code>entry</code></td>
+              <td>sim</td>
+              <td>
+                A página que toda contribuição abre: um caminho simples para um arquivo <code>.html</code> do
+                plugin.
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions</code></td>
+              <td>não</td>
+              <td>
+                Qualquer uma entre <code>documents:read</code>, <code>documents:write</code>,
+                <code>collection:read</code>, <code>database:read</code>, cada uma no máximo uma vez. Padrão:
+                nenhuma. Veja <a href="#permissions">Permissões</a>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>contributes</code></td>
+              <td>não</td>
+              <td>
+                <code>collectionTabs</code>, <code>documentActions</code>, <code>sidebarPanels</code> e
+                <code>cellRenderers</code>: listas de no máximo 5 cada, com ids únicos dentro de cada lista. Veja
+                <a href="#contributions">Pontos de contribuição</a>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>settings</code></td>
+              <td>não</td>
+              <td>
+                No máximo 10, por chave (uma letra, depois letras e dígitos, com no máximo 32 caracteres):
+                <code>{ "type": "url" | "text" | "boolean", "title": texto localizado de no máximo 60 }</code>.
+                Os administradores definem os valores; a página os lê no contexto.
+              </td>
+            </tr>
+            <tr>
+              <td><code>author</code></td>
+              <td>não</td>
+              <td>
+                <code>{ "name": texto de no máximo 80, "url": um endereço https (opcional) }</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>homepage</code>, <code>repository</code></td>
+              <td>não</td>
+              <td>
+                Um endereço <code>https://</code> com host, de no máximo 300 caracteres, sem credenciais, espaços
+                ou barras invertidas.
+              </td>
+            </tr>
+            <tr>
+              <td><code>license</code></td>
+              <td>não</td>
+              <td>
+                Uma expressão SPDX, com no máximo 40 caracteres: <code>MIT</code>,
+                <code>Apache-2.0 OR MIT</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>publishedAt</code></td>
+              <td>não</td>
+              <td>Um dia que exista, <code>YYYY-MM-DD</code>, entre 1900 e 2100.</td>
+            </tr>
+            <tr>
+              <td><code>changelog</code></td>
+              <td>não</td>
+              <td>
+                No máximo 50 entradas
+                <code>{ "version", "date": "YYYY-MM-DD", "notes": texto localizado de no máximo 1000 }</code>;
+                cada versão no máximo uma vez e nenhuma posterior à <code>version</code> do manifesto.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Texto localizado é um objeto com <code>en</code> (obrigatório) e, opcionalmente, qualquer um dos outros
+        idiomas do app: <code>tr</code>, <code>zh</code> (chinês simplificado), <code>ja</code>,
+        <code>es</code>, <code>pt</code> (português do Brasil), <code>ko</code>, <code>de</code>,
+        <code>fr</code> e <code>ru</code>; o inglês é exibido quando falta o idioma do leitor. Uma contribuição
+        é <code>{ "id", "title": texto localizado de no máximo 40, "icon" }</code>: seu id é uma letra
+        minúscula, seguida de letras minúsculas, dígitos e hífens, com no máximo 32 caracteres, e seu ícone é
+        um entre <code>map</code>, <code>chart</code>, <code>table</code>, <code>file</code>,
+        <code>image</code>, <code>globe</code>, <code>layers</code>, <code>puzzle</code>, <code>book</code>,
+        <code>wand</code>, <code>shapes</code>, <code>scroll</code>, <code>code</code>,
+        <code>calendar</code>, <code>hourglass</code>, <code>shield</code>, <code>fingerprint</code>,
+        <code>ruler</code> (os ícones do próprio app: um plugin não traz nenhum). Um renderizador de célula é
+        <code>{ "id", "match" }</code>, com um <code>"display"</code> opcional: <code>inline</code> (o padrão)
+        ou <code>tooltip</code>.
+      </p>
+      <p>
+        Uma configuração <code>url</code> deve ser um endereço https sem credenciais (http simples apenas para
+        este computador: <code>localhost</code>, <code>127.0.0.1</code> ou <code>[::1]</code>); seu esquema,
+        host e porta são adicionados às imagens que o frame pode carregar (para blocos de mapa: um
+        <code>{s}.</code> inicial vira qualquer subdomínio, apenas antes de um nome de duas partes ou mais,
+        nunca de um endereço). O endereço de uma imagem pode carregar dados: o plugin pode enviar o que lê a
+        esse servidor, e a aprovação e a configuração informam isso. Uma configuração <code>text</code> tem no
+        máximo 500 caracteres. Todo usuário do plugin pode ler suas configurações: nunca peça um segredo. O
+        servidor as armazena criptografadas com a chave dele, como qualquer outro valor salvo.
+      </p>
+
+      <h2 id="contributions">Pontos de contribuição</h2>
+      <p>
+        Toda contribuição abre a mesma página de entrada. A página descobre qual é pelo fragmento do endereço,
+        <code>#&lt;kind&gt;=&lt;id&gt;</code> (por exemplo <code>#collectionTab=list</code>), e por
+        <code>contribution</code> no contexto.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Onde aparece e como abre</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>collectionTabs</code></td>
+              <td>
+                Uma aba de cada coleção, depois das abas do próprio app, também nas visualizações. O frame
+                preenche a aba. Seu <code>place</code> é essa coleção, com o <code>filter</code> de Documentos
+                que o usuário definiu. A página é carregada de novo cada vez que a aba é exibida, a menos que ela
+                tenha pedido para permanecer com <code>ui.keepOpen</code>: então ela permanece carregada enquanto
+                outra seção da aba dessa coleção é exibida (fora de vista, ela pode ler, mas não agir:
+                <code>not_visible</code>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>documentActions</code></td>
+              <td>
+                Uma entrada no menu de ações de um documento em Documentos, exibida apenas para um plugin
+                aprovado para <code>documents:read</code>. Abre uma caixa de diálogo com a página;
+                <code>place.documentId</code> é o <code>_id</code> desse documento. A caixa de diálogo fecha
+                quando o plugin coloca uma consulta ou um pipeline no lugar (<code>ui.useQuery</code>,
+                <code>ui.useQueryIn</code>,
+                <code>ui.useAggregation</code>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>sidebarPanels</code></td>
+              <td>
+                Uma entrada na barra lateral que abre uma página própria, uma aba do espaço de trabalho em
+                <code>/plugin/&lt;id&gt;/&lt;contribution&gt;</code>. Se clicada enquanto a aba de uma coleção
+                está ativa, a página abre nessa coleção
+                (<code>/plugin/&lt;id&gt;/&lt;contribution&gt;/&lt;connection&gt;/&lt;db&gt;/&lt;collection&gt;</code>)
+                e <code>place</code> a nomeia; de qualquer outro lugar, <code>place</code> é <code>null</code>.
+                Uma página aberta a partir de um link pergunta ao usuário antes de ler essa coleção, e o usuário
+                pode continuar sem uma. A página permanece carregada enquanto outra aba é exibida; fora de vista,
+                ela ainda pode ler, mas não agir (<code>not_visible</code>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>cellRenderers</code></td>
+              <td>
+                Um texto curto sobre valores em qualquer lugar em que Documentos os mostra (tabela, árvore,
+                cartões, a página do documento, detalhes do change stream), como a data em que um ObjectId foi
+                criado: ao lado do valor (<code>"display": "inline"</code>, o padrão) ou em uma dica de
+                ferramenta (<code
+                  >"display": "tooltip"</code
+                >) que a célula ou a linha exibe quando recebe o ponteiro ou o foco, abaixo do valor inteiro e
+                marcada com o nome do plugin. O texto de uma dica de ferramenta é simples, e seu
+                <code>tone</code> não é usado; um leitor de tela o lê junto com o valor. Um plugin diz um texto ao
+                lado de um valor e um em sua dica de ferramenta: seu primeiro renderizador para cada lugar que
+                responde. A página é executada em um frame oculto, um por plugin, apenas para um plugin aprovado
+                para <code>documents:read</code>; ela nunca se mostra. <code>match</code> é um entre
+                <code>geojson</code>, <code>string</code>, <code>number</code>, <code>date</code>,
+                <code>object</code>, <code>objectId</code>, <code>binary</code> (não um UUID). Veja
+                <a href="#cells">Renderizadores de célula</a>.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="cells">Renderizadores de célula</h3>
+      <p>
+        O app pergunta ao frame oculto sobre os valores que mostra, em lotes de no máximo 200, com uma mensagem
+        <code>cells.render</code>. Com o kit, responda por meio de <code>client.onCells</code>:
+      </p>
+      <pre><code>client.onCells((renderer, values, locale, paths, place) =&gt;
+  values.map((v) =&gt; (typeof v?.$oid === 'string' ? { text: createdAt(v.$oid, locale), tone: 'info' } : null)),
+)</code></pre>
+      <ul>
+        <li>
+          <code>renderer</code> é o id da contribuição, <code>values</code> são os valores como Extended JSON
+          canônico, <code>locale</code> é o idioma do app, <code>paths</code> é o caminho do campo de cada
+          valor (ou <code>null</code>), <code>place</code> é a coleção de onde vêm os valores (ou
+          <code>null</code>).
+        </li>
+        <li>
+          Um valor <code>binary</code> é enviado apenas com o início, nunca inteiro:
+          <code>{ "$binaryHead": { "base64", "subType", "length" } }</code> com seus primeiros 2.048 bytes —
+          o suficiente para dizer o tipo e o tamanho de uma imagem.
+        </li>
+        <li>
+          Responda com um item por valor, em ordem: <code>{ "text", "tone" }</code>, <code>null</code> para
+          nenhum texto, ou <code>{ "retry": true }</code> para ser perguntado de novo mais tarde. Uma lista de
+          outro tamanho é ignorada.
+        </li>
+        <li>
+          O texto é exibido como texto simples — no máximo 80 caracteres ao lado do valor, 200 em uma dica de
+          ferramenta — com caracteres de controle e ocultos removidos.
+          <code>tone</code> é um entre <code>neutral</code>, <code>info</code>, <code>success</code>,
+          <code>warning</code>, <code>danger</code>.
+        </li>
+        <li>
+          Uma resposta deve chegar em 3 segundos; caso contrário, o valor simples permanece e o valor é
+          perguntado de novo após 30 segundos. As respostas são mantidas por valor, idioma e configurações do
+          plugin: uma alteração nas configurações pergunta de novo, e uma resposta com mais de um minuto é
+          pedida de novo na próxima vez que seu valor for exibido, com a resposta antiga permanecendo até a
+          nova chegar (e permanecendo se o novo pedido falhar). A resposta de um valor <code>binary</code> é
+          mantida sob o tamanho, o subtipo e um hash do início dele.
+        </li>
+        <li>
+          Um renderizador pode ler antes de responder (referências a outros documentos, por exemplo): ele
+          passa o <code>place</code> que recebeu em seu pedido, <code>{ place, filter, ... }</code>, e só pode
+          ler ali. O <code>place</code> do contexto dele é <code>null</code>.
+        </li>
+      </ul>
+
+      <h2 id="context">O contexto</h2>
+      <p>
+        <code>context.get</code> responde onde a página está e qual deve ser a aparência dela. Chame-o
+        primeiro; quando uma coleção está aberta, a resposta pode levar até 3 segundos enquanto o app verifica
+        se ela é uma visualização.
+      </p>
+      <pre><code>{
+  "plugin": { "id": "hello-documents", "version": "0.1.0" },
+  "contribution": { "kind": "collectionTab", "id": "list" },
+  "locale": "en",
+  "theme": "dark",
+  "accent": "emerald",
+  "place": {
+    "connectionId": "6650...",
+    "connectionName": "Production",
+    "db": "shop",
+    "coll": "orders",
+    "view": false,
+    "documentId": null,
+    "filter": { "status": "open" }
+  },
+  "settings": { "tileUrl": "https://tile.example.org/{z}/{x}/{y}.png" }
+}</code></pre>
+      <ul>
+        <li>
+          <code>kind</code> é <code>collectionTab</code>, <code>documentAction</code>,
+          <code>sidebarPanel</code> ou <code>cellRenderer</code>.
+        </li>
+        <li><code>locale</code> é o idioma do app: <code>en</code>, <code>tr</code>, <code>zh</code>, <code>ja</code>, <code>es</code>, <code>pt</code>, <code>ko</code>, <code>de</code>, <code>fr</code>, <code>ru</code>.</li>
+        <li><code>theme</code> é <code>light</code> ou <code>dark</code>.</li>
+        <li>
+          <code>accent</code> é a cor de destaque do usuário: <code>emerald</code>, <code>indigo</code>,
+          <code>violet</code>, <code>ocean</code> ou <code>rose</code>. Trate qualquer outro valor como
+          <code>emerald</code>.
+        </li>
+        <li>
+          <code>place</code> é <code>null</code> quando a página foi aberta sem nenhuma coleção (uma página da
+          barra lateral, um renderizador de célula). <code>connectionName</code> pode ser <code>null</code>.
+          <code>view</code> é verdadeiro para uma visualização: ela pode ser lida, nunca gravada, e não tem
+          índices. <code>documentId</code> é o documento de uma ação de documento, como Extended JSON
+          canônico, ou <code>null</code>. <code>filter</code> é o filtro de Documentos para uma aba de coleção,
+          ou <code>{}</code>. Ambos são dados: um plugin sem <code>documents:read</code> recebe
+          <code>null</code> e <code>{}</code>.
+        </li>
+        <li>
+          <code>hidden</code> lista os caminhos de campo que as regras de dados pessoais ocultam do usuário na
+          coleção, como listas de chaves (<code>[["contact", "phone"]]</code>; <code>"*"</code> uma chave,
+          <code>"**"</code> qualquer número de chaves, em qualquer profundidade) — apenas nomes, para um plugin
+          com <code>documents:read</code>; <code>[]</code> caso contrário; <code>null</code> quando o app não
+          conseguiu descobrir a tempo (3 segundos). Os valores desse campo chegam como <code>"***"</code>:
+          nunca os tome pelo tipo dele.
+        </li>
+        <li>
+          <code>settings</code> contém os valores que um administrador definiu; uma configuração não definida
+          está ausente.
+        </li>
+      </ul>
+      <p>
+        Quando o usuário muda o idioma, o tema ou a cor de destaque, o app envia
+        <code>context.changed</code> com <code>locale</code>, <code>theme</code> e <code>accent</code> (o
+        <code>client.onContext</code> do kit). Aplique-os imediatamente: a página nunca deve exibir o outro
+        tema ou idioma. Um plugin que pode ler documentos também recebe <code>context.changed</code> quando o
+        filtro de Documentos muda enquanto a página dele está carregada — uma aba de coleção que chamou
+        <code>ui.keepOpen</code> fica sabendo de todo filtro que o usuário define enquanto ela está fora de
+        vista. Chame <code>context.get</code> de novo para obter o novo <code>place</code>.
+      </p>
+
+      <h2 id="bridge">A API da ponte</h2>
+      <h3 id="protocol">O protocolo</h3>
+      <p>
+        A página e o app trocam JSON simples com <code>postMessage</code>. O kit
+        (<code>packages/plugins/kit/src/client.ts</code>) e o <code>main.js</code> do modelo inicial o
+        implementam; as regras, caso você escreva o seu:
+      </p>
+      <ol>
+        <li>
+          Leia apenas mensagens cujo <code>event.source</code> seja <code>window.parent</code> e cujo
+          <code>mm</code> seja <code>1</code>.
+        </li>
+        <li>
+          Quando a página termina de carregar, o app a cumprimenta:
+          <code>{ "mm": 1, "type": "hello", "token": "..." }</code>. Guarde o primeiro token. Não envie nada
+          antes dele.
+        </li>
+        <li>
+          Um pedido é
+          <code>{ "mm": 1, "id": 1, "method": "documents.find", "params": { ... }, "token": "..." }</code>,
+          enviado a <code>window.parent</code> com o destino <code>'*'</code> (a origem do frame é opaca). O
+          id é um número ou uma string de no máximo 64 caracteres; o app ignora um pedido sem o token.
+        </li>
+        <li>
+          A resposta traz o mesmo id: <code>{ "mm": 1, "id": 1, "result": ... }</code> ou
+          <code>{ "mm": 1, "id": 1, "error": { "code": "...", "message": "..." } }</code>.
+        </li>
+        <li>
+          O app envia <code>{ "mm": 1, "type": "context.changed", "locale", "theme", "accent" }</code> quando
+          o usuário os altera (e, para um plugin com <code>documents:read</code>, o filtro de Documentos), e
+          pergunta a um renderizador de célula
+          <code>{ "mm": 1, "id": "h1", "method": "cells.render", "params": { ... } }</code>, que é respondido
+          com <code>{ "mm": 1, "id": "h1", "token", "result": [...] }</code>.
+        </li>
+      </ol>
+      <p>
+        A página não deve sair do endereço dela. Se carregar outra página (um link, um formulário, uma
+        alteração de <code>location</code>), o app fecha a ponte e remove o frame, e o usuário precisa abrir o
+        plugin de novo. Mantenha tudo em uma única página.
+      </p>
+      <pre><code>import { createClient, askMessage, AskError } from './kit/client'
+
+const client = createClient()                       // requests time out after 15 s ("timeout")
+client.onContext((locale, theme, accent) =&gt; restyle(locale, theme, accent))
+client.onReady(async () =&gt; {
+  const context = await client.ask('context.get')
+  if (!context.place) return showNoCollection()
+  try {
+    const { documents, hasMore } = await client.ask('documents.find', { filter: context.place.filter, limit: 100 })
+    show(documents, hasMore)
+  } catch (e) {
+    showError(askMessage(e, context.locale))         // the app's code, in the user's language
+  }
+})</code></pre>
+
+      <h3 id="methods">Métodos</h3>
+      <p>
+        Os valores são Extended JSON canônico nos dois sentidos: um ObjectId é <code>{ "$oid": "..." }</code>,
+        uma data <code>{ "$date": { "$numberLong": "..." } }</code>, um int
+        <code>{ "$numberInt": "3" }</code>. Toda leitura é executada como o usuário, com os direitos dele e com
+        o mascaramento do app. Os métodos marcados com "na sua coleção" funcionam na coleção em
+        <code>place</code> e falham com <code>no_collection</code> sem uma.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Método e permissão</th>
+              <th>Parâmetros → resultado</th>
+              <th>Regras</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>context.get</code><br />nenhuma</td>
+              <td>nenhum → o contexto</td>
+              <td>Veja <a href="#context">O contexto</a>.</td>
+            </tr>
+            <tr>
+              <td><code>documents.find</code><br /><code>documents:read</code></td>
+              <td>
+                <code>{ filter?, projection?, sort?, limit?, fit? }</code> →
+                <code>{ documents, hasMore, cut? }</code>
+              </td>
+              <td>
+                Na sua coleção. <code>limit</code> de 1 a 1000, padrão 100. No máximo 10 segundos. Um documento
+                que o usuário não pode ver é omitido. Não é uma das consultas recentes do usuário.
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.get</code><br /><code>documents:read</code></td>
+              <td><code>{ id }</code> → o documento, ou <code>null</code></td>
+              <td>Na sua coleção. <code>id</code> é o valor de <code>_id</code>.</td>
+            </tr>
+            <tr>
+              <td><code>documents.aggregate</code><br /><code>documents:read</code></td>
+              <td><code>{ pipeline, limit?, fit? }</code> → <code>{ documents, truncated, cut? }</code></td>
+              <td>
+                Na sua coleção. Apenas estágios de leitura: <code>$match</code>, <code>$group</code>,
+                <code>$sort</code>, <code>$limit</code>, <code>$skip</code>, <code>$project</code>,
+                <code>$addFields</code>, <code>$set</code>, <code>$unset</code>, <code>$count</code>,
+                <code>$unwind</code>, <code>$sortByCount</code>, <code>$bucket</code>, <code>$bucketAuto</code>,
+                <code>$facet</code> (sem <code>$facet</code> dentro dele), <code>$replaceRoot</code>,
+                <code>$replaceWith</code>, <code>$sample</code>; no máximo 50 estágios. Com
+                <code>database:read</code>, também um <code>$lookup</code> simples com exatamente
+                <code>from</code>, <code>localField</code>, <code>foreignField</code> e <code>as</code>, de uma
+                coleção do mesmo banco de dados. <code>limit</code> de 1 a 1000, padrão 100. No máximo 10
+                segundos, sem nunca gravar em disco, um pipeline por vez (<code>busy</code>: o
+                <code>serialAsk</code> do kit os coloca em fila).
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.update</code><br /><code>documents:write</code></td>
+              <td><code>{ id, set?, unset? }</code> → <code>{ modified }</code></td>
+              <td>
+                Na sua coleção, apenas à vista, somente logo após um clique na página do plugin.
+                <code>set</code> é um objeto de campos e valores, <code>unset</code> uma lista de nomes de campo;
+                pelo menos uma alteração; um nome de campo com caractere de controle, de quebra de linha ou de
+                direção é recusado (<code>bad_params</code>). O app mostra ao usuário cada campo alterado, cada
+                um entre aspas, na primeira linha da pergunta, e depois a alteração inteira, com todo caractere
+                oculto ou invisível escrito por extenso, e só a aplica se o usuário concordar; o botão Confirmar
+                só aceita um clique depois de um instante sem pressionar nada, depois que o ponteiro foi movido
+                até ele. Recusado em uma visualização (<code>read_only</code>), para uma alteração longa demais
+                para ser mostrada (mais de 2000 caracteres: <code>too_large</code>), enquanto outra pergunta
+                aguarda (<code>busy</code>) e depois que o usuário recusou duas vezes (<code>blocked</code>, até
+                que o plugin seja aberto de novo). Uma recusa é <code>declined</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>indexes.list</code><br /><code>collection:read</code></td>
+              <td><code>{ coll? }</code> → <code>[{ name, key, options, usage }]</code></td>
+              <td>
+                Na sua coleção, ou em outra do banco de dados dela (<code>coll</code>, uma que
+                <code>collections.list</code> nomeie), o que exige também <code>database:read</code>. Uma
+                visualização não tem nenhum: <code>[]</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>collections.list</code><br /><code>database:read</code></td>
+              <td>nenhum → <code>[{ name, type }]</code></td>
+              <td>
+                As coleções e visualizações do banco de dados dele, sem as <code>system.</code>, no máximo 500,
+                mantidas por 30 segundos.
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents.findIn</code><br /><code>database:read</code></td>
+              <td><code>{ coll, filter?, projection?, limit?, fit? }</code> → <code>{ documents }</code></td>
+              <td>
+                Outra coleção do mesmo banco de dados, uma que <code>collections.list</code> nomeie.
+                <code>limit</code> de 1 a 200, padrão 50. No máximo 10 segundos.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.toast</code><br />nenhuma</td>
+              <td><code>{ message, kind? }</code> → <code>true</code></td>
+              <td>
+                Uma mensagem curta no app, depois do nome e do id do plugin. <code>kind</code>:
+                <code>info</code> (padrão), <code>success</code> ou <code>error</code>. No máximo 200 caracteres
+                exibidos, sem caracteres de controle, de direção ou invisíveis; no máximo 5 mensagens por minuto,
+                compartilhadas com <code>ui.copy</code>. Apenas à vista.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.openDocument</code><br />nenhuma</td>
+              <td><code>{ id }</code> → <code>true</code></td>
+              <td>
+                Na sua coleção, apenas à vista. Mostra esse documento em Documentos. <code>id</code> deve ser um
+                valor de <code>_id</code>, nunca uma consulta. Somente logo após um clique na página do plugin;
+                no máximo 30 por minuto.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.resize</code><br />nenhuma</td>
+              <td><code>{ height }</code> → <code>true</code></td>
+              <td>A altura do frame em pixels, mantida entre 80 e 2000.</td>
+            </tr>
+            <tr>
+              <td><code>ui.keepOpen</code><br />nenhuma</td>
+              <td>– → <code>true</code> / <code>false</code></td>
+              <td>
+                A página de uma aba de coleção permanece carregada enquanto outra seção é exibida
+                (<code>false</code> em qualquer outro lugar). Peça-o apenas quando a página chamar
+                <code>context.get</code> de novo em <code>context.changed</code>; fora de vista, ela pode ler,
+                mas não agir.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.copy</code><br />nenhuma</td>
+              <td><code>{ text }</code> → <code>true</code></td>
+              <td>
+                Copia texto (no máximo 100.000 caracteres) para a área de transferência. Somente logo após um
+                clique na página dele; no máximo 5 por minuto, compartilhados com <code>ui.toast</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useQuery</code><br />nenhuma</td>
+              <td><code>{ filter?, projection?, sort? }</code> → <code>true</code></td>
+              <td>
+                Na sua coleção. Coloca a consulta em Documentos da aba da coleção, como se o usuário a tivesse
+                digitado. Somente logo após um clique na página dele; no máximo 10 por minuto, compartilhados com
+                os outros métodos <code>ui.use…</code>
+                e de SQL.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useQueryIn</code><br /><code>database:read</code></td>
+              <td><code>{ coll, filter?, projection?, sort? }</code> → <code>true</code></td>
+              <td>
+                Em outra coleção do banco de dados dele, uma que <code>collections.list</code> informe. Coloca a
+                consulta em Documentos da aba dessa coleção, como <code>ui.useQuery</code> faz na sua própria
+                (Referências a usa para mostrar os documentos que se referem a um); a aba a executa como uma
+                consulta digitada pelo usuário. Uma por vez (<code>busy</code> enquanto uma está sendo colocada),
+                enquanto a página dele está à vista, somente logo após um clique nela; no máximo 10 por minuto,
+                compartilhados com os outros métodos <code>ui.use…</code> e de SQL.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.suggestPersonalData</code><br /><code>documents:read</code></td>
+              <td><code>{ fields: string[] }</code> → <code>true</code></td>
+              <td>
+                Campos da sua coleção sugeridos como dados pessoais: de 1 a 50 caminhos de nomes simples
+                (<code>contact.phone</code>; sem <code>*</code>, sem <code>$</code> iniciando uma chave). Nada é
+                salvo: a seção Dados pessoais da coleção abre com eles listados, nomeados pelo plugin; ela
+                oferece apenas os que uma amostra da coleção contém, e um administrador adiciona cada um ali (ou
+                todos de uma vez, em um único salvamento). Sem caracteres ocultos e sem espaço ao redor de um
+                nome; para os administradores da conexão, em uma coleção (não uma visualização, não
+                <code>system.*</code>), somente logo após um clique na página dele; contado com os métodos
+                <code>ui.use…</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.useAggregation</code><br />nenhuma</td>
+              <td><code>{ stages }</code> → <code>true</code></td>
+              <td>
+                Na sua coleção. Coloca os estágios em Agregações como cartões; pergunta ao usuário antes de
+                substituir um pipeline que já esteja ali; nada é executado até que o usuário o execute. No máximo
+                50 estágios; qualquer estágio, exceto os que gravam ou executam código. Somente logo após um
+                clique na página dele; <code>declined</code>, <code>busy</code> e <code>blocked</code> como em
+                <code>documents.update</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.importSql</code><br />nenhuma</td>
+              <td>nenhum → <code>true</code></td>
+              <td>
+                Na sua coleção. Abre a página <a href="import-export.html#sql">SQL ↔ MongoDB</a> do app na
+                importação, no banco de dados da coleção. O plugin não passa nada e não vê nada da importação; o
+                usuário escolhe o arquivo e a inicia. Somente logo após um clique na página dele;
+                <code>not_permitted</code> quando o usuário não pode gravar documentos e executar tarefas ali, ou
+                para um banco de dados do sistema.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.exportSql</code><br />nenhuma</td>
+              <td>nenhum → <code>true</code></td>
+              <td>
+                Na sua coleção. Abre a página <a href="import-export.html#sql">SQL ↔ MongoDB</a> do app na
+                exportação, no banco de dados da coleção, com essa coleção escolhida. O usuário escolhe as
+                opções e a inicia. Somente logo após um clique na página dele; <code>not_permitted</code> quando
+                o usuário não pode exportar da conexão.
+              </td>
+            </tr>
+            <tr>
+              <td><code>validation.get</code><br /><code>collection:read</code></td>
+              <td>
+                <code>{ coll? }</code> → <code>{ validator, validationLevel, validationAction }</code> ou
+                <code>null</code>
+              </td>
+              <td>
+                As regras de validação da coleção, como a seção Validação as lê (<code>validator</code> é
+                <code>null</code> quando ela não tem nenhuma); <code>null</code> para uma visualização. Outra
+                coleção do banco de dados (<code>coll</code>) exige também <code>database:read</code>. O que uma
+                regra diz sobre um campo oculto do usuário (seu tipo, padrão ou limites) é omitido — o esquema
+                dele é <code>{}</code>, uma regra de consulta ou <code>$expr</code> que o nomeie é descartada — e
+                o nome dele é mantido (em <code>required</code>, por exemplo); <code>failed</code> quando não foi
+                possível saber o que está oculto.
+              </td>
+            </tr>
+            <tr>
+              <td><code>database.model</code><br /><code>database:read</code></td>
+              <td>nenhum → o modelo de dados</td>
+              <td>
+                O modelo do banco de dados como a aba Banco de dados o desenha:
+                <code>{ db, sampleSize, collections, references, skipped, at }</code> — os campos de cada coleção
+                com seus tipos e proporções (um campo oculto do usuário apenas nomeado, <code>masked: true</code>,
+                sem tipos), as referências encontradas entre coleções. Até 200 documentos amostrados por coleção.
+                Uma leitura para o frame, mantida por 60 segundos; os pedidos feitos enquanto ela é executada a
+                compartilham (por 90 segundos: o servidor encerra um modelo aos 60), e uma que falhou não é
+                mantida.
+              </td>
+            </tr>
+            <tr>
+              <td><code>storage.stats</code><br /><code>database:read</code></td>
+              <td>nenhum → <code>{ collections, more }</code></td>
+              <td>
+                O armazenamento do banco de dados, como o relatório de Armazenamento o lê: de cada coleção
+                <code
+                  >{ name, type, count, size, storageSize, freeBytes, indexSize, indexFreeBytes, indexes }</code
+                >
+                (de cada índice <code>{ name, size, freeBytes }</code>), até 500 por nome (<code>more</code>
+                quando há mais). Um valor que o MongoDB não informou é <code>null</code> (<code>unread</code>), e
+                também os tamanhos que as regras de dados pessoais ocultam (<code>sizesHidden</code>). Uma
+                leitura mantida por 30 segundos por banco de dados, para todos os frames, esquecida após um
+                compact ali.
+              </td>
+            </tr>
+            <tr>
+              <td><code>storage.compactEstimate</code><br /><code>collection:read</code></td>
+              <td>
+                <code>{ coll? }</code> → <code>{ available, estimatedBytes }</code> ou
+                <code>{ available: false, reason }</code>
+              </td>
+              <td>
+                O que o <code>compact</code> devolveria (MongoDB 8.0 e posteriores), para a sua coleção ou, com
+                <code>database:read</code>, outra do banco de dados dela. <code>reason</code> é
+                <code>version</code>, <code>mongos</code> ou <code>timeseries</code>; <code>read_only</code> em
+                uma visualização.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.compact</code><br /><code>collection:read</code></td>
+              <td><code>{ coll? }</code> → <code>{ bytesFreed }</code></td>
+              <td>
+                Executa o compact da coleção na caixa de diálogo do próprio app, que nomeia o plugin e a coleção
+                e só prossegue quando o usuário digita o nome da coleção. Para um usuário que pode administrar
+                bancos de dados, em uma conexão que não é somente leitura, nunca uma série temporal, uma
+                visualização ou uma coleção que as regras de dados pessoais alcancem; um compact de uma coleção
+                por vez (<code>busy</code>). Somente logo após um clique na página dele; contado com os métodos
+                <code>ui.use…</code>; <code>declined</code> ou <code>unanswered</code> quando o usuário não
+                prossegue, <code>blocked</code> após dois nãos.
+              </td>
+            </tr>
+            <tr>
+              <td><code>shardKey.analyze</code><br /><code>documents:read</code></td>
+              <td><code>{ key }</code> → a análise, ou <code>{ available: false, reason }</code></td>
+              <td>
+                As características de uma chave de shard candidata (<code>analyzeShardKey</code>):
+                <code>key</code> tem de um a cinco campos, cada um <code>1</code> ou <code>"hashed"</code> (no
+                máximo um). Responde
+                <code
+                  >{ numDocsTotal, numDocsSampled, numDistinctValues, avgDocSizeBytes, isUnique,
+                  mostCommonValues, monotonicity }</code
+                >
+                — os valores mais comuns são dados, como Extended JSON canônico; <code>reason</code> é
+                <code>version</code>, <code>standalone</code> ou <code>no_index</code>.
+                <code>read_only</code> em uma visualização.
+              </td>
+            </tr>
+            <tr>
+              <td><code>searchIndexes.list</code><br /><code>collection:read</code></td>
+              <td>nenhum → <code>{ supported, reason?, indexes }</code></td>
+              <td>
+                Os índices de busca da coleção (Atlas Search, busca vetorial): cada um
+                <code>{ name, type, status, queryable, dynamic, fields }</code>, um campo
+                <code>{ path, type, numDimensions?, similarity? }</code>. Um campo oculto do usuário é omitido,
+                como por <code>validation.get</code>; <code>failed</code> quando não foi possível saber o que
+                está oculto.
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.download</code><br />nenhuma</td>
+              <td><code>{ name, type, text? | base64? | html? }</code> → <code>true</code></td>
+              <td>
+                Um arquivo que o plugin criou, salvo pelo app (o frame não pode baixar). <code>type</code> é
+                <code>markdown</code>, <code>mermaid</code>, <code>csv</code>, <code>json</code>,
+                <code>text</code> (com <code>text</code>), <code>png</code> (com <code>base64</code>, que deve
+                ser um PNG) ou <code>html</code> (com <code>{ title, css, body }</code>): o app monta a página —
+                primeiro uma política que não executa script e não carrega nada, o título como texto (no máximo
+                200 caracteres), um estilo que não pode conter marcação, escape (<code>\</code>),
+                <code>@import</code>, <code>@font-face</code>, conjunto de imagens, <code>src()</code>, expressão
+                ou endereço, exceto um <code>data:</code>, e o corpo por uma lista de permissão de elementos
+                estruturais (sem script, formulário, frame, imagem, <code>svg</code>, MathML, template, link que
+                não seja <code>#anchor</code>, comentário ou atributo <code>on…</code>). Um texto, um estilo e um
+                corpo têm cada um no máximo 1.000.000 de caracteres. Em um CSV, uma célula que começa como uma
+                fórmula (<code>=</code>, <code>+</code>, <code>-</code>, <code>@</code>, uma tabulação ou um
+                retorno de carro, e não é um número) é gravada com um <code>'</code> inicial. O nome perde
+                qualquer caminho, nome de dispositivo reservado (<code>CON</code>, <code>COM¹</code>,
+                <code>CONIN$</code>…), caractere oculto ou de inversão e seus pontos (<code>_</code>): sua única
+                extensão é a do tipo. Somente logo após um clique na página dele; contado com os métodos
+                <code>ui.use…</code>; perguntado antes após um toque em outro lugar do app (veja
+                <a href="#limits">Limites</a>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>ui.importDocuments</code><br />nenhuma</td>
+              <td><code>{ ndjson }</code> → <code>true</code></td>
+              <td>
+                Na sua coleção. Abre o assistente de Importação do app com esses documentos como arquivo — um
+                objeto JSON por linha, no máximo 1.000.000 de caracteres, e a mensagem inteira no máximo 1 MB
+                como JSON (uma aspa ou uma barra invertida nela conta duas vezes). O usuário os verifica, os
+                mapeia e inicia a importação, com os próprios direitos. Somente logo após um clique na página
+                dele; contado com os métodos <code>ui.use…</code>; perguntado antes após um toque em outro lugar
+                do app; <code>busy</code> enquanto uma caixa de diálogo está aberta no app;
+                <code>not_permitted</code> quando o usuário não pode gravar documentos e executar tarefas ali, ou
+                para um banco de dados do sistema; <code>read_only</code> em uma visualização.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Nos filtros, projeções e ordenações de <code>documents.find</code>,
+        <code>documents.findIn</code> e <code>ui.useQuery</code>, e em <code>documents.aggregate</code>, os
+        operadores <code>$where</code>, <code>$function</code>, <code>$accumulator</code>,
+        <code>$out</code>, <code>$merge</code>, <code>$lookup</code>, <code>$graphLookup</code> e
+        <code>$unionWith</code> são recusados em qualquer profundidade (exceto o <code>$lookup</code> simples
+        de nível superior descrito acima). Os estágios de <code>ui.useAggregation</code> podem ler outras
+        coleções, já que o usuário os executa com os próprios direitos, mas nunca contêm
+        <code>$where</code>, <code>$function</code>, <code>$accumulator</code>, <code>$out</code> ou
+        <code>$merge</code>. As leituras são executadas imediatamente; <code>ui.useQuery</code> e
+        <code>ui.useAggregation</code> apenas entregam o trabalho ao usuário.
+      </p>
+
+      <h3 id="limits">Limites</h3>
+      <ul>
+        <li>
+          Uma mensagem tem no máximo 1 MB em qualquer sentido; uma resposta maior falha com
+          <code>too_large</code>. Peça menos documentos ou projete menos campos, ou passe <code>fit:
+          true</code> para <code>documents.find</code>, <code>documents.findIn</code> ou
+          <code>documents.aggregate</code>: o app então responde com tantos documentos inteiros, em ordem,
+          quantos couberem, e <code>cut: true</code> indica que deixou o resto de fora (<code>hasMore</code>
+          ou <code>truncated</code> fica true). Uma amostra pode ficar com o que chegou; uma leitura em
+          páginas continua depois do último documento recebido. Se nem um documento couber, continua sendo
+          <code>too_large</code>.
+        </li>
+        <li>No máximo 8 pedidos aguardam ao mesmo tempo (<code>too_many</code>).</li>
+        <li>
+          No máximo 60 leituras por minuto por frame (<code>documents.find</code>, <code>.get</code>,
+          <code>.aggregate</code>, <code>.findIn</code>, <code>collections.list</code>,
+          <code>database.model</code>) e, à parte, 120 leituras de definições
+          (<code>indexes.list</code>, <code>validation.get</code>): um dicionário de 50 coleções é um modelo e
+          100 definições.
+        </li>
+        <li>
+          <strong>Logo após um clique na página do plugin.</strong> <code>ui.copy</code>,
+          <code>ui.useQuery</code>, <code>ui.useAggregation</code>, <code>ui.importSql</code>,
+          <code>ui.exportSql</code>, <code>ui.openDocument</code>, <code>ui.download</code>,
+          <code>ui.importDocuments</code> e <code>documents.update</code> só são aceitos enquanto o clique ou
+          o toque de tecla do usuário na própria página do plugin é recente: o frame deve ter o foco, portanto
+          um clique em outro lugar do app nunca conta. Chame-os diretamente no manipulador de clique, antes de
+          aguardar qualquer outra coisa; caso contrário, falham com <code>no_activation</code>. Toda tentativa
+          de <code>ui.copy</code>, de um <code>ui.use…</code>, de uma página de SQL ou de
+          <code>ui.openDocument</code> conta para o limite desse método, recusada ou não: um plugin que tenta
+          de novo e de novo, esperando um clique, gasta o seu minuto (<code>too_many</code>);
+          <code>documents.update</code> é limitado, em vez disso, por sua única pergunta por vez e pelos dois
+          nãos. Um frame pode receber o foco sem um clique, portanto um <code>ui.copy</code>,
+          <code>ui.download</code> ou <code>ui.importDocuments</code> pedido até 5 segundos depois de um
+          clique ou toque de tecla em outro lugar do app (o tempo que dura a ativação dele pelo navegador) não
+          é feito apenas porque o plugin pediu: o app pergunta ao usuário, nomeando o plugin e o que ele quer
+          (quantos caracteres e como o texto começa, com caracteres ocultos escritos por extenso; o nome e o
+          tamanho do arquivo; quantos documentos para qual coleção), e o faz com um clique no próprio botão
+          <strong>Copiar</strong>, <strong>Salvar</strong> ou <strong>Abrir</strong>; a resposta do plugin
+          aguarda por isso (<code>declined</code> quando o usuário dispensa, <code>unanswered</code> quando
+          fica sem resposta, <code>busy</code> enquanto uma aguarda). Toda pergunta que o app faz por um
+          plugin — essas, uma alteração, estágios colocados no lugar — termina após 150 segundos, mesmo com o
+          ponteiro sobre ela; o kit espera 180 segundos por esses pedidos, de modo que uma página ouve a
+          resposta do app, nunca o próprio tempo limite.
+        </li>
+        <li>
+          <strong>À vista.</strong> <code>documents.update</code>, <code>ui.openDocument</code> e os métodos
+          acima falham com <code>not_visible</code> a partir de um renderizador de célula ou de uma página
+          mantida enquanto outra aba é exibida.
+        </li>
+      </ul>
+
+      <h3 id="errors">Erros</h3>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Significado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>bad_params</code></td>
+              <td>
+                Um parâmetro está ausente, com o tipo errado, fora do intervalo, ou contém um operador recusado.
+              </td>
+            </tr>
+            <tr>
+              <td><code>not_permitted</code></td>
+              <td>O plugin não foi aprovado para a permissão, ou o usuário não pode fazer isso.</td>
+            </tr>
+            <tr>
+              <td><code>unknown_method</code></td>
+              <td>Esse método não existe.</td>
+            </tr>
+            <tr>
+              <td><code>unavailable</code></td>
+              <td>O método não é oferecido neste lugar.</td>
+            </tr>
+            <tr>
+              <td><code>no_collection</code></td>
+              <td>A página foi aberta sem nenhuma coleção.</td>
+            </tr>
+            <tr>
+              <td><code>not_visible</code></td>
+              <td>O frame está fora de vista (um renderizador de célula, uma página em segundo plano).</td>
+            </tr>
+            <tr>
+              <td><code>no_activation</code></td>
+              <td>Não foi logo após um clique ou toque de tecla na página do plugin.</td>
+            </tr>
+            <tr>
+              <td><code>too_many</code></td>
+              <td>Pedidos demais aguardando, ou no último minuto.</td>
+            </tr>
+            <tr>
+              <td><code>too_large</code></td>
+              <td>Uma mensagem acima de 1 MB, ou uma alteração longa demais para mostrar ao usuário.</td>
+            </tr>
+            <tr>
+              <td><code>busy</code></td>
+              <td>Um pipeline deste frame ainda está em execução, ou uma pergunta aguarda o usuário.</td>
+            </tr>
+            <tr>
+              <td><code>declined</code></td>
+              <td>O usuário disse não.</td>
+            </tr>
+            <tr>
+              <td><code>unanswered</code></td>
+              <td>
+                O usuário não respondeu à pergunta do app a tempo; nada foi feito. Nunca contado como um não.
+              </td>
+            </tr>
+            <tr>
+              <td><code>blocked</code></td>
+              <td>O usuário disse não duas vezes; o plugin precisa ser aberto de novo.</td>
+            </tr>
+            <tr>
+              <td><code>read_only</code></td>
+              <td>Uma visualização, ou o app está sendo executado em modo somente leitura.</td>
+            </tr>
+            <tr>
+              <td><code>not_found</code></td>
+              <td>Esse documento não existe.</td>
+            </tr>
+            <tr>
+              <td><code>timeout</code></td>
+              <td>Nenhuma resposta a tempo (definido pelo cliente do kit, após 15 segundos).</td>
+            </tr>
+            <tr>
+              <td><code>failed</code></td>
+              <td>Qualquer outro caso; o app nunca repassa seus erros internos.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        As recusas do próprio servidor também chegam em minúsculas, por exemplo <code>forbidden</code>,
+        <code>conflict</code> (o documento mudou nesse meio-tempo) ou <code>validation_error</code>. O
+        <code>askMessage(error, locale)</code> do kit transforma os códigos comuns em uma frase no idioma do
+        leitor.
+      </p>
+
+      <h2 id="permissions">Permissões</h2>
+      <p>
+        Um administrador aprova um plugin para as permissões que ele lista, como a página Plugins as nomeia.
+        Peça o mínimo de que você precisa: cada uma é um motivo para um administrador dizer não.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Permissão</th>
+              <th>O que o administrador lê</th>
+              <th>O que ela permite</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>documents:read</code></td>
+              <td>ler documentos</td>
+              <td>
+                <code>documents.find</code>, <code>.get</code>, <code>.aggregate</code>; ações de documento e
+                renderizadores de célula só são oferecidos com ela.
+              </td>
+            </tr>
+            <tr>
+              <td><code>documents:write</code></td>
+              <td>alterar documentos (cada alteração confirmada)</td>
+              <td>
+                <code>documents.update</code>, cada alteração confirmada pelo usuário. Pedi-la é sempre um
+                achado de gravidade média da verificação, por si só.
+              </td>
+            </tr>
+            <tr>
+              <td><code>collection:read</code></td>
+              <td>ler os índices desta coleção</td>
+              <td><code>indexes.list</code>.</td>
+            </tr>
+            <tr>
+              <td><code>database:read</code></td>
+              <td>ler as outras coleções do mesmo banco de dados (nomes e documentos)</td>
+              <td>
+                <code>collections.list</code>, <code>documents.findIn</code>, um <code>$lookup</code> simples.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Um plugin sem nenhuma permissão ainda pode exibir uma página, ler seu contexto e suas configurações e
+        usar os métodos <code>ui.*</code>. Uma permissão nunca é mais do que o direito do próprio usuário: um
+        usuário que não pode ler uma coleção também não consegue lê-la por meio de um plugin.
+      </p>
+
+      <h2 id="sandbox">O sandbox</h2>
+      <p>
+        A página é carregada em um <code>iframe</code> com <code>sandbox="allow-scripts"</code>, a partir de um
+        endereço assinado que nomeia o plugin, sua versão, seus arquivos aprovados e a sessão do usuário,
+        selado (um ticket: a página deve carregar em até 10 minutos, os outros arquivos dela enquanto essa
+        sessão durar, no máximo 12 horas — uma sessão renovada no lugar, por um login em outra aba ou uma
+        troca de senha, é acompanhada; depois de sair, o endereço não serve mais nada, e o navegador não
+        guarda nenhum de seus arquivos). Todo arquivo servido é verificado em relação ao seu SHA-256
+        aprovado. A política dele (Content-Security-Policy), com <code>X-DNS-Prefetch-Control: off</code>:
+      </p>
+      <pre><code>default-src 'none'; script-src &lt;its files&gt;; style-src &lt;its files&gt;;
+img-src &lt;its files&gt; data: blob: &lt;the origins of its url settings&gt;; font-src &lt;its files&gt;;
+connect-src 'none'; webrtc 'block'; frame-ancestors 'self'; base-uri 'none'; form-action 'none';
+sandbox allow-scripts</code></pre>
+      <p>O que isso significa para o seu código:</p>
+      <ul>
+        <li>
+          <strong>Nenhuma rede.</strong> Nenhum pedido a qualquer endereço, inclusive aos arquivos do próprio
+          plugin: coloque os dados em um módulo de script (<code>data.js</code>) em vez de em um arquivo
+          <code>.json</code> que você carregaria. Também não use WebRTC nem dicas de prefetch: nem todo
+          navegador os bloqueia, e a verificação os sinaliza como riscos altos.
+        </li>
+        <li>
+          <strong>Nenhum código ou estilo embutido.</strong> Scripts e estilos vêm apenas dos arquivos do
+          plugin. Nenhum <code>&lt;script&gt;</code> embutido, nenhum elemento <code>&lt;style&gt;</code>,
+          nenhum atributo style, nenhum manipulador de evento embutido, nenhum <code>eval</code>. Definir uma
+          propriedade no script (<code
+            >el.style.width = '40px'</code
+          >) funciona.
+        </li>
+        <li>
+          <strong>Uma origem opaca.</strong> Sem cookies, sem <code>localStorage</code>, sem IndexedDB: eles
+          falham. Mantenha o estado na memória; as configurações que um administrador escolhe vêm de
+          <code>settings</code> do manifesto.
+        </li>
+        <li>
+          <strong>Sem pop-ups, caixas de diálogo, formulários ou downloads.</strong>
+          <code>window.open</code>, <code>alert</code>, <code>confirm</code> e o envio de formulários não
+          fazem nada. Copie com <code>ui.copy</code>; entregue arquivos ao usuário por meio da importação e
+          exportação do próprio app.
+        </li>
+        <li>
+          <strong>Nenhum acesso ao app.</strong> A página não pode ler a página do app, a sessão dele nem o
+          armazenamento dele. Ela apenas troca mensagens com ele.
+        </li>
+        <li>
+          <strong>Fontes e imagens são arquivos do próprio plugin</strong> (ou imagens <code>data:</code> e
+          <code>blob:</code>).
+        </li>
+      </ul>
+
+      <h2 id="scan">A verificação de segurança</h2>
+      <p>
+        Os arquivos de todo plugin são verificados quando são encontrados ou instalados, antes de um
+        administrador aprová-los. A verificação lê arquivos de script (<code>.js</code>, <code>.mjs</code>,
+        <code>.cjs</code>), de marcação (<code>.html</code>, <code>.htm</code>, <code>.svg</code>) e de estilo
+        (<code>.css</code>) linha por linha, comentários incluídos, e lista cada achado com sua gravidade,
+        regra, arquivo, linha e um trecho. Os arquivos de marcação também são lidos inteiros, de modo que uma
+        tag <code>&lt;script&gt;</code> ou um manipulador embutido espalhado por várias linhas também é
+        encontrado. As bibliotecas incluídas no plugin são verificadas como o seu próprio código. A
+        verificação é heurística: ela procura padrões conhecidos no texto, portanto código escrito para se
+        esconder dela (um nome montado em partes, por exemplo) não é encontrado — uma verificação limpa não é
+        prova de nada. Um plugin com um achado de gravidade <strong>alta</strong> só pode ser aprovado depois
+        que o administrador digitar o id dele para aceitar o risco; o servidor aplica isso, e o log de
+        auditoria registra as contagens da verificação e se um risco foi aceito. Evite todo achado alto e
+        limite os médios ao que você consegue explicar.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Gravidade</th>
+              <th>Regra</th>
+              <th>O que sinaliza</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>alta</td>
+              <td><code>code-from-text</code></td>
+              <td>
+                <code>eval(</code> (também <code>eval?.(</code>), <code>eval</code> alcançado indiretamente
+                (<code
+                  >(0, eval)(…)</code
+                >, <code>['eval']</code>), <code>Function(</code> chamado sozinho ou com <code>new</code> (também <code>window.Function(</code>, <code>self.</code>, <code>globalThis.</code> ou <code>global.Function(</code>, <code>['Function']</code>, <code>Function.call(</code>, <code>.apply(</code> ou <code>.bind(</code>, <code>Reflect.apply(Function</code> ou <code>Reflect.construct(Function</code>; o
+                <code>.Function(</code> de outro objeto não é sinalizado), e <code>setTimeout</code> ou
+                <code>setInterval</code> com uma string.
+              </td>
+            </tr>
+            <tr>
+              <td>alta</td>
+              <td><code>html-injection</code></td>
+              <td>
+                <code>.innerHTML</code> e <code>.outerHTML</code> atribuídos (<code>=</code>) ou acrescidos
+                (<code>+=</code>), também entre colchetes (<code>['innerHTML'] =</code>);
+                <code>insertAdjacentHTML(</code>, <code>document.write(</code> e
+                <code>document.writeln(</code> (também chamados como <code>?.(</code>);
+                <code>createContextualFragment(</code>; <code>setHTMLUnsafe(</code>. Uma comparação como
+                <code>innerHTML ===</code> não é sinalizada.
+              </td>
+            </tr>
+            <tr>
+              <td>alta</td>
+              <td><code>remote-code</code></td>
+              <td>
+                Um <code>&lt;script&gt;</code> cujo <code>src</code> começa com <code>http</code> ou
+                <code>//</code>, também quando a tag ocupa várias linhas; um <code>import("http…")</code>; um
+                <code>import … from "https://…"</code> estático ou <code>import "//…"</code>; um
+                <code>export … from "https://…"</code>; <code>importScripts(</code>; e um
+                <code>@import</code> de CSS de um endereço assim.
+              </td>
+            </tr>
+            <tr>
+              <td>alta</td>
+              <td><code>escape-attempt</code></td>
+              <td>
+                <code>parent.document</code>, <code>parent.location</code>, <code>top.document</code>,
+                <code>top.location</code>, <code>window.opener</code>, <code>self.opener</code>,
+                <code>globalThis.opener</code>, <code>opener.document</code>, <code>opener.location</code>,
+                <code>opener.postMessage</code>, <code>frameElement</code>. Uma variável chamada
+                <code>opener</code> não é sinalizada.
+              </td>
+            </tr>
+            <tr>
+              <td>alta</td>
+              <td><code>packed-code</code></td>
+              <td><code>eval(atob(</code> ou <code>Function(atob(</code>.</td>
+            </tr>
+            <tr>
+              <td>alta</td>
+              <td><code>webrtc</code></td>
+              <td>
+                As palavras <code>RTCPeerConnection</code> (também <code>webkitRTCPeerConnection</code>,
+                <code>mozRTCPeerConnection</code>) e <code>RTCDataChannel</code>. Uma conexão peer-to-peer
+                alcança o exterior além de <code>connect-src 'none'</code>; o <code>webrtc 'block'</code> do
+                frame a impede apenas em navegadores que conhecem essa diretiva.
+              </td>
+            </tr>
+            <tr>
+              <td>alta</td>
+              <td><code>prefetch-hint</code></td>
+              <td>
+                <code>dns-prefetch</code> em qualquer lugar, e <code>preconnect</code>, <code>prefetch</code> ou
+                <code>prerender</code> definidos como o <code>rel</code> de um link (em marcação, como
+                <code>.rel =</code>, <code>setAttribute('rel', …)</code> ou <code>relList.add(…)</code>). Um nome
+                consultado antecipadamente é um pedido que nenhuma política vê: dados podem viajar no nome.
+              </td>
+            </tr>
+            <tr>
+              <td>média</td>
+              <td><code>network</code></td>
+              <td>
+                O <code>fetch(</code> global (também como <code>window.fetch(</code>,
+                <code>self.fetch(</code> ou <code>globalThis.fetch(</code>; o <code>.fetch(</code> de outro
+                objeto não é sinalizado) e as palavras <code>XMLHttpRequest</code>, <code>WebSocket</code>,
+                <code>EventSource</code>, <code>sendBeacon</code>. O sandbox bloqueia todos eles; o achado mostra
+                a intenção.
+              </td>
+            </tr>
+            <tr>
+              <td>média</td>
+              <td><code>inline-handler</code></td>
+              <td>
+                Em marcação: um atributo <code>on…=</code> dentro de uma tag (também quando a tag ocupa várias
+                linhas) e <code>javascript:</code> em qualquer lugar.
+              </td>
+            </tr>
+            <tr>
+              <td>média</td>
+              <td><code>workers</code></td>
+              <td><code>new Worker(</code>, <code>new SharedWorker(</code>, <code>WebAssembly.</code>.</td>
+            </tr>
+            <tr>
+              <td>média</td>
+              <td><code>unusual-encoding</code></td>
+              <td>
+                Um arquivo verificado salvo como UTF-16 (começa com uma marca de ordem de bytes; a verificação o
+                lê como o navegador leria) ou contendo bytes NUL.
+              </td>
+            </tr>
+            <tr>
+              <td>média</td>
+              <td><code>write-permission</code></td>
+              <td>O manifesto pede <code>documents:write</code>.</td>
+            </tr>
+            <tr>
+              <td>baixa</td>
+              <td><code>storage</code></td>
+              <td>
+                <code>localStorage</code>, <code>sessionStorage</code>, <code>indexedDB</code>,
+                <code>document.cookie</code> (eles falham no sandbox).
+              </td>
+            </tr>
+            <tr>
+              <td>informativa</td>
+              <td><code>minified</code></td>
+              <td>
+                Uma linha de script com mais de 2000 caracteres (código minificado ou gerado), uma vez por
+                arquivo.
+              </td>
+            </tr>
+            <tr>
+              <td>informativa</td>
+              <td><code>data-blob</code></td>
+              <td>Uma sequência base64 de cerca de 10 KB ou mais.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Como passar na verificação:</p>
+      <ul>
+        <li>
+          Escreva texto com <code>textContent</code>, <code>append('text')</code> ou o auxiliar
+          <code>h()</code> do kit; crie elementos com <code>document.createElement</code>. Para limpar um
+          elemento, use <code>replaceChildren()</code>. Nenhum deles é sinalizado; atribuir ou acrescentar
+          marcação (<code>innerHTML =</code> ou <code>innerHTML +=</code>) sempre é.
+        </li>
+        <li>
+          Anexe manipuladores com <code>addEventListener</code>, nunca na marcação.
+        </li>
+        <li>
+          Passe funções para <code>setTimeout</code> e <code>setInterval</code>. Alcance o app apenas por
+          <code>window.parent.postMessage</code>.
+        </li>
+        <li>Salve todo arquivo como UTF-8, sem bytes NUL (nunca como UTF-16).</li>
+        <li>
+          Não inclua código que alcance o exterior, mesmo que não seja usado: confira o que uma biblioteca
+          traz. Prefira um build que não seja minificado, ou explique o achado <code>minified</code> no seu
+          README, e mantenha dados grandes fora de strings base64.
+        </li>
+        <li>
+          Lembre-se de que os comentários também são verificados: um comentário que cita <code>eval(</code> ou
+          <code>innerHTML =</code> é um achado.
+        </li>
+        <li>
+          Diga no seu README por que cada achado restante é seguro: qual biblioteca, qual linha, por que ele
+          nunca é executado ou por que o sandbox o impede.
+        </li>
+      </ul>
+      <p>
+        Apenas arquivos de script, marcação e estilo são verificados; o manifesto é lido em busca de
+        <code>documents:write</code> (sempre um achado de gravidade média: peça-o somente quando o plugin
+        alterar documentos). São listados no máximo 10 achados de uma regra em um arquivo e no máximo 200
+        achados no total (os mais graves primeiro); as contagens sempre abrangem todos os achados. Todo padrão
+        é executado em tempo linear, portanto a verificação termina rapidamente em qualquer arquivo. Se a
+        própria verificação falhar, o plugin não é marcado como com defeito: ele fica sem verificação e (a
+        menos que seja incluído no Mongo Manager) só pode ser aprovado com o id dele digitado, como com um
+        achado alto. A verificação de um plugin incluído no Mongo Manager também é exibida, mas aprová-lo
+        nunca pede o id.
+      </p>
+
+      <h2 id="ui">Interface e temas</h2>
+      <p>
+        Um plugin deve parecer parte do app: suas cores, sua tipografia, seus espaçamentos, no tema e na cor de
+        destaque do usuário. Os plugins do próprio Mongo Manager usam o kit de plugins em
+        <code>packages/plugins/kit</code>:
+      </p>
+      <ul>
+        <li>
+          <code>kit/src/ui.css</code>: os tokens de design do app (<code>--ds-surface</code>,
+          <code>--ds-fg</code>, <code>--ds-accent</code>...) para claro e escuro e cada cor de destaque, e
+          componentes (<code>mm-btn</code>, <code>mm-table</code>, <code>mm-empty</code>,
+          <code>mm-callout</code>...). As fontes dele são arquivos dos pacotes <code>@fontsource</code>:
+          inclua-as no seu plugin ou remova as regras <code>@font-face</code> para usar a fonte do sistema.
+        </li>
+        <li>
+          <code>kit/src/ui.ts</code>: <code>applyLook(theme, accent)</code> define <code>html.dark</code> e
+          <code>html[data-accent]</code>; <code>h(tag, props, ...children)</code> cria elementos em que o
+          texto é sempre texto; e <code>icon</code>, <code>button</code>, <code>segmented</code>,
+          <code>switchControl</code>, <code>chip</code>, <code>badge</code>, <code>pageHeader</code>,
+          <code>emptyState</code>, <code>skeleton</code>, <code>callout</code>, <code>table</code>,
+          <code>valueView</code>, <code>describeValue</code>, <code>formatNumber</code>,
+          <code>statusLine</code>, <code>setBusy</code>, <code>serialAsk</code>.
+        </li>
+        <li>
+          <code>kit/src/client.ts</code>: <code>createClient</code>, <code>AskError</code>,
+          <code>askMessage</code>.
+        </li>
+      </ul>
+      <p>
+        O kit é TypeScript, feito para ser empacotado: copie <code>kit/src</code> para o seu projeto e faça o
+        build com o Vite (ou outro bundler) para caminhos relativos e sem script embutido, como o
+        <code>vite.config.ts</code> dos plugins próprios: <code>base: './'</code>,
+        <code>modulePreload: { polyfill: false }</code>, <code>assetsInlineLimit: 0</code>. Empacote a saída
+        do build, não os seus fontes. O modelo inicial, em vez disso, traz uma cópia curta do cliente e das
+        cores em JavaScript e CSS simples.
+      </p>
+      <pre><code>import './kit/ui.css'
+import { createClient } from './kit/client'
+import { applyLook, h, pageHeader, emptyState, button } from './kit/ui'
+
+const client = createClient()
+client.onContext((locale, theme, accent) =&gt; applyLook(theme, accent))
+client.onReady(async () =&gt; {
+  const context = await client.ask('context.get')
+  applyLook(context.theme, context.accent)
+  document.body.append(
+    h('div', { class: 'mm-page' },
+      pageHeader({ icon: 'table', title: 'Hello', description: context.place?.coll ?? '' }),
+      emptyState({ icon: 'search', title: 'Nothing yet', action: button({ label: 'Load', variant: 'primary' }) }),
+    ),
+  )
+})</code></pre>
+      <p>
+        Projete para o lugar em que a página aparece: uma aba de coleção é larga, uma ação de documento é uma
+        caixa de diálogo, uma página da barra lateral preenche o espaço de trabalho. Mostre um estado vazio
+        quando não houver nada a exibir e <code>place</code> for <code>null</code>, um esqueleto durante a
+        leitura e as palavras do app para uma recusa. Use botões e controles reais, para que a página funcione
+        pelo teclado.
+      </p>
+
+      <h2 id="localization">Idiomas</h2>
+      <p>
+        O app fala inglês, turco, chinês simplificado, japonês, espanhol, português do Brasil, coreano, alemão,
+        francês e russo: <code>context.locale</code> é um entre <code>en</code>, <code>tr</code>,
+        <code>zh</code>, <code>ja</code>, <code>es</code>, <code>pt</code>, <code>ko</code>, <code>de</code>,
+        <code>fr</code> e <code>ru</code>. Um plugin deve falar quantos deles puder, e sempre inglês:
+      </p>
+      <ul>
+        <li>
+          No manifesto, dê cada idioma que você tiver ao lado de <code>en</code> em todo texto localizado.
+        </li>
+        <li>
+          Na página, mantenha suas palavras em uma tabela por idioma, escolha por <code>context.locale</code>
+          (inglês para um idioma que você não tem), defina <code>document.documentElement.lang</code> como o
+          idioma em que seus textos realmente estão — <code>en</code> se você recorreu ao inglês —
+          (<code>zh-CN</code> e <code>pt-BR</code> para chinês e português, para que os glifos corretos
+          apareçam), formate os números nesse mesmo idioma e renderize de novo em <code>context.changed</code>.
+        </li>
+        <li>Um renderizador de célula responde no <code>locale</code> em que cada lote é pedido.</li>
+        <li>
+          Formate números e datas para o idioma (<code>Intl.NumberFormat</code>,
+          <code>Intl.DateTimeFormat</code>).
+        </li>
+        <li>
+          Adicione <code>README.&lt;language&gt;.md</code> ao lado de <code>README.md</code> para cada idioma
+          (<code>README.tr.md</code>, <code>README.zh.md</code>, …), e notas de versão em cada um.
+        </li>
+      </ul>
+
+      <h2 id="readme">README e notas de versão</h2>
+      <p>
+        O <code>README.md</code> no topo do plugin é exibido na página de detalhes dele, onde os
+        administradores o leem antes de aprovar o plugin; o <code>README.&lt;language&gt;.md</code>
+        (<code>README.tr.md</code>, <code>README.ja.md</code>, …) é exibido no lugar dele para quem usa o app
+        nesse idioma. O README localizado só é exibido quando o <code>README.md</code> também existe. Ele é
+        exibido como Markdown seguro: títulos, parágrafos, listas (um nível), negrito, itálico, código em linha
+        e blocos de código. Links, imagens, tabelas e HTML são exibidos como texto simples. São exibidos no
+        máximo 64 KB.
+      </p>
+      <p>Um bom README diz, nesta ordem:</p>
+      <ol>
+        <li>O que o plugin faz, em duas ou três frases.</li>
+        <li>Onde ele aparece: qual aba, ação, página ou texto de célula.</li>
+        <li>Como usá-lo, passo a passo, com um exemplo.</li>
+        <li>Cada permissão e por que ela é necessária.</li>
+        <li>Suas configurações, se houver.</li>
+        <li>Seus limites: quantos documentos ele lê, o que ele não trata.</li>
+        <li>Cada achado da verificação que permanece e por que é seguro.</li>
+      </ol>
+      <p>
+        As notas de versão vão no <code>changelog</code> do manifesto, da mais recente para a mais antiga, uma
+        entrada por versão com o dia e as notas em inglês e em cada um dos seus idiomas. A página de detalhes
+        as exibe; depois de uma atualização, as versões desde a última são marcadas como novas.
+      </p>
+
+      <h2 id="versions">Versões e aprovação</h2>
+      <ul>
+        <li>
+          Uma aprovação vale para arquivos exatos: o resumo (digest) deles, o SHA-256 do caminho e do SHA-256
+          de cada arquivo. O administrador o vê antes de aprovar.
+        </li>
+        <li>
+          <strong>Qualquer alteração em qualquer arquivo</strong> de um plugin enviado ou de uma pasta de
+          plugin (uma nova versão, um erro de digitação corrigido no README) o desativa até que um
+          administrador o aprove de novo. Aumente <code>version</code> e adicione uma entrada de changelog a
+          cada release, para que os administradores saibam o que aprovam.
+        </li>
+        <li>
+          Enviar um plugin cujo id já está instalado o substitui; ele permanece ativado apenas se os arquivos
+          forem exatamente os aprovados. As configurações dele são mantidas enquanto o novo manifesto ainda as
+          declarar com o mesmo tipo.
+        </li>
+        <li>
+          Uma pasta de plugin colocada manualmente é gerenciada manualmente: um envio do mesmo id é recusado, e
+          removê-la no app a esquece sem excluir a pasta.
+        </li>
+        <li>
+          Apenas os plugins incluídos no Mongo Manager mantêm a aprovação em uma atualização, e somente
+          enquanto estão ativados e a atualização não pede nenhuma permissão nova; nada é pedido a um
+          administrador então, e a página de detalhes do plugin informa que ele manteve a aprovação. Uma
+          atualização que um administrador aprovou manualmente informa que foi aprovada por um administrador.
+        </li>
+      </ul>
+
+      <h2 id="packaging">Empacotamento</h2>
+      <p>
+        Um plugin viaja como um arquivo tar compactado com gzip (<code>.tgz</code>) cujos arquivos ficam na
+        raiz do arquivo, com o <code>mongo-manager-plugin.json</code> entre eles. Uma única pasta de nível
+        superior contendo tudo (como o <code>package/</code> do <code>npm pack</code>) é aceita e removida. O
+        arquivo deve conter apenas arquivos regulares (as pastas ficam implícitas); links, dispositivos,
+        entradas especiais, caminhos que não são simples e caminhos repetidos são recusados; no máximo 500
+        arquivos e 25 MB descompactados, e no máximo 30 MB enviados.
+      </p>
+      <p>O <code>scripts/pack.mjs</code> do modelo inicial faz isso somente com o Node.js:</p>
+      <pre><code>node scripts/pack.mjs
+Packed 14 files (64.6 KB):
+  README.de.md
+  README.es.md
+  README.fr.md
+  README.ja.md
+  README.ko.md
+  README.md
+  README.pt.md
+  README.ru.md
+  README.tr.md
+  README.zh.md
+  index.html
+  main.js
+  mongo-manager-plugin.json
+  style.css
+
+hello-documents-0.1.0.tgz
+digest (sha256): 9ac77c4a...</code></pre>
+      <p>
+        Ele verifica os caminhos e os limites como o app faz, deixa de fora o que não faz parte do plugin
+        (arquivos ocultos, <code>scripts/</code>, <code>node_modules/</code>, os arquivos do assistente de IA,
+        arquivos de pacote e arquivos compactados; edite a lista <code>SKIP</code> dele conforme sua
+        necessidade), grava <code>&lt;id&gt;-&lt;version&gt;.tgz</code> e imprime o digest que o
+        administrador verá. Se você usa um bundler, empacote a pasta de saída do build, com o manifesto no
+        topo.
+      </p>
+
+      <h2 id="github">Publicação no GitHub</h2>
+      <p>
+        Os administradores podem instalar um plugin diretamente de um repositório público do GitHub, em um
+        servidor configurado para permitir isso (<code>MM_PLUGINS_GITHUB=1</code>; vem desativado por padrão).
+        Na página Plugins, eles colam um destes endereços:
+      </p>
+      <ul>
+        <li>
+          <code>https://github.com/&lt;owner&gt;/&lt;repo&gt;</code>, <code>…/releases</code> ou
+          <code>…/releases/latest</code> para o <strong>release mais recente</strong>;
+        </li>
+        <li>
+          <code>https://github.com/&lt;owner&gt;/&lt;repo&gt;/releases/tag/&lt;tag&gt;</code> para um
+          específico. A tag pode conter barras (no máximo 4 partes).
+        </li>
+      </ul>
+      <p>
+        O endereço não contém mais nada: nenhuma consulta, fragmento, porta ou credenciais. Um repositório
+        renomeado é acompanhado: o próprio endereço da página do release nomeia o repositório dele. O app
+        baixa o arquivo do plugin desse release, seu único recurso cujo nome termina em <code>.tgz</code> ou
+        <code>.tar.gz</code>. Um release sem esse recurso, ou com vários, é recusado. Os nomes da tag e do
+        recurso devem ser ASCII imprimível. O recurso deve pertencer aos releases desse repositório e não pode
+        ser maior que um envio (30 MB), tanto como declarado quanto como lido.
+      </p>
+      <p>
+        O app fala apenas com <code>github.com</code>, <code>api.github.com</code>,
+        <code>objects.githubusercontent.com</code> e <code>release-assets.githubusercontent.com</code>, por
+        https, apenas em endereços públicos, e não envia nada do servidor (nenhum cookie, token ou
+        credencial). Ele segue no máximo 4 redirecionamentos, apenas entre esses hosts, lê a descrição do
+        release até 5 MB e dá 4 minutos para a instalação inteira. O plugin é instalado desativado, com a
+        verificação, e aguarda aprovação como um envio. Ele lembra de onde veio (repositório, release e
+        arquivo), o que aparece na página de detalhes dele.
+      </p>
+      <p>
+        Quando a instalação falha, a página Plugins diz por quê: o repositório não tem release publicado, o
+        limite de requisições do GitHub foi atingido, o GitHub recusou (o repositório não é público), não foi
+        possível alcançar o GitHub a partir do servidor, um redirecionamento foi para um host não permitido,
+        houve redirecionamentos demais, o release não tem arquivo ou tem vários, ou o arquivo não está nos
+        releases desse repositório.
+      </p>
+      <ol>
+        <li>
+          Aumente <code>version</code>, adicione uma entrada de <code>changelog</code> e defina
+          <code>publishedAt</code>.
+        </li>
+        <li>Execute <code>node scripts/pack.mjs</code>.</li>
+        <li>
+          Crie um release no GitHub (tag <code>v0.1.0</code>, por exemplo) e anexe
+          <code>hello-documents-0.1.0.tgz</code> como recurso dele. Não anexe nenhum outro arquivo
+          <code>.tgz</code> ou <code>.tar.gz</code>.
+        </li>
+        <li>
+          Marque-o como o release mais recente. Coloque o digest impresso por <code>pack.mjs</code> nas notas
+          do release, para que os administradores possam compará-lo com o que o app mostra.
+        </li>
+      </ol>
+      <p>
+        As instalações pelo GitHub ficam desativadas, a menos que <code>MM_PLUGINS_GITHUB=1</code> esteja
+        definido; um servidor também pode não conseguir alcançar o GitHub, ou alcançá-lo apenas por um proxy (a
+        instalação se conecta diretamente ao GitHub e não usa as configurações de proxy HTTP); os
+        administradores dele então baixam o <code>.tgz</code> e o enviam com
+        <strong>Enviar plugin</strong>.
+      </p>
+
+      <p>
+        Para que outras pessoas o encontrem, inclua seu plugin no Awesome Mongo Manager
+        (<code>github.com/mongo-manager/awesome-mongo-manager</code>): abra lá um pull request que adicione
+        uma linha ao README. As verificações da lista baixam sua versão mais recente e a verificam com o
+        próprio código do app, como faz uma instalação a partir do GitHub; depois, um mantenedor lê o plugin
+        antes de incluí-lo.
+      </p>
+
+      <h2 id="testing">Testes no seu próprio servidor</h2>
+      <ol>
+        <li>
+          Execute o Mongo Manager com plugins ativados (o padrão) e entre como administrador. Encontre o
+          diretório de dados dele: <code>~/.mongo-manager</code>, a menos que <code>MM_DATA_DIR</code> diga
+          outra coisa.
+        </li>
+        <li>
+          Copie o plugin para <code>&lt;data-dir&gt;/plugins/&lt;id&gt;</code>:
+          <code>node scripts/pack.mjs --folder ~/.mongo-manager/plugins</code>. O nome da pasta deve ser o id,
+          e ela não pode conter arquivos ocultos (é por isso que o script copia apenas os arquivos do
+          plugin). <code>~/</code> é a sua pasta pessoal em qualquer shell; <code>~\</code> no cmd e no
+          PowerShell, ou entre aspas (bash e zsh descartam uma barra invertida sem aspas, e o script então
+          recusa o que sobra). O script substitui apenas uma pasta deste plugin que contenha somente arquivos e
+          pastas que ele poderia ter copiado (sem scripts, arquivos ocultos, links, pipes ou sockets) e não
+          tenha nenhum sistema de arquivos montado nela ou dentro dela, trocando a nova cópia de modo que uma
+          cópia interrompida deixe a pasta como estava. Ele recusa um destino que seja a própria pasta do
+          plugin, esteja dentro dela ou a contenha, seja qual for a forma como o caminho a nomeia (um link
+          simbólico, uma junção ou um compartilhamento); nada é gravado então.
+        </li>
+        <li>
+          Abra <strong>Plugins</strong> e clique em <strong>Verificar novamente</strong>. Um plugin que não
+          pode ser usado diz por quê (um campo do manifesto, um caminho). Abra os detalhes dele: leia os
+          achados da verificação, as permissões e o README como um administrador faria.
+        </li>
+        <li>
+          Clique em <strong>Aprovar e ativar</strong>, depois abra uma coleção e experimente cada contribuição.
+        </li>
+        <li>
+          Após cada alteração, copie de novo, clique em <strong>Verificar novamente</strong> e aprove de novo
+          (os arquivos mudaram), depois reabra a aba, a página ou a caixa de diálogo. Experimente vários
+          idiomas, os dois temas, uma visualização, uma coleção sem documentos e uma página da barra lateral
+          aberta sem coleção.
+        </li>
+        <li>
+          Por fim, envie o próprio <code>.tgz</code> com <strong>Enviar plugin</strong> em um servidor limpo,
+          como os seus usuários farão.
+        </li>
+      </ol>
+      <p>
+        As ferramentas de desenvolvedor do navegador funcionam dentro do frame: escolha o frame do plugin no
+        console para ver os erros e as mensagens dele. Uma violação de política no console significa que a
+        página tentou algo que o sandbox proíbe.
+      </p>
+
+      <h2 id="ai-files">Criação com um assistente de IA</h2>
+      <p>
+        O modelo inicial contém arquivos de instruções que ensinam a um assistente de programação com IA tudo
+        o que está nesta página: as regras do manifesto, os métodos e permissões da ponte, o sandbox, a
+        verificação, os idiomas, o README, o empacotamento e a publicação. Mantenha-os no topo do repositório
+        do seu plugin; o <code>pack.mjs</code> os deixa de fora do arquivo. A página <strong>Plugins</strong>
+        salva o modelo inicial como um <code>.zip</code>, e cada arquivo em separado, em
+        <strong>Instruções para o seu assistente de IA</strong>, para adicionar a um plugin que você já tem; o
+        do Copilot é salvo como <code>copilot-instructions.md</code>, para a pasta <code>.github</code> do seu
+        repositório.
+      </p>
+      <ul>
+        <li><code>CLAUDE.md</code>: Claude Code.</li>
+        <li><code>AGENTS.md</code>: OpenAI Codex e outros agentes que leem <code>AGENTS.md</code>.</li>
+        <li><code>GEMINI.md</code>: Gemini CLI.</li>
+        <li><code>.github/copilot-instructions.md</code>: GitHub Copilot.</li>
+      </ul>
+      <p>
+        Peça ao assistente o que o seu plugin deve fazer; ele deve responder com código que passe na
+        verificação e na lista de verificação abaixo. Leia o que ele escrever antes de publicar: é você quem os
+        administradores consideram confiável.
+      </p>
+
+      <h2 id="checklist">Lista de verificação antes de publicar</h2>
+      <ul>
+        <li>
+          O id é único e igual ao nome da pasta; a versão foi aumentada e tem uma entrada de changelog com o
+          dia de hoje.
+        </li>
+        <li>
+          Todo texto localizado tem <code>en</code> e <code>tr</code>; a página acompanha
+          <code>locale</code> e <code>context.changed</code>.
+        </li>
+        <li>As permissões são o mínimo que funciona, e o README diz por que cada uma é necessária.</li>
+        <li>A verificação não mostra nenhum achado alto, e o README explica todos os outros.</li>
+        <li>
+          O texto é escrito com <code>textContent</code> ou <code>h()</code>; nenhuma marcação é criada a
+          partir de texto.
+        </li>
+        <li>
+          Nada alcança a rede (nenhum <code>fetch</code>, WebRTC ou dica de prefetch), usa armazenamento, abre
+          pop-ups ou sai da página.
+        </li>
+        <li>
+          Nenhum script, estilo ou manipulador de evento embutido; todo caminho é relativo
+          (<code>./main.js</code>).
+        </li>
+        <li>Todo arquivo é salvo como UTF-8, sem bytes NUL.</li>
+        <li>A página acompanha o tema e a cor de destaque e funciona pelo teclado.</li>
+        <li>
+          Ela trata <code>place</code> sendo <code>null</code>, uma visualização, uma coleção vazia e cada
+          código de erro que possa encontrar.
+        </li>
+        <li>As chamadas que exigem um clique são feitas diretamente no manipulador de clique.</li>
+        <li>
+          As leituras grandes são limitadas: um <code>limit</code>, uma projeção, um pipeline por vez.
+        </li>
+        <li>
+          O <code>README.md</code> e suas traduções descrevem o plugin; <code>license</code>,
+          <code>author</code> e <code>repository</code> estão definidos.
+        </li>
+        <li>O <code>.tgz</code> foi enviado a um servidor limpo, verificado, aprovado e testado ali.</li>
+        <li>
+          O release do GitHub tem exatamente um arquivo de plugin, chamado
+          <code>&lt;id&gt;-&lt;version&gt;.tgz</code>.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Nesta página</p>
+      <ol>
+        <li><a href="#what">O que é um plugin</a></li>
+        <li><a href="#quick-start">Início rápido</a></li>
+        <li><a href="#files">Arquivos e estrutura de pastas</a></li>
+        <li><a href="#manifest">O manifesto</a></li>
+        <li><a href="#contributions">Pontos de contribuição</a></li>
+        <li><a href="#context">O contexto</a></li>
+        <li><a href="#bridge">A API da ponte</a></li>
+        <li><a href="#permissions">Permissões</a></li>
+        <li><a href="#sandbox">O sandbox</a></li>
+        <li><a href="#scan">A verificação de segurança</a></li>
+        <li><a href="#ui">Interface e temas</a></li>
+        <li><a href="#localization">Idiomas</a></li>
+        <li><a href="#readme">README e notas de versão</a></li>
+        <li><a href="#versions">Versões e aprovação</a></li>
+        <li><a href="#packaging">Empacotamento</a></li>
+        <li><a href="#github">Publicação no GitHub</a></li>
+        <li><a href="#testing">Testes no seu próprio servidor</a></li>
+        <li><a href="#ai-files">Criação com um assistente de IA</a></li>
+        <li><a href="#checklist">Lista de verificação antes de publicar</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

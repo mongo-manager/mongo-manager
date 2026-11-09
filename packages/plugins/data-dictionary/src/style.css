@@ -1,0 +1,41 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 Gokhan OZGEZER */
+/* Data dictionary (plugins wave 3): what the kit (kit/src/ui.css) does not already give. */
+.dd-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.dd-contents ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.dd-contents a {
+  color: var(--ds-accent-fg);
+  text-decoration: none;
+}
+.dd-contents a:hover,
+.dd-contents a:focus-visible {
+  text-decoration: underline;
+}
+.dd-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scroll-margin-top: 12px;
+}
+.dd-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+}
+.dd-refs {
+  margin: 0;
+  padding-left: 18px;
+}

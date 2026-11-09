@@ -1,0 +1,17 @@
+{
+  "name": "@mongo-manager/plugin-document-diff",
+  "private": true,
+  "version": "1.3.0",
+  "type": "module",
+  "description": "First-party Mongo Manager plugin: two documents of a collection compared field by field (plugins wave 2).",
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "happy-dom": "^21.0.4",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.2"
+  }
+}

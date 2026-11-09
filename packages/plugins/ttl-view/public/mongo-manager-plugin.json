@@ -1,0 +1,103 @@
+{
+  "id": "ttl-view",
+  "name": {
+    "en": "Expiry (TTL)",
+    "tr": "Süre dolumu (TTL)",
+    "zh": "到期 (TTL)",
+    "ja": "有効期限 (TTL)",
+    "es": "Caducidad (TTL)",
+    "pt": "Expiração (TTL)",
+    "ko": "만료 (TTL)",
+    "de": "Ablauf (TTL)",
+    "fr": "Expiration (TTL)",
+    "ru": "Срок действия (TTL)"
+  },
+  "version": "1.2.0",
+  "description": {
+    "en": "Shows when a collection's TTL indexes remove its documents — already due, within the hour, the day, the week, later — and which they never remove, each group a click away in Documents.",
+    "tr": "Bir koleksiyonun TTL indekslerinin belgelerini ne zaman sildiğini — süresi dolmuş, bir saat, bir gün, bir hafta içinde, daha sonra — ve hangilerini hiç silmediğini gösterir; her grup tek tıkla Belgeler'de.",
+    "zh": "显示集合的 TTL 索引何时删除其文档——已到期、1 小时内、1 天内、1 周内、更晚——以及哪些文档永不删除，每组一键即可在“文档”中查看。",
+    "ja": "コレクションの TTL インデックスがドキュメントを削除するタイミング（期限切れ、1 時間以内、1 日以内、1 週間以内、それ以降）と、削除されないドキュメントを表示します。各グループはワンクリックで［ドキュメント］に表示できます。",
+    "es": "Muestra cuándo los índices TTL de una colección eliminan sus documentos (ya caducados, en la hora, el día, la semana, más tarde) y cuáles no eliminan nunca; cada grupo, a un clic en Documentos.",
+    "pt": "Mostra quando os índices TTL de uma coleção removem seus documentos (já expirados, na hora, no dia, na semana, mais tarde) e quais nunca removem; cada grupo a um clique em Documentos.",
+    "ko": "컬렉션의 TTL 인덱스가 도큐먼트를 삭제하는 시점(이미 만료됨, 1시간·1일·1주 이내, 그 이후)과 삭제하지 않는 도큐먼트를 보여 줍니다. 각 그룹은 클릭 한 번으로 도큐먼트에서 볼 수 있습니다.",
+    "de": "Zeigt, wann die TTL-Indizes einer Collection ihre Dokumente entfernen – bereits fällig, innerhalb der Stunde, des Tages, der Woche, später – und welche sie nie entfernen; jede Gruppe ist einen Klick entfernt in Dokumente.",
+    "fr": "Montre quand les index TTL d’une collection suppriment ses documents (déjà échus, dans l’heure, le jour, la semaine, plus tard) et lesquels ils ne suppriment jamais ; chaque groupe est à un clic dans Documents.",
+    "ru": "Показывает, когда TTL-индексы коллекции удаляют ее документы (срок уже истек, в течение часа, дня, недели, позже) и какие они не удаляют никогда; каждая группа открывается в «Документах» одним щелчком."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read", "collection:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "expiry",
+        "title": {
+          "en": "Expiry",
+          "tr": "Süre dolumu",
+          "zh": "到期",
+          "ja": "有効期限",
+          "es": "Caducidad",
+          "pt": "Expiração",
+          "ko": "만료",
+          "de": "Ablauf",
+          "fr": "Expiration",
+          "ru": "Срок действия"
+        },
+        "icon": "hourglass"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-10-29",
+  "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Some wording and counts also read better in several languages.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Bazı ifadeler ve sayılar da birçok dilde daha doğru okunuyor.",
+        "zh": "现在与应用一样支持韩语、德语、法语和俄语。部分措辞和计数在多种语言中也更加准确。",
+        "ja": "アプリと同様に、韓国語、ドイツ語、フランス語、ロシア語に対応しました。いくつかの言語で、一部の文言と件数の表記もより正確になりました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Además, algunos textos y recuentos se leen mejor en varios idiomas.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o aplicativo. Além disso, alguns textos e contagens ficaram mais corretos em vários idiomas.",
+        "ko": "앱과 마찬가지로 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 또한 여러 언어에서 일부 문구와 개수 표기가 더 정확해졌습니다.",
+        "de": "Jetzt auch auf Koreanisch, Deutsch, Französisch und Russisch, wie die App. Außerdem lesen sich einige Formulierungen und Zählungen in mehreren Sprachen besser.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Certaines formulations et certains décomptes se lisent aussi mieux dans plusieurs langues.",
+        "ru": "Теперь также на корейском, немецком, французском и русском, как и приложение. Кроме того, некоторые формулировки и счетчики теперь точнее на нескольких языках."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在与应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同様に、中国語、日本語、スペイン語、ブラジルポルトガル語に対応しました。ほかの変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o aplicativo. Nada mais muda.",
+        "ko": "앱과 마찬가지로 중국어, 일본어, 스페인어, 브라질 포르투갈어도 지원합니다. 그 밖의 변경 사항은 없습니다.",
+        "de": "Jetzt auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais brésilien, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь также на китайском, японском, испанском и бразильском португальском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-28",
+      "notes": {
+        "en": "First release. An Expiry tab lists the collection's TTL indexes — the field, how long after its date a document is removed, a partial filter — and counts, each with a pipeline its index serves, the documents due but not yet removed, removed within the hour, the day, the week, later, and never (no date in the field, or outside the filter). Show puts a group's filter in the Documents query.",
+        "tr": "İlk sürüm. Süre dolumu sekmesi koleksiyonun TTL indekslerini — alanı, bir belgenin tarihinden ne kadar sonra silindiğini, kısmi filtreyi — listeler ve her biri indeksinin hizmet ettiği bir pipeline ile süresi dolmuş ama henüz silinmemiş, bir saat, bir gün, bir hafta içinde, daha sonra ve hiçbir zaman silinmeyecek (alanda tarih yok ya da filtrenin dışında) belgeleri sayar. Göster bir grubun filtresini Belgeler sorgusuna koyar.",
+        "zh": "首个版本。“到期”选项卡列出集合的 TTL 索引——字段、文档在其日期之后多久被删除、部分筛选条件——并分别用其索引可支持的管道统计：已到期但尚未删除、1 小时内、1 天内、1 周内、更晚以及永不删除（字段中没有日期，或不在筛选范围内）的文档。“显示”会把某一组的筛选条件放入“文档”查询。",
+        "ja": "初回リリース。［有効期限］タブにコレクションの TTL インデックス（フィールド、日時から削除までの時間、部分フィルター）を一覧表示し、各インデックスが利用できるパイプラインで、期限切れだが未削除、1 時間以内、1 日以内、1 週間以内、それ以降、削除されない（フィールドに日時がない、またはフィルターの対象外）の各ドキュメント数を集計します。［表示］でそのグループのフィルターを［ドキュメント］のクエリに設定できます。",
+        "es": "Primera versión. Una pestaña Caducidad lista los índices TTL de la colección (el campo, cuánto después de su fecha se elimina un documento, un filtro parcial) y cuenta, cada uno con un pipeline que su índice puede atender, los documentos caducados pero aún sin eliminar, los que se eliminan en la hora, el día, la semana, más tarde y nunca (sin fecha en el campo o fuera del filtro). Mostrar pone el filtro de un grupo en la consulta de Documentos.",
+        "pt": "Primeira versão. Uma guia Expiração lista os índices TTL da coleção (o campo, quanto tempo depois da data um documento é removido, um filtro parcial) e conta, cada um com um pipeline que seu índice atende, os documentos expirados mas ainda não removidos, os removidos na hora, no dia, na semana, mais tarde e nunca (sem data no campo ou fora do filtro). Mostrar coloca o filtro de um grupo na consulta de Documentos.",
+        "ko": "첫 릴리스. 만료 탭에 컬렉션의 TTL 인덱스(필드, 날짜로부터 도큐먼트가 삭제되기까지의 시간, 부분 필터)를 나열하고, 각 인덱스가 처리할 수 있는 파이프라인으로 만료되었지만 아직 삭제되지 않은 도큐먼트, 1시간·1일·1주 이내에 삭제될 도큐먼트, 그 이후, 삭제되지 않을 도큐먼트(필드에 날짜가 없거나 필터 밖)의 수를 셉니다. 표시를 누르면 해당 그룹의 필터가 도큐먼트 쿼리에 들어갑니다.",
+        "de": "Erste Version. Ein Tab Ablauf listet die TTL-Indizes der Collection auf – das Feld, wie lange nach seinem Datum ein Dokument entfernt wird, einen partiellen Filter – und zählt, jeweils mit einer Pipeline, die ihr Index bedienen kann, die fälligen, aber noch nicht entfernten Dokumente, die innerhalb der Stunde, des Tages, der Woche, später und nie entfernten (kein Datum im Feld oder außerhalb des Filters). Anzeigen setzt den Filter einer Gruppe in die Dokumentabfrage.",
+        "fr": "Première version. Un onglet Expiration liste les index TTL de la collection (le champ, le délai après sa date au bout duquel un document est supprimé, un filtre partiel) et compte, pour chacun avec un pipeline que son index peut servir, les documents échus mais pas encore supprimés, ceux supprimés dans l’heure, le jour, la semaine, plus tard et jamais (pas de date dans le champ ou hors du filtre). Afficher place le filtre d’un groupe dans la requête de Documents.",
+        "ru": "Первый выпуск. Вкладка «Срок действия» перечисляет TTL-индексы коллекции (поле, через какое время после его даты документ удаляется, частичный фильтр) и подсчитывает для каждого конвейером, который может обслужить его индекс, документы с истекшим, но еще не удаленным сроком, удаляемые в течение часа, дня, недели, позже и никогда (в поле нет даты или документ вне фильтра). «Показать» помещает фильтр группы в запрос «Документов»."
+      }
+    }
+  ]
+}

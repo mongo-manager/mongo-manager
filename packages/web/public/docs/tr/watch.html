@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Değişiklikleri izleme · Mongo Manager belgeleri</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager belgeleri</a>
+      <details class="lang-menu">
+        <summary>Türkçe</summary>
+        <span class="langs" role="group" aria-label="Dil">
+          <a lang="en" hreflang="en" href="../watch.html">English</a>
+          <strong lang="tr">Türkçe</strong>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/watch.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/watch.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/watch.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/watch.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/watch.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/watch.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/watch.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/watch.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Genel bakış</a>
+      <a href="getting-started.html">Başlarken</a>
+      <a href="security.html">Güvenlik</a>
+      <a href="deployment.html">Kurulum ve dağıtım</a>
+      <a href="import-export.html">İçe ve dışa aktarma</a>
+      <a href="backup.html">Yedekleme ve geri yükleme</a>
+      <strong>Değişiklikleri izleme</strong>
+      <a href="sync.html">Canlı senkron</a>
+      <a href="server-admin.html">Sunucu yönetimi</a>
+      <a href="ai.html">AI asistanı</a>
+      <a href="plugins.html">Eklentiler</a>
+      <a href="shortcuts.html">Klavye kısayolları</a>
+    </nav>
+    <main>
+      <h1>Değişiklikleri izleme</h1>
+      <p>
+        İzle bölümü, MongoDB'nin verilerinizde yaptığı değişiklikleri oldukları anda gösterir: her ekleme,
+        güncelleme, değiştirme ve silme; isterseniz yeni indeksler gibi şema değişiklikleri de. MongoDB'nin
+        change stream'lerini kullanır. Hiçbir şey saklanmaz: akış siz açtığınızda başlar ve o andan sonrasını
+        gösterir.
+      </p>
+
+      <h2 id="requirements">Nerede bulunur</h2>
+      <ul>
+        <li>Koleksiyon sekmesi → <strong>İzle</strong>: o koleksiyonun değişiklikleri.</li>
+        <li>
+          Veritabanı sekmesi → <strong>İzle</strong>: veritabanındaki tüm koleksiyonların değişiklikleri.
+        </li>
+        <li>Bağlantı sekmesi → <strong>İzle</strong>: bağlantının tüm veritabanlarının değişiklikleri.</li>
+        <li>Komut paleti (Ctrl+K): "Değişiklikleri izle…" bulunduğunuz sekmenin İzle bölümünü açar.</li>
+      </ul>
+      <p>
+        Change stream'ler bir replica set, sharded cluster ya da load-balanced kurulum ister (MongoDB Atlas
+        her zaman bunlardan biridir). Tek başına (standalone) çalışan bir sunucu izlenemez; bölüm bunu söyler.
+        Geliştirme için tek düğümlü bir replica set yeterlidir: <code>mongod --replSet rs0</code> ile başlatıp
+        bir kez <code>rs.initiate()</code> çalıştırın. View'lar izlenemez: bir view'ın İzle bölümü view'ın
+        okuduğu koleksiyonu önerir. Henüz var olmayan bir koleksiyon izlenebilir; değişiklikleri koleksiyon
+        oluşturulunca görünür.
+      </p>
+
+      <h2 id="who-may-watch">Kimler izleyebilir</h2>
+      <p>
+        Bağlantıda belge okuyabilen herkes onu her kapsamda izleyebilir. Bağlantının veritabanı kullanıcısının
+        izlenen yerde <code>changeStream</code> ve <code>find</code> yetkileri olmalıdır (yerleşik
+        <code>read</code> rolünde ikisi de vardır). <code>system.users</code> gibi kimlik bilgisi
+        koleksiyonları yalnızca bağlantının yöneticilerine gösterilir.
+      </p>
+
+      <h2 id="the-feed">Akış</h2>
+      <p>
+        Akışın üstündeki çubuk durumunu gösterir: Canlı, Duraklatıldı, Geride (iki saniyeden fazla geride
+        kaldığında, ne kadar geride olduğuyla), Yeniden bağlanıyor ya da Bitti; ayrıca kaç değişikliğin ne
+        hızla geldiğini. En yeni değişiklikler üsttedir. Her satır değişikliğin türünü (sözle ve renkle),
+        veritabanı ve bağlantı akışlarında koleksiyonu, belgenin
+        <code>_id</code>'sini, güncellemelerde değişen alan adlarını ve ne kadar önce olduğunu gösterir (tam
+        zaman üzerine gelince). Aşağı kaydırdığınızda yeni değişiklikler okuduğunuzu kaydırmaz, bir "yeni
+        olay" düğmesinin arkasında bekler. Son 2.000 değişiklik tutulur; daha eskileri listeden çıkar.
+      </p>
+      <p>
+        Bir değişikliği seçince sağda görürsünüz: değişen alanlar, eklemelerde ve değiştirmelerde belgenin
+        tamamı ya da olayın JSON hâli. "Belgeyi aç", koleksiyonun Belgeler bölümünü o belgenin
+        <code>_id</code>'siyle süzülmüş açar. "EJSON olarak kopyala" değişikliği Extended JSON olarak
+        kopyalar.
+      </p>
+
+      <h2 id="pause-resume-and-reconnects">Duraklatma, sürdürme ve yeniden bağlanma</h2>
+      <p>
+        Duraklat, yerinizi kaybetmeden listeyi durdurur: değişiklikleri MongoDB sunucu tarafında tutar.
+        "Kaldığı yerden" ile duraklatılmışken olanları görerek, "Şu andan itibaren" ile onları atlayarak
+        sürdürün. Akışın araç çubuğunda Boşluk tuşu duraklatır ve sürdürür. Duraklatılmış bir akış, sekmesini
+        kapatana dek bölüm ya da sekme değiştirdiğinizde duraklatılmış kalır; çalışan bir akış ise bölümünden
+        çıktıktan birkaç saniye sonra durur.
+      </p>
+      <p>
+        Uygulamayla bağlantı koptuğunda akış kendiliğinden yeniden bağlanır. İki dakika içinde tarayıcınızın
+        aldığı son değişikliğin hemen ardından, hiçbir şeyi kaçırmadan ve tekrarlamadan sürer ve bunu söyler;
+        duraklatılmış bir akış duraklatılmış olarak döner. Oradan artık sürdüremezse (çok uzun bir yoğunluktan
+        sonra) sunucunun kaldığı yerden sürer ve bazı değişikliklerin eksik olabileceğini söyler; iki
+        dakikadan sonra ise şu andan itibaren yeniden başlar ve bunu söyler. Akışın sürdüğü yer (MongoDB'nin
+        resume token'ı) sunucuda kalır.
+      </p>
+
+      <h2 id="filters">Filtreler</h2>
+      <p>
+        Çipler değişiklik türlerini seçer: ekleme, güncelleme, değiştirme ve silme. "Şema değişikliklerini de
+        göster", oluşturulan ya da silinen koleksiyonlar ve indeksler ile değişen seçenekler gibi
+        değişiklikleri ekler. "Güncellemelerden sonra belgenin tamamını göster" her güncellemeden sonra
+        belgeyi okur; bu, güncelleme başına bir okuma demektir.
+      </p>
+      <p>
+        "Filtreyi düzenle", her değişiklik olayına bir sorgu gibi yazılan bir <code>$match</code> alır,
+        örneğin:
+      </p>
+      <ul>
+        <li>
+          <code>{ 'updateDescription.updatedFields.status': 'paid' }</code>: durumu ödendi yapan
+          güncellemeler.
+        </li>
+        <li>
+          <code>{ 'fullDocument.total': { $gt: 1000 } }</code>: büyük siparişlerin eklenmesi ve
+          değiştirilmesi.
+        </li>
+        <li><code>{ 'documentKey._id': ObjectId('…') }</code>: tek bir belge.</li>
+        <li><code>{ 'ns.coll': 'orders' }</code>: veritabanı ya da bağlantı akışında tek bir koleksiyon.</li>
+      </ul>
+      <p>
+        Bir filtre en çok 12 KB ve 20 düzey derinlikte olabilir. Sunucuda JavaScript çalıştıran operatörler
+        (<code>$where</code>, <code>$function</code>, <code>$accumulator</code>) asla kabul edilmez. Herhangi
+        bir filtreyi değiştirmek akışı şu andan itibaren yeniden başlatır ve akış bunu söyler.
+      </p>
+
+      <h2 id="pre-images">Değişiklikten önceki değerleri görme</h2>
+      <p>
+        MongoDB bir güncellemenin hangi alanları değiştirdiğini ve yeni değerlerini bildirir. Önceki değerleri
+        de görmek için koleksiyonda pre-image kaydını açın; akış o zaman güncellemelerde önce/sonra
+        karşılaştırmasını, silmelerde belgenin önceki hâlini gösterir. Bir koleksiyonun İzle sayfasında,
+        koleksiyonun seçeneklerini (örneğin doğrulama kurallarını) değiştirebilen biri, bunlar kapalıyken
+        <em>Öncesi ve sonrası görüntülerini aç</em> düğmesini görür; düğme önce maliyetini söyler, sonra aynı
+        komutu çalıştırır (denetim kaydına yazılır). Ya da shell'de:
+      </p>
+      <pre><code>db.runCommand({ collMod: 'orders', changeStreamPreAndPostImages: { enabled: true } })</code></pre>
+      <p>
+        Pre-image'lar sunucunun change stream ayarlarının belirlediği süre boyunca diskte tutulur; yoğun
+        koleksiyonlarda disk alanı harcar. Bunlar olmadan akış güncellenen değerleri, kaldırılan alan adlarını
+        ve dizilerin nasıl kısaltıldığını gösterir.
+      </p>
+
+      <h2 id="recordings">Kaydetme, tekrar oynatma ve uyarılar</h2>
+      <p>
+        <em>Bir dosyaya kaydet</em> (filtrelerde, bağlantıdan dışa aktarabilenler için) akışın olaylarını
+        sunucuda, size gönderildiği gibi — maskelendiği yerde maskeli — her satıra bir olay olarak tutar. Bir
+        kayıt sizin aktarım dosyanızdır: aktarım alanınızdan düşülür, en çok 64 MB tutar (sonra kayıt durur,
+        akış sürer ve İzle sayfası bunu söyler) ve akışı bittikten sonra aktarım dosyalarının süresi boyunca
+        saklanır. Kayıtla yeniden bağlanan bir akış yeni bir dosya başlatır. Sunucunun yeniden başlaması
+        bir kaydı bitirir: diske ulaşan kısım, bitmiş bir kayıt olarak saklanır. Bir dosya, olayları nasıl
+        gönderildiyse öyle maskeli ya da maskesiz işaretlenir: akış sürerken maskelemeniz değişirse (kişisel
+        değerler artık size gizli ya da artık değil, ya da kurallar değişti), dosya orada biter ve yeni
+        işaretle yeni bir dosya başlar — kayıtlar listesi ikisini de gösterir. Araç çubuğundaki
+        <em>Kayıtlar</em>, bu bağlantıdaki kayıtlarınızı listeler: <em>Tekrar oynat</em> birini canlı akışın
+        yerinde (aynı liste ve ayrıntılarla) gösterir — ilk 500 olayı, ardından her <em>Daha fazla olay
+        yükle</em> seçişinizde 500 olay daha, en çok 5.000 olay (geri kalanı dosyadadır) —
+        <em>İndir</em> dosyayı (NDJSON) verir ve kayıtlar
+        silinebilir. Yöneticiler dahil hiç kimse başkasının kayıtlarını okuyamaz. Maskesiz kaydedilmiş bir
+        kayıt, bağlantıda kişisel değerler size gizlendiğinde; maskeli kaydedilmiş bir kayıt da kuralları
+        değiştiğinde verilmez.
+      </p>
+      <p>
+        <em>Eşleşmelerde uyarı ver</em>, olayların akışın filtresinden geçtiğini uygulamanın uyarılarına
+        (<code>watch.matched</code> olayı) bildirir: en sık 10 saniyede bir, kaç tane olduğu ve sonuncusunun
+        türüyle, asla bir değer olmadan. Akış çalışırken işler.
+      </p>
+
+      <h2 id="personal-data">Kişisel veriler</h2>
+      <p>
+        Kişisel verileri göremeyen bir kullanıcıya her değişiklik, kişisel alanlar <code>***</code> olarak
+        gösterilir: belge, anahtarı, önceki değerler ve güncellenen değerler; alan yoluna göre, dizi konumları
+        da dahil. Gizli bir alan üzerindeki filtre reddedilir; veritabanı ve bağlantı akışlarında böyle bir
+        kullanıcı yalnızca değişiklik türüne, ad alanına ve zamana göre filtreleyebilir. Akışın dışa
+        aktarımları gösterileni, gizli değerler <code>***</code> olarak, içerir.
+      </p>
+
+      <h2 id="limits-and-settings">Sınırlar ve ayarlar</h2>
+      <ul>
+        <li>
+          Tarayıcı penceresi başına 3, kullanıcı başına 5, sunucuda 50 canlı akış
+          (<code>MM_WATCH_MAX_FEEDS</code>).
+        </li>
+        <li>256 KB'tan büyük bir belge akışta gönderilmez; "Belgeyi aç" onu gösterir.</li>
+        <li>
+          Bir akış başına saniyede en çok 200 değişiklik tarayıcıya ulaşır; daha fazlası olduğunda akış ne
+          kadar geride olduğunu gösterir ve yetişir.
+        </li>
+        <li><code>MM_WATCH=0</code> sunucuda izlemeyi kapatır.</li>
+        <li>
+          Bir akışın başlaması ve durması denetim kaydına yazılır; filtrenin parmak izi yazılır, değerleri
+          asla.
+        </li>
+      </ul>
+
+      <h2 id="when-a-feed-ends">Bir akış bittiğinde</h2>
+      <ul>
+        <li>
+          Koleksiyon silindi ya da yeniden adlandırıldı: akış biter; "Şu andan yeniden başlat" o adlı
+          koleksiyonu yeniden izler.
+        </li>
+        <li>
+          Sunucunun geçmişi (oplog) akışın yerine artık uzanmıyor, örneğin uzun bir aradan sonra: şu andan
+          itibaren yeniden başlatın.
+        </li>
+        <li>Erişiminiz, bağlantı ya da ayarları değişti: akış biter ve nedenini söyler.</li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Bu sayfada</p>
+      <ol>
+        <li><a href="#requirements">Nerede bulunur</a></li>
+        <li><a href="#who-may-watch">Kimler izleyebilir</a></li>
+        <li><a href="#the-feed">Akış</a></li>
+        <li><a href="#pause-resume-and-reconnects">Duraklatma, sürdürme ve yeniden bağlanma</a></li>
+        <li><a href="#filters">Filtreler</a></li>
+        <li><a href="#pre-images">Değişiklikten önceki değerleri görme</a></li>
+        <li><a href="#recordings">Kaydetme, tekrar oynatma ve uyarılar</a></li>
+        <li><a href="#personal-data">Kişisel veriler</a></li>
+        <li><a href="#limits-and-settings">Sınırlar ve ayarlar</a></li>
+        <li><a href="#when-a-feed-ends">Bir akış bittiğinde</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

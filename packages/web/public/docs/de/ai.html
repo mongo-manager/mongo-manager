@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>KI-Assistent · Mongo-Manager-Dokumentation</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo-Manager-Dokumentation</a>
+      <details class="lang-menu">
+        <summary>Deutsch</summary>
+        <span class="langs" role="group" aria-label="Sprache">
+          <a lang="en" hreflang="en" href="../ai.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/ai.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/ai.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/ai.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/ai.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/ai.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/ai.html">한국어</a>
+          <strong lang="de">Deutsch</strong>
+          <a lang="fr" hreflang="fr" href="../fr/ai.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/ai.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Überblick</a>
+      <a href="getting-started.html">Erste Schritte</a>
+      <a href="security.html">Sicherheit</a>
+      <a href="deployment.html">Bereitstellung</a>
+      <a href="import-export.html">Import und Export</a>
+      <a href="backup.html">Sicherung und Wiederherstellung</a>
+      <a href="watch.html">Änderungen beobachten</a>
+      <a href="sync.html">Live-Synchronisierung</a>
+      <a href="server-admin.html">Serververwaltung</a>
+      <strong>KI-Assistent</strong>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Tastenkombinationen</a>
+    </nav>
+    <main>
+      <h1>KI-Assistent</h1>
+      <p>
+        Der KI-Assistent verwandelt Ihre Worte in eine Abfrage, eine Pipeline oder einen Validator, erklärt eine
+        Abfrage, schlägt vor, wie sie schneller wird, und beschreibt eine Collection. Er schreibt; Sie prüfen und
+        führen aus. Er führt nie von sich aus etwas aus.
+      </p>
+      <p>
+        Öffnen Sie eine Collection und wählen Sie <strong>KI fragen</strong> neben ihren Bereichen, oder drücken
+        Sie <kbd>Ctrl</kbd> + <kbd>I</kbd> (<kbd>⌘</kbd> + <kbd>I</kbd> auf dem Mac). Auch die Palette bietet „KI zu
+        dieser Collection fragen…“ an.
+      </p>
+
+      <h2 id="actions">Was er kann</h2>
+      <ul>
+        <li>
+          <strong>Eine Abfrage schreiben</strong> (Dokumente): einen Filter sowie eine Projektion und eine
+          Sortierung, wenn Sie danach fragen.
+        </li>
+        <li><strong>Eine Pipeline schreiben</strong> (Aggregationen): die Stages, als Karten angelegt.</li>
+        <li><strong>Sie erklären</strong>: was die aktuelle Abfrage oder Pipeline tut, Schritt für Schritt.</li>
+        <li>
+          <strong>Sie schneller machen</strong> (Explain): warum sie langsam sein kann, anhand ihres Abfrageplans
+          und der Indizes, mit Indexvorschlägen, die den Indexdialog ausgefüllt öffnen – nichts wird erstellt,
+          bevor Sie bestätigen.
+        </li>
+        <li>
+          <strong>Einen Validator schreiben</strong> (Validierung): ein <code>$jsonSchema</code>, als Entwurf
+          angelegt; nichts wird gespeichert, bevor Sie speichern.
+        </li>
+        <li>
+          <strong>Die Collection beschreiben</strong> (Schema): was sie enthält, auffällige Felder, Besonderheiten.
+        </li>
+      </ul>
+      <p>
+        Die Antwort erscheint, während sie geschrieben wird. Eine Abfrage, eine Pipeline oder ein Validator wird
+        neben dem angezeigt, was der Editor enthält; <strong>Einfügen</strong> übernimmt sie in den Editor (mit
+        vorheriger Rückfrage, wenn der Editor bereits Arbeit enthält). Eine Pipeline, die schreibt
+        (<code>$out</code>, <code>$merge</code>) oder JavaScript ausführt, wird gekennzeichnet; ihr Ausführen
+        verlangt dieselben Bestätigungen wie immer. Wenn der Server serverseitiges JavaScript nicht zulässt, kann
+        eine solche Antwort nicht eingefügt werden.
+      </p>
+
+      <h2 id="providers">Anbieter</h2>
+      <p>
+        Ein Administrator fügt Anbieter unter <strong>Einstellungen → KI-Assistent</strong> hinzu (das
+        Kontomenü): Anthropic (Claude; standardmäßig <code>claude-sonnet-5</code>), Google Gemini (ein Schlüssel
+        aus Google AI Studio und ein Modellname wie <code>gemini-2.5-pro</code>), ein beliebiger
+        OpenAI-kompatibler Server oder Ollama. Einer ist der Standard; Benutzer können unter den übrigen wählen.
+        Der Schlüssel wird verschlüsselt auf dem Server gespeichert, nie wieder angezeigt und nie an einen
+        Browser gesendet; das Ändern der Adresse eines Anbieters verlangt erneut seinen Schlüssel, da der
+        Schlüssel zur alten Adresse gehörte. <strong>Testen</strong> sendet eine einzeilige Anfrage und meldet,
+        was passiert ist.
+      </p>
+      <p>
+        Anfragen gehen vom Server an den Anbieter, nie vom Browser. Jede Karte gibt an, ob der Anbieter aus einem
+        lokalen oder privaten Netzwerk („Lokal“) oder von außerhalb („Cloud“) geantwortet hat.
+      </p>
+
+      <h2 id="offline">Offline, mit einem lokalen Modell</h2>
+      <p>
+        Mit Ollama (oder einem beliebigen OpenAI-kompatiblen Server) im eigenen Netzwerk funktioniert der
+        Assistent ohne Internetzugang. Lokale und private Adressen müssen in
+        <code>MM_AI_PRIVATE_NETWORKS</code> aufgelistet sein (zum Beispiel <code>10.0.0.0/8</code>); im lokalen
+        Modus ist der Rechner, auf dem Mongo Manager läuft, immer erlaubt, sodass <code>http://localhost:11434</code>
+        unverändert funktioniert. Einfaches <code>http</code> ist nur zu aufgelisteten Netzwerken erlaubt.
+      </p>
+
+      <h2 id="chat">Chat</h2>
+      <p>
+        Der <strong>Assistent</strong> (die schwebende Schaltfläche unten rechts oder <kbd>Ctrl / ⌘</kbd> +
+        <kbd>.</kbd>) ist eine Unterhaltung in einem Fenster über Ihrer Arbeit: Die Seite behält ihre Breite. Sie
+        können seine Größe über den linken und oberen Rand ändern, es erweitern oder schließen – es behält, was
+        Sie gerade getippt haben; auf einem Telefon nimmt es den ganzen Bildschirm ein. In einem Collection-Tab
+        trägt jede Nachricht den Kontext dieser Collection, vom Server gelesen wie bei den Einzelaktionen: die
+        Schema-Zusammenfassung und – wie Sie es mit den Chips über dem Nachrichtenfeld wählen – die aktuelle
+        Abfrage oder Pipeline, die Indizes, der Validator und, mit Ihrer Einwilligung für diese Nachricht,
+        Beispieldokumente. Anderswo trägt eine Nachricht keine Daten, und der Assistent gibt allgemeine
+        MongoDB-Hilfe. Wenn Sie zu einer anderen Collection wechseln, zeigt die Unterhaltung, wo der Wechsel
+        stattfand.
+      </p>
+      <ul>
+        <li>
+          Nur die neueste Nachricht trägt Daten. Frühere Nachrichten reisen als die bisherige Unterhaltung mit –
+          höchstens die letzten 20 Wortwechsel oder 24 KB – und nur Antworten, die abgeschlossen wurden. Eine
+          frühere Nachricht wird ausgelassen, und das Panel sagt das, wenn ihre Verbindung nicht mehr besteht, Sie
+          sie nicht mehr lesen dürfen, ihr Assistent inzwischen aus ist, sich ihre Regeln für personenbezogene
+          Daten seither geändert haben oder sie von einer Verbindung stammt, die nur lokale Anbieter zulässt, und
+          der Anbieter von außerhalb antwortet. Eine aus einer solchen Nachricht verfasste Antwort wird mit ihr
+          ausgelassen.
+        </li>
+        <li>
+          Jeder Codeblock in einer Antwort hat eine Aktion (ein Indexvorschlag eine pro Index), angewendet in der
+          Collection, die der Block nennt – ein Block ohne Nennung übernimmt die, die die Antwort nennt – oder um
+          die es in der Nachricht ging, mit Rückfrage, wenn der Editor bereits Arbeit enthält. Ein Block, der eine
+          Collection nennt, die dem Assistenten nicht gegeben wurde, führt ins Leere. <strong>Ausführen</strong>
+          setzt eine Abfrage in die Abfrageleiste oder eine Pipeline in den Bereich Aggregationen und führt sie
+          aus; eine Pipeline, die schreibt (<code>$out</code>, <code>$merge</code>), wird nur dort platziert,
+          damit Sie sie ausführen. Ein Validator geht in den Validierungsentwurf; ein Indexvorschlag öffnet den
+          Dialog „Index erstellen“. Eine einzelne Stage (ein <code>$match</code>, das einer Pipeline hinzugefügt
+          werden soll) wird nur als Code angezeigt. Bitten Sie um das Ergebnis als Datei („als Excel
+          herunterladen“), und der Block bietet <strong>Als Excel herunterladen</strong>, CSV oder JSON an, sofern
+          die Verbindung Exporte erlaubt: Der Export öffnet sich mit der Abfrage oder Pipeline und dem eingestellten
+          Format, und Sie starten ihn. Code, der serverseitiges JavaScript ausführt, wird zuerst nachgefragt.
+          Nichts läuft ohne Ihren Klick.
+        </li>
+        <li>
+          Chats gehören Ihnen: Keine Route lässt jemand anderen – auch einen Administrator – sie lesen, sofern Sie
+          nicht einen Durchlauf davon aus Ihrem KI-Verlauf teilen. Sie werden nach ihrer letzten Nachricht
+          <code>MM_AI_CHAT_DAYS</code> Tage lang verschlüsselt auf dem Server aufbewahrt (standardmäßig 30); mit
+          <code>0</code> leben sie 12 Stunden lang nur im Speicher des Servers, und nichts wird auf die Festplatte
+          geschrieben. Sie behalten höchstens 50 Chats mit je 200 Nachrichten; darüber hinaus gehen die ältesten
+          zuerst. Verlauf im Panel löscht einen Chat oder alle; das Löschen eines Benutzers löscht dessen Chats.
+        </li>
+      </ul>
+
+      <h2 id="agent">Agent-Modus</h2>
+      <p>
+        Schalten Sie im Assistenten-Panel den <strong>Agent-Modus</strong> ein, und der Assistent arbeitet für Sie
+        mit Ihren Verbindungen: „Füge der Verbindung Sales Mongo eine neue Collection namens users hinzu und füge
+        einen Demo-Benutzer hinzu“ findet Sales Mongo, verwendet dessen Standarddatenbank (und sagt das – ohne
+        eine fragt er, welche Datenbank gemeint ist), schlägt die Collection vor, dann den Demo-Benutzer und
+        sagt Ihnen, was er getan hat. Der Schalter gehört Ihnen allein und wird mit Ihrem Konto gespeichert – im
+        Assistenten-Panel und unter Konto → Präferenzen; ist er aus, ist der Assistent der oben beschriebene. Ein
+        Administrator legt unter <strong>Einstellungen → KI-Assistent → Agent-Modus auf diesem Server</strong>
+        fest, was der Agent für alle tun darf: <em>Aus</em> (niemand kann ihn einschalten), <em>Schreibgeschützt</em>
+        (er liest, zählt, erklärt und öffnet, was Sie erbeten haben, schlägt aber keine Änderung, kein Backup und
+        keinen Zeitplan vor) oder <em>Vollständig</em> (der Standard). Eine Änderung davon gilt sofort, für einen
+        bereits laufenden Durchlauf und für eine Änderung, die schon auf ihrer Karte wartet.
+      </p>
+      <ul>
+        <li>
+          <strong>Er kennt Ihre Verbindungen mit Namen</strong>: jede Verbindung, auf der Sie den Assistenten
+          verwenden dürfen, mit Ihrem Zugriff dort, ob sie schreibgeschützt ist und ob der Agent auf ihr
+          Änderungen vorschlagen darf – nie ihre Adresse, ihren Benutzernamen oder ihr Passwort. Eine Verbindung,
+          deren KI-Richtlinie <em>Aus</em> ist, wird vollständig ausgelassen; eine mit <em>Nur lokale
+          Anbieter</em> wird nur einem Anbieter genannt, der als aus Ihren aufgelisteten Netzwerken antwortend
+          erkannt wurde, und dann darf die gesamte Anfrage nur diese Netzwerke erreichen. Ihm wird auch der Tab,
+          den Sie gerade ansehen, mit Namen mitgeteilt – eine Collection, ein Bereich einer Verbindung wie
+          Leistung oder Benutzer &amp; Rollen, oder eine Seite wie Geplante Backups oder Hintergrundaufträge –,
+          sodass „diese“ und „hier“ sich darauf beziehen. Eine spätere Nachricht im selben Chat trägt, was die
+          früheren Schritte getan haben, nur mit Namen und Anzahlen („verworfen“, „2 gefunden“), sodass „dasselbe
+          auf Prod“ oder „verwirf sie“ funktionieren, ohne dass Sie sich wiederholen.
+        </li>
+        <li>
+          <strong>Lesen läuft sofort</strong>: das Auflisten von Verbindungen, Datenbanken, Collections und
+          Backup-Zielen; die Statistiken, das Schema (Namen, Typen und Anteile) und die Indizes einer Collection;
+          Zählen; das Erklären einer Abfrage (nichts wird ausgeführt); das Finden von Dokumenten und das Ausführen
+          einer schreibgeschützten Aggregation (höchstens 10 Ergebnisse; <code>$out</code>, <code>$merge</code>
+          und serverseitiges JavaScript werden abgelehnt). Er kann auch eine Verbindung, eine Datenbank oder den
+          Bereich einer Collection für Sie öffnen und prüfen, ob eine Verbindung antwortet – er öffnet sie, wie Sie
+          es täten, sodass die App sie als verbunden zeigt, oder nennt die Art des Fehlers (das Netzwerk, ein nicht
+          gefundener Name, ihre Zugangsdaten, eine Anmeldung, die Sie vornehmen müssen und die ab dem Schritt
+          angeboten wird; nie eine Adresse). Eine abgelehnte Anmeldung wird einmal versucht und gemerkt, sodass
+          sie eine Weile nicht erneut versucht wird (kein vom Agent ausgesperrtes Konto), und ein neuer
+          SSH-Host-Schlüssel, den niemand angesehen hat, wird nie akzeptiert. Bei den unterschiedlichen Werten
+          eines Feldes („welche Status gibt es?“) wird ihm mitgeteilt, wie viele es sind (jedes Element eines
+          Arrays einzeln, wie MongoDB zählt); die Werte selbst, die häufigsten zuerst, erreichen den Anbieter nur
+          mit Ihrer Einwilligung für diese Nachricht (<strong>Dokumente</strong>) und nie für ein
+          personenbezogenes Feld, auch nicht über einen Filter darauf. Gefragt nach einer Datei („exportiere die
+          Versandaufträge als CSV“), schlägt er einen Export auf einer Karte vor, wie er eine Änderung vorschlägt
+          (von Ihnen bestätigt; nicht dort, wo der Agent keine Änderungen vorschlagen darf, und nicht unter einer
+          schreibgeschützten Richtlinie) – CSV, JSON, NDJSON, Excel oder SQL (PostgreSQL, MySQL oder SQLite),
+          komprimiert oder nicht; eine ganze Collection, ein Find oder eine schreibgeschützte Pipeline. Die Karte
+          zeigt das Find oder die Pipeline, das bzw. die gesendet wird, und bei einem Find, wie viele Dokumente;
+          auf Ihren Klick ist es Ihr eigener Export (mit Ihren Rechten, Ihre verborgenen Felder bleiben verborgen),
+          nach Abschluss seines Auftrags aus seinem Schritt heruntergeladen (<strong>Herunterladen</strong>) oder
+          aus Hintergrundaufträge, und kein Wert erreicht den Anbieter. Ein Find- oder Aggregationsschritt bietet
+          <strong>Dokumente anzeigen</strong> an: derselbe Lesevorgang, erneut als Sie durch die App ausgeführt
+          (mit Ihren Rechten, Ihre verborgenen Felder bleiben verborgen), nur im Schritt angezeigt – nie an den
+          Anbieter gesendet, nie eine Ihrer letzten Abfragen und nicht auf einer Seite des KI-Verlaufs angeboten.
+          Gefragt, Dokumente anzuzeigen („die Aufträge auf Demo, die gerade versendet werden“), öffnet er die
+          Collection mit dieser dort ausgeführten Abfrage oder eine Pipeline in ihrem Builder: Die App führt sie
+          aus, wie Sie es täten, und keine Werte erreichen den Anbieter. Er fragt nach, bevor er eine Abfrage
+          ersetzt, die Sie gerade schrieben; eine Pipeline, die schreibt, wird nur im Builder platziert, und nur
+          dort, wo der Agent Änderungen vorschlagen darf. Eine Abfrage in seiner Antwort läuft in der Collection,
+          die sie nennt (eine, die er verwendet hat), sonst dort, wo der Block davor sie nannte, sonst in der
+          ersten danach, sonst in der zuletzt verwendeten; ohne eine läuft sie nicht – nie in dem Tab, der gerade
+          offen ist.
+        </li>
+        <li>
+          <strong>Jede Änderung wartet auf Sie.</strong> Das Erstellen einer Datenbank oder Collection, das
+          Einfügen, Aktualisieren oder Löschen von Dokumenten, das Erstellen oder Verwerfen eines Index, das
+          Verwerfen einer Collection oder Datenbank, das Setzen der Validierungsregeln einer Collection (die Karte
+          zeigt die ersetzten Regeln und sagt, wie viele Dokumente die neuen jetzt verletzen; sie behält deren
+          Stufe und Aktion, sofern nicht anders erbeten, speichert nur über die Regeln, aus denen sie entstand,
+          nie bei einer Time-Series und nie dort, wo clientseitige Verschlüsselung aktiv ist – dort sind die Regeln
+          die der Verschlüsselung selbst), das Erstellen eines Suchindex (wo der Server Suche hat, nie dort, wo
+          Regeln für personenbezogene Daten gelten: Er würde deren Werte kopieren), das Umbenennen einer Collection
+          (ihr Name eingegeben; nie auf einen vergebenen Namen, nie dort, wo Regeln für personenbezogene Daten sie
+          nennen – sie würden beim alten Namen bleiben; nie ein View, eine Time-Series und nie dort, wo
+          clientseitige Verschlüsselung aktiv ist; die Views, die sie lesen, werden genannt), das Kopieren einer
+          Collection, wie das Kopieren der Collection es tut (nach Ihrem eigenen Plan, seine Ablehnungen vorab in
+          eigenen Worten gesagt; ein Filter oder eine Pipeline angezeigt und gezählt, nie nach einem
+          personenbezogenen Feld auswählend; jeder Modus, der die Dokumente des Ziels ändert, verlangt die Eingabe
+          seines Namens; verfolgt unter Hintergrundaufträge), ein Backup und ein Backup-Zeitplan erscheinen als
+          Karte in der Unterhaltung: wo er wirkt, was genau gesendet wird und was die eigene Vorschau der App
+          ergeben hat (wie viele Dokumente zu einem Update oder Löschen passen, wie viele ein Verwerfen verliert,
+          die nächsten Läufe eines Zeitplans). <strong>Bestätigen</strong> folgt den Bestätigungsregeln der App –
+          es lässt sich erst nach einem kurzen Moment drücken, und ein Doppelklick geht nie durch – und ein
+          Verwerfen oder eine Änderung aller Dokumente verlangt die Eingabe des Namens wie die Dialoge der App.
+          Eine Änderung, die Daten verliert – ein Verwerfen, ein Update oder Löschen, eine Wiederherstellung oder
+          eine Kopie über Vorhandenes –, bietet <strong>Zuerst sichern</strong> an: ein verschlüsseltes Backup
+          dessen, was sie verlieren würde, sein Passwort zweimal auf der Karte abgefragt, über die Backup-Route
+          erstellt, bevor die Änderung bestätigt werden darf (Bestätigen wartet darauf; der Schritt sagt dann, dass
+          gesichert wurde, und öffnet seinen Auftrag). Der Agent liest Ihre Warnungen – ausgelöste Schwellenwerte,
+          jüngste Ereignisse, den Lauf eines Berichts mit seinen Anzahlen – und für einen Administrator die
+          Warnungsregeln und geplanten Berichte; er erstellt, ändert, stellt zurück und löscht die Regel einer
+          Verbindung und erstellt, ändert, führt aus und löscht einen Bericht, jeweils auf einer Karte über die
+          Warnungs-Routen (Kanäle mit ihren Namen – nie die Adresse eines Webhooks –, E-Mail nur dort, wo ein
+          Mailserver eingerichtet ist; die Anzahlen eines Berichts nie nach einem personenbezogenen Feld oder von
+          einem View). Ein Lesevorgang über eine große Collection (100.000 Dokumente oder mehr) wird zuerst
+          erklärt: Einer, den kein Index bedient – er liest die gesamte Collection oder kann es –, wird in seinem
+          Schritt gesagt, während er läuft und danach, und der Agent wird informiert, damit er einen Index
+          anbieten kann (ein Blick auf die ersten Dokumente nie). Mehrere zusammen erbetene Änderungen (bis zu
+          acht) kommen zuerst als <strong>Plan</strong>: ihre Liste in Reihenfolge, danach jede auf ihrer eigenen
+          Karte, einzeln bestätigt – der Plan zeigt, wie jede verlief; eine abgelehnte oder verweigerte Änderung
+          stoppt die übrigen, und ein Durchlauf, der vor der letzten endet, sagt das. Ein verschlüsseltes Backup
+          fragt sein Passwort zweimal auf der Karte ab, mit der Stärkeanzeige und dem Generator des Backup-Dialogs;
+          es geht nur an das Backup. Die Karte bietet es auch ohne Passwort an, als komprimiertes Archiv (geöffnet
+          mit <code>mongorestore --archive --gzip</code>) – Ihre Wahl, nie die des Agents, und nur angeboten, wo
+          dieses Backup erstellt werden darf (nicht an ein Ziel, das nur verschlüsselte Backups annimmt, und nicht
+          bei personenbezogenen Daten, die den Server nicht unverschlüsselt verlassen dürfen); eines, das
+          personenbezogene Daten im Klartext enthielte, sagt das. Sobald das Backup erstellt ist, bietet sein
+          Schritt <strong>Herunterladen</strong> an. Die Karte eines Backups sagt, wann die auf dem Server
+          aufbewahrte Kopie entfernt wird und wohin es gesendet wird; sobald es startet, öffnet sein Schritt diesen
+          Auftrag unter Hintergrundaufträge, und der Agent verfolgt ihn dort („ist das Backup fertig?“) – auch ein
+          an Ziele weitergesendetes Backup über seinen Sendeauftrag – und listet Ihre eigenen Aufträge und
+          aufbewahrten Backups der Verbindungen auf, die ihm genannt wurden: Status, Namen und den Status jeder
+          Kopie, eine Größe verborgen, wo Regeln für personenbezogene Daten gelten, nie den eigenen Wortlaut eines
+          Fehlers. Ein Zeitplan („richte ein wöchentliches Backup ein“) wird vor seiner Karte so geprüft, wie er
+          beim Speichern geprüft würde – weniger Zeitpläne, als Sie haben dürfen, ein Ziel, das Sie verwenden
+          dürfen (ein unverschlüsseltes Backup nur dort, wo es hingehen darf), Ihr Backup-Schlüssel für ein
+          verschlüsseltes, Läufe mindestens eine Stunde auseinander – und der Agent schlägt keinen vor, wo der
+          Server geplante Backups ausschaltet. Seine Karte sagt, wann er läuft, in der Zeitzone Ihres Browsers,
+          sofern Sie keine andere nennen (die genannte Zone), und was er aufbewahrt; ohne irgendein Ziel wird
+          einem Administrator Backup-Ziele angeboten. Auch ein Backup wird aus dem Chat wiederhergestellt
+          („stelle das Backup von gestern Nacht in orders_copy wieder her“): über den Wiederherstellungsplan, auf
+          einer Karte, die das Ziel nennt – sein Name eingegeben –, die sagt, wie viele Collections er schreibt,
+          wie viele bereits vorhanden sind und wie viele Dokumente er überschreibt, wann das Backup erstellt wurde
+          und welche Ziele Capped sind (das Schreiben in eines kann seine ältesten Dokumente entfernen); das
+          Passwort eines verschlüsselten Backups wird auf der Karte einmal abgefragt, wie das Backup erstellt
+          wurde, und der Plan wird beim Klick damit erneut erstellt: Haben sich die Ziele seit der Karte geändert,
+          startet nichts. Er stellt nie in die eigenen Datenbanken von MongoDB wieder her, und ein Backup eines
+          ganzen Servers oder was der Plan zur Bestätigung verlangt (TTL-Indizes, personenbezogene Daten, ein
+          maskiertes Backup) wird unter Backups wiederhergestellt. Ihre eigenen Zeitpläne können aus dem Chat
+          aufgelistet („was sind meine Zeitpläne?“), sofort ausgeführt, pausiert, fortgesetzt, geändert und
+          gelöscht werden, jeweils mit ihrem Namen und auf ihrer Karte: Die Karte einer Änderung sagt, welche
+          Backups ihre neue Aufbewahrung, Zone oder Ziele jetzt entfernen, und diese Anzahl bestätigen Sie; das
+          Löschen eines Zeitplans verlangt die Eingabe seines Namens, und seine Backups bleiben. Die Pause eines
+          Administrators hebt ein Administrator auf. Auch die Gesundheit des Servers wird aus dem Chat gelesen,
+          wie der Tab Leistung sie liest (mit dessen Überwachungsrecht): sein Status, das Replica Set (Mitglieder
+          nach Nummer, nie ihre Hosts), die meistgenutzten Collections, langsame Abfragen, Indexempfehlungen für
+          eine Datenbank und die laufenden Operationen – nach Zahlen, Namen und Arten, nie ein Befehl oder ein
+          Wert. Eine laufende Operation wird auf einer Karte gestoppt, die ihre opid eingegeben verlangt, für
+          diejenigen, die Operationen stoppen dürfen – nie eine in den eigenen Datenbanken von MongoDB oder eine
+          von Mongo Manager selbst (ein Auftrag, eine Anfrage über die App). Auch die Benutzer und benutzerdefinierten
+          Rollen von MongoDB werden aus dem Chat aufgelistet, nach Namen und Rollen (mit dem Recht, sie zu
+          verwalten); ein Benutzer wird mit Rollen auf einer Karte erstellt, auf der Sie sein Passwort eingeben –
+          der Assistent gibt nie eines vor, sieht es nie und behält es nie, und vergibt nie eine Rolle über die
+          gesamte Bereitstellung – und auf einer Karte verworfen, die seinen Namen eingegeben verlangt; nie das
+          Konto, mit dem sich die Verbindung anmeldet. Rollen über die gesamte Bereitstellung werden aus dem Chat
+          nie vergeben: die übrigen (nur für Administratoren bestimmten) integrierten Rollen der Datenbank admin,
+          jede Rolle von <code>local</code> oder <code>config</code> und benutzerdefinierte Rollen mit solchen
+          Rechten; ebenso wenig werden Benutzer in <code>local</code> oder <code>config</code> erstellt. Nur wer
+          die Datenbanken der Verbindung verwaltet und ihre personenbezogenen Daten sieht, listet Benutzer auf
+          oder ändert sie. Nichts wird geschrieben, bevor Sie klicken; <strong>Ablehnen</strong> teilt es dem
+          Assistenten mit, und nichts ändert sich. Es wird jeweils eine Änderung vorgeschlagen; eine Änderung, die
+          nicht innerhalb von 10 Minuten beantwortet wird, oder eine Nachricht, die Sie stoppen, ändert nichts.
+          Wenn Sie bestätigen, wird erneut geprüft, was die Änderung erlaubte: Wurden inzwischen der Agent-Modus,
+          der Assistent der Verbindung oder die Änderungen des Agents dort ausgeschaltet, wird nichts geschrieben;
+          ein Update oder Löschen wird erneut in der Vorschau geprüft, und eine seit der Karte geänderte Anzahl
+          wird gemeldet, nicht ausgeführt. Ein TTL-Index (einer, der Dokumente nach einem Alter entfernt) ist
+          ebenfalls eine destruktive Änderung: Die Karte sagt, wie viele Dokumente er innerhalb einer Minute
+          löschen würde, und verlangt den Namen der Collection.
+        </li>
+        <li>
+          <strong>Als Sie, über die App.</strong> Jeder Schritt ruft die eigenen Routen der App mit Ihrer Sitzung
+          auf: Ihre Rechte, schreibgeschützten Verbindungen, Maskierungen personenbezogener Daten und Regeln für
+          serverseitiges JavaScript gelten genau wie auf dem Bildschirm, und jeder Schreibvorgang steht als Ihrer
+          im Audit-Protokoll – als der des Assistenten gekennzeichnet, mit dem Durchlauf und dem Schritt, für den
+          er erfolgte: <strong>Diesen Durchlauf anzeigen</strong> in den Details eines Eintrags listet die
+          Tool-Aufrufe dieses Durchlaufs, Ihre Antworten und das, was die App dafür getan hat, zusammen auf. Ein
+          Administrator kann die Änderungen des Agents pro Verbindung ausschalten (<strong>Dem Agent erlauben, hier
+          Änderungen vorzuschlagen</strong> im Formular der Verbindung); Lesen bleibt verfügbar. Der Schalter ist
+          für jede Verbindung an, auch für die vor dieser Version erstellten: Jede Änderung wartet dennoch auf
+          Ihren Klick. Eine Verbindung, die mitten in einer Nachricht für den Assistenten ausgeschaltet oder auf
+          nur lokal gesetzt wird, stoppt den nächsten Schritt.
+        </li>
+        <li>
+          <strong>Was jeder Schritt gesendet hat.</strong> Die Schritte werden aufgelistet, wie sie laufen, jeder
+          mit dem Ort, an dem er wirkte, dem, was er fand, einem Link zum Öffnen dessen, was er berührte, und dem,
+          was er an den Anbieter sendete: Namen, Anzahlen, ein Schema ohne Werte, Indexschlüssel, ein Plan ohne
+          Werte oder das Ergebnis einer Änderung. Die Werte von Dokumenten gehen nur, wenn Sie
+          <strong>Dokumente</strong> für diese Nachricht erlauben und der Anbieter Stichproben empfangen darf;
+          personenbezogene Felder sind darin für alle verborgen, und eine Abfrage, deren Ausgabe die Regeln nicht
+          nachvollziehen können, sendet überhaupt keine Werte. Ein Filter, eine Sortierung, eine Pipeline oder ein
+          Index, der ein personenbezogenes Feld nennt, wird abgelehnt, bevor er läuft – selbst eine Zählung würde
+          etwas über dessen Werte aussagen. Die eigenen Collections von MongoDB werden für den Assistenten nie
+          gelesen: weder direkt noch über <code>$lookup</code>, <code>$graphLookup</code>, <code>$unionWith</code>
+          oder <code>$facet</code> einer Pipeline noch über einen View. Diagnose-Stages, die Abfragen anderer
+          Clients, den Katalog oder die Adresse des Servers zeigen (<code>$planCacheStats</code>,
+          <code>$queryStats</code>, <code>$listCatalog</code>, <code>$currentOp</code>, <code>$indexStats</code>,
+          <code>$collStats</code> und dergleichen), werden für den Agent nie ausgeführt, in keiner Tiefe.
+        </li>
+        <li>
+          <strong>Limits.</strong> Höchstens 10 Anfragen an den Anbieter und 20 Aktionen pro Nachricht sowie 30
+          Aktionen pro Minute und Person. Die erste Anfrage einer Nachricht an den Anbieter zählt gegen die unten
+          genannten Limits des Assistenten; ihre weiteren Anfragen gegen eine eigene Minute (standardmäßig 30,
+          <code>MM_AI_AGENT_PER_MINUTE</code>) und denselben Tag, und jede belegt einen der Plätze sofort,
+          während sie antwortet. Wurde eine Änderung vorgenommen, wartet die abschließende Anfrage auf ihre
+          Minute, statt die Nachricht zu beenden, ohne zu sagen, was getan wurde.
+        </li>
+        <li>
+          Anthropic, Gemini, OpenAI-kompatible Server und Ollama können alle Tools verwenden. Ein Modell, das es
+          nicht kann (einige lokale Modelle), antwortet als der schreibgeschützte Assistent, und das Panel sagt
+          das.
+        </li>
+      </ul>
+
+      <h2 id="what-is-sent">Was gesendet wird</h2>
+      <ul>
+        <li>
+          Eine <strong>Schema-Zusammenfassung</strong> aus bis zu 200 Stichprobendokumenten: Feldnamen, ihre Typen
+          und wie oft sie vorkommen. Nie Werte, Bereiche, Histogramme oder die häufigsten Werte.
+        </li>
+        <li>Ihre Worte und die aktuelle Abfrage oder Pipeline (vom Server gelesen und formatiert).</li>
+        <li>
+          Für „Sie schneller machen“: der Abfrageplan (Stages und Indizes, ohne die Werte der Abfrage) und die
+          Indizes.
+        </li>
+        <li>Für „Einen Validator schreiben“: der aktuelle Validator.</li>
+        <li>
+          <strong>Beispieldokumente</strong>, nur wenn Sie sie für diese Anfrage einschalten und der Anbieter sie
+          empfangen darf: 1 bis 5 Dokumente, jedes auf 4 KB gekürzt.
+        </li>
+      </ul>
+      <p>
+        „Was gesendet wurde“ im Sheet zeigt genau, was den Server verlassen hat. Alles ist auf 48 KB begrenzt; was
+        ausgelassen wurde, wird dort genannt. Die eigenen Collections von MongoDB (<code>system.*</code>) werden nie
+        gesendet, ebenso wenig irgendetwas einer anderen Collection.
+      </p>
+
+      <h2 id="personal-data">Personenbezogene Daten</h2>
+      <p>
+        Die Regeln der Verbindung für personenbezogene Daten gelten für alles, was an einen Anbieter gesendet wird,
+        für alle – auch für Personen, die die Werte auf dem Bildschirm sehen dürfen –, weil die Daten den Server
+        verlassen. Personenbezogene Felder erscheinen in der Schema-Zusammenfassung nur mit Namen; in
+        Stichproben und Abfragen werden ihre Werte durch <code>***</code> ersetzt. Sie können für eine Anfrage
+        weitere Felder verbergen („Diese Felder ausblenden“). Schlüssel, die wie Passwörter oder Tokens aussehen,
+        werden immer verborgen.
+      </p>
+
+      <h2 id="policy">Die KI-Richtlinie einer Verbindung</h2>
+      <p>
+        Im Formular einer Verbindung ist <strong>KI-Assistent</strong> entweder <em>Beliebiger Anbieter</em> (der
+        Standard), <em>Nur lokale Anbieter</em> oder <em>Aus</em>. „Nur lokale Anbieter“ lässt eine Anfrage nur zu
+        einer Adresse innerhalb der aufgelisteten Netzwerke hinaus – geprüft dort, wo die Verbindung aufgebaut
+        wird, nicht anhand des eingegebenen Namens. „Aus“ blendet den Assistenten auf den Bildschirmen dieser
+        Verbindung aus, und der Agent erfährt nie davon. <strong>Dem Agent erlauben, hier Änderungen
+        vorzuschlagen</strong> (standardmäßig an) kann ausgeschaltet werden, um den Agent auf dieser Verbindung auf
+        das Lesen zu beschränken. Unter <strong>Die Tools des Agents</strong> schaltet ein Administrator dort
+        einzelne Tools aus – Lesen und Anzeigen getrennt von Änderungen, wie die deaktivierten Tools des
+        MongoDB-MCP-Servers: Ein ausgeschaltetes wird abgelehnt, bevor es auf dieser Verbindung etwas liest oder
+        vorschlägt (eine Kopie in sie, eine Wiederherstellung aus ihr, ein über ihren Namen gefundener Zeitplan von
+        ihr, ein aufgelisteter Auftrag oder Backup von ihr – eingeschlossen), eine bereits auf ihrer Karte
+        wartende Änderung dafür wird bei der Bestätigung abgelehnt, ein Backup wird nicht zuerst angeboten, wo das
+        Sichern aus ist, und dem Agent wird mitgeteilt, welche aus sind. Aufgelistet werden nur Tools, die auf
+        eine Verbindung wirken; eines, das eine spätere Version hinzufügt, startet an. Sie reisen mit dem Export
+        und Import der Verbindung (Namen, die ein Build nicht kennt, werden verworfen).
+      </p>
+
+      <h2 id="limits">Limits</h2>
+      <ul>
+        <li>
+          10 Anfragen pro Minute und 200 pro Tag und Person (<code>MM_AI_PER_MINUTE</code>,
+          <code>MM_AI_PER_DAY</code>).
+        </li>
+        <li>2 gleichzeitig pro Person, 8 gleichzeitig auf dem Server (<code>MM_AI_MAX_CONCURRENT</code>).</li>
+        <li>
+          Eine Antwort endet nach 3 Minuten oder 512 KB; jeder Anbieter hat seine eigene längste Antwort in Tokens.
+        </li>
+        <li>
+          Wer fragen darf: Administratoren und Bearbeiter (das Recht <code>ai:use</code>), auf Collections, die sie
+          lesen dürfen.
+        </li>
+      </ul>
+
+      <h2 id="safety">Sicherheit</h2>
+      <ul>
+        <li>
+          Ohne Agent-Modus hat der Assistent keine Tools: Er kann nichts anderes lesen oder ausführen. In einem
+          Chat sieht er die bisherige Unterhaltung, nichts weiter. Im <a href="#agent">Agent-Modus</a> wirken seine
+          Tools nur über die Routen der App, als Sie, und jede Änderung wartet auf Ihren Klick.
+        </li>
+        <li>
+          Daten in Ihren Collections könnten versuchen, das Modell anzuweisen. Was auch immer es schreibt, wird nur
+          zu Text in einem Editor, vom selben sicheren Parser geparst wie die Abfrageleiste; nichts läuft, bis Sie
+          es ausführen. Im Agent-Modus werden Tool-Ergebnisse dem Modell als Daten markiert übergeben, nie als
+          Anweisungen; selbst wenn Daten ein Modell dazu bringen, eine Änderung vorzuschlagen, ist die Änderung nur
+          eine Karte, bis Sie bestätigen.
+        </li>
+        <li>
+          Antworten werden als einfacher Text mit einfacher Formatierung angezeigt: keine Bilder und keine aktiven
+          Links, sodass eine Antwort Ihren Browser nichts laden lassen kann.
+        </li>
+        <li>
+          Jede Anfrage wird in Ihrem KI-Verlauf (KI-Verlauf in der Seitenleiste) aufbewahrt, mit dem Schlüssel des
+          Servers versiegelt, standardmäßig 90 Tage lang; ein Administrator legt die Tage fest und ob die
+          gefragten und beantworteten Worte überhaupt aufbewahrt werden. Ein Chat ist ein Eintrag, seine Durchläufe
+          der Reihe nach – einfache, solche zu einer Collection und die des Agents – alle auf seiner Seite
+          angezeigt, mit einer Schaltfläche, die den Chat erneut öffnet. Ein Durchlauf wird einzeln geteilt, nie der
+          ganze Chat: Ein Teammitglied liest den geteilten Durchlauf, und nur dort, wo es lesen darf, worauf er
+          sich stützte. Ein Durchlauf des Agents zeigt auch, was der Agent getan hat, Schritt für Schritt – jedes
+          Tool, wo es gearbeitet hat und wie es endete, darunter die vorgeschlagenen Änderungen – wie sein Chat,
+          nie einen Wert. Nur Sie lesen Ihre Anfragen, sofern Sie nicht eine mit dem Team teilen: Dann lesen sie
+          Teammitglieder, die jede Verbindung lesen dürfen, auf die sie sich stützte (bei einem Durchlauf des
+          Agents jede Verbindung, die seine Schritte nennen), schreibgeschützt. Chats werden aufbewahrt, wie unter
+          <a href="#chat">Chat</a> beschrieben. Das Audit-Protokoll hält fest, wer gefragt hat, welche Aktion oder
+          welcher Chat, Anbieter und Collection, wie viele Stichproben, die Token-Anzahlen und das Ergebnis – nie
+          die Worte, was gesendet wurde oder die Antwort. Im Agent-Modus wird auch jeder Schritt festgehalten (das
+          Tool, die Verbindung und der Namespace, wie er endete und Ihre Antwort auf eine Änderung), nie seine
+          Argumente oder was er las.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Auf dieser Seite</p>
+      <ol>
+        <li><a href="#actions">Was er kann</a></li>
+        <li><a href="#providers">Anbieter</a></li>
+        <li><a href="#offline">Offline, mit einem lokalen Modell</a></li>
+        <li><a href="#chat">Chat</a></li>
+        <li><a href="#agent">Agent-Modus</a></li>
+        <li><a href="#what-is-sent">Was gesendet wird</a></li>
+        <li><a href="#personal-data">Personenbezogene Daten</a></li>
+        <li><a href="#policy">Die KI-Richtlinie einer Verbindung</a></li>
+        <li><a href="#limits">Limits</a></li>
+        <li><a href="#safety">Sicherheit</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

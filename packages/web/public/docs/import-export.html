@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Import and export · Mongo Manager documentation</title>
+    <link rel="stylesheet" href="docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager documentation</a>
+      <details class="lang-menu">
+        <summary>English</summary>
+        <span class="langs" role="group" aria-label="Language">
+          <strong lang="en">English</strong>
+          <a lang="tr" hreflang="tr" href="tr/import-export.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="zh/import-export.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="ja/import-export.html">日本語</a>
+          <a lang="es" hreflang="es" href="es/import-export.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="pt/import-export.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="ko/import-export.html">한국어</a>
+          <a lang="de" hreflang="de" href="de/import-export.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="fr/import-export.html">Français</a>
+          <a lang="ru" hreflang="ru" href="ru/import-export.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Overview</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="security.html">Security</a>
+      <a href="deployment.html">Deployment</a>
+      <strong>Import and export</strong>
+      <a href="backup.html">Backup and restore</a>
+      <a href="watch.html">Watching changes</a>
+      <a href="sync.html">Live sync</a>
+      <a href="server-admin.html">Server administration</a>
+      <a href="ai.html">AI assistant</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Keyboard shortcuts</a>
+    </nav>
+    <main>
+      <h1>Import and export</h1>
+      <p>
+        Files move between your computer and a collection as background jobs: you can close the dialog and
+        follow them in the jobs list. Open them from the collection's toolbar, the collection's menu in the
+        sidebar, or the command palette. SQL dumps are different: they move between a file and a whole
+        database, on a page of their own (see <a href="#sql">SQL import and export</a>).
+      </p>
+      <h2 id="formats">Formats</h2>
+      <ul>
+        <li>
+          CSV and TSV (comma, semicolon, tab or pipe; UTF-8, UTF-16, Latin-1, Windows-1252, Windows-1254 or
+          ISO-8859-9).
+        </li>
+        <li>JSON: one array of documents, or one document.</li>
+        <li>NDJSON: one document per line, in Extended JSON, so every BSON type comes back as it was.</li>
+        <li>Excel workbooks (.xlsx), one sheet at a time.</li>
+        <li>Any of these compressed with gzip (.gz).</li>
+      </ul>
+      <h2 id="importing">Importing</h2>
+      <ol>
+        <li>Choose a file, drop it on the dialog, or paste text.</li>
+        <li>
+          Check how it is read: the format, the delimiter, the encoding, whether the first row names the
+          fields, and the sheet of a workbook. A file is read as UTF-8 unless a byte order mark says otherwise
+          or you choose another encoding. When the bytes are not text in that encoding, the encoding they look
+          like is suggested (UTF-16 without a byte order mark, Windows-1254 for Turkish letters, else
+          Windows-1252) and one click reads the file again in it; a guess is never applied by itself, because
+          a wrong one would write wrong letters. Rows that are still not text in the chosen encoding are
+          refused, never written with replacement characters.
+        </li>
+        <li>
+          Map the fields: where each one goes (<code>a.b</code> nests, <code>a[0]</code> is an array element),
+          its type, and what an empty value or a value that cannot be converted becomes. Types are suggested
+          from the first thousand records; values with a leading zero or a leading <code>+</code> stay text so
+          codes and phone numbers keep them. The same rule holds for every later record, for a type you choose
+          and for a constant: a code is never read as a number, nor a number as a double that would be another
+          number (<code>0.30000000000000004</code> is a double; <code>12345678901234567</code> is not) — such
+          a value is handled as one that cannot be converted. Dates without a time zone are read as UTC. A CSV
+          row with more or fewer fields than the header (an unquoted comma in a field) is a row error, and
+          goes to the rejected-records file as it was; a line of spaces only is no record. Under each field,
+          its first samples are shown as they would be written in the chosen type, or with the reason they
+          cannot be.
+        </li>
+        <li>
+          Add constant fields if you like: the same value in every document, as the import time or as a
+          string, number (Int32, Int64, Double, Decimal128), date, ObjectId, boolean, JSON or null. A constant
+          is converted by the same rules as the file's values, and refused before the import starts when it
+          cannot be.
+        </li>
+        <li>
+          Choose the mode and run a dry run first if you like. For Upsert and Merge, the dialog warns when no
+          index starts with one of the key fields: each record would then be found by scanning the collection.
+        </li>
+      </ol>
+      <h2 id="modes">Modes</h2>
+      <ul>
+        <li>
+          <strong>Insert</strong>: every record becomes a new document; a record whose <code>_id</code> exists
+          fails.
+        </li>
+        <li>
+          <strong>Upsert</strong>: a document with the same key fields (by default <code>_id</code>) is
+          replaced by the record; otherwise the record is inserted.
+        </li>
+        <li>
+          <strong>Merge</strong>: the record's fields are written into the document with the same key fields;
+          fields the record does not have stay, inside sub-documents too. "Update only" leaves out records
+          that match nothing. A record with a field name that holds a dot or starts with <code>$</code>
+          cannot be merged (it would be read as a path); use Upsert for it.
+        </li>
+      </ul>
+      <p>
+        With "Skip it and go on", records that fail are counted and listed; with "Stop the import", the
+        records before the first failure are written and the import stops there. A dry run reads, converts and
+        checks the whole file and writes nothing. The report counts what happened, shows per mapped field how
+        many values converted and how many did not, lists the first failures, and offers the rejected records
+        as a file in the original format, to fix and import again. When that file would pass your storage
+        limit it is not kept, and the report says so. Key fields are matched as values and cannot start with
+        <code>$</code>.
+      </p>
+      <h2 id="exporting">Exporting</h2>
+      <p>
+        Export the query you applied, the whole collection, or the results of a pipeline. CSV and Excel take
+        the columns you choose and order. Opened from the sidebar, the command palette or a collection with no
+        documents shown, the dialog proposes the columns from a sample of 100 documents (personal fields
+        marked: they are written as <code>***</code> for a user who cannot see them). Arrays are written as
+        their JSON text, as one column per element (<code>tags.0</code>, <code>tags.1</code>… as many as the
+        longest array among the first documents, at most the number you set; elements beyond it are named in
+        the report), or as their elements joined with a separator you choose. If you choose none, the fields
+        of the first documents (up to 1,000 or 8 MiB, at most 500 columns) are the columns, and a field that
+        is a value in one document and a sub-document in another is one column holding the whole value. The
+        report names, by its path, anything no column holds. CSV text starting, after any spaces, with
+        <code>=</code>, <code>+</code>, <code>-</code>, <code>@</code>, a tab or a line break gets a leading
+        <code>'</code> so a spreadsheet never runs it as a formula; turn this off for a file another program
+        or a re-import will read. JSON and NDJSON keep every field and every type. Excel holds at most 1 048
+        575 rows and 32 767 characters a cell: longer cells are cut and counted in the report, and larger
+        exports are refused with a suggestion to use CSV or NDJSON. When the job is done, download the file
+        from the jobs list; it says until when the file is kept (24 hours by default,
+        <code>MM_TRANSFER_TTL_HOURS</code>), and once it expired the export has to run again.
+      </p>
+      <h2 id="sql">SQL import and export</h2>
+      <p>
+        SQL import and export come with the bundled <strong>SQL → MongoDB</strong> plugin. Until an administrator approves and turns it on in <a href="plugins.html">Plugins</a>, the page, its sidebar entry, its palette commands and the database menu items below are not shown, and the server refuses SQL imports and exports, a collection exported as SQL and the assistant’s SQL exports among them.
+      </p>
+      <p>
+        SQL is not imported or exported from a collection: neither the Documents toolbar nor a collection's
+        Export dialog offers it. It has a page of its own, <strong>SQL ↔ MongoDB</strong> in the sidebar. The
+        page always shows the connection and the database it works in. Both are chosen at the top and kept in
+        the page's address (<code>/sql/import/&lt;connection&gt;/&lt;database&gt;</code> or
+        <code>/sql/export/…</code>), so a reload or a shared link opens the same place. In the sidebar tree, a
+        database's menu offers "Import SQL dump…" and "Export as SQL…", which open the page on that database.
+        In the command palette, "SQL ↔ MongoDB" opens the page where it was left, and "Export as SQL" opens
+        its export on the database of the tab you are in. Both import and export work in one database at a
+        time. The page stays open while you look at other tabs or at its other part: a file being prepared or
+        a job running is not lost, and an export still running is shown again when you come back. Closing the
+        page, or leaving the app, with a file prepared or an import running asks first. While a job's progress
+        is on the page in sight, how it ended is said there, with no notification besides.
+      </p>
+      <h3>Importing a SQL dump (SQL → MongoDB)</h3>
+      <ol>
+        <li>
+          Choose or drop a MySQL (mysqldump), PostgreSQL (pg_dump) or SQLite (<code>.dump</code>) file, plain
+          or compressed with gzip (.gz). Only table definitions and rows are read; nothing in the file is run.
+          Other statements are listed as skipped.
+        </li>
+        <li>
+          Check the tables the dump holds: each shows its columns, its row count, its primary key and a few
+          sample rows. Choose the tables to import and name the collection each one goes into; the name is
+          marked as new or existing. Several tables may go into one collection when inserting; in upsert and
+          merge each table goes to its own, since rows of two tables with the same key would replace each
+          other.
+        </li>
+        <li>
+          Choose the options. "Primary key as _id" makes a single-column primary key the document's
+          <code>_id</code>; a composite key stays as fields. The mode is Insert, Upsert or Merge, as for a
+          file (upsert and merge match on <code>_id</code>, so a table without a single-column primary key
+          cannot use them). When a row cannot be written, "Skip it and go on" or "Stop the import".
+        </li>
+        <li>
+          Run a dry run if you like: it reads and checks every chosen row and writes nothing. Then start the
+          import. It runs as a background job, followed on a page of its own apart from the forms: its
+          progress and then its report, and "Stop" ends it. A stopped, failed or interrupted import says so
+          and reports what it wrote before it ended.
+        </li>
+      </ol>
+      <p>
+        The import goes into an existing database or into a new one you name on the page, never into
+        <code>admin</code>, <code>local</code> or <code>config</code>. A new name that differs from an
+        existing database only by case is refused, as MongoDB refuses it. Choosing another database keeps the
+        file being prepared (a dry run is let go, as it tells about the database it ran on); another
+        connection asks first, however it is asked for (the list, the tree, the palette, a plugin, the
+        browser's Back), since the file read belongs to the connection, and declining keeps the page where it
+        was. It needs the rights to write documents and to run background jobs on the connection, and the
+        connection and the server must not be read-only.
+      </p>
+      <p>
+        The import and the export go one step at a time, never one long page: the steps at the top (File,
+        Tables, Options, Progress for an import; Collections, Options, Progress for an export) show where you
+        are. The steps passed after the file can be gone back to, what was chosen kept; "Choose another file"
+        starts again with another file. A dry run tells about what it checked: changing a table, a collection
+        or an option, or the database, lets it go (a dry run still running is stopped). Once an import runs,
+        what it was given cannot change: its page stays until it ends, then "Import another file" starts
+        again.
+      </p>
+      <h3>Exporting as SQL (MongoDB → SQL)</h3>
+      <p>
+        Choose the database (never <code>admin</code>, <code>local</code> or <code>config</code>), then the
+        collections, views and time-series collections to export: all of them to begin with, at most 500. One
+        background job writes them into one SQL file, with a CREATE TABLE and its INSERTs for each; the file
+        creates no database or schema of its own, so it loads into the database you choose. When two table
+        names would clash, for example names that differ only by case, one is made unique and the report says
+        so. The options are the dialect (PostgreSQL, MySQL or SQLite), the rows per INSERT (1 to 1000), one
+        transaction per table, and gzip compression; with MySQL, nested values can be written as
+        <code>LONGTEXT</code> (the same JSON text) instead of <code>JSON</code>, for older tools such as
+        phpMyAdmin before 4.7. A MySQL decimal column takes the decimals the first documents' values are
+        written with (<code>234.20</code>: two; more than two trailing zeros are padding, so a value read back
+        from a <code>DECIMAL(65,30)</code> column keeps its own decimals), never 30 zeros on every amount. A
+        later value with more decimals widens the column with <code>ALTER TABLE … MODIFY</code> (MySQL commits
+        the rows before it, so a transaction starts again after it). A value no decimal column can hold with
+        the values before it, with more than 30 decimals or more than 65 digits in all, is written as NULL and
+        counted, never rounded. Columns come from the first documents of each collection: fields seen only in
+        later documents are left out, and the report lists them per table, with the values written as NULL for
+        being too large or not a SQL type. A file the app wrote imports back as the documents it held: its
+        <code>CHAR(24)</code> columns as ObjectIds, its <code>"sub.a"</code> columns as nested fields (a NULL
+        there as a field the document did not have) and its bytes as binary. The progress, the report and the
+        download show on a page of their own; "Stop" ends a running export, and "Export again" goes back to
+        the options.
+      </p>
+      <p>
+        Exporting as SQL needs the connection's export right. A user who may not see personal data gets
+        <code>***</code> where a value is hidden, as in any export.
+      </p>
+      <h2 id="copy-compare-and-sync">Copy, compare and sync</h2>
+      <p>
+        Copy a collection (the whole collection, the applied query, a filter typed in the copy dialog, or the
+        results of a pipeline — "Copy results…" in the aggregation builder) or a database's chosen collections
+        to the same or another connection. The first step shows the source's estimated size; as the target is
+        chosen or typed, the dialog checks it at once: whether it exists and how many documents it holds, what
+        the chosen mode does to it, your role there, and anything the copy would refuse. While a database copy
+        runs, the jobs list shows each collection with its own progress. Insert, upsert and merge work as for
+        imports, and keep what was written before a failure; "Replace target" builds the copy in a staging
+        collection and puts it in place only when every document was written: a refused document, a failure or
+        a cancel leaves the target as it was. The validator is set after the documents are loaded, as
+        MongoDB's own copy does, so documents stored before it are copied too — unless the target's user may
+        not change a validator (the readWrite role), where it is set first and the report says so. Indexes,
+        the validator and collection options (capped, collation, time series, clustered) can be copied too; a
+        database copy creates its views last, in dependency order, and its views can be chosen one by one.
+        Encrypted (Queryable Encryption) collections and their metadata collections are not copied. On one
+        connection, with nothing to mask, MongoDB copies by itself ($out or $merge) and the data never passes
+        through Mongo Manager.
+      </p>
+      <p>
+        Copies that pass through Mongo Manager write each document as the Node.js MongoDB driver reads it: the
+        deprecated BSON types undefined and DBPointer arrive as null and as a DBRef document. Copies MongoDB
+        makes by itself keep them.
+      </p>
+      <p>
+        The summary shows each target, whether it exists, and how it will be copied, before anything is
+        written. TTL indexes, which delete target documents, need a confirmation. When the source has
+        personal-field rules the target lacks, the copy needs a confirmation that personal values will be
+        visible there; an administrator of the target can add the rules instead. Personal fields are found the
+        way a query finds them, through views and through fields a pipeline moves or looks up. If personal
+        fields are hidden from you on the source, the copy holds *** in their place and is always anonymous;
+        "Anonymous copy" writes *** for everyone. A personal _id cannot be copied masked. When the target
+        cannot be told apart from the source, the summary says it may be the source itself.
+      </p>
+      <p>
+        Compare reads both sides in _id order and counts the documents only in the source, only in the target,
+        different and the same, with samples and a field-by-field diff. A filter applies to both sides, and
+        chosen fields can be ignored. When personal fields are hidden from you on either side, both are
+        compared as ***, and a personal _id cannot be compared. Sync applies a comparison that finished: it
+        inserts the missing documents and replaces the different ones, but never overwrites a document changed
+        after it was read. Like a copy, it needs a confirmation when the target lacks the source's
+        personal-field rules. Deleting the target's extra documents is off by default, needs the target's name
+        typed, is refused when the source reads no documents, and stops once it would delete more than the
+        comparison found plus a margin (10% of that number, at least 100). With a filter, a target document
+        whose source still exists but no longer matches the filter is kept, never deleted, and counted in the
+        report. Reports are withdrawn when the personal-field rules change, when you lose access to either
+        connection, or when personal fields become hidden from you.
+      </p>
+      <h2 id="saved-settings">Saved settings</h2>
+      <p>
+        Mappings, export settings and copy settings can be saved under a name and loaded again, on this
+        collection or another one. They are stored encrypted, like saved queries.
+      </p>
+      <h2 id="what-is-kept">What a file keeps, and what it cannot</h2>
+      <ul>
+        <li>
+          CSV and Excel hold text, numbers, booleans and dates. A document's types beyond those (ObjectId,
+          Long, Decimal128, binary, nested documents and arrays) leave as text or as their Extended JSON, and
+          a CSV read back gives them the types its mapping says. For a file that comes back exactly, export
+          JSON or NDJSON (Extended JSON).
+        </li>
+        <li>
+          A SQL export flattens documents into columns; a dump this app made is read back with its ObjectIds,
+          nested fields and binary values, a dump from elsewhere with the types its columns name.
+        </li>
+        <li>
+          Dates keep milliseconds, as MongoDB does: microseconds in a SQL dump are dropped. MySQL's
+          <code>0000-00-00</code> ("no date") is read as <code>null</code>. An integer in a SQL dump longer
+          than a Decimal128 holds (34 digits) is kept exactly, as text.
+        </li>
+        <li>
+          In Excel, a cell showing a date is read as that date and time as written, in UTC (as a cell holds no
+          time zone); a cell showing only a time of day is read as text, <code>HH:MM:SS</code> (with the
+          fractions of a second the format shows), and as a date and time when it holds a date too. A duration
+          (<code>[h]:mm</code>) is read as text, its hours counted past a day.
+        </li>
+        <li>
+          An export reads the collection as it goes, not as a snapshot of one moment: documents written
+          meanwhile may or may not be in it.
+        </li>
+        <li>
+          An import that stops, fails or is cancelled keeps what it wrote; its report says how many records
+          that was. Run again with Insert, those records are written twice: use Upsert or Merge with a key, or
+          remove them first. The uploaded file is deleted after every run; upload it again to run again.
+        </li>
+        <li>
+          Merge sets the record's fields and leaves the others; an empty sub-document in a record changes
+          nothing stored, and is made only for a new document. "Update only" holds for Upsert and Merge alike.
+        </li>
+        <li>
+          Rejected records come back in the source's format and delimiter, with any bytes that were not text
+          shown as <code>�</code>, so the row can be found and fixed.
+        </li>
+      </ul>
+      <h2 id="limits-and-safety">Limits and safety</h2>
+      <ul>
+        <li>
+          Files are kept on the server for 24 hours, with a per-user storage limit; administrators can change
+          both (see <a href="deployment.html">Deployment</a>).
+        </li>
+        <li>
+          Refused for safety: macro-enabled and password-protected workbooks, old .xls files, files that
+          expand too much when decompressed, XML with a DTD, and field names starting with
+          <code>$</code>, containing dots or named <code>__proto__</code> unless you allow unusual names. A
+          gzipped workbook is decompressed once, when it is first read, and then holds the size of the
+          workbook; its contents may expand no more than a plain workbook's.
+        </li>
+        <li>
+          Users who may not see personal data export files with <code>***</code> in place of personal values,
+          cannot map or match on personal fields, and cannot replace whole documents where personal fields
+          exist. A file made before the personal-field rules changed can no longer be downloaded; export
+          again.
+        </li>
+        <li>Viewers export only when an administrator allows it for the connection.</li>
+        <li>
+          Your import and export jobs are shown only to you and to administrators. The preview shows long
+          values cut short; a very wide file is sampled on fewer rows.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">On this page</p>
+      <ol>
+        <li><a href="#formats">Formats</a></li>
+        <li><a href="#importing">Importing</a></li>
+        <li><a href="#modes">Modes</a></li>
+        <li><a href="#exporting">Exporting</a></li>
+        <li><a href="#sql">SQL import and export</a></li>
+        <li><a href="#copy-compare-and-sync">Copy, compare and sync</a></li>
+        <li><a href="#saved-settings">Saved settings</a></li>
+        <li><a href="#what-is-kept">What a file keeps, and what it cannot</a></li>
+        <li><a href="#limits-and-safety">Limits and safety</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

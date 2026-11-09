@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>服务器管理 · Mongo Manager 文档</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager 文档</a>
+      <details class="lang-menu">
+        <summary>简体中文</summary>
+        <span class="langs" role="group" aria-label="语言">
+          <a lang="en" hreflang="en" href="../server-admin.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/server-admin.html">Türkçe</a>
+          <strong lang="zh-CN">简体中文</strong>
+          <a lang="ja" hreflang="ja" href="../ja/server-admin.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/server-admin.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/server-admin.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/server-admin.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/server-admin.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/server-admin.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/server-admin.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">概览</a>
+      <a href="getting-started.html">快速入门</a>
+      <a href="security.html">安全</a>
+      <a href="deployment.html">部署</a>
+      <a href="import-export.html">导入与导出</a>
+      <a href="backup.html">备份与恢复</a>
+      <a href="watch.html">监视变更</a>
+      <a href="sync.html">实时同步</a>
+      <strong>服务器管理</strong>
+      <a href="ai.html">AI 助手</a>
+      <a href="plugins.html">插件</a>
+      <a href="shortcuts.html">键盘快捷键</a>
+    </nav>
+    <main>
+      <h1>服务器管理</h1>
+      <p>
+        除数据之外，Mongo Manager 还能管理 MongoDB 服务器本身：数据库用户和角色、集群的分片、出现问题时的告警，以及各连接的健康状况概览。
+      </p>
+
+      <h2 id="users-roles">用户和角色</h2>
+      <p>
+        连接页面 → <strong>用户和角色</strong>用于管理 MongoDB 自身的账户，类似 Atlas 中的
+        <em>Database Access</em>。这些是应用程序和用户登录 MongoDB 所用的账户，而不是 Mongo Manager 的用户。
+      </p>
+      <h3>谁可以使用</h3>
+      <ul>
+        <li>
+          在该连接上拥有应用权限 <code>databases:admin</code> 的用户：应用管理员，或被授予该连接管理权限的用户。被管理员隐藏个人数据的用户永远看不到此部分；自己选择隐藏的用户仍然可以看到。
+        </li>
+        <li>
+          MongoDB 自身的权限同样适用：连接所用的登录账户需要对该数据库拥有
+          <code>userAdmin</code>，或拥有 <code>userAdminAnyDatabase</code>（仅列出时，<code>viewUser</code>
+          和 <code>viewRole</code> 即可）。当 MongoDB 拒绝操作时，页面会说明是 MongoDB 拒绝了，以及是哪条命令，而不是应用拒绝。
+        </li>
+        <li>在只读连接上，用户和角色可以列出，但无法更改。</li>
+      </ul>
+      <h3>列表</h3>
+      <p>
+        显示所有数据库或单个数据库（数据库筛选）的用户，并支持搜索。每个用户的角色以标签形式显示，例如“readWrite on shop”。连接自身登录所用的账户标有<strong>此连接</strong>。
+      </p>
+      <h3>添加用户</h3>
+      <ul>
+        <li>
+          <strong>身份验证数据库</strong>：用户登录所在的数据库。推荐使用 <code>admin</code>（该库中的用户可以持有任意数据库上的角色），但任何数据库均可。<code>$external</code> 用于 x.509、LDAP、Kerberos 和 AWS IAM 用户，这些用户没有密码：名称必须与该来源发送的内容完全一致。
+        </li>
+        <li><strong>用户名</strong>。</li>
+        <li>
+          <strong>密码</strong>：可自行输入，也可点击<strong>生成</strong>得到 24 个随机字符。这些字符由浏览器使用系统的随机源生成，可安全用于连接字符串，并会显示出来以便复制。
+        </li>
+        <li>
+          <strong>角色</strong>：内置角色（附有各自的权限说明），或自定义角色（各属于某个数据库）。仅存在于 <code>admin</code> 中的角色（<code>clusterMonitor</code>、
+          <code>backup</code>、<code>root</code> 等）固定在该库。
+        </li>
+      </ul>
+      <p>
+        密码使用 SCRAM-SHA-256，至少需要 12 个字符。密码只会发送给 MongoDB 一次；Mongo Manager 绝不存储、记录密码，也不会将其写入审计日志。请在关闭表单之前复制生成的密码。授予宽泛权限前会要求确认，服务器也会拒绝未经确认的授权：内置角色
+        <code>root</code>、<code>userAdminAnyDatabase</code>、<code>userAdmin</code>、
+        <code>dbOwner</code>、<code>clusterAdmin</code>、<code>clusterManager</code>、
+        <code>hostManager</code>、<code>backup</code>、<code>restore</code>、
+        <code>readWriteAnyDatabase</code> 和 <code>dbAdminAnyDatabase</code>，admin 数据库的其他所有内置角色（<code>readAnyDatabase</code>、<code>clusterMonitor</code>、
+        <code>enableSharding</code>），<code>local</code>（其中保存 oplog，即所有写入操作）或 <code>config</code>（分片元数据）的任何角色，以及任何继承上述角色之一的自定义角色，或持有以下权限的自定义角色：对集群、任意资源、所有数据库，或 <code>local</code> 和
+        <code>config</code> 的权限，或能够创建用户或角色的权限（<code>createUser</code>、
+        <code>grantRole</code>、<code>changePassword</code> 等）。
+        这类自定义角色会标记为宽泛，创建时同样需要确认。
+      </p>
+      <h3>更改和删除用户</h3>
+      <ul>
+        <li>
+          <strong>编辑</strong>可设置新密码、新角色，或两者同时设置。保存的角色会替换该用户原有的角色列表。
+        </li>
+        <li>
+          更改或删除连接自身的账户时，会警告这可能导致连接被锁定，并需要确认。更改或删除该账户所持有的自定义角色同样如此。具体是哪个账户，由 MongoDB 自己告知（而不是依据连接的设置，因为 SRV 记录或证书可能会改变它）。设置新密码后，请同时编辑该连接。
+        </li>
+        <li>删除用户或角色时，需要输入其名称。</li>
+      </ul>
+      <h3>自定义角色</h3>
+      <p>
+        <strong>自定义角色</strong>让团队只获得所需的操作，不多给任何权限。角色包含数据库、名称、权限和继承的角色。
+      </p>
+      <ul>
+        <li>
+          每项权限适用于某个数据库和集合（留空则表示任意数据库或任意集合）、整个集群，或任意资源。
+        </li>
+        <li>
+          其操作从 MongoDB 的列表中选取，分为查询和写入、数据库管理、用户和角色、部署、复制和分片几组。
+        </li>
+        <li>
+          <code>admin</code> 之外的角色只能继承其所在数据库的角色（MongoDB 的规则）；<code>admin</code> 中的角色可以继承任意数据库的角色。
+        </li>
+      </ul>
+      <p>
+        每项更改都会以 <code>mongo.users.create</code>、<code>mongo.users.update</code>、
+        <code>mongo.users.grant</code>、<code>mongo.users.revoke</code>、<code>mongo.users.drop</code>、
+        <code>mongo.roles.create</code>、<code>mongo.roles.update</code> 和 <code>mongo.roles.drop</code>
+        记入审计日志，包含名称和角色列表，但绝不包含密码。
+      </p>
+
+      <h2 id="sharding">分片</h2>
+      <p>
+        当连接指向 <code>mongos</code> 时，连接页面中会出现 <strong>分片</strong>。凡有权监视该服务器的用户，都可以看到均衡器状态、数据块分布和集群概览。更改需要
+        <code>databases:admin</code>，且连接不能是只读的。
+      </p>
+      <h3>数据块分布</h3>
+      <p>
+        每个已分片的集合对应一条横条，每个分片一种颜色；数量同时以文字给出，供屏幕阅读器读取。
+      </p>
+      <h3>均衡器</h3>
+      <ul>
+        <li>
+          可启动或停止；停止前会先确认。停止期间，分片之间不会迁移任何数据块；正在进行的迁移会先完成。备份或维护时请停止，之后再重新启动。
+        </li>
+        <li>
+          <strong>活动时段</strong>：起止时间，按配置服务器的时钟计算。数据块只会在这些时段内迁移。<strong>任何时间</strong>会清除该设置。
+        </li>
+      </ul>
+      <h3>对集合分片</h3>
+      <ol>
+        <li>选择数据库和集合。</li>
+        <li>
+          逐个字段构建分片键。每个字段为范围型或哈希型，且最多只能有一个哈希字段。顺序很重要：可上移和下移字段。
+        </li>
+        <li>
+          <strong>检查此分片键</strong>：服务器会采样 1000 个文档，并且只返回计数，因此不会有任何值离开 MongoDB：包括拥有每个字段的文档所占比例、不同值的数量、最常见值所占比例、值是否随时间增长（ObjectId、日期），以及是否存在以该键的字段开头的索引。结论为良好、一般或较差。
+        </li>
+        <li>
+          选项：<strong>唯一</strong>（仅限范围型分片键）；<strong>预先创建数据块</strong>（空集合上的哈希分片键，MongoDB 6.0 及更早版本，1 至 8192 个数据块）；<strong>按区域创建数据块</strong>（哈希分片键，且已定义区域）。
+        </li>
+        <li>分片无法撤销：请输入命名空间以确认。</li>
+      </ol>
+      <p>
+        将随时间增长的字段用作范围型分片键，会使每个新文档都进入同一个分片：请对其进行哈希，或将其他字段放在前面。已有数据的集合需要先有一个以分片键字段开头的索引，才能进行分片。MongoDB 自身的命名空间和系统命名空间（<code>admin</code>、
+        <code>config</code>、<code>local</code>、<code>system.*</code>）会被拒绝。
+      </p>
+      <h3>区域</h3>
+      <ul>
+        <li>每个分片会列出其区域；可为分片添加区域，或移除区域。</li>
+        <li>
+          各集合的键范围：边界为分片键字段的 Extended JSON，开放端使用
+          <code>{"$minKey":1}</code> 和 <code>{"$maxKey":1}</code>，例如从
+          <code>{"region": "eu"}</code> 到 <code>{"region": "us"}</code>。操作符会被拒绝。起点包含在内，终点不包含。
+        </li>
+        <li>当范围内的文档可以重新位于任意分片时，移除该范围。</li>
+      </ul>
+      <p>
+        审计日志会记录 <code>sharding.collection.shard</code>、<code>sharding.zone.shard</code>、
+        <code>sharding.zone.range</code>（命名空间和区域，绝不包含边界值）、
+        <code>sharding.balancer</code> 和 <code>sharding.balancer.window</code>。Mongo Manager 的测试使用录制的 <code>mongos</code> 响应来运行这些界面。
+      </p>
+
+      <h2 id="alerts">告警</h2>
+      <p>
+        告警会在服务器越过阈值，或应用自身的任务失败时通知用户：通过通知铃铛、电子邮件或 Webhook。
+      </p>
+      <h3>阈值</h3>
+      <p>
+        连接页面 → <strong>告警</strong>，供应用管理员使用（<code>settings:manage</code>）。一个阈值监视一项指标：
+      </p>
+      <ul>
+        <li><strong>连接</strong>：已打开的客户端连接（数量）。</li>
+        <li><strong>操作数</strong>：每秒操作数，所有类型合计。</li>
+        <li><strong>复制延迟</strong>：落后最多的从节点所落后的秒数（副本集）。</li>
+        <li><strong>WiredTiger 缓存</strong>：缓存的占用程度，以百分比表示。</li>
+        <li><strong>磁盘使用率</strong>：数据文件所在磁盘的使用百分比（MongoDB 4.4 及更高版本）。</li>
+        <li>
+          <strong>慢操作</strong>：运行时间超过所选秒数的操作数量（需要 <code>clusterMonitor</code>）。
+        </li>
+      </ul>
+      <p>
+        服务器每分钟评估一次，数据来自与指标历史相同的 <code>serverStatus</code> 采样。即使连接的历史记录已关闭，告警仍会对其采样；仅当历史记录开启时才会存储采样数据。历史记录和告警合计最多采样 50 个连接。
+      </p>
+      <p>
+        不会反复触发：当数值在所选分钟数内（1 至 60，默认 2）持续高于阈值时，告警才会触发；只有在同样长的时间内持续处于阈值的 90% 或以下时，才会解除。缓存占用阈值为 80% 时，降至 72% 或以下才会解除。
+      </p>
+      <h3>事件告警</h3>
+      <p>在“告警”页面中，可针对所有连接或某一个连接设置，也可在连接自己的部分中设置：</p>
+      <ul>
+        <li><strong>备份失败</strong>：备份、发送或获取任务失败。</li>
+        <li>
+          <strong>计划备份失败</strong>：某次运行失败，或只到达了部分备份目标。
+        </li>
+        <li>
+          <strong>实时同步已停止</strong>：同步因故障、自行停止或需要处理——由用户手动停止的情况除外。
+        </li>
+        <li><strong>任务失败</strong>：其他任何任务（恢复演练有单独的事件）。</li>
+        <li>
+          <strong>恢复演练失败</strong>：计划的恢复演练无法恢复其备份、发现数据存在差异，或无法删除其临时数据库（这是警告：数据一致）。通过的演练记录在计划的历史记录中，不会产生告警。
+        </li>
+        <li>
+          <strong>双向同步已解决冲突</strong>：双向实时同步的两端更改了相同的文档；以最后写入者为准（相关 <code>_id</code> 见该同步的活动记录）。
+        </li>
+        <li>
+          <strong>监视匹配了其告警筛选条件</strong>：其所有者要求告警的监视数据流中，有变更通过了筛选（数据流运行期间，最多每 10 秒一次）。
+        </li>
+      </ul>
+      <p>
+        通知只包含名称和数字：绝不包含文档的值、错误文本、连接字符串或主机。
+      </p>
+      <h3>定期报告</h3>
+      <p>
+        在“告警”页面中（应用管理员）：报告按计划发送某个连接的若干计数——每天早上、每周一，最频繁可达每小时——发送方式与告警相同，可通过通知铃铛、电子邮件或 Webhook。每个计数都有标签、一个集合和一个可选的筛选（JSON；不设筛选则统计每个文档，即集合的估算值）；超过一百万的计数会显示“至少”。可在其所在行立即运行、更改、关闭或删除报告；该处还显示上次运行的计数。
+      </p>
+      <p>
+        只有数字，绝不含任何值。筛选中如果引用了个人字段，或按个人数据规则会被另作解读，则保存报告时会被拒绝；若规则在之后发生变化，则会被忽略并说明原因；MongoDB 自身的命名空间、服务器 JavaScript、视图和时间序列集合也同样处理（视图的管道可能按个人字段选取）。报告视同连接自身的凭据：要求每个用户各自登录的连接会被拒绝，连接在客户端加密字段的筛选也会被拒绝（它不会匹配任何可读取的内容）。在通知铃铛和历史记录中，管理员可按标签查看某次运行的计数；其他用户只能看到报告已运行，看不到计数。每个报告会在历史记录中保留最近 30 次运行；其计划已无法计算的报告会被关闭，并说明原因。
+      </p>
+      <h3>渠道</h3>
+      <ul>
+        <li>
+          <strong>通知铃铛。</strong>每位用户在“偏好设置”或“告警”页面中为自己开启<em>在通知铃铛中显示告警</em>。用户只会看到自己有权监视其服务器的连接的告警（<code>server:monitor</code>）。
+        </li>
+        <li>
+          <strong>电子邮件。</strong>SMTP 服务器、端口，以及从一开始就使用的 TLS（通常为 465）或 STARTTLS（通常为 587）：两者都不支持的服务器会被拒绝，邮件绝不会以明文发送。需要用户名和密码（已加密保存）、发件人地址，以及最多 20 个收件人。更换服务器、端口、加密方式或用户名时，需要重新输入密码：已保存的密码绝不会发送到其他服务器。<em>发送测试邮件</em>使用已保存的设置发送。未能按时完成 TLS 握手或交互的会话会被放弃。邮件通过 Mongo Manager 自带的客户端及其出站防护发送：允许公网地址，私有地址仅限
+          <code>MM_ALERTS_PRIVATE_NETWORKS</code> 范围内。
+        </li>
+        <li>
+          <strong>Webhook。</strong>https 地址；仅对 <code>MM_ALERTS_PRIVATE_NETWORKS</code> 范围内的地址允许使用普通 http。地址中不得包含凭据，云元数据地址和链路本地地址一律不允许，也不会跟随重定向。服务器为每个 Webhook 生成签名密钥并只显示一次；<em>生成新密钥</em>会替换它，旧密钥立即失效。
+        </li>
+      </ul>
+      <p>每条规则选择发送到哪里；没有渠道的规则只会被记录。</p>
+
+      <h3 id="webhook-delivery">Webhook 投递</h3>
+      <p>每次投递都是一个带 JSON 正文的 POST 请求：</p>
+      <pre><code>{
+  "type": "alert.firing",
+  "id": "…",
+  "at": "2026-10-16T09:30:00.000Z",
+  "alert": {
+    "metric": "cacheFill",
+    "event": null,
+    "state": "firing",
+    "value": 91,
+    "threshold": 80,
+    "unit": "percent",
+    "startedAt": "2026-10-16T09:28:00.000Z",
+    "resolvedAt": null,
+    "connection": { "id": "…", "name": "Production" },
+    "detail": {}
+  }
+}</code></pre>
+      <p>
+        <code>type</code> 为 <code>alert.firing</code>、<code>alert.resolved</code>、
+        <code>alert.event</code> 或 <code>alert.test</code>（测试仅包含 <code>type</code> 和
+        <code>at</code>）。事件告警设置 <code>event</code>（<code>backup.failed</code>、
+        <code>schedule.failed</code>、<code>liveSync.stopped</code>、<code>job.failed</code>），而不是
+        <code>metric</code>。请求头如下：
+      </p>
+      <ul>
+        <li><code>x-mm-event</code>：再次给出类型。</li>
+        <li><code>x-mm-delivery</code>：本次投递的唯一 ID，每次重试都相同。</li>
+        <li><code>x-mm-timestamp</code>：本次尝试签名时的 Unix 秒数。</li>
+        <li>
+          <code>x-mm-signature</code>：<code>sha256=</code> 后接十六进制的 HMAC-SHA256，使用该 Webhook 的密钥，对时间戳、一个点和正文进行计算。
+        </li>
+      </ul>
+      <p>
+        请在解析之前，对原始正文校验签名，并拒绝早于 5 分钟的时间戳。Node.js 示例：
+      </p>
+      <pre><code>const crypto = require('node:crypto')
+
+function verify(secret, headers, rawBody) {
+  const timestamp = headers['x-mm-timestamp']
+  const signature = headers['x-mm-signature'] ?? ''
+  if (!/^\d+$/.test(timestamp ?? '')) return false
+  if (Math.abs(Date.now() / 1000 - Number(timestamp)) &gt; 300) return false
+  const expected =
+    'sha256=' + crypto.createHmac('sha256', secret).update(timestamp + '.' + rawBody).digest('hex')
+  const a = Buffer.from(signature)
+  const b = Buffer.from(expected)
+  return a.length === b.length &amp;&amp; crypto.timingSafeEqual(a, b)
+}</code></pre>
+      <p>Python 示例：</p>
+      <pre><code>import hashlib, hmac, time
+
+def verify(secret: bytes, headers, raw_body: bytes) -&gt; bool:
+    timestamp = headers.get("x-mm-timestamp", "")
+    if not timestamp.isdigit() or abs(time.time() - int(timestamp)) &gt; 300:
+        return False
+    mac = hmac.new(secret, timestamp.encode() + b"." + raw_body, hashlib.sha256)
+    expected = "sha256=" + mac.hexdigest()
+    return hmac.compare_digest(headers.get("x-mm-signature", ""), expected)</code></pre>
+      <p>
+        遇到网络错误、5xx 响应、408 或 429 时，投递最多再重试三次，间隔分别为 2 秒、10 秒和 60 秒；其他任何 4xx 响应不会重试，被防护拒绝的地址也不会重试。每次尝试都会用新的时间戳重新签名。可使用 <code>x-mm-delivery</code> 忽略已处理过的投递。
+      </p>
+
+      <h3>暂缓提醒、暂停和确认</h3>
+      <ul>
+        <li>
+          可将规则<strong>暂缓提醒</strong> 1 小时、8 小时或 1 天：告警仍会被记录，但不会发送任何内容。<strong>立即恢复提醒</strong>可提前结束暂缓。
+        </li>
+        <li>通过规则的开关暂停和恢复规则。</li>
+        <li>
+          管理员可为所有人<strong>确认</strong>告警，其他人会看到是谁确认的；其他用户则从自己的通知铃铛中<strong>忽略</strong>告警。对于管理员以外的用户，通知铃铛会显示发生了什么（其代码），但不显示是哪个同步、任务、计划或命名空间。
+        </li>
+        <li>无论同时触发多少渠道和告警，投递都从同一个队列中每次少量发出。</li>
+        <li>
+          “告警”页面和各连接部分中的<strong>历史记录</strong>保留 90 天（最多 20,000 条），其中包含每次投递的结果及尝试次数。
+        </li>
+      </ul>
+      <p>
+        <code>MM_ALERTS=0</code> 会在服务器上关闭告警：不会评估也不会发送任何内容（参见
+        <a href="deployment.html#alerts">部署</a>）。审计日志会记录
+        <code>alerts.rule.create</code>、<code>alerts.rule.update</code>、<code>alerts.rule.delete</code>、
+        <code>alerts.rule.snooze</code>、<code>alerts.email.update</code>、<code>alerts.email.test</code>、
+        <code>alerts.webhook.create</code>、<code>alerts.webhook.update</code>、
+        <code>alerts.webhook.delete</code>、<code>alerts.webhook.test</code> 和
+        <code>alerts.acknowledge</code>——绝不记录 SMTP 密码或 Webhook 密钥。
+      </p>
+
+      <h2 id="health">实时健康状况</h2>
+      <p>
+        概览中的连接卡片显示每个连接的 ping 延迟、MongoDB 版本、拓扑以及正在触发的告警。连接页面在其页头显示同样的信息，并带有状态指示点。
+      </p>
+      <ul>
+        <li>服务器会将每次响应保留 30 秒。</li>
+        <li>
+          列表绝不会自行建立连接：未打开的连接显示<strong>未连接</strong>。打开连接页面会对其进行检查，就像列出其数据库一样。
+        </li>
+        <li>仅对用户有权监视其服务器的连接显示告警数量。</li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">本页内容</p>
+      <ol>
+        <li><a href="#users-roles">用户和角色</a></li>
+        <li><a href="#sharding">分片</a></li>
+        <li><a href="#alerts">告警</a></li>
+        <li><a href="#health">实时健康状况</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

@@ -1,0 +1,119 @@
+{
+  "id": "personal-data",
+  "name": {
+    "en": "Personal data finder",
+    "tr": "Kişisel veri bulucu",
+    "zh": "个人数据查找器",
+    "ja": "個人データ検索",
+    "es": "Buscador de datos personales",
+    "pt": "Localizador de dados pessoais",
+    "ko": "개인 데이터 탐지기",
+    "de": "Finder für personenbezogene Daten",
+    "fr": "Détecteur de données personnelles",
+    "ru": "Поиск персональных данных"
+  },
+  "version": "1.2.1",
+  "description": {
+    "en": "Finds the fields of a collection that hold personal data — e-mail addresses, phone and card numbers, IBANs, identity numbers, names, addresses, passwords — in a random sample, showing masked examples only, and suggests the fields chosen as personal data rules.",
+    "tr": "Bir koleksiyonun kişisel veri taşıyan alanlarını — e-posta adresleri, telefon ve kart numaraları, IBAN'lar, kimlik numaraları, adlar, adresler, parolalar — rastgele bir örnekte bulur, yalnızca maskelenmiş örnekler gösterir ve seçilen alanları kişisel veri kuralı olarak önerir.",
+    "zh": "在随机样本中找出集合里包含个人数据的字段——电子邮件地址、电话和银行卡号、IBAN、身份证号、姓名、地址、密码——只显示掩码后的示例，并可将所选字段建议为个人数据规则。",
+    "ja": "コレクション内で個人データを含むフィールド（メールアドレス、電話番号、カード番号、IBAN、身分証明書番号、氏名、住所、パスワード）をランダムなサンプルから見つけます。例はマスクして表示し、選択したフィールドを個人データのルールとして提案します。",
+    "es": "Encuentra en una muestra aleatoria los campos de una colección que contienen datos personales (correos, teléfonos, tarjetas, IBAN, identidades, nombres, direcciones, contraseñas), muestra solo ejemplos enmascarados y sugiere los campos elegidos como reglas de datos personales.",
+    "pt": "Encontra, em uma amostra aleatória, os campos de uma coleção que contêm dados pessoais (e-mails, telefones, cartões, IBANs, identidades, nomes, endereços, senhas), mostra só exemplos mascarados e sugere os campos escolhidos como regras de dados pessoais.",
+    "ko": "컬렉션에서 개인 데이터가 들어 있는 필드(이메일 주소, 전화번호, 카드 번호, IBAN, 신분증 번호, 이름, 주소, 비밀번호)를 무작위 샘플에서 찾아 마스킹된 예시만 보여 주고, 선택한 필드를 개인 데이터 규칙으로 제안합니다.",
+    "de": "Findet in einer zufälligen Stichprobe die Felder einer Collection, die personenbezogene Daten enthalten (E-Mail-Adressen, Telefon- und Kartennummern, IBANs, Ausweisnummern, Namen, Adressen, Passwörter), zeigt nur maskierte Beispiele und schlägt die gewählten Felder als Regeln vor.",
+    "fr": "Repère, dans un échantillon aléatoire, les champs d’une collection qui contiennent des données personnelles (e-mails, téléphones, cartes, IBAN, numéros d’identité, noms, adresses, mots de passe), n’affiche que des exemples masqués et suggère les champs choisis comme règles de données personnelles.",
+    "ru": "Находит в случайной выборке поля коллекции с персональными данными (адреса электронной почты, номера телефонов и карт, IBAN, номера удостоверений личности, имена, адреса, пароли), показывает только скрытые примеры и предлагает выбранные поля как правила персональных данных."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "find",
+        "title": {
+          "en": "Find personal data",
+          "tr": "Kişisel veri bul",
+          "zh": "查找个人数据",
+          "ja": "個人データを検索",
+          "es": "Buscar datos personales",
+          "pt": "Encontrar dados pessoais",
+          "ko": "개인 데이터 찾기",
+          "de": "Personenbezogene Daten finden",
+          "fr": "Rechercher les données personnelles",
+          "ru": "Поиск персональных данных"
+        },
+        "icon": "fingerprint"
+      }
+    ]
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-11-07",
+  "changelog": [
+    {
+      "version": "1.2.1",
+      "date": "2026-11-07",
+      "notes": {
+        "en": "Scans a collection of large documents, such as API logs: the sample takes as many documents as one answer to the page can hold, and the result says how many it read. Before, documents of about 60 KB made the scan fail with \"This is too large to send\", even after it asked for fewer.",
+        "tr": "API günlükleri gibi büyük belgeli bir koleksiyonu da tarar: örnek, sayfaya giden tek bir cevaba sığacak kadar belge alır ve sonuç kaç belge okunduğunu söyler. Önceden 60 KB civarındaki belgeler, daha azı istendiğinde bile taramayı \"Bu, göndermek için fazla büyük\" hatasıyla durduruyordu.",
+        "zh": "现在可以扫描大文档组成的集合（例如 API 日志）：采样只取页面一次应答能容纳的文档数量，结果会说明读取了多少文档。以前约 60 KB 的文档会让扫描以“内容太大，无法发送”失败，即使改为请求更少的文档也一样。",
+        "ja": "API ログのような大きなドキュメントのコレクションもスキャンできるようになりました。サンプルはページへの 1 回の応答に収まる数だけドキュメントを取り、結果には読み取った件数が示されます。以前は 60 KB ほどのドキュメントがあると、件数を減らして読み直しても「大きすぎて送信できません」で失敗していました。",
+        "es": "Analiza una colección de documentos grandes, como registros de API: la muestra toma tantos documentos como caben en una respuesta a la página, y el resultado dice cuántos leyó. Antes, documentos de unos 60 KB hacían fallar el análisis con «Es demasiado grande para enviarlo», incluso después de pedir menos.",
+        "pt": "Analisa uma coleção de documentos grandes, como logs de API: a amostra pega tantos documentos quanto cabem em uma resposta à página, e o resultado diz quantos leu. Antes, documentos de cerca de 60 KB faziam a análise falhar com \"É grande demais para enviar\", mesmo depois de pedir menos.",
+        "ko": "API 로그처럼 큰 도큐먼트로 된 컬렉션도 검사합니다. 샘플은 페이지로 가는 한 번의 응답에 담길 만큼만 도큐먼트를 가져오고, 결과에 읽은 도큐먼트 수를 알려 줍니다. 이전에는 약 60 KB의 도큐먼트가 있으면 더 적게 요청한 뒤에도 \"너무 커서 보낼 수 없습니다\"로 검사가 실패했습니다.",
+        "de": "Durchsucht auch eine Collection großer Dokumente, etwa API-Logs: Die Stichprobe nimmt so viele Dokumente, wie eine Antwort an die Seite fassen kann, und das Ergebnis sagt, wie viele gelesen wurden. Vorher ließen Dokumente von etwa 60 KB die Suche mit „Das ist zu groß zum Senden“ scheitern, auch nachdem weniger angefordert wurden.",
+        "fr": "Analyse une collection de documents volumineux, comme des journaux d’API : l’échantillon prend autant de documents qu’une réponse à la page peut en contenir, et le résultat dit combien il en a lu. Auparavant, des documents d’environ 60 Ko faisaient échouer l’analyse avec « C’est trop volumineux pour être envoyé », même après en avoir demandé moins.",
+        "ru": "Проверяет и коллекцию больших документов, например журналов API: выборка берет столько документов, сколько помещается в один ответ странице, а результат сообщает, сколько их прочитано. Раньше документы около 60 КБ приводили к ошибке «Слишком большой объем для отправки», даже после запроса меньшего числа."
+      }
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. It also tells personal data by field names in the app’s languages (telefono, nachname, 電話番号, имя_клиента…), takes a server’s, a link’s or a wallet’s address for no postal one, and says counts in the right form in every language.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Ayrıca kişisel veriyi uygulamanın dillerindeki alan adlarından da tanır (telefono, nachname, 電話番号, имя_клиента…), bir sunucunun, bağlantının ya da cüzdanın adresini posta adresi saymaz ve sayıları her dilde doğru biçimde söyler.",
+        "zh": "现在和应用一样也支持韩语、德语、法语和俄语。它还能根据应用各语言中的字段名识别个人数据（telefono、nachname、電話番号、имя_клиента…），不会把服务器、链接或钱包的地址当作邮寄地址，并在每种语言中以正确的形式表示数量。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。アプリの各言語のフィールド名からも個人データを見分け（telefono、nachname、電話番号、имя_клиента…）、サーバー、リンク、ウォレットのアドレスを住所とは見なしません。件数も各言語で正しい形で表示します。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Además reconoce datos personales por nombres de campo en los idiomas de la aplicación (telefono, nachname, 電話番号, имя_клиента…), no toma la dirección de un servidor, un enlace o una billetera por una dirección postal y expresa las cantidades en la forma correcta en cada idioma.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o aplicativo. Além disso, reconhece dados pessoais por nomes de campo nos idiomas do aplicativo (telefono, nachname, 電話番号, имя_клиента…), não toma o endereço de um servidor, de um link ou de uma carteira por um endereço postal e expressa as contagens na forma certa em cada idioma.",
+        "ko": "앱과 같이 이제 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 앱이 지원하는 언어의 필드 이름으로도 개인 데이터를 알아보고(telefono, nachname, 電話番号, имя_клиента…), 서버·링크·지갑의 주소를 우편 주소로 보지 않으며, 각 언어에서 개수를 올바른 형태로 표시합니다.",
+        "de": "Jetzt wie die App auch auf Koreanisch, Deutsch, Französisch und Russisch. Erkennt personenbezogene Daten auch an Feldnamen in den Sprachen der App (telefono, nachname, 電話番号, имя_клиента…), hält die Adresse eines Servers, eines Links oder einer Wallet nicht für eine Postanschrift und nennt Anzahlen in jeder Sprache in der richtigen Form.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Reconnaît aussi les données personnelles aux noms de champs dans les langues de l’application (telefono, nachname, 電話番号, имя_клиента…), ne prend pas l’adresse d’un serveur, d’un lien ou d’un portefeuille pour une adresse postale et accorde les nombres comme il se doit dans chaque langue.",
+        "ru": "Теперь, как и приложение, также на корейском, немецком, французском и русском. Также распознает персональные данные по названиям полей на языках приложения (telefono, nachname, 電話番号, имя_клиента…), не принимает адрес сервера, ссылки или кошелька за почтовый адрес и согласует числа с существительными по правилам каждого языка."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现在和应用一样支持中文、日语、西班牙语和巴西葡萄牙语。其他内容不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルポルトガル語に対応しました。ほかに変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o aplicativo. Nada mais muda.",
+        "ko": "앱과 같이 이제 중국어, 일본어, 스페인어, 브라질 포르투갈어를 지원합니다. 다른 변경 사항은 없습니다.",
+        "de": "Jetzt wie die App auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь, как и приложение, на китайском, японском, испанском и бразильском португальском. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "First release. A Find personal data tab samples 300 random documents and lists the fields that hold personal data: by their values (e-mail and IP addresses; phone numbers; card numbers in a network's range that pass the Luhn check; IBANs that pass mod 97; Turkish identity numbers that pass their check digits and US social security numbers; password hashes, tokens and keys) and by their names (a person's name, an address, a birth date, a password or a key), each with how sure and why, and masked examples only. Suggest as rules opens the collection's Personal data section with the fields chosen, for an administrator to add each; Copy list copies them.",
+        "tr": "İlk sürüm. Kişisel veri bul sekmesi rastgele 300 belgelik bir örnek alır ve kişisel veri taşıyan alanları listeler: değerlerinden (e-posta ve IP adresleri; telefon numaraları; bir kart ağının aralığındaki ve Luhn denetimini geçen kart numaraları; mod 97 denetimini geçen IBAN'lar; kontrol basamaklarını tutan T.C. kimlik numaraları ve ABD sosyal güvenlik numaraları; parola karmaları, token'lar ve anahtarlar) ve adlarından (kişi adı, adres, doğum tarihi, parola ya da anahtar); her biri ne kadar emin olunduğu ve nedeniyle, yalnızca maskelenmiş örneklerle. Kural olarak öner, koleksiyonun Kişisel veriler bölümünü bir yöneticinin her birini eklemesi için seçilen alanlarla açar; Listeyi kopyala onları kopyalar.",
+        "zh": "首次发布。“查找个人数据”标签页会随机抽取 300 个文档，并列出包含个人数据的字段：依据其值（电子邮件和 IP 地址；电话号码；处于某卡组织号段且通过 Luhn 校验的银行卡号；通过 mod 97 校验的 IBAN；校验位正确的土耳其身份证号和美国社会安全号；密码哈希、令牌和密钥）以及其名称（人名、地址、出生日期、密码或密钥），每项都附有可信度和原因，示例仅以掩码显示。“建议为规则”会带着所选字段打开集合的“个人数据”部分，供管理员逐个添加；“复制列表”则复制这些字段。",
+        "ja": "初回リリース。「個人データを検索」タブはランダムな 300 件のドキュメントをサンプリングし、個人データを含むフィールドを一覧表示します。判定は値（メールアドレスと IP アドレス、電話番号、カードネットワークの範囲内で Luhn チェックを通るカード番号、mod 97 を通る IBAN、チェックディジットが正しいトルコの身分証明書番号と米国の社会保障番号、パスワードハッシュ、トークン、キー）と名前（氏名、住所、生年月日、パスワード、キー）の両方で行い、それぞれに確度と理由を示し、例はマスクして表示します。「ルールとして提案」は選択したフィールド付きでコレクションの「個人データ」セクションを開き、管理者が 1 つずつ追加できます。「リストをコピー」はそれらをコピーします。",
+        "es": "Primera versión. La pestaña Buscar datos personales toma 300 documentos al azar y lista los campos con datos personales, por sus valores (correos e IP; teléfonos; tarjetas en el rango de una red que pasan Luhn; IBAN que pasan mod 97; identidades turcas con dígitos de control correctos y números de la seguridad social de EE. UU.; hashes de contraseñas, tokens y claves) y por sus nombres (nombre de persona, dirección, fecha de nacimiento, contraseña o clave), con su certeza y motivo, y solo ejemplos enmascarados. Sugerir como reglas abre la sección Datos personales con los campos elegidos para que un administrador los añada; Copiar lista los copia.",
+        "pt": "Primeira versão. A aba Encontrar dados pessoais amostra 300 documentos aleatórios e lista os campos com dados pessoais, pelos valores (e-mails e IPs; telefones; cartões na faixa de uma bandeira que passam no Luhn; IBANs que passam no mod 97; identidades turcas com dígitos verificadores corretos e números de seguridade social dos EUA; hashes de senha, tokens e chaves) e pelos nomes (nome de pessoa, endereço, data de nascimento, senha ou chave), cada um com certeza e motivo, e só exemplos mascarados. Sugerir como regras abre a seção Dados pessoais com os campos escolhidos para um administrador adicionar; Copiar lista os copia.",
+        "ko": "첫 릴리스. 개인 데이터 찾기 탭이 무작위 도큐먼트 300개를 샘플링해 개인 데이터가 들어 있는 필드를 나열합니다. 값(이메일과 IP 주소, 전화번호, 카드 네트워크 범위에 속하고 Luhn 검사를 통과하는 카드 번호, mod 97을 통과하는 IBAN, 체크 디지트가 맞는 터키 신분증 번호와 미국 사회보장번호, 비밀번호 해시·토큰·키)과 이름(사람 이름, 주소, 생년월일, 비밀번호 또는 키)으로 판단하며, 각 항목에 확실도와 이유를 붙이고 예시는 마스킹해서만 보여 줍니다. 규칙으로 제안은 선택한 필드와 함께 컬렉션의 개인 데이터 섹션을 열어 관리자가 하나씩 추가하게 하고, 목록 복사는 해당 필드를 복사합니다.",
+        "de": "Erste Version. Der Tab „Personenbezogene Daten finden“ zieht eine Stichprobe von 300 zufälligen Dokumenten und listet die Felder mit personenbezogenen Daten auf: nach ihren Werten (E-Mail- und IP-Adressen; Telefonnummern; Kartennummern im Bereich eines Kartennetzwerks mit bestandener Luhn-Prüfung; IBANs mit bestandener mod-97-Prüfung; türkische Ausweisnummern mit korrekten Prüfziffern und US-Sozialversicherungsnummern; Passwort-Hashes, Tokens und Schlüssel) und nach ihren Namen (Personenname, Adresse, Geburtsdatum, Passwort oder Schlüssel), jeweils mit Sicherheit und Grund und nur mit maskierten Beispielen. „Als Regeln vorschlagen“ öffnet den Bereich „Personenbezogene Daten“ der Collection mit den gewählten Feldern, damit ein Administrator sie einzeln hinzufügt; „Liste kopieren“ kopiert sie.",
+        "fr": "Première version. L’onglet Rechercher les données personnelles prélève 300 documents au hasard et liste les champs qui contiennent des données personnelles, d’après leurs valeurs (e-mails et adresses IP ; téléphones ; numéros de carte dans la plage d’un réseau et valides au test de Luhn ; IBAN valides au test mod 97 ; numéros d’identité turcs à chiffres de contrôle corrects et numéros de sécurité sociale américains ; hachages de mots de passe, jetons et clés) et leurs noms (nom de personne, adresse, date de naissance, mot de passe ou clé), chacun avec sa certitude et sa raison, et uniquement des exemples masqués. Suggérer comme règles ouvre la section Données personnelles de la collection avec les champs choisis, pour qu’un administrateur les ajoute un à un ; Copier la liste les copie.",
+        "ru": "Первый выпуск. Вкладка «Поиск персональных данных» берет выборку из 300 случайных документов и перечисляет поля с персональными данными: по значениям (адреса электронной почты и IP; номера телефонов; номера карт из диапазона платежной сети, проходящие проверку Луна; IBAN, проходящие проверку mod 97; турецкие номера удостоверений с верными контрольными цифрами и американские номера соцстрахования; хеши паролей, токены и ключи) и по именам (имя человека, адрес, дата рождения, пароль или ключ), с уверенностью и причиной для каждого и только со скрытыми примерами. «Предложить как правила» открывает раздел «Персональные данные» коллекции с выбранными полями, чтобы администратор добавил их по одному; «Копировать список» копирует их."
+      }
+    }
+  ]
+}

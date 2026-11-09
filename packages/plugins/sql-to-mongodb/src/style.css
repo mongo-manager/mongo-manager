@@ -1,0 +1,347 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 Gokhan OZGEZER */
+/* SQL to MongoDB (redesigned 2026-10-10): what the kit (kit/src/ui.css) does not already give. */
+.sq-work {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 0 16px 14px;
+}
+@media (min-width: 1000px) {
+  /* Editor and translation side by side where there is room. */
+  .sq-work {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+}
+
+/* ---- the editor */
+.sq-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.sq-card:focus-within {
+  border-color: var(--ds-accent);
+  box-shadow: 0 0 0 3px var(--ds-accent-soft);
+}
+.sq-card.sq-invalid {
+  border-color: color-mix(in srgb, var(--ds-danger) 55%, transparent);
+}
+.sq-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--ds-line);
+}
+.sq-editor {
+  flex: 1;
+  width: 100%;
+  min-height: 176px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-family: var(--mm-mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  tab-size: 2;
+}
+.sq-editor:focus {
+  box-shadow: none;
+}
+.sq-kbd {
+  font-family: var(--mm-mono);
+  font-size: 10.5px;
+  line-height: 16px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--ds-on-accent) 18%, transparent);
+}
+.sq-error:empty {
+  display: none;
+}
+.sq-error {
+  padding: 0 8px 8px;
+}
+.sq-error .mm-callout-body {
+  flex: 1;
+}
+.sq-error .mm-btn {
+  align-self: flex-start;
+  margin-top: 4px;
+  margin-left: -9px;
+}
+.sq-snippet {
+  margin: 6px 0 0;
+  padding: 6px 8px;
+  font-family: var(--mm-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre;
+  overflow-x: auto;
+  border: 1px solid var(--ds-line);
+  border-radius: var(--mm-radius-sm);
+  background: var(--ds-surface);
+  color: var(--ds-fg);
+}
+.sq-snippet mark {
+  background: color-mix(in srgb, var(--ds-danger) 22%, transparent);
+  color: var(--ds-fg);
+  box-shadow: inset 0 -2px 0 var(--ds-danger);
+  border-radius: 2px;
+}
+
+/* ---- the Examples menu */
+.sq-menu-wrap {
+  position: relative;
+}
+.sq-menu-wrap > .mm-btn .mm-icon:last-child {
+  color: var(--ds-fg-subtle);
+}
+.sq-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  width: min(440px, calc(100vw - 32px));
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--ds-raised);
+  box-shadow: var(--ds-shadow-float);
+}
+.sq-menu[hidden] {
+  display: none;
+}
+.sq-menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  width: 100%;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: var(--mm-radius-sm);
+  background: transparent;
+  color: var(--ds-fg);
+  text-align: left;
+  cursor: pointer;
+}
+.sq-menu-item:hover,
+.sq-menu-item:focus-visible {
+  outline: none;
+  background: var(--ds-subtle);
+}
+.sq-menu-label {
+  font-weight: 500;
+}
+.sq-menu-sql {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--mm-mono);
+  font-size: 11.5px;
+  color: var(--ds-fg-subtle);
+}
+
+/* ---- the translation */
+.sq-code {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.sq-code-bar {
+  min-height: 39px;
+}
+.sq-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-fg-muted);
+}
+.sq-languages-row {
+  padding: 8px 12px 0;
+}
+.sq-languages {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+.sq-code pre {
+  flex: 1;
+  min-height: 140px;
+  max-height: 380px;
+}
+#code:empty::before {
+  content: attr(data-empty);
+  font-family: var(--mm-font);
+  color: var(--ds-fg-subtle);
+}
+.sq-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--ds-line);
+  background: color-mix(in srgb, var(--ds-surface) 60%, var(--ds-subtle));
+}
+.sq-note {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+/* ---- the rows */
+.sq-table-wrap {
+  max-height: 62vh;
+}
+.sq-table th {
+  font-family: var(--mm-mono);
+}
+.sq-table td {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sq-rownum {
+  color: var(--ds-fg-subtle);
+  font-size: 11.5px;
+}
+.sq-missing::before {
+  content: '—';
+  color: var(--ds-fg-subtle);
+}
+
+/* Suggestions at the caret (user request 2026-10-10). */
+.sq-card {
+  position: relative;
+}
+.sq-complete {
+  position: absolute;
+  z-index: 20;
+  min-width: 240px;
+  max-width: min(420px, 90vw);
+  max-height: 260px;
+  overflow: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border-radius: 9px;
+  background: var(--ds-raised);
+  box-shadow: var(--ds-shadow-float);
+}
+.sq-option {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sq-option[aria-selected='true'] {
+  background: var(--ds-accent-soft);
+}
+.sq-option-label {
+  font-family: var(--mm-mono);
+  font-size: 12.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sq-option-keyword .sq-option-label {
+  color: var(--ds-accent-fg);
+  font-weight: 600;
+}
+.sq-option-value .sq-option-label {
+  color: var(--ds-v-string);
+}
+.sq-option-function .sq-option-label {
+  color: var(--ds-v-boolean);
+}
+.sq-option-kind {
+  flex: none;
+  font-size: 11px;
+  color: var(--ds-fg-subtle);
+}
+
+/* The row number: as narrow as its numbers. */
+.sq-results .mm-table th:first-child,
+.sq-results .mm-table td:first-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* The SQL in colours (user request 2026-10-10): the editor's text is transparent over a coloured
+   copy of it. Same box, font and wrapping for both; colours only (a bolder letter would be wider). */
+.sq-editor-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 176px;
+}
+.sq-editor-wrap .sq-editor {
+  scrollbar-gutter: stable;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+.sq-editor-input {
+  position: relative;
+  z-index: 1;
+  color: transparent;
+  caret-color: var(--ds-fg);
+}
+.sq-editor-input::selection {
+  color: transparent;
+  background: var(--ds-selection);
+}
+.sq-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--ds-fg);
+  resize: none;
+}
+.sq-editor-wrap .sq-complete {
+  z-index: 20;
+}
+.hl-keyword {
+  color: var(--ds-v-number);
+}
+.hl-function {
+  color: var(--ds-v-boolean);
+}
+.hl-string {
+  color: var(--ds-v-string);
+}
+.hl-name {
+  color: var(--ds-v-oid);
+}
+.hl-number {
+  color: var(--ds-v-date);
+}
+.hl-comment {
+  color: var(--ds-fg-subtle);
+}
+.hl-operator {
+  color: var(--ds-fg-muted);
+}
+.hl-key {
+  color: var(--ds-v-oid);
+}
+#code .hl-operator {
+  color: var(--ds-accent-fg);
+}
+#code .hl-keyword {
+  color: var(--ds-v-number);
+}

@@ -1,0 +1,107 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 Gokhan OZGEZER */
+/* Legacy UUIDs: what the kit (kit/src/ui.css) does not already give. */
+.lu-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lu-notes:empty {
+  display: none;
+}
+.lu-finder {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+}
+.lu-inputs {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, 1.2fr);
+  gap: 10px;
+}
+@media (max-width: 640px) {
+  .lu-inputs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.lu-subtitle {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-fg-subtle);
+}
+.lu-stored,
+.lu-readings {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lu-row {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 6px;
+  border-radius: 6px;
+}
+.lu-chosen {
+  background: var(--ds-subtle);
+}
+.lu-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-fg-muted);
+}
+.lu-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* A reading that is no well-formed UUID: shown, but quieter. */
+.lu-odd {
+  color: var(--ds-fg-subtle);
+}
+.lu-actions {
+  display: flex;
+  gap: 6px;
+}
+.lu-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lu-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+}
+.lu-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.lu-path {
+  max-width: 100%;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--ds-subtle);
+  border: 1px solid var(--ds-line);
+  color: var(--ds-accent-fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lu-counts {
+  color: var(--ds-fg-muted);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+.lu-hint {
+  margin: 0;
+  color: var(--ds-fg-subtle);
+  font-size: 12px;
+}

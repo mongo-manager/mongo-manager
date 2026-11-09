@@ -1,0 +1,193 @@
+{
+  "id": "references",
+  "name": {
+    "en": "References",
+    "tr": "Referanslar",
+    "zh": "引用",
+    "ja": "参照",
+    "es": "Referencias",
+    "pt": "Referências",
+    "ko": "참조",
+    "de": "Referenzen",
+    "fr": "Références",
+    "ru": "Ссылки"
+  },
+  "version": "1.4.1",
+  "description": {
+    "en": "Finds the fields that hold other documents' ObjectIds and the collections they refer to; shows the referenced document's name beside each id, and a missing one as such; lists the documents referring to one.",
+    "tr": "Başka belgelerin ObjectId'lerini taşıyan alanları ve başvurdukları koleksiyonları bulur; her kimliğin yanında başvurulan belgenin adını, bulunamayanı da öyle gösterir; bir belgeye başvuran belgeleri listeler.",
+    "zh": "查找保存其他文档 ObjectId 的字段及其所引用的集合；在每个 ID 旁显示被引用文档的名称，找不到的也会如实标出；列出引用某个文档的文档。",
+    "ja": "他のドキュメントの ObjectId を保持するフィールドと、それらが参照するコレクションを検索します。各 ID の横に参照先ドキュメントの名前を表示し、見つからないものもそのように示します。あるドキュメントを参照しているドキュメントも一覧表示します。",
+    "es": "Encuentra los campos que contienen ObjectId de otros documentos y las colecciones a las que hacen referencia; muestra el nombre del documento referenciado junto a cada id, y uno que falta se indica como tal; lista los documentos que hacen referencia a uno.",
+    "pt": "Encontra os campos que contêm ObjectIds de outros documentos e as coleções às quais fazem referência; mostra o nome do documento referenciado ao lado de cada id, e um ausente é indicado como tal; lista os documentos que fazem referência a um.",
+    "ko": "다른 도큐먼트의 ObjectId를 가진 필드와 그 필드가 참조하는 컬렉션을 찾습니다. 각 id 옆에 참조된 도큐먼트의 이름을 표시하고, 없는 도큐먼트는 없는 것으로 표시하며, 특정 도큐먼트를 참조하는 도큐먼트를 나열합니다.",
+    "de": "Findet die Felder, die ObjectIds anderer Dokumente enthalten, und die Collections, auf die sie verweisen; zeigt neben jeder ID den Namen des referenzierten Dokuments und kennzeichnet ein fehlendes als solches; listet die Dokumente auf, die auf ein Dokument verweisen.",
+    "fr": "Trouve les champs qui contiennent des ObjectId d’autres documents et les collections vers lesquelles ils pointent ; affiche le nom du document référencé à côté de chaque identifiant, et signale comme tel un document manquant ; liste les documents qui font référence à un document.",
+    "ru": "Находит поля, содержащие ObjectId других документов, и коллекции, на которые они ссылаются; показывает имя документа, на который указывает идентификатор, рядом с ним, а отсутствующий документ помечает как отсутствующий; перечисляет документы, которые ссылаются на данный документ."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read", "database:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "references",
+        "title": {
+          "en": "References",
+          "tr": "Referanslar",
+          "zh": "引用",
+          "ja": "参照",
+          "es": "Referencias",
+          "pt": "Referências",
+          "ko": "참조",
+          "de": "Referenzen",
+          "fr": "Références",
+          "ru": "Ссылки"
+        },
+        "icon": "puzzle"
+      }
+    ],
+    "documentActions": [
+      {
+        "id": "referenced-by",
+        "title": {
+          "en": "Referenced by",
+          "tr": "Başvuranlar",
+          "zh": "引用方",
+          "ja": "参照元",
+          "es": "Referenciado por",
+          "pt": "Referenciado por",
+          "ko": "참조하는 도큐먼트",
+          "de": "Referenziert von",
+          "fr": "Référencé par",
+          "ru": "Кто ссылается"
+        },
+        "icon": "puzzle"
+      }
+    ],
+    "cellRenderers": [
+      {
+        "id": "ref",
+        "match": "objectId"
+      }
+    ]
+  },
+  "author": {
+    "name": "Gokhan OZGEZER"
+  },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-11-07",
+  "changelog": [
+    {
+      "version": "1.4.1",
+      "date": "2026-11-07",
+      "notes": {
+        "en": "Finds references in a collection of large documents, such as API logs: the sample takes as many documents as one answer to the page can hold. Names too long for one answer are read in several, so every referenced document is still found and named, and a list of referring documents that does not fit says there are more. Before, every Find stopped with \"This is too large to send\".",
+        "tr": "API günlükleri gibi büyük belgeli bir koleksiyonda da başvuruları bulur: örnek, sayfaya giden tek bir cevaba sığacak kadar belge alır. Tek cevaba sığmayan adlar birkaç cevapta okunur; böylece başvurulan her belge yine bulunur ve adlandırılır, sığmayan bir başvuran belgeler listesi de daha fazlası olduğunu söyler. Önceden her Bul \"Bu, göndermek için fazla büyük\" diyerek duruyordu.",
+        "zh": "现在可以在大文档组成的集合（例如 API 日志）中查找引用：采样只取页面一次应答能容纳的文档数量。一次应答放不下的名称会分几次读取，因此每个被引用的文档仍会被找到并显示名称；放不下的引用文档列表会提示还有更多。以前每次查找都会停在“内容太大，无法发送”。",
+        "ja": "API ログのような大きなドキュメントのコレクションでも参照を見つけられるようになりました。サンプルはページへの 1 回の応答に収まる数だけドキュメントを取ります。1 回の応答に収まらない名前は複数回に分けて読むため、参照先のドキュメントはすべて見つかり名前も表示されます。収まらない参照元ドキュメントの一覧には、ほかにもあることが示されます。以前は検索のたびに「大きすぎて送信できません」で止まっていました。",
+        "es": "Encuentra referencias en una colección de documentos grandes, como registros de API: la muestra toma tantos documentos como caben en una respuesta a la página. Los nombres que no caben en una respuesta se leen en varias, así que cada documento referenciado se sigue encontrando y nombrando, y una lista de documentos que hacen referencia que no cabe indica que hay más. Antes, cada búsqueda se detenía con «Es demasiado grande para enviarlo».",
+        "pt": "Encontra referências em uma coleção de documentos grandes, como logs de API: a amostra pega tantos documentos quanto cabem em uma resposta à página. Nomes que não cabem em uma resposta são lidos em várias, então cada documento referenciado continua sendo encontrado e nomeado, e uma lista de documentos que fazem referência que não cabe indica que há mais. Antes, cada busca parava com \"É grande demais para enviar\".",
+        "ko": "API 로그처럼 큰 도큐먼트로 된 컬렉션에서도 참조를 찾습니다. 샘플은 페이지로 가는 한 번의 응답에 담길 만큼만 도큐먼트를 가져옵니다. 한 번의 응답에 담기지 않는 이름은 여러 번에 나누어 읽으므로 참조된 도큐먼트를 모두 찾아 이름을 보여 주고, 담기지 않는 참조 도큐먼트 목록은 더 있다고 알려 줍니다. 이전에는 찾기마다 \"너무 커서 보낼 수 없습니다\"에서 멈췄습니다.",
+        "de": "Findet Referenzen auch in einer Collection großer Dokumente, etwa API-Logs: Die Stichprobe nimmt so viele Dokumente, wie eine Antwort an die Seite fassen kann. Namen, die nicht in eine Antwort passen, werden in mehreren gelesen, sodass jedes referenzierte Dokument weiterhin gefunden und benannt wird, und eine Liste verweisender Dokumente, die nicht hineinpasst, sagt, dass es mehr gibt. Vorher hielt jede Suche mit „Das ist zu groß zum Senden“ an.",
+        "fr": "Trouve les références dans une collection de documents volumineux, comme des journaux d’API : l’échantillon prend autant de documents qu’une réponse à la page peut en contenir. Les noms trop longs pour une réponse sont lus en plusieurs, si bien que chaque document référencé est toujours trouvé et nommé, et une liste de documents qui y renvoient trop longue indique qu’il y en a d’autres. Auparavant, chaque recherche s’arrêtait sur « C’est trop volumineux pour être envoyé ».",
+        "ru": "Находит ссылки и в коллекции больших документов, например журналов API: выборка берет столько документов, сколько помещается в один ответ странице. Имена, не помещающиеся в один ответ, читаются в нескольких, поэтому каждый документ, на который ссылаются, по-прежнему находится и называется, а не поместившийся список ссылающихся документов сообщает, что их больше. Раньше каждый поиск останавливался на «Слишком большой объем для отправки»."
+      }
+    },
+    {
+      "version": "1.4.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Counts read right in every language (one id, one collection, French zero, Russian forms).",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Sayılar her dilde doğru okunur (tek kimlik, tek koleksiyon, Fransızca sıfır, Rusça biçimler).",
+        "zh": "现已提供韩语、德语、法语和俄语，与应用一致。各语言中的数量表述都已正确（单个 ID、单个集合、法语的零、俄语的各种形式）。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。件数の表現がどの言語でも正しくなりました（ID やコレクションが 1 つの場合、フランス語の 0、ロシア語の語形）。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Las cantidades se leen bien en cada idioma (un id, una colección, el cero en francés, las formas del ruso).",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o aplicativo. As quantidades ficam corretas em cada idioma (um id, uma coleção, o zero em francês, as formas do russo).",
+        "ko": "앱과 같이 한국어, 독일어, 프랑스어, 러시아어로도 제공됩니다. 개수 표현이 모든 언어에서 올바르게 표시됩니다(id 1개, 컬렉션 1개, 프랑스어의 0, 러시아어의 어형).",
+        "de": "Jetzt auch auf Koreanisch, Deutsch, Französisch und Russisch, wie die App. Mengenangaben lesen sich in jeder Sprache richtig (eine ID, eine Collection, die Null im Französischen, russische Formen).",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Les nombres se lisent correctement dans chaque langue (un identifiant, une collection, le zéro en français, les formes du russe).",
+        "ru": "Теперь также на корейском, немецком, французском и русском, как и приложение. Количества читаются правильно в каждом языке (один идентификатор, одна коллекция, ноль во французском, русские формы)."
+      }
+    },
+    {
+      "version": "1.3.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现已提供中文、日语、西班牙语和巴西葡萄牙语，与应用一致。其他内容不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルのポルトガル語に対応しました。それ以外は変わりません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. No cambia nada más.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o aplicativo. Nada mais muda.",
+        "ko": "앱과 같이 중국어, 일본어, 스페인어, 브라질 포르투갈어로도 제공됩니다. 그 밖의 변경 사항은 없습니다.",
+        "de": "Jetzt auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь также на китайском, японском, испанском и бразильском португальском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-10-28",
+      "notes": {
+        "en": "Referenced by, a document action: the documents of the database that refer to this one, found through the fields the database's model says refer to its collection (by their name, their values or a $lookup); each field's documents listed by name, and shown in Documents of their own collection on a click.",
+        "tr": "Başvuranlar, bir belge eylemi: veritabanında bu belgeye başvuran belgeler; veritabanı modelinin bu koleksiyona başvurduğunu söylediği alanlardan (adlarından, değerlerinden ya da bir $lookup ile) bulunur. Her alanın belgeleri adlarıyla listelenir ve bir tıklamayla kendi koleksiyonlarının Belgeler bölümünde gösterilir.",
+        "zh": "引用方（文档操作）：列出数据库中引用此文档的文档，依据数据库模型认定引用此集合的字段（按名称、值或 $lookup）找出；每个字段的文档按名称列出，点击后在其所属集合的文档中显示。",
+        "ja": "参照元（ドキュメントの操作）: このドキュメントを参照しているデータベース内のドキュメントを、データベースのモデルがこのコレクションを参照するとしたフィールド（名前、値、または $lookup による）から見つけます。各フィールドのドキュメントは名前で一覧表示され、クリックすると、それぞれのコレクションのドキュメントに表示されます。",
+        "es": "Referenciado por, una acción de documento: los documentos de la base de datos que hacen referencia a este, hallados a través de los campos que, según el modelo de la base de datos, hacen referencia a su colección (por su nombre, sus valores o un $lookup); los documentos de cada campo se listan por nombre y, con un clic, se muestran en Documentos de su propia colección.",
+        "pt": "Referenciado por, uma ação de documento: os documentos do banco de dados que fazem referência a este, encontrados pelos campos que, segundo o modelo do banco de dados, fazem referência à sua coleção (pelo nome, pelos valores ou por um $lookup); os documentos de cada campo são listados por nome e, com um clique, mostrados em Documentos da própria coleção.",
+        "ko": "참조하는 도큐먼트, 도큐먼트 작업: 데이터베이스 모델이 이 도큐먼트의 컬렉션을 참조한다고 판단한 필드(이름, 값 또는 $lookup 기준)를 통해 찾은, 이 도큐먼트를 참조하는 데이터베이스의 도큐먼트입니다. 각 필드의 도큐먼트는 이름으로 나열되며, 클릭하면 해당 컬렉션의 도큐먼트에 표시됩니다.",
+        "de": "Referenziert von, eine Dokumentaktion: die Dokumente der Datenbank, die auf dieses verweisen, gefunden über die Felder, die laut dem Modell der Datenbank auf ihre Collection verweisen (über Name, Werte oder ein $lookup); die Dokumente jedes Felds werden nach Namen aufgelistet und per Klick in Dokumente ihrer eigenen Collection angezeigt.",
+        "fr": "Référencé par, une action de document : les documents de la base de données qui font référence à celui-ci, trouvés grâce aux champs que le modèle de la base de données dit faire référence à sa collection (par leur nom, leurs valeurs ou un $lookup) ; les documents de chaque champ sont listés par nom et, d’un clic, affichés dans Documents de leur propre collection.",
+        "ru": "Кто ссылается, действие с документом: документы базы данных, которые ссылаются на этот документ, найденные по полям, которые, по модели базы данных, ссылаются на его коллекцию (по имени, значениям или через $lookup); документы каждого поля перечислены по именам и по щелчку открываются в «Документах» их собственной коллекции."
+      }
+    },
+    {
+      "version": "1.1.1",
+      "date": "2026-10-16",
+      "notes": {
+        "en": "Security update of the shared kit: an address that hides a script behind a tab or a line break is refused like any other script address. Nothing else changes.",
+        "tr": "Ortak kitin güvenlik güncellemesi: bir betiği sekme ya da satır sonu arkasına gizleyen adres, diğer betik adresleri gibi reddedilir. Başka bir şey değişmez.",
+        "zh": "共享套件的安全更新：将脚本藏在制表符或换行符之后的地址，会像其他脚本地址一样被拒绝。其他内容不变。",
+        "ja": "共有キットのセキュリティ更新: タブや改行の後ろにスクリプトを隠したアドレスは、他のスクリプトのアドレスと同様に拒否されます。それ以外は変わりません。",
+        "es": "Actualización de seguridad del kit compartido: una dirección que oculta un script tras una tabulación o un salto de línea se rechaza como cualquier otra dirección de script. No cambia nada más.",
+        "pt": "Atualização de segurança do kit compartilhado: um endereço que esconde um script atrás de uma tabulação ou de uma quebra de linha é recusado como qualquer outro endereço de script. Nada mais muda.",
+        "ko": "공유 키트 보안 업데이트: 탭이나 줄 바꿈 뒤에 스크립트를 숨긴 주소는 다른 스크립트 주소와 마찬가지로 거부됩니다. 그 밖의 변경 사항은 없습니다.",
+        "de": "Sicherheitsupdate des gemeinsamen Kits: Eine Adresse, die ein Skript hinter einem Tabulator oder Zeilenumbruch versteckt, wird wie jede andere Skriptadresse abgelehnt. Sonst ändert sich nichts.",
+        "fr": "Mise à jour de sécurité du kit partagé : une adresse qui cache un script derrière une tabulation ou un saut de ligne est refusée comme toute autre adresse de script. Rien d’autre ne change.",
+        "ru": "Обновление безопасности общего набора: адрес, скрывающий скрипт за табуляцией или переводом строки, отклоняется, как и любой другой адрес скрипта. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "Redesigned in the app's look: one card per relation, with the share of ids found, example names, and Show orphans for the ids no document holds. The tab now looks for references as soon as it opens.",
+        "tr": "Uygulamanın görünümüyle yeniden tasarlandı: her ilişki için bir kart; bulunan kimliklerin oranı, örnek adlar ve hiçbir belgenin tutmadığı kimlikler için “Bulunamayanları göster”. Sekme artık açılır açılmaz referansları arar.",
+        "zh": "按应用的外观重新设计：每个关系一张卡片，显示找到的 ID 比例、示例名称，以及针对没有任何文档保存的 ID 的“显示孤立项”。该标签页现在一打开就会查找引用。",
+        "ja": "アプリの外観に合わせて再設計しました。関係ごとに 1 枚のカードを表示し、見つかった ID の割合、例の名前、どのドキュメントも保持していない ID 向けの「孤立を表示」を備えます。タブは開くとすぐに参照を検索するようになりました。",
+        "es": "Rediseñado con el aspecto de la aplicación: una tarjeta por relación, con la proporción de ids encontrados, nombres de ejemplo y Mostrar huérfanos para los ids que ningún documento contiene. La pestaña ahora busca las referencias en cuanto se abre.",
+        "pt": "Redesenhado com o visual do aplicativo: um cartão por relação, com a proporção de ids encontrados, nomes de exemplo e Mostrar órfãos para os ids que nenhum documento contém. A aba agora procura as referências assim que é aberta.",
+        "ko": "앱의 디자인에 맞춰 다시 만들었습니다. 관계마다 카드 하나가 표시되며, 찾은 id의 비율, 예시 이름, 어떤 도큐먼트도 가지고 있지 않은 id를 위한 ‘고아 항목 표시’가 있습니다. 이제 탭이 열리자마자 참조를 찾습니다.",
+        "de": "Im Look der App neu gestaltet: eine Karte pro Beziehung, mit dem Anteil gefundener IDs, Beispielnamen und „Verwaiste anzeigen“ für die IDs, die kein Dokument enthält. Der Tab sucht jetzt gleich nach dem Öffnen nach Referenzen.",
+        "fr": "Repensé dans l’esprit de l’application : une carte par relation, avec la part d’identifiants trouvés, des exemples de noms et « Afficher les orphelins » pour les identifiants qu’aucun document ne contient. L’onglet recherche désormais les références dès son ouverture.",
+        "ru": "Переработано в стиле приложения: одна карточка на каждую связь, с долей найденных идентификаторов, примерами имен и кнопкой «Показать потерянные» для идентификаторов, которых нет ни в одном документе. Вкладка теперь ищет ссылки сразу после открытия."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "First release. Beside an ObjectId in a field named like a collection of the same database (customerId → customers), cells show the referenced document's name, or “not found” for a dangling reference. A References tab finds, from a random sample, the fields that hold other documents' ids and the collections that hold those documents, and opens each relation with $lookup in Aggregations.",
+        "tr": "İlk sürüm. Aynı veritabanındaki bir koleksiyon gibi adlandırılmış bir alandaki ObjectId'nin yanında (customerId → customers) hücreler başvurulan belgenin adını, sahipsiz bir başvuru için de “bulunamadı” gösterir. Referanslar sekmesi rastgele bir örnekten, başka belgelerin kimliklerini tutan alanları ve o belgeleri barındıran koleksiyonları bulur; her ilişkiyi Aggregation sekmesinde $lookup ile açar.",
+        "zh": "首个版本。在与同一数据库中某个集合同名的字段里的 ObjectId 旁（customerId → customers），单元格显示被引用文档的名称，悬空引用则显示“未找到”。“引用”标签页从随机采样中找出保存其他文档 ID 的字段和这些文档所在的集合，并在聚合中用 $lookup 打开每个关系。",
+        "ja": "最初のリリースです。同じデータベースのコレクションのような名前のフィールドにある ObjectId の横（customerId → customers）に、セルが参照先ドキュメントの名前を表示し、参照先のない参照には「見つかりません」と表示します。「参照」タブは、ランダムなサンプルから、他のドキュメントの ID を保持するフィールドとそれらのドキュメントがあるコレクションを見つけ、各関係を集計で $lookup として開きます。",
+        "es": "Primera versión. Junto a un ObjectId en un campo con nombre de colección de la misma base de datos (customerId → customers), las celdas muestran el nombre del documento referenciado, o «no encontrado» si la referencia está colgada. Una pestaña Referencias encuentra, a partir de una muestra aleatoria, los campos que contienen ids de otros documentos y las colecciones donde están esos documentos, y abre cada relación con $lookup en Agregaciones.",
+        "pt": "Primeira versão. Ao lado de um ObjectId em um campo com nome de coleção do mesmo banco de dados (customerId → customers), as células mostram o nome do documento referenciado, ou “não encontrado” para uma referência solta. Uma aba Referências encontra, a partir de uma amostra aleatória, os campos que contêm ids de outros documentos e as coleções onde esses documentos estão, e abre cada relação com $lookup em Agregações.",
+        "ko": "첫 릴리스. 같은 데이터베이스의 컬렉션 이름과 비슷한 필드(customerId → customers)에 있는 ObjectId 옆에 셀이 참조된 도큐먼트의 이름을 표시하고, 끊어진 참조에는 ‘찾을 수 없음’을 표시합니다. 참조 탭은 무작위 샘플에서 다른 도큐먼트의 id를 가진 필드와 해당 도큐먼트가 있는 컬렉션을 찾고, 각 관계를 집계에서 $lookup으로 엽니다.",
+        "de": "Erste Version. Neben einer ObjectId in einem Feld, das wie eine Collection derselben Datenbank benannt ist (customerId → customers), zeigen Zellen den Namen des referenzierten Dokuments oder „nicht gefunden“ bei einer ins Leere zeigenden Referenz. Ein Tab „Referenzen“ findet anhand einer zufälligen Stichprobe die Felder, die IDs anderer Dokumente enthalten, und die Collections, in denen diese Dokumente liegen, und öffnet jede Beziehung mit $lookup in Aggregationen.",
+        "fr": "Première version. À côté d’un ObjectId dans un champ nommé comme une collection de la même base de données (customerId → customers), les cellules affichent le nom du document référencé, ou « introuvable » pour une référence orpheline. Un onglet Références trouve, à partir d’un échantillon aléatoire, les champs qui contiennent des identifiants d’autres documents et les collections où se trouvent ces documents, et ouvre chaque relation avec $lookup dans Agrégations.",
+        "ru": "Первый выпуск. Рядом с ObjectId в поле, названном как коллекция той же базы данных (customerId → customers), ячейки показывают имя документа, на который указывает ссылка, или «не найдено» для висячей ссылки. Вкладка «Ссылки» по случайной выборке находит поля с идентификаторами других документов и коллекции, где эти документы находятся, и открывает каждую связь с $lookup в «Агрегациях»."
+      }
+    }
+  ]
+}

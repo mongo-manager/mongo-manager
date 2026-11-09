@@ -1,0 +1,89 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 Gokhan OZGEZER */
+/* Expiry: what the kit (kit/src/ui.css) does not already give. */
+.tt-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tt-notes:empty {
+  display: none;
+}
+.tt-indexes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tt-index {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+}
+.tt-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.tt-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.tt-sub {
+  margin: 0;
+  color: var(--ds-fg-muted);
+  font-size: 12.5px;
+}
+.tt-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tt-row {
+  --tt-tone: var(--ds-accent);
+  display: grid;
+  grid-template-columns: minmax(8rem, 12rem) minmax(4rem, 1fr) minmax(6rem, auto) auto;
+  align-items: center;
+  gap: 10px;
+}
+.tt-waiting {
+  --tt-tone: var(--ds-warning);
+}
+.tt-never {
+  --tt-tone: var(--ds-fg-subtle);
+}
+.tt-name {
+  font-size: 12.5px;
+  color: var(--ds-fg);
+}
+.tt-meter {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--ds-subtle);
+  overflow: hidden;
+}
+.tt-meter-fill {
+  display: block;
+  height: 100%;
+  background: var(--tt-tone);
+}
+.tt-count {
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-fg-muted);
+  text-align: right;
+}
+.tt-error {
+  color: var(--ds-danger);
+}
+@media (max-width: 560px) {
+  .tt-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .tt-meter {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+}

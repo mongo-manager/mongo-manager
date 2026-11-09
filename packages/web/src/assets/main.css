@@ -1,0 +1,368 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 Gokhan OZGEZER */
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * UI redesign R1 revision 2 (spec §1.2): neutral tokens, light here and dark below, then the five
+ * accents. Screens use only the names these map to (bg-surface, text-fg-muted, border-line…); raw
+ * colors never appear in templates.
+ */
+:root {
+  --ds-canvas: #f7f8fa;
+  --ds-surface: #ffffff;
+  --ds-raised: #ffffff;
+  --ds-subtle: #f3f4f6;
+  --ds-muted: #e9ebef;
+  --ds-line: rgb(17 24 39 / 0.08);
+  --ds-line-strong: rgb(17 24 39 / 0.16);
+  --ds-fg: #111827;
+  --ds-fg-muted: #4b5563;
+  --ds-fg-subtle: #626975;
+  /* Selected text: a tint of the accent that stands out from the page, under the normal text colour. */
+  --ds-selection: color-mix(in srgb, var(--ds-accent) 28%, transparent);
+  --ds-accent: #047a4d;
+  --ds-accent-hover: #03673f;
+  --ds-on-accent: #ffffff;
+  --ds-accent-soft: #e7f5ee;
+  --ds-accent-fg: #047a4d;
+  --ds-focus: #047a4d;
+  --ds-danger: #c9241a;
+  --ds-danger-soft: #fdefee;
+  --ds-on-danger: #ffffff;
+  --ds-warning: #a34a00;
+  --ds-warning-soft: #fff5e5;
+  --ds-info: #1c64c8;
+  --ds-info-soft: #eef4fe;
+  --ds-success: #0b7a4b;
+  --ds-success-soft: #e8f7ef;
+  --ds-tooltip: #1f2937;
+  --ds-on-tooltip: #f9fafb;
+  --ds-v-string: #0b7a4b;
+  --ds-v-number: #1c5cd1;
+  --ds-v-boolean: #8a3fd1;
+  --ds-v-null: #626975;
+  --ds-v-date: #a04f00;
+  --ds-v-oid: #9c3d1a;
+  --ds-v-key: #9d174d;
+  --ds-shadow-xs: 0 1px 2px rgb(17 24 39 / 0.04);
+  --ds-shadow-float: 0 12px 32px -12px rgb(17 24 39 / 0.18), 0 0 0 1px var(--ds-line);
+  --ds-shadow-dialog: 0 24px 64px -16px rgb(17 24 39 / 0.28), 0 0 0 1px var(--ds-line);
+  --ds-backdrop: rgb(17 24 39 / 0.32);
+  --row-height: 2rem;
+  color-scheme: light;
+}
+.dark {
+  --ds-canvas: #0b0c0f;
+  --ds-surface: #111317;
+  --ds-raised: #16191e;
+  --ds-subtle: #1a1d23;
+  --ds-muted: #23272f;
+  --ds-line: rgb(255 255 255 / 0.07);
+  --ds-line-strong: rgb(255 255 255 / 0.13);
+  --ds-fg: #edeef0;
+  --ds-fg-muted: #a1a7b3;
+  --ds-fg-subtle: #8a919c;
+  --ds-selection: color-mix(in srgb, var(--ds-accent) 40%, transparent);
+  --ds-accent: #2fbf7f;
+  --ds-accent-hover: #4fd69a;
+  --ds-on-accent: #04140d;
+  --ds-accent-soft: rgb(47 191 127 / 0.14);
+  --ds-accent-fg: #4fd69a;
+  --ds-focus: #2fbf7f;
+  --ds-danger: #ff6b5f;
+  --ds-danger-soft: rgb(255 107 95 / 0.12);
+  --ds-on-danger: #1a0503;
+  --ds-warning: #ffb45c;
+  --ds-warning-soft: rgb(255 180 92 / 0.12);
+  --ds-info: #7ab0ff;
+  --ds-info-soft: rgb(122 176 255 / 0.12);
+  --ds-success: #5fe3a1;
+  --ds-success-soft: rgb(95 227 161 / 0.12);
+  --ds-tooltip: #e5e7eb;
+  --ds-on-tooltip: #111827;
+  --ds-v-string: #6fe3a6;
+  --ds-v-number: #7ab0ff;
+  --ds-v-boolean: #c8a6ff;
+  --ds-v-null: #8a919c;
+  --ds-v-date: #ffb86b;
+  --ds-v-oid: #f5a07a;
+  --ds-v-key: #f9a8d4;
+  --ds-shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+  --ds-shadow-float: 0 12px 32px -12px rgb(0 0 0 / 0.6), 0 0 0 1px var(--ds-line);
+  --ds-shadow-dialog: 0 24px 64px -16px rgb(0 0 0 / 0.7), 0 0 0 1px var(--ds-line);
+  --ds-backdrop: rgb(0 0 0 / 0.55);
+  color-scheme: dark;
+}
+
+/*
+ * The accents (spec §1.2): on <html> (the user's choice) or on any element, so one part of a page can
+ * show another accent. Light first, then dark: the dark rules must come later to win.
+ */
+[data-accent='emerald'] {
+  --ds-accent: #047a4d;
+  --ds-accent-hover: #03673f;
+  --ds-on-accent: #ffffff;
+  --ds-accent-soft: #e7f5ee;
+  --ds-accent-fg: #047a4d;
+  --ds-focus: #047a4d;
+}
+[data-accent='indigo'] {
+  --ds-accent: #4f46e5;
+  --ds-accent-hover: #4338ca;
+  --ds-on-accent: #ffffff;
+  --ds-accent-soft: #eef0ff;
+  --ds-accent-fg: #4338ca;
+  --ds-focus: #6366f1;
+}
+[data-accent='violet'] {
+  --ds-accent: #7c3aed;
+  --ds-accent-hover: #6d28d9;
+  --ds-on-accent: #ffffff;
+  --ds-accent-soft: #f3eeff;
+  --ds-accent-fg: #6d28d9;
+  --ds-focus: #8b5cf6;
+}
+[data-accent='ocean'] {
+  --ds-accent: #2563eb;
+  --ds-accent-hover: #1d4ed8;
+  --ds-on-accent: #ffffff;
+  --ds-accent-soft: #eff5ff;
+  --ds-accent-fg: #1d4ed8;
+  --ds-focus: #3b82f6;
+}
+[data-accent='rose'] {
+  --ds-accent: #db2777;
+  --ds-accent-hover: #be185d;
+  --ds-on-accent: #ffffff;
+  --ds-accent-soft: #fdeef5;
+  --ds-accent-fg: #be185d;
+  --ds-focus: #ec4899;
+}
+.dark[data-accent='emerald'],
+.dark [data-accent='emerald'] {
+  --ds-accent: #2fbf7f;
+  --ds-accent-hover: #4fd69a;
+  --ds-on-accent: #04140d;
+  --ds-accent-soft: rgb(47 191 127 / 0.14);
+  --ds-accent-fg: #4fd69a;
+  --ds-focus: #2fbf7f;
+}
+.dark[data-accent='indigo'],
+.dark [data-accent='indigo'] {
+  --ds-accent: #8b8cff;
+  --ds-accent-hover: #a5a6ff;
+  --ds-on-accent: #0b0b2e;
+  --ds-accent-soft: rgb(139 140 255 / 0.14);
+  --ds-accent-fg: #a5a6ff;
+  --ds-focus: #8b8cff;
+}
+.dark[data-accent='violet'],
+.dark [data-accent='violet'] {
+  --ds-accent: #a78bfa;
+  --ds-accent-hover: #c4b5fd;
+  --ds-on-accent: #1a0b3a;
+  --ds-accent-soft: rgb(167 139 250 / 0.14);
+  --ds-accent-fg: #c4b5fd;
+  --ds-focus: #a78bfa;
+}
+.dark[data-accent='ocean'],
+.dark [data-accent='ocean'] {
+  --ds-accent: #60a5fa;
+  --ds-accent-hover: #93c5fd;
+  --ds-on-accent: #071a33;
+  --ds-accent-soft: rgb(96 165 250 / 0.14);
+  --ds-accent-fg: #93c5fd;
+  --ds-focus: #60a5fa;
+}
+.dark[data-accent='rose'],
+.dark [data-accent='rose'] {
+  --ds-accent: #f472b6;
+  --ds-accent-hover: #f9a8d4;
+  --ds-on-accent: #2e0717;
+  --ds-accent-soft: rgb(244 114 182 / 0.14);
+  --ds-accent-fg: #f9a8d4;
+  --ds-focus: #f472b6;
+}
+
+@theme inline {
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --color-canvas: var(--ds-canvas);
+  --color-surface: var(--ds-surface);
+  --color-raised: var(--ds-raised);
+  --color-subtle: var(--ds-subtle);
+  --color-muted: var(--ds-muted);
+  --color-line: var(--ds-line);
+  --color-line-strong: var(--ds-line-strong);
+  --color-fg: var(--ds-fg);
+  --color-fg-muted: var(--ds-fg-muted);
+  --color-fg-subtle: var(--ds-fg-subtle);
+  --color-accent: var(--ds-accent);
+  --color-accent-hover: var(--ds-accent-hover);
+  --color-on-accent: var(--ds-on-accent);
+  --color-accent-soft: var(--ds-accent-soft);
+  --color-accent-fg: var(--ds-accent-fg);
+  --color-focus: var(--ds-focus);
+  --color-danger: var(--ds-danger);
+  --color-danger-soft: var(--ds-danger-soft);
+  --color-on-danger: var(--ds-on-danger);
+  --color-warning: var(--ds-warning);
+  --color-warning-soft: var(--ds-warning-soft);
+  --color-info: var(--ds-info);
+  --color-info-soft: var(--ds-info-soft);
+  --color-success: var(--ds-success);
+  --color-success-soft: var(--ds-success-soft);
+  --color-tooltip: var(--ds-tooltip);
+  --color-on-tooltip: var(--ds-on-tooltip);
+  --color-v-string: var(--ds-v-string);
+  --color-v-number: var(--ds-v-number);
+  --color-v-boolean: var(--ds-v-boolean);
+  --color-v-null: var(--ds-v-null);
+  --color-v-date: var(--ds-v-date);
+  --color-v-oid: var(--ds-v-oid);
+  --color-v-key: var(--ds-v-key);
+
+  --shadow-xs: var(--ds-shadow-xs);
+  --shadow-float: var(--ds-shadow-float);
+  --radius-card: 14px;
+  --shadow-dialog: var(--ds-shadow-dialog);
+
+  --text-caption: 11px;
+  --text-caption--line-height: 16px;
+  --text-small: 12px;
+  --text-small--line-height: 16px;
+  --text-ui: 13px;
+  --text-ui--line-height: 20px;
+  --text-title-s: 15px;
+  --text-title-s--line-height: 22px;
+  --text-title-s--letter-spacing: -0.01em;
+  --text-title-m: 18px;
+  --text-title-m--line-height: 26px;
+  --text-title-m--letter-spacing: -0.01em;
+  --text-title-l: 22px;
+  --text-title-l--line-height: 30px;
+  --text-title-l--letter-spacing: -0.015em;
+
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-panel: cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-pop: ds-pop 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-fade: ds-fade 160ms ease-out;
+  --animate-rise: ds-rise 220ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes ds-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-2px) scale(0.98);
+  }
+}
+@keyframes ds-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes ds-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+/* DsProgress without a value: a third of the bar sweeping across. */
+@keyframes ds-indeterminate {
+  from {
+    left: -33%;
+  }
+  to {
+    left: 100%;
+  }
+}
+@keyframes ds-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    background: var(--ds-canvas);
+    color: var(--ds-fg);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 20px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  /* Plan ruling 5: in the base layer, so a component may draw its own ring instead. */
+  :focus-visible {
+    outline: 2px solid var(--ds-focus);
+    outline-offset: 2px;
+  }
+  /* Both set: with a background alone, the browser paints selected text white (UI redesign R1 review). */
+  ::selection {
+    background: var(--ds-selection);
+    color: var(--ds-fg);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ds-line-strong) transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/*
+ * vue-echarts' own rules (phase 1j). It adds them as a constructed stylesheet, which our CSP allows;
+ * browsers without constructed stylesheets would fall back to a <style> element, which style-src
+ * 'self' blocks, so the same rules also ship here.
+ */
+x-vue-echarts {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+}
+x-vue-echarts > .echarts-host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+}
+
+/* Phase 3d-3c: printing a recovery kit prints the kit alone; final review minor 1: only while a kit
+   is on screen — any other page prints as it is. */
+@media print {
+  body:has([data-print]) * {
+    visibility: hidden;
+  }
+  [data-print],
+  [data-print] * {
+    visibility: visible;
+  }
+  [data-print] {
+    position: absolute;
+    inset: 0;
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    background: white;
+    color: black;
+  }
+}

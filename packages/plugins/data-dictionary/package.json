@@ -1,0 +1,17 @@
+{
+  "name": "@mongo-manager/plugin-data-dictionary",
+  "private": true,
+  "version": "1.2.0",
+  "type": "module",
+  "description": "First-party Mongo Manager plugin: a database's data dictionary — every collection's fields, types, references, indexes and validation rules — saved as Markdown or HTML (plugins wave 3).",
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "happy-dom": "^21.0.4",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.2"
+  }
+}

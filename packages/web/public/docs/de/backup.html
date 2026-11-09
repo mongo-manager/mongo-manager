@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Sicherung und Wiederherstellung · Mongo Manager Dokumentation</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager Dokumentation</a>
+      <details class="lang-menu">
+        <summary>Deutsch</summary>
+        <span class="langs" role="group" aria-label="Sprache">
+          <a lang="en" hreflang="en" href="../backup.html">English</a>
+          <a lang="tr" hreflang="tr" href="../tr/backup.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/backup.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/backup.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/backup.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/backup.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/backup.html">한국어</a>
+          <strong lang="de">Deutsch</strong>
+          <a lang="fr" hreflang="fr" href="../fr/backup.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/backup.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Überblick</a>
+      <a href="getting-started.html">Erste Schritte</a>
+      <a href="security.html">Sicherheit</a>
+      <a href="deployment.html">Bereitstellung</a>
+      <a href="import-export.html">Import und Export</a>
+      <strong>Sicherung und Wiederherstellung</strong>
+      <a href="watch.html">Änderungen beobachten</a>
+      <a href="sync.html">Live-Synchronisierung</a>
+      <a href="server-admin.html">Serververwaltung</a>
+      <a href="ai.html">KI-Assistent</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Tastenkombinationen</a>
+    </nav>
+    <main>
+      <h1>Sicherung und Wiederherstellung</h1>
+      <p>
+        Sichern Sie eine Collection, eine Datenbank oder den gesamten Server, und laden Sie die Datei dann
+        herunter oder behalten Sie sie eine Zeit lang auf dem Server. Stellen Sie jedes Ihrer Backups, ein
+        mongodump-Archiv oder ein Zip eines mongodump-Ordners in den von Ihnen gewählten Namespaces wieder
+        her. Beides läuft als Hintergrundauftrag, den Sie in der Auftragsliste verfolgen können.
+      </p>
+      <p>
+        Starten Sie über das Menü einer Collection oder Datenbank in der Seitenleiste, das Menü der
+        Verbindung, den Tab Backups einer Verbindung, den Abschnitt Backups einer Datenbank oder einer Collection oder
+        über die Befehlspalette („Backup erstellen…“, „Backup wiederherstellen…“).
+      </p>
+
+      <h2 id="taking-a-backup">Backup erstellen</h2>
+      <p>
+        Das Backup öffnet sich auf einem Bildschirm mit der empfohlenen Auswahl für das, woraus Sie es
+        geöffnet haben: ein verschlüsseltes Backup, wenn die Daten personenbezogene Felder enthalten, sonst
+        ein komprimiertes Archiv. Die Prüfungen daneben werden bei jeder Änderung aktualisiert: die erwartete
+        Größe und Dauer, Ihr freier Backup-Speicherplatz, personenbezogene Felder, die in der Datei lesbar
+        wären, und alles, was ausgelassen wird. Jede Prüfung, die sich beheben lässt, hat dafür eine
+        Schaltfläche. „Anpassen…“ öffnet die Schritte: Umfang, Engine, Inhalt, Schutz und eine
+        Zusammenfassung.
+      </p>
+      <p>
+        Das Backup läuft im Hintergrund: Sie können den Dialog jederzeit schließen. Sobald es startet, öffnet sich der Abschnitt Backups dessen, was es sichert: der Collection, der Datenbank oder der Verbindung. Während es läuft, zeigen
+        der Abschnitt Backups und die Auftragsliste jeden Namespace mit eigenem Fortschritt (wie viele
+        fertig sind, welcher gerade gelesen wird und die Phase). Nach Abschluss bietet die zugehörige
+        Meldung „Herunterladen“ und „Bericht öffnen“ an.
+      </p>
+      <p>
+        Ein Backup und eine Wiederherstellung benötigen den Server der Verbindung und werden nur angezeigt,
+        solange Mongo Manager mit ihm verbunden ist (seine Datenbanken wurden gelesen). Während die
+        Verbindung aufgebaut wird oder wenn sie nicht möglich ist (ein Timeout, ein Netzwerk-, DNS- oder
+        TLS-Fehler, eine abgelehnte Anmeldung, ein nicht verfügbarer Server), zeigt die Seite der Verbindung
+        nur ihre Übersicht mit dem Fehler, Erneut versuchen und Bearbeiten: kein Leistung, Beobachten,
+        Benutzer und Rollen, Warnungen, Personenbezogene Daten oder Backups, keine Neue Datenbank und keine
+        Shell; die Seite einer Datenbank zeigt kein Modell, Beobachten oder Backups. Die Menüs des Baums und
+        dieser Seiten lassen Sichern, Wiederherstellen, Live-Synchronisierung, die Shell sowie Erstellen,
+        Umbenennen und Verwerfen aus, und die Befehle der Befehlspalette für den Server weisen darauf hin,
+        dass keine Verbindung besteht. Ein auf anderem Weg geöffnetes Backup oder eine Wiederherstellung
+        weist darauf hin, mit Erneut versuchen, und startet nichts. Eine Antwort, die nicht das Erreichen
+        des Servers betrifft (alle Verbindungen kurz belegt, eine Abfrage, die ihr Zeitlimit überschritten
+        hat), blendet nichts aus. Alles kehrt zurück, sobald die Datenbanken gelesen wurden: durch Erneut
+        versuchen, Aktualisieren, einen bestandenen Verbindungstest oder von selbst, wenn die Ursache von
+        selbst vergeht (das Netzwerk, ein Timeout, DNS, ein nicht verfügbarer Server): Eine geöffnete Seite
+        versucht es alle 15 Sekunden erneut, solange der Browser sie anzeigt. Eine vom Server abgelehnte
+        Anmeldung (ein Benutzername oder Passwort, eine SSH-Anmeldung, ein geänderter SSH-Hostschlüssel)
+        wird fünf Minuten lang gemerkt, oder bis die Verbindung bearbeitet wird, ihre Person sich erneut
+        anmeldet (bei einer Verbindung, bei der sich jede Person selbst anmeldet) oder ein Verbindungstest
+        besteht: Währenddessen meldet sich nichts in Mongo Manager (Seiten, Widgets, die Zustandsprüfung,
+        Aufträge, die Shell) erneut dafür an, und solange sie gemerkt wird, können nur die Administratoren
+        der Verbindung sie erneut testen, damit die Sperrregeln eines Verzeichnisdienstes das Konto nicht
+        aussperren; die Fehlermeldung nennt, wie es erneut versucht werden kann.
+      </p>
+
+      <h2 id="formats">Formate</h2>
+      <ul>
+        <li>
+          <code>.archive</code>: ein mongodump-Archiv; es lässt sich mit
+          <code>mongorestore --archive</code> öffnen.
+        </li>
+        <li>
+          <code>.archive.gz</code>: dasselbe Archiv, mit gzip komprimiert;
+          <code>mongorestore --archive --gzip</code>.
+        </li>
+        <li>
+          <code>.mmbak</code>: mit Zstandard komprimiert und dann mit AES-256-GCM in Teilen versiegelt, die
+          beim Lesen jeweils verifiziert werden. Das Passwort benötigt mindestens 12 Zeichen; „Starkes
+          Passwort generieren“ erzeugt eines für Sie. Das Passwort wird nirgends gespeichert und lässt sich
+          nicht wiederherstellen: Ohne es kann das Backup nicht geöffnet werden. Öffnen Sie es in Mongo
+          Manager, oder wandeln Sie es mit
+          <code>mongo-manager backup decrypt &lt;file&gt; -o &lt;file.archive&gt;</code>
+          in ein einfaches Archiv um (das Passwort wird ohne Echo abgefragt oder mit
+          <code>--password-stdin</code> aus einer Pipe gelesen).
+          <code>mongo-manager backup inspect &lt;file&gt;</code> listet auf, was ein beliebiges Backup
+          enthält.
+        </li>
+      </ul>
+
+      <h2 id="engines">Engines</h2>
+      <ul>
+        <li>
+          Integriert: liest über Mongo Manager, sodass die Regeln für personenbezogene Felder und die
+          Maskierung gelten. Sie funktioniert in jeder Installation, und ihre Archive lassen sich mit
+          mongorestore öffnen.
+        </li>
+        <li>
+          mongodump und mongorestore: die eigenen Werkzeuge von MongoDB, die bei sehr großen Datenmengen
+          schneller sein können. Sie werden Administratoren der Verbindung angeboten, die personenbezogene
+          Werte sehen, nicht über SSH-Tunnel. Installieren Sie die MongoDB Database Tools 100.9 oder neuer
+          (100.16 oder neuer für MongoDB 8.3 und neuer, was die Werkzeuge des Docker-Images noch nicht sind:
+          dort wird die integrierte Engine verwendet) und setzen Sie <code>MM_MONGODB_TOOLS_PATH</code>, oder
+          verwenden Sie das Docker-Image, das sie enthält. Zugangsdaten gelangen in einer privaten,
+          temporären Konfigurationsdatei zu den Werkzeugen, die nach deren Ende gelöscht wird, nie auf der
+          Kommandozeile.
+        </li>
+      </ul>
+
+      <h2 id="time-series">Time Series</h2>
+      <p>
+        Eine Time-Series-Collection wird so gesichert, wie mongodump sie für die Version des Servers ablegt:
+        ab MongoDB 8.3 unter ihrem eigenen Namen, gelesen und geschrieben darüber mit
+        <code>rawData</code>; vor 8.3 unter <code>system.buckets.&lt;name&gt;</code>. Die integrierte Engine
+        stellt beide Arten wieder her, die von Mongo Manager und die von mongodump, in jeder unterstützten
+        Version, ein Backup von 8.3 auch auf einem älteren Server. mongorestore benötigt 100.16 oder neuer
+        für ein Backup oder ein Ziel ab 8.3 und findet die Time-Series-Collection eines 8.3-Backups nur,
+        wenn mongodump 100.16 oder neuer oder diese Version von Mongo Manager es erstellt hat: Bei einem auf
+        andere Weise erstellten bietet der Plan stattdessen die integrierte Engine an. Ein Server, der seine
+        Version nicht nennt, wird nie erraten: Seine Time-Series-Collection wird mit Angabe des Grundes aus
+        einem Backup ausgelassen, die Wiederherstellung einer solchen wird in ihrem Plan abgelehnt, und ein
+        Test einer solchen stoppt, bevor eines ihrer Dokumente geschrieben wird, wobei seine
+        Scratch-Datenbank verworfen wird. Bei aktivierter Anmeldung unter MongoDB 8.3 und neuer benötigt das
+        Konto, das eine Time-Series-Collection sichert oder wiederherstellt, zusätzlich das Recht
+        <code>performRawDataOperations</code> (die Rolle <code>backup</code> von MongoDB hat es; gewähren Sie
+        es für eine Wiederherstellung zusammen mit <code>restore</code>).
+      </p>
+
+      <h2 id="personal-data">Personenbezogene Daten</h2>
+      <ul>
+        <li>
+          Ein Benutzer, der personenbezogene Werte nicht sehen darf, sichert an deren Stelle
+          <code>***</code>: Ein solches Backup ist stets anonym. Jeder kann ein anonymes Backup wählen.
+        </li>
+        <li>
+          Time-Series-Collections mit personenbezogenen Feldern sowie Views, deren Definition einen Wert
+          enthält, der maskiert würde, werden aus einem maskierten Backup ausgelassen. Eine Collection, deren
+          Validator einen solchen Wert enthält, behält ihre maskierten Daten, ohne den Validator. Der
+          Bericht nennt, was ausgelassen wurde und warum.
+        </li>
+        <li>
+          Ein maskiertes Backup lässt sich nach einer Änderung der Regeln für personenbezogene Felder weder
+          herunterladen noch wiederherstellen.
+        </li>
+        <li>
+          Das Wiederherstellen eines maskierten Backups über vorhandene Dokumente erfordert eine
+          Bestätigung, da <code>***</code> die gespeicherten Werte ersetzt.
+        </li>
+      </ul>
+
+      <h2 id="restoring">Wiederherstellen</h2>
+      <ol>
+        <li>
+          Legen Sie eine Datei ab, wählen Sie eine aus oder wählen Sie eines Ihrer aufbewahrten Backups.
+          Große Dateien werden in Teilen hochgeladen und nach einer unterbrochenen Verbindung fortgesetzt;
+          was die Datei enthält, wird angezeigt, noch während sie hochgeladen wird. Ein verschlüsseltes
+          Backup fragt nach seinem Passwort.
+        </li>
+        <li>
+          Wählen Sie, was wiederhergestellt wird und wohin: Benennen Sie die Datenbank für alle Namespaces
+          auf einmal um, hängen Sie <code>_restored</code> an die Namen an, oder wählen Sie „In eine neue
+          Datenbank“ (benannt nach der gesicherten Datenbank und dem Datum, nie eine, die das Ziel bereits
+          hat; ein Backup mehrerer Datenbanken erhält für jede eine neue Datenbank, sodass sich Collections
+          gleichen Namens nie begegnen). Bereits vorhandene Ziele sind mit ihrer Dokumentanzahl markiert.
+          „Hier wiederherstellen…“ an einer Collection stellt in diese wieder her: Ein Backup einer
+          Collection wird in diese Collection geschrieben, wie auch immer sie hieß.
+        </li>
+        <li>
+          Wählen Sie, wie geschrieben wird: hinzufügen (ein Dokument, dessen <code>_id</code> schon
+          vorhanden ist, wird abgelehnt und aufgelistet), Upsert nach Schlüsselfeldern oder ersetzen. Ein
+          Ersetzen stellt in eine Staging-Collection wieder her und setzt sie erst an die Stelle, wenn alles
+          angekommen ist, sodass eine fehlgeschlagene oder abgebrochene Wiederherstellung das Ziel
+          unverändert lässt. Mit der integrierten Engine bleibt das, was ein Ersetzen nicht aus dem Backup
+          übernimmt (seine Indizes oder seine Optionen und der Validator, wenn diese ausgelassen werden), das
+          Eigene des Ziels: Lässt sich einer seiner eigenen Indizes nicht neu aufbauen, oder würde seine
+          eigene Obergrenze weniger Dokumente behalten, als geschrieben wurden, wird nichts ersetzt.
+          mongorestore kann sie nicht behalten. Eine Time-Series-Collection lässt sich nicht ersetzen, weder
+          im Backup noch am Ziel; stellen Sie sie in einer neuen Collection wieder her. Eine erneut
+          ausgeführte Wiederherstellung findet die Dokumente, die sie bereits geschrieben hat, wie sie waren,
+          und zählt sie als bereits vorhanden, anstatt sie abzulehnen, ebenso ein Testlauf.
+        </li>
+        <li>
+          Bestätigen Sie, was bestätigt werden muss: die TTL-Indizes und den Collection-Ablauf, die die
+          geschriebene Collection haben wird, die des Backups oder die eigenen des Ziels, die ein Ersetzen
+          behält (der Bericht und ein Testlauf zählen die Dokumente, die gelöscht werden, sobald sie
+          geschrieben sind, weil ihre Daten bereits abgelaufen sind, einschließlich des eigenen TTL des
+          Ziels), Regeln für personenbezogene Felder, die dem Ziel fehlen (ein Administrator kann sie
+          hinzufügen), und den Namen jedes nicht leeren Ziels, das ein Ersetzen überschreibt, eingetippt.
+        </li>
+        <li>
+          Führen Sie einen Testlauf aus, um zu sehen, was geschehen würde, dann „Jetzt mit diesen
+          Einstellungen wiederherstellen“, oder starten Sie die Wiederherstellung. Die Prüfsumme jedes
+          Namespace wird verifiziert; eine Abweichung lässt die Wiederherstellung fehlschlagen. Ihr
+          Fortschritt wird je Namespace angezeigt, dann die Indizes und Views, die sie aufbaut; nach
+          Abschluss öffnen ihre Meldung und ihre Zeile in der Auftragsliste, was sie geschrieben hat
+          („Collection öffnen“ oder „Datenbank öffnen“ bei mehreren), und ihren Bericht.
+        </li>
+      </ol>
+
+      <h2 id="kept-backups">Aufbewahrte Backups</h2>
+      <p>
+        Der Abschnitt Backups einer Verbindung, Datenbank oder Collection listet Ihre Backups (der einer Collection die, die sie enthalten) mit Schutz, Größe, Alter
+        und Ablaufzeitpunkt auf sowie Ihre Nutzung des Backup-Speicherplatzes. Das Menü „…“ eines Backups
+        lädt es herunter, sendet oder stellt es wieder her oder löscht es (mit fünf Sekunden zum
+        Rückgängigmachen). Backups gehören nur Ihnen; sie werden entzogen, wenn Sie den Zugriff auf ihre
+        Verbindung verlieren oder personenbezogene Werte dort für Sie ausgeblendet werden.
+      </p>
+
+      <h2 id="destinations">Backup-Ziele</h2>
+      <p>
+        Ein Backup kann auch an einen anderen Ort gesendet werden: einen Ordner auf dem Server,
+        S3-kompatiblen Speicher, Google Drive oder einen WebDAV-Server. Administratoren definieren Ziele
+        unter <em>Kontomenü → Backup-Ziele</em> und legen fest, wer welches verwenden darf; alle anderen
+        sehen nur den Namen eines Ziels, nie seine Adresse oder Schlüssel. Die Schlüssel werden verschlüsselt
+        gespeichert und können nur ersetzt, nie zurückgelesen werden.
+      </p>
+      <ul>
+        <li>
+          <strong>Serverordner:</strong> ein absoluter Pfad innerhalb eines der in
+          <code>MM_BACKUP_FOLDER_ROOTS</code> aufgeführten Ordner, außerhalb des Datenverzeichnisses. Ohne
+          diese Einstellung lässt sich kein Ordnerziel anlegen.
+        </li>
+        <li>
+          <strong>S3-kompatibler Speicher:</strong> ein Endpunkt, eine Region, ein Bucket, eine
+          Zugriffsschlüssel-ID und ein Secret. Voreinstellungen füllen aus, was sie können, für Amazon S3,
+          MinIO, Cloudflare R2 (Ihre Konto-ID), Backblaze B2, DigitalOcean Spaces, DigitalOcean Spaces Cold
+          Storage, Wasabi oder einen beliebigen anderen S3-Dienst.
+        </li>
+        <li>
+          <strong>Google Drive:</strong> Ihr eigener Google-Cloud-OAuth-Client, verbunden mit einem auf dem
+          Bildschirm angezeigten Code, oder ein Dienstkonto, das in ein Shared Drive schreibt (siehe unten).
+        </li>
+        <li>
+          <strong>WebDAV:</strong> die Adresse des Servers, ein Benutzername und ein App-Passwort
+          (Nextcloud, ownCloud oder ein beliebiger WebDAV-Server). Nextcloud und ownCloud nehmen große
+          Backups in fortsetzbaren Blöcken entgegen.
+        </li>
+        <li>
+          <strong>Google Cloud Storage:</strong> ein Bucket, ein optionales Präfix, die Speicherklasse, in
+          der Backups geschrieben werden (Standard, Nearline, Coldline oder Archive – jede Klasse wird
+          sofort gelesen; kältere berechnen eine Mindestdauer) und der JSON-Schlüssel eines Dienstkontos mit
+          der Rolle <em>Storage Object User</em> (ausreichend: Sie liest, schreibt, listet und löscht
+          Objekte) auf dem Bucket. Der Schlüssel wird auf dem Server versiegelt; nur die Adresse des Kontos
+          wird angezeigt. Uploads werden nach einer unterbrochenen Verbindung fortgesetzt, und jede Kopie
+          wird gegen den MD5 von Google geprüft.
+        </li>
+        <li>
+          <strong>Azure Blob Storage:</strong> ein Speicherkonto, ein Container, ein optionales Präfix und
+          die Zugriffsebene, in der Backups geschrieben werden (die Standardebene des Kontos, Hot, Cool, Cold
+          oder Archive), signiert mit einem SAS-Token oder dem Kontoschlüssel. Ein SAS-Token nur für den
+          Container, das lesen, hinzufügen, erstellen, schreiben, löschen und auflisten darf, ist die
+          engste Berechtigung; es funktioniert nach seinem Enddatum nicht mehr. Es werden nur die Felder
+          akzeptiert, die ein SAS-Token enthalten darf, und nur die Zugangsdaten gespeichert, die die
+          gewählte Signierart verwendet. Ein kleines Backup wird als Ganzes gegen seinen MD5 geprüft. Große
+          Backups werden in Blöcken hochgeladen, jeder von Azure gegen seinen MD5 geprüft, und der fertige
+          Blob wird anhand seiner Größe verglichen (Azure speichert keine Prüfsumme eines aus Blöcken
+          bestehenden Blobs); ein unterbrochener Upload wird nur von seinen eigenen Blöcken aus fortgesetzt –
+          jeder Upload markiert seine Blöcke, sodass Blöcke, die ein anderer Versuch hinterlassen hat, nie
+          für die dieses Uploads gehalten werden. Ein Blob in der Ebene Archive wird als archiviert
+          angezeigt: <em>Auftauen…</em> stellt ihn in Cool wieder her (er bleibt dort) mit Standard- oder
+          hoher Priorität. Manifeste werden nie in Archive geschrieben. <em>Erweitert</em> nimmt den
+          Endpunkt einer anderen Azure-Cloud und ein CA-Zertifikat entgegen.
+        </li>
+        <li>
+          <strong>SFTP:</strong> ein Server, sein Port, ein Benutzername, ein optionaler Ordner (der
+          Anmeldeordner, wenn leer; er muss existieren) und ein Passwort oder ein privater Schlüssel (mit
+          seiner Passphrase). Der Hostschlüssel des Servers wird über seinen SHA-256-Fingerabdruck
+          festgelegt: Lassen Sie den Fingerabdruck leer, führen Sie <em>Verbindung testen</em> aus,
+          vergleichen Sie den angezeigten Schlüssel mit dem eigenen des Servers (zum Beispiel
+          <code>ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub</code> auf dem Server) und wählen Sie
+          <em>Diesem Schlüssel vertrauen und erneut testen</em>. An einen Server, dessen Schlüssel nicht der
+          vertrauenswürdige ist, wird nichts gesendet; ein geänderter Schlüssel fragt erneut nach Passwort
+          oder Schlüssel. Backups werden als <code>.part</code>-Dateien geschrieben und nach dem Abschluss
+          umbenannt, und ein unterbrochener Upload wird dort fortgesetzt, wo er stehen blieb – sobald das,
+          was die Part-Datei enthält, zurückgelesen und als Anfang des Backups erkannt wurde (auch bei
+          ausgeschaltetem Zurücklesen); eine Part-Datei, die das nicht ist, beginnt von vorn. SFTP speichert
+          keine Prüfsumme, daher wird jede Kopie vollständig zurückgelesen, sofern <em>Durch Zurücklesen
+          prüfen</em> nicht ausgeschaltet ist. Ein erneut geschriebenes Manifest ersetzt das alte sofort,
+          wo der Server <code>posix-rename@openssh.com</code> anbietet (OpenSSH tut dies). Ein Download, der
+          eine Minute lang nichts empfängt, wird aufgegeben. Die Verbindung durchläuft dieselben
+          Adressprüfungen und denselben Proxy wie die anderen Ziele.
+        </li>
+      </ul>
+      <p>
+        Legen Sie unter <em>Zugriff</em> fest, wer das Ziel außerdem verwenden darf: <em>Senden</em> lässt
+        einen Benutzer seine eigenen Backups dorthin senden und die von ihm gesendeten wiederherstellen;
+        <em>Alles durchsuchen</em> lässt ihn jedes Backup dort lesen, auch die anderer Benutzer.
+        Administratoren können stets jedes Ziel verwenden.
+      </p>
+
+      <h3 id="testing">Ein Ziel testen</h3>
+      <p>
+        Der letzte Schritt des Editors, <em>Testen und speichern</em>, führt <em>Verbindung testen</em> auf
+        dem echten Ziel aus und zeigt jeden Schritt mit seiner Zeit: <em>Adresse auflösen</em>,
+        <em>Sicher verbinden</em>, <em>Anmelden</em>, <em>Testdatei schreiben</em>, <em>Zurücklesen</em>
+        und <em>Löschen</em>. Bei einem Serverordner lauten die ersten beiden <em>Auf diesem Server</em>.
+        Ein fehlgeschlagener Schritt nennt den Grund; die folgenden Schritte zeigen <em>Nicht
+        ausgeführt</em>. Eine nach dem Test geänderte Einstellung erfordert einen neuen Test.
+        <em>Speichern</em> nach einem fehlgeschlagenen Test fragt zuerst <em>Ohne bestandenen Test
+        speichern?</em>; <em>Trotzdem speichern</em> behält das Ziel, wie es ist, um es später zu beheben.
+        <em>Jetzt testen</em> im Menü eines Ziels testet ein gespeichertes erneut. Seine Karte zeigt das
+        Ergebnis: <em>Fehlerfrei</em>, <em>Handlungsbedarf</em>, <em>Neuverbindung nötig</em> (Google
+        Drive, siehe unten) oder <em>Noch nicht getestet</em>.
+      </p>
+
+      <h3 id="google-drive">Google Drive</h3>
+      <p>
+        Mongo Manager meldet sich bei Drive mit Ihrem eigenen Google-Cloud-OAuth-Client oder mit einem
+        Dienstkonto in Google Workspace an. Er fragt nur den Scope <code>drive.file</code> an: Er sieht die
+        Dateien und Ordner, die er selbst erstellt hat, und sonst nichts in diesem Drive.
+      </p>
+      <p><strong>Mit Ihrem Google-Konto</strong> (<em>Mein Google-Konto</em> im Editor):</p>
+      <ol>
+        <li>
+          Wählen oder erstellen Sie in der Google Cloud Console ein Projekt. Aktivieren Sie unter
+          <em>APIs &amp; Services → Library</em> die <em>Google Drive API</em>.
+        </li>
+        <li>
+          Konfigurieren Sie zuerst den <em>OAuth consent screen</em> (in neueren Konsolen ist das
+          <em>Google Auth Platform</em> mit <em>Branding</em> und <em>Audience</em>). Wählen Sie in Google
+          Workspace den Nutzertyp <em>Internal</em>: Nur Konten Ihrer Organisation können sich verbinden.
+          Wählen Sie sonst <em>External</em> und dann <em>Publish app</em>, sodass sein Status <em>In
+          production</em> lautet; <code>drive.file</code> ist ein nicht sensibler Scope, daher erfordert die
+          Veröffentlichung keine Prüfung durch Google. Lassen Sie eine External-App nicht in <em>Testing</em>:
+          Google lässt ihre Anmeldungen nach 7 Tagen ablaufen, und das Ziel zeigt dann <em>Neuverbindung
+          nötig</em>.
+        </li>
+        <li>
+          Gehen Sie zu <em>Credentials → Create credentials → OAuth client ID</em> und wählen Sie den Typ
+          <em>TVs and Limited Input devices</em>. Eine Weiterleitungsadresse ist nicht nötig. Bewahren Sie
+          die Client-ID und das Client-Secret auf.
+        </li>
+        <li>
+          Geben Sie im Editor die <em>OAuth-Client-ID</em> und das <em>OAuth-Client-Secret</em> ein und
+          wählen Sie <em>Google-Konto verbinden</em>. Öffnen Sie die angezeigte Adresse (google.com/device)
+          und geben Sie den Code mit dem Google-Konto ein, das die Backups enthalten soll, bevor der
+          Countdown endet. Der Editor zeigt dann <em>Verbunden als</em> dieses Konto. Backups landen in
+          einem Ordner, den die App anlegt (<em>Ordnername</em>, „Mongo Manager backups“, sofern Sie ihn
+          nicht ändern).
+        </li>
+        <li>
+          Wenn Google die Verbindung nicht mehr akzeptiert (ihr Zugriff wurde im Google-Konto entfernt, sie
+          wurde sechs Monate lang nicht verwendet, oder die App blieb in Testing), zeigt das Ziel
+          <em>Neuverbindung nötig</em>. Öffnen Sie <em>Bearbeiten…</em>, wählen Sie <em>Erneut
+          verbinden</em>, geben Sie den neuen Code ein und speichern Sie. Dafür wird das gespeicherte
+          Client-Secret verwendet: Sie geben es nicht erneut ein, und es gelangt nie zurück in den Browser.
+        </li>
+      </ol>
+      <p>
+        <strong>Mit einem Dienstkonto</strong> (Google Workspace, <em>Dienstkonto</em> im Editor):
+      </p>
+      <ol>
+        <li>
+          Erstellen Sie im selben Projekt unter <em>IAM &amp; Admin → Service accounts</em> ein Dienstkonto
+          (es benötigt keine Rolle). Wählen Sie unter seinen <em>Keys</em> <em>Add key → Create new key</em>
+          vom Typ JSON.
+        </li>
+        <li>
+          Öffnen Sie in Google Drive das Shared Drive, das die Backups enthalten soll, wählen Sie
+          <em>Manage members</em> und fügen Sie die Adresse des Dienstkontos als <em>Content manager</em>
+          hinzu (ein Dienstkonto hat keinen eigenen Speicher). Die ID des Shared Drive ist der letzte Teil
+          seiner Adresse (<code>drive.google.com/drive/folders/&lt;id&gt;</code>).
+        </li>
+        <li>
+          Fügen Sie im Editor den Schlüssel ein oder legen Sie seine Datei auf
+          <em>Dienstkontoschlüssel (JSON)</em> ab, und geben Sie die <em>Shared-Drive-ID</em> ein. Auf dem
+          Bildschirm bleibt nur die Adresse des Kontos.
+        </li>
+      </ol>
+
+      <h3>Ein Backup senden</h3>
+      <p>
+        Wählen Sie beim Erstellen eines Backups unter <em>Ablageort</em> Ziele, oder verwenden Sie
+        <em>Senden…</em> an einem aufbewahrten Backup. Jede Kopie wird in der Zeile des Backups angezeigt:
+        <em>Wird gesendet an</em> ein Ziel mit seinem Fortschritt, <em>Auf</em> einem Ziel, sobald sie
+        verifiziert ist, oder <em>Nicht gesendet an</em> eines mit dem Grund.
+      </p>
+      <ul>
+        <li>
+          Ein Ziel akzeptiert <strong>nur verschlüsselte Backups</strong>, sofern ein Administrator dies
+          nicht ausschaltet (die Änderung wird im Audit-Protokoll erfasst).
+        </li>
+        <li>
+          Ein Backup von Daten mit Regeln für personenbezogene Felder geht nur dann an ein Ziel, wenn es
+          verschlüsselt oder maskiert ist, unabhängig von der Einstellung des Ziels.
+        </li>
+        <li>
+          Eine Kopie gilt erst als gesendet, wenn sie verifiziert ist. Jedes Ziel vergleicht die Größe.
+          S3-kompatibler Speicher prüft außerdem jeden hochgeladenen Teil beim Eintreffen gegen seinen
+          SHA-256, und Google Drive vergleicht die Prüfsumme, die es meldet. Ein Serverordner liest die
+          gesamte Datei zurück und vergleicht ihren SHA-256; ebenso WebDAV, wenn <em>Jeden Upload durch
+          Zurücklesen prüfen</em> eingeschaltet ist (es verdoppelt den Datenverkehr). Ohne dies prüft WebDAV
+          nur die Größe, und der Dialog weist darauf hin. Eine Kopie, deren Verifizierung fehlschlägt, wird
+          vom Ziel entfernt.
+        </li>
+        <li>
+          <em>Lokale Kopie nach verifiziertem Upload löschen</em> beruht auf dieser Verifizierung: Die Kopie
+          des Servers wird erst gelöscht, wenn jedes gewählte Ziel seine Kopie verifiziert hat. Schlägt eines
+          fehl, wird die lokale Kopie 7 Tage lang behalten, die Zeit, in der ein Senden wiederholt werden
+          kann, und der Auftrag weist darauf hin; ein abgebrochenes Senden löscht sie nie.
+        </li>
+        <li>
+          Jedes Ziel führt eine begrenzte Zahl von Übertragungen gleichzeitig aus
+          (<code>MM_BACKUP_DEST_TRANSFERS</code>, standardmäßig 2, für Senden und Herunterladen zusammen).
+          Weitere warten, und der Auftrag zeigt <em>Wartet auf</em> dieses Ziel, bis ein Platz frei ist.
+        </li>
+        <li>
+          <em>Wiederholen</em> an einer Kopie, die nicht gesendet wurde, sendet sie erneut und behält ihre
+          Wahl <em>Lokale Kopie löschen</em>: Sobald sie und die anderen mit dieser Wahl gesendeten Kopien
+          verifiziert sind, verschwindet die lokale Kopie. <em>Verwerfen</em> verwirft die fehlgeschlagene
+          Kopie und gibt ihren unfertigen Upload auf.
+        </li>
+        <li>
+          Ein durch einen Serverneustart abgebrochenes Senden wird zu einer nicht gesendeten Kopie mit dem
+          Grund „Der Server wurde während des Sendens neu gestartet.“; <em>Wiederholen</em> setzt es von den
+          bereits hochgeladenen Teilen aus fort, wo der Anbieter sie behält (S3-Multipart-Uploads,
+          Nextcloud-Blöcke).
+        </li>
+      </ul>
+
+      <h3>Was dort gespeichert wird</h3>
+      <p>
+        Dateien liegen unter <code>mongo-manager/&lt;year&gt;/&lt;month&gt;/</code> im Ordner oder Präfix
+        des Ziels, benannt nach Datum, Uhrzeit und einer kurzen ID, neben einem kleinen
+        <code>.json</code>-Manifest mit Größe, Format und Prüfsumme, das zuletzt geschrieben wird, sobald
+        die Datei verifiziert ist. Weder die Namen noch das Manifest enthalten Datenbank- oder
+        Collection-Namen.
+      </p>
+
+      <h3>Von einem Ziel wiederherstellen</h3>
+      <p>
+        Wählen Sie den Tab des Ziels in der Karte Backups oder <em>Von einem Backup-Ziel</em> im
+        Wiederherstellungsblatt, und wählen Sie ein Backup. Das Wiederherstellen erfordert das Recht, in die
+        Zielverbindung zu schreiben. Die Datei wird auf den Server heruntergeladen und beim Eintreffen in
+        der Vorschau gezeigt; die Wiederherstellung kann beginnen, sobald der Download abgeschlossen ist
+        und seine Prüfsumme mit der beim Senden aufgezeichneten oder der des Manifests übereinstimmt. Eine
+        Datei mit abweichender Prüfsumme wird entfernt. Eine Datei ohne Manifest (von einem anderen
+        Werkzeug oder von Hand dort abgelegt) wird als <em>Von einer anderen Installation</em> aufgelistet:
+        Sie lässt sich wiederherstellen, aber nichts kann sie vorher verifizieren, und das
+        Wiederherstellungsblatt weist darauf hin.
+      </p>
+      <p>
+        Ein fehlgeschlagener Download behält, was er empfangen hat: Die erneute Wahl desselben Backups setzt
+        ihn fort. Ein abgebrochener Download wird verworfen, ebenso einer, dessen empfangener Teil nutzlos
+        ist (seine Prüfsumme weicht ab, oder die Datei ist weg). Der bereits empfangene Teil zählt gegen
+        Ihren Backup-Speicherplatz, bis er fortgesetzt, verworfen wird oder abläuft
+        (<code>MM_BACKUP_TTL_HOURS</code>).
+      </p>
+      <p>
+        Definieren Sie das Ziel in einer neuen Installation erneut mit denselben Einstellungen: derselbe
+        Ordner; derselbe Endpunkt, Bucket und dasselbe Präfix; dieselbe WebDAV-Adresse und derselbe Ordner.
+        Verwenden Sie für Google Drive denselben OAuth-Client (oder dasselbe Dienstkonto und Shared Drive)
+        und denselben Ordnernamen: Mit <code>drive.file</code> sieht ein Client nur die Dateien, die er
+        selbst erstellt hat. Administratoren sehen dann jedes Backup dort, auch die der alten Installation.
+        Alle anderen benötigen <em>Alles durchsuchen</em>: <em>Senden</em> zeigt nur die Backups, die dieser
+        Benutzer von dieser Installation aus gesendet hat.
+      </p>
+
+      <h3>Cold Storage und Archiv-Speicherklassen</h3>
+      <p>
+        DigitalOcean Spaces Cold Storage bewahrt Backups günstig auf, und sie bleiben sofort lesbar, aber
+        jedes Objekt wird mindestens 30 Tage lang berechnet, und der Anbieter kann Abrufe über ein
+        Kontingent hinaus berechnen: Löschen oder Wiederherstellen kurz nach dem Senden kostet Geld.
+      </p>
+      <p>
+        Die <em>Speicherklasse</em> eines S3-Ziels (unter <em>Erweitert</em>, standardmäßig
+        <code>STANDARD</code>) gilt für die Backup-Dateien; Manifeste bleiben in <code>STANDARD</code>.
+        Dateien in <code>GLACIER</code> oder <code>DEEP_ARCHIVE</code> sind erst lesbar, wenn sie
+        aufgetaut wurden: Die Liste des Ziels zeigt sie als archiviert mit einer Aktion
+        <em>Auftauen…</em>, die fragt, wie lange die aufgetaute Kopie lesbar bleibt (1 bis 30 Tage) und wie
+        schnell der Anbieter arbeitet (Standard, Bulk – am günstigsten und langsamsten – oder Expedited,
+        nicht für Deep Archive). Der Anbieter berechnet das Auftauen und diese Tage. Solange es läuft, wird
+        die Kopie als auftauend angezeigt; nach dem Auftauen kann sie aus der Liste wiederhergestellt werden,
+        bis die Tage ablaufen. Jeder, der vom Ziel wiederherstellen darf, darf auftauen (ein Sender seine
+        eigenen Kopien), höchstens 10 Mal pro Minute, jedes Mal im Audit-Protokoll erfasst.
+        <code>GLACIER_IR</code>, <code>STANDARD_IA</code>, <code>ONEZONE_IA</code> und
+        <code>INTELLIGENT_TIERING</code> werden sofort gelesen.
+      </p>
+
+      <h2 id="scheduled">Geplante Backups</h2>
+      <p>
+        Ein Zeitplan erstellt immer wieder dasselbe Backup, sendet jedes an die von Ihnen gewählten Ziele
+        und behält so viele, wie seine Aufbewahrungsregel vorgibt. Öffnen Sie
+        <em>Kontomenü → Geplante Backups</em>, die Befehlspalette („Geplante Backups öffnen“) oder
+        <em>Zeitplan…</em> im Abschnitt Backups einer Verbindung oder Datenbank, was einen Zeitplan dafür
+        startet. Der Editor hat sechs Schritte: was, wann, Schutz, wohin, Aufbewahrung und eine
+        Zusammenfassung mit den Prüfungen des Servers.
+      </p>
+
+      <h3 id="scheduled-who">Wer planen darf</h3>
+      <ul>
+        <li>
+          Jeder, der die Verbindung sichern darf, darf sie planen (dort Dokumente lesen, Aufträge ausführen
+          und exportieren). Jeder Lauf übernimmt die Rechte des Eigentümers, wie sie in diesem Moment sind,
+          nie wie sie beim Speichern des Zeitplans waren.
+        </li>
+        <li>
+          Ein weggefallenes Recht pausiert den Zeitplan, bevor Daten gelesen werden, mit dem Grund auf
+          seiner Karte: Das Konto des Eigentümers ist deaktiviert, der Eigentümer kann die Verbindung nicht
+          mehr sichern oder an ein Ziel senden, ein Ziel wurde gelöscht, der Backup-Schlüssel ist nicht
+          aktiv, der Umfang enthält jetzt personenbezogene Daten für einen unverschlüsselten Zeitplan, ein
+          Ziel nimmt jetzt nur noch verschlüsselte Backups an, dieser Server kann seinen Rhythmus oder seine
+          Zeitzone nicht lesen (eine Zeitzone, die ein anderer Build kannte), oder die Kopien, die er auf
+          diesem Server behält, füllen Ihren Backup-Speicherplatz. Setzen Sie ihn fort, sobald der Grund
+          entfallen ist.
+        </li>
+        <li>
+          Administratoren sehen jeden Zeitplan und dürfen ihn pausieren, fortsetzen, ausführen und löschen;
+          den Zeitplan eines anderen Benutzers bearbeiten sie nicht. Ein von einem Administrator pausierter
+          Zeitplan wird von einem Administrator fortgesetzt. Ein Benutzer darf höchstens 10 Zeitpläne haben.
+        </li>
+      </ul>
+
+      <h3 id="cadence">Wann er läuft</h3>
+      <ul>
+        <li><strong>Alle N Stunden</strong> (1 bis 24), zu einer gewählten Minute der Stunde.</li>
+        <li><strong>Täglich</strong>, zu bis zu vier Tageszeiten.</li>
+        <li><strong>Wöchentlich</strong>, an den gewählten Tagen, zu einer Uhrzeit.</li>
+        <li>
+          <strong>Monatlich</strong>, an einem Tag von 1 bis 28 oder am letzten Tag des Monats, zu einer
+          Uhrzeit.
+        </li>
+        <li>
+          <strong>Erweitert</strong>: ein Cron-Ausdruck mit fünf Feldern (Minute, Stunde, Tag des Monats,
+          Monat, Wochentag), der beim Tippen in Worten zurückgegeben wird. Er folgt den klassischen
+          Vixie-Regeln: Sind sowohl der Tag des Monats als auch der Wochentag eingeschränkt, genügt es, wenn
+          einer von beiden zutrifft; ein Feld, das mit <code>*</code> beginnt, gilt als nicht eingeschränkt.
+          Es gibt keine <code>@</code>-Kurzformen, keine Sekunden und kein <code>L</code>, <code>W</code>
+          oder <code>#</code>.
+        </li>
+      </ul>
+      <p>
+        Läufe müssen mindestens eine Stunde auseinanderliegen, und ein Rhythmus muss innerhalb der
+        nächsten fünf Jahre laufen; der Editor zeigt die nächsten Läufe in der Zeitzone des Zeitplans und
+        weist darauf hin, wenn eine der beiden Regeln verletzt wird.
+      </p>
+
+      <h3 id="time-zones">Zeitzonen und Sommerzeit</h3>
+      <p>
+        Jeder Zeitplan hat seine eigene Zeitzone (standardmäßig Ihre); Uhrzeiten sind dort Wanduhrzeiten.
+        Wenn die Uhren vorgestellt werden, läuft eine Uhrzeit, die an diesem Tag nicht existiert, in der
+        ersten Minute nach der Umstellung. Wenn sie zurückgestellt werden, läuft eine Uhrzeit, die zweimal
+        auftritt, einmal, bei ihrem ersten Auftreten. Ein stündlicher Zeitplan verliert in der sich
+        wiederholenden Stunde einen Lauf, anstatt innerhalb einer Stunde zweimal zu laufen.
+      </p>
+
+      <h3 id="missed-runs">Verpasste Läufe, Überschneidung und die Warteschlange</h3>
+      <ul>
+        <li>
+          War der Server zu einem fälligen Zeitpunkt gestoppt, führt der nächste Start ein Nachhol-Backup
+          aus, wenn der letzte verpasste Zeitpunkt nicht älter ist als das eigene Intervall des Zeitplans
+          (höchstens ein Tag). Jeder andere verpasste Zeitpunkt wird als verpasst aufgezeichnet; es gibt nie
+          mehr als ein Nachholen.
+        </li>
+        <li>
+          Ein Lauf, der fällig wird, während der vorherige noch läuft oder noch auf seinen Platz wartet,
+          wird übersprungen und als übersprungen aufgezeichnet, mit Angabe, welcher von beiden es war.
+        </li>
+        <li>
+          Höchstens <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code> geplante Läufe arbeiten gleichzeitig
+          (Standard 2). Die anderen warten in der Reihenfolge ihrer Fälligkeit bis zu sechs Stunden; ein
+          Lauf, der länger wartet, wird übersprungen.
+        </li>
+        <li>
+          Eine Uhr, die vorspringt, ergibt höchstens ein Nachholen; eine Uhr, die zurückgeht, führt nichts
+          zweimal aus.
+        </li>
+      </ul>
+
+      <h3 id="run-history">Jetzt ausführen und der Laufverlauf</h3>
+      <p>
+        <em>Jetzt ausführen</em> startet einen Lauf sofort, ohne den nächsten zu verschieben; ein Zeitplan
+        läuft immer nur einmal gleichzeitig. Jede Karte zeigt ihre letzten Läufe als Streifen: Grün
+        erfolgreich, Gelb teilweise (ein Ziel ist fehlgeschlagen), Rot fehlgeschlagen, Grau übersprungen,
+        eine gestrichelte Umrandung verpasst und eine pulsierende Markierung für den laufenden Lauf. Der
+        Verlauf listet jeden Lauf mit Ergebnis, Dauer und Größe auf, wohin jede Kopie ging, was die
+        Aufbewahrung entfernt hat und, bei einem nicht erfolgreichen Lauf, warum. Die letzten 200 Läufe
+        jedes Zeitplans werden behalten. Eine Karte, deren letzter beendeter Lauf fehlgeschlagen oder
+        teilweise war, weist darauf hin, mit Grund. Von einem Zeitplan gestartete Aufträge tragen in der
+        Auftragsliste seinen Namen, und ein pausierter oder fehlschlagender Zeitplan von Ihnen markiert das
+        Kontomenü.
+      </p>
+
+      <h3 id="scheduled-protection">Schutz und wohin es geht</h3>
+      <ul>
+        <li>
+          Standardmäßig ist jeder Lauf ein verschlüsseltes <code>.mmbak</code>, versiegelt mit Ihrem
+          Backup-Schlüssel (siehe <a href="security.html#backup-keys">Backup-Schlüssel</a>): kein Passwort
+          einzutippen, und sein Wiederherstellungs-Kit öffnet es überall. Erstellen Sie zuvor einen
+          Schlüssel unter <em>Kontoeinstellungen → Backup-Schlüssel</em>.
+        </li>
+        <li>
+          Ein einfaches Format (<code>.archive</code> oder <code>.archive.gz</code>) ist nur erlaubt, wenn
+          der Umfang keine personenbezogenen Daten enthält und jedes gewählte Ziel unverschlüsselte Backups
+          akzeptiert; beides wird vor jedem Lauf erneut geprüft.
+        </li>
+        <li>
+          Jeder Lauf geht an die für Sie freigegebenen Ziele, die Sie wählen; die Kopie auf diesem Server
+          wird gelöscht, sobald jedes Ziel eine verifizierte Kopie hat. <em>Auch auf dem Server
+          behalten</em> behält sie zusätzlich hier, unter derselben Aufbewahrung und in Ihrem
+          Backup-Speicherplatz; der Editor nennt, wie viel Platz sie ungefähr belegen. Das Ausschalten gibt
+          den bisher behaltenen Kopien die normale Lebensdauer.
+        </li>
+      </ul>
+
+      <h3 id="restore-drills">Wiederherstellungstests</h3>
+      <p>
+        Ein Backup ist nur so gut wie seine Wiederherstellung. „Prüfen, ob sich Backups wiederherstellen
+        lassen“ (im Schritt Aufbewahrung) führt alle so viele Läufe (1 bis 30) einen Wiederherstellungstest
+        aus: Das Backup des Laufs, mit Ihrem Backup-Schlüssel geöffnet, wird in eine neue
+        Scratch-Datenbank auf derselben Verbindung wiederhergestellt (<code>mm_drill_</code> und 12
+        zufällige Zeichen), jeder Namespace wird zurückgelesen und mit dem Backup verglichen – die Anzahl
+        der Dokumente und jedes Dokument Byte für Byte –, und die Scratch-Datenbank wird verworfen,
+        unabhängig vom Ergebnis. Solange sie existiert, ist sie für alle gesperrt, auch für Administratoren:
+        Sie wird nicht im Baum, auf der Seite Leistung, bei den langsamen Abfragen oder den laufenden
+        Operationen aufgeführt (und nicht in der Gesamtgröße der Datenbanken mitgezählt), und keine Seite,
+        keine Anfrage, kein Shell-Befehl, kein Assistent, kein Änderungs-Feed, keine Live-Synchronisierung,
+        kein Kopieren, Vergleichen, Sichern oder Wiederherstellen liest sie oder schreibt in sie – eine
+        Anfrage, die sie nennt, wird abgelehnt. Zwei Dinge bleiben außerhalb der Reichweite der App: Die
+        Antwort von <code>listDatabases</code> in der Shell eines Verbindungsadministrators zeigt weiterhin
+        ihren Namen (sie lässt sich nicht öffnen), und was der Test schreibt, erscheint wie jeder
+        Schreibvorgang im Oplog (<code>local.oplog.rs</code>, nur Administratoren) und in einem
+        Change Stream über das gesamte Deployment, der in der Shell eines Administrators geöffnet wird. Sie
+        trägt außerdem die Regeln für personenbezogene Daten dessen, was sie enthält (die des Backups und
+        die der Verbindung für diese Namespaces), sodass ihre Werte für alle verborgen sind, die sie nicht
+        sehen dürfen; diese Regeln werden nicht zur Liste der Verbindung hinzugefügt und verschwinden mit
+        der Datenbank. Collections werden ohne ihre Optionen wiederhergestellt (ein Validator oder eine
+        Obergrenze würde daraus einen Test des Ziels machen), und Views werden nicht geprüft. Der Lauf
+        behält seine Serverkopie, bis der Test beendet ist, und gibt sie dann wie üblich frei. Der
+        Laufverlauf nennt, ob jeder Test bestanden oder fehlgeschlagen ist (und in welchen Namespaces), der
+        Bericht des Tests steht in der Auftragsliste, und ein fehlgeschlagener Test löst eine Warnung aus.
+        Ein Test benötigt das Recht, auf der Verbindung Datenbanken zu erstellen; ohne es (oder bei einer
+        schreibgeschützten Verbindung) wird der Test übersprungen, nie das Backup. Er schreibt so viel, wie
+        das Backup enthält, und Schreibvorgänge gehen an den Primärknoten, welches Mitglied die Verbindung
+        auch nennt: Wählen Sie eine ruhige Zeit. Bevor er irgendetwas schreibt, prüft er, ob der
+        MongoDB-Benutzer der Verbindung Datenbanken verwerfen darf (ein Test, der nicht aufräumen kann,
+        schlägt sofort fehl), wählt einen Scratch-Namen, den keine Datenbank hat, und hält das Geschriebene
+        unter der Hälfte des freien Speicherplatzes des Servers – der des vollsten Shards über einen
+        mongos – und unter <code>MM_BACKUP_DRILL_MAX_MB</code>, wenn dies gesetzt ist, was ein Server
+        benötigt, der seinen freien Speicherplatz nicht meldet (Atlas Shared Tiers); ein größeres Backup
+        lässt den Test fehlschlagen, was als solches gemeldet wird. Ein nicht lesbares Recht zum Verwerfen
+        wird nicht vorausgesetzt: Der Test startet nicht. Lässt sich die Scratch-Datenbank am Ende nicht
+        verwerfen, schlägt der Test fehl, eine Warnung wird ausgelöst, und der Bericht nennt die Datenbank:
+        Die Administratoren der Verbindung sehen sie auf der Seite der Verbindung und verwerfen sie dort,
+        indem sie ihren Namen eintippen (nicht, solange ein Test läuft). Währenddessen ist sie für alle
+        gesperrt, und ein Neustart verwirft sie.
+      </p>
+
+      <h2 id="retention">Aufbewahrung</h2>
+      <p>
+        Die Aufbewahrung entscheidet, welche Backups ein Zeitplan an jedem Ort behält (jedes Ziel und diesen
+        Server, wenn er Kopien behält). Vier Stufen, in der Zeitzone des Zeitplans gezählt; ein Backup
+        bleibt, wenn eine Stufe es behält:
+      </p>
+      <ul>
+        <li><strong>Neueste</strong>: die N jüngsten Backups (1 bis 100).</li>
+        <li>
+          <strong>Täglich</strong>: das neueste Backup jedes Kalendertags, für so viele Tage (0 bis 90).
+        </li>
+        <li>
+          <strong>Wöchentlich</strong>: das neueste jeder ISO-Woche (Montag bis Sonntag), für so viele Wochen
+          (0 bis 52).
+        </li>
+        <li>
+          <strong>Monatlich</strong>: das neueste jedes Kalendermonats, für so viele Monate (0 bis 60).
+        </li>
+      </ul>
+      <p>
+        Voreinstellungen: <em>Täglich für 30 Tage</em> (die 7 neuesten und eines pro Tag für 30 Tage),
+        <em>Standard</em> (die 7 neuesten, 14 Tage, 8 Wochen und 12 Monate), <em>Lang</em> (die 7 neuesten,
+        30 Tage, 26 Wochen und 60 Monate) und <em>Benutzerdefiniert</em>. Der Editor zeichnet auf einer
+        Zeitleiste, was bleibt.
+      </p>
+      <ul>
+        <li>
+          Entfernt werden nur die eigenen vollständigen und verifizierten Kopien des Zeitplans an einem Ort;
+          eine von Hand gesendete Kopie, auch eines geplanten Backups, nie. An einem Ziel, das sein
+          Eigentümer nicht mehr verwenden darf, wird nichts entfernt.
+        </li>
+        <li>Das neueste Backup wird nie entfernt, und ein fehlgeschlagener Lauf entfernt nichts.</li>
+        <li>
+          Das Entfernen an einem Ort erfolgt, nachdem die Kopie dieses Laufs dort vollständig ist, höchstens
+          100 Entfernungen pro Ort und Lauf; eine fehlgeschlagene Entfernung wird nach dem nächsten Lauf
+          erneut versucht. Jede Entfernung steht mit dem Namen der Datei im Audit-Protokoll.
+        </li>
+        <li>
+          Eine Änderung von Regel, Zeitzone, Zielen oder Aufbewahrung, die mehr als zehn Backups auf einmal
+          entfernen würde, verlangt zuvor Ihre Bestätigung der Anzahl.
+        </li>
+        <li>
+          DigitalOcean Spaces Cold Storage berechnet jedes Objekt mindestens 30 Tage lang: Der Editor warnt,
+          wenn eine Regel Backups dort kürzer behalten würde.
+        </li>
+      </ul>
+
+      <h2 id="opening-scheduled">Ein geplantes Backup öffnen</h2>
+      <ul>
+        <li>
+          Auf diesem Server stellen Sie es wie jedes andere Backup wieder her: Es öffnet sich mit Ihrem
+          Backup-Schlüssel, ausgemusterte Schlüssel eingeschlossen, und die Wiederherstellung nennt, welcher
+          Schlüssel es geöffnet hat.
+        </li>
+        <li>
+          Anderswo, oder wenn keiner Ihrer Schlüssel es öffnet, fragt die Wiederherstellung nach dem
+          Wiederherstellungs-Kit des Backups (einfügen oder seine Datei wählen). Das Kit wird für diese
+          Wiederherstellung verwendet und nicht behalten, es sei denn, Sie haken <em>Diesen Schlüssel
+          importieren</em> an, was den Schlüssel zu Ihren Backup-Schlüsseln hinzufügt.
+        </li>
+        <li>
+          Ohne die App:
+          <code
+            >mongo-manager backup decrypt &lt;file.mmbak&gt; --key-file &lt;kit.txt&gt; -o
+            &lt;file.archive&gt;</code
+          >
+          schreibt das einfache Archiv, das sich mit <code>mongorestore --archive</code> öffnen lässt. Ohne
+          <code>--key-file</code> weist eine Datei, die sich nur mit ihrem Backup-Schlüssel öffnet, darauf
+          hin, bevor etwas abgefragt wird.
+        </li>
+      </ul>
+
+      <h2 id="limits-and-settings">Limits und Einstellungen</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_QUOTA</code>: Backup-Speicherplatz pro Benutzer, in MiB (Standard 20 480).
+        </li>
+        <li>
+          <code>MM_BACKUP_TOTAL_QUOTA</code>: Backup-Speicherplatz für alle Benutzer, in MiB (Standard
+          102 400).
+        </li>
+        <li>
+          <code>MM_BACKUP_MAX_UPLOAD</code>: die größte wiederherzustellende Datei, in MiB (Standard 20 480).
+        </li>
+        <li>
+          <code>MM_BACKUP_TTL_HOURS</code>: wie lange Backups und Uploads behalten werden (Standard 24).
+        </li>
+        <li>
+          <code>MM_BACKUP_MAX_JOB_HOURS</code>: die längste Laufzeit eines Backups oder einer
+          Wiederherstellung (Standard 12).
+        </li>
+        <li>
+          <code>MM_BACKUP_CHUNK_MB</code>: die Standardgröße der Teile verschlüsselter Backups (Standard 64).
+        </li>
+        <li><code>MM_MONGODB_TOOLS_PATH</code>: der Ordner von mongodump und mongorestore.</li>
+        <li>
+          Höchstens 10 000 Namespaces in einem Archiv; ein Zip eines mongodump-Ordners muss kleiner als 4 GiB
+          sein.
+        </li>
+        <li>
+          <code>MM_BACKUP_SCHEDULES</code> und <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code>: Planung ein oder
+          aus und gleichzeitige geplante Läufe (siehe
+          <a href="deployment.html#scheduled-backups">Bereitstellung</a>).
+        </li>
+      </ul>
+
+      <h2 id="not-covered">Nicht abgedeckt</h2>
+      <p>
+        Benutzer und Rollen, das Oplog und die Point-in-Time-Wiederherstellung. Ein Backup liest Collection
+        für Collection, nicht einen einzigen Zeitpunkt: Dokumente, die währenddessen geschrieben wurden,
+        sind möglicherweise nur teilweise enthalten. Für eine Kopie eines einzigen Zeitpunkts sichern Sie
+        ein Replica-Set-Mitglied, auf dem Schreibvorgänge gestoppt wurden, oder verwenden Sie die eigenen
+        Snapshots von MongoDB.
+      </p>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Auf dieser Seite</p>
+      <ol>
+        <li><a href="#taking-a-backup">Backup erstellen</a></li>
+        <li><a href="#formats">Formate</a></li>
+        <li><a href="#engines">Engines</a></li>
+        <li><a href="#time-series">Time Series</a></li>
+        <li><a href="#personal-data">Personenbezogene Daten</a></li>
+        <li><a href="#restoring">Wiederherstellen</a></li>
+        <li><a href="#kept-backups">Aufbewahrte Backups</a></li>
+        <li><a href="#destinations">Backup-Ziele</a></li>
+        <li><a href="#scheduled">Geplante Backups</a></li>
+        <li><a href="#retention">Aufbewahrung</a></li>
+        <li><a href="#opening-scheduled">Ein geplantes Backup öffnen</a></li>
+        <li><a href="#limits-and-settings">Limits und Einstellungen</a></li>
+        <li><a href="#not-covered">Nicht abgedeckt</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

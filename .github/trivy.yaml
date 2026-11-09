@@ -1,0 +1,3 @@
+# The image scan (CI docker job). Secrets are found with the rules in trivy-secret.yaml.
+secret:
+  config: .github/trivy-secret.yaml

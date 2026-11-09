@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Deployment · Mongo Manager documentation</title>
+    <link rel="stylesheet" href="docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager documentation</a>
+      <details class="lang-menu">
+        <summary>English</summary>
+        <span class="langs" role="group" aria-label="Language">
+          <strong lang="en">English</strong>
+          <a lang="tr" hreflang="tr" href="tr/deployment.html">Türkçe</a>
+          <a lang="zh-CN" hreflang="zh-CN" href="zh/deployment.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="ja/deployment.html">日本語</a>
+          <a lang="es" hreflang="es" href="es/deployment.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="pt/deployment.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="ko/deployment.html">한국어</a>
+          <a lang="de" hreflang="de" href="de/deployment.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="fr/deployment.html">Français</a>
+          <a lang="ru" hreflang="ru" href="ru/deployment.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Overview</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="security.html">Security</a>
+      <strong>Deployment</strong>
+      <a href="import-export.html">Import and export</a>
+      <a href="backup.html">Backup and restore</a>
+      <a href="watch.html">Watching changes</a>
+      <a href="sync.html">Live sync</a>
+      <a href="server-admin.html">Server administration</a>
+      <a href="ai.html">AI assistant</a>
+      <a href="plugins.html">Plugins</a>
+      <a href="shortcuts.html">Keyboard shortcuts</a>
+    </nav>
+    <main>
+      <h1>Deployment</h1>
+      <h2 id="as-a-system-service">As a system service</h2>
+      <pre><code>sudo mongo-manager service install          # Linux, macOS
+mongo-manager service install               # Windows, elevated prompt
+mongo-manager service status
+mongo-manager service logs
+sudo mongo-manager service open             # local mode: a one-time link that opens it
+sudo mongo-manager service uninstall        # keeps data, config and key</code></pre>
+      <p>
+        The service runs as its own unprivileged account, from a program folder only administrators can
+        change, in team mode on <code>127.0.0.1:4321</code>. The first start keeps the one-time setup token in
+        <code>setup-token</code> in the data folder, which only the service account and administrators can
+        read; <code>service install</code> prints how to read it. The token is never written to the log, and
+        the file is removed once the first administrator exists.
+      </p>
+      <p>
+        Installed in local mode (<code>--no-auth</code>), the service opens only from a one-time launch link:
+        <code>service install</code> prints one, and <code>service open</code> prints a new one whenever you
+        need it (as an administrator: it is made from <code>launch.key</code> in the data folder). Open it in
+        your own browser, not an elevated one; that browser then stays in while it keeps this site's data, at
+        most six months after its last use.
+      </p>
+      <h2 id="docker">Docker</h2>
+      <p>
+        The image runs as an unprivileged user on a read-only root filesystem, in team mode. Data lives in the
+        <code>/data</code> volume. Offline machines can load an image archive with
+        <code>docker load -i</code>. The first start's setup token:
+        <code>docker exec &lt;container&gt; cat /data/setup-token</code>. The compose file publishes the port
+        on the host's loopback only (<code>127.0.0.1:4321</code>); to serve other machines, put an HTTPS
+        reverse proxy in front rather than publishing plain HTTP. A proxy on the host reaches the container
+        from the compose network's gateway: trust <code>MM_TRUSTED_PROXIES=172.31.240.1</code>, not
+        <code>127.0.0.1</code>.
+      </p>
+      <p>
+        Inside the container the server listens on every address, so without <code>MM_ALLOWED_HOSTS</code> it
+        answers only to IP addresses and <code>localhost</code> (each start says so). Anything that reaches it
+        by a name — a proxy forwarding the public name, another container by the service name (a Prometheus
+        scraping <code>mongo-manager:4321</code>), a Kubernetes service — gets 403 until that name is listed:
+        <code>MM_ALLOWED_HOSTS=mongo-manager,mm.example.com</code>.
+      </p>
+      <p>
+        In local mode (<code>MM_AUTH=0</code>), the container's log names the command that prints a link,
+        never a link:
+        <code>docker exec &lt;container&gt; node /app/dist/cli.cjs open --no-open</code>. It names the port
+        the server listens on inside the container: published on another port of the host (<code
+          >-p 127.0.0.1:8080:4321</code
+        >), change the port in the link to the host's before opening it.
+      </p>
+      <p>
+        On a server, put an HTTPS reverse proxy in front that serves it as <code>mongo.example.com</code>, and start it like this; the last line reads the setup token. Finish the setup right away: until the first administrator exists, whoever has the token can become it.
+      </p>
+      <pre><code>docker run -d --name mongo-manager --restart unless-stopped \
+  -p 127.0.0.1:4321:4321 \
+  -e MM_ALLOWED_HOSTS=mongo.example.com \
+  -e MM_TRUSTED_PROXIES=172.17.0.1 \
+  -v mm-data:/data \
+  --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true \
+  ghcr.io/mongo-manager/mongo-manager:&lt;version&gt;
+docker exec mongo-manager cat /data/setup-token</code></pre>
+      <p>
+        <code>MM_TRUSTED_PROXIES</code> is the address a proxy on the host reaches the container from: the Docker network's gateway, usually <code>172.17.0.1</code> on the default bridge network (<code>docker network inspect bridge -f '{{(index .IPAM.Config 0).Gateway}}'</code> shows it). Without it every request seems to come from the gateway, so the audit log and sign-in bans cannot tell users apart. Once <code>MM_ALLOWED_HOSTS</code> is set, only the names it lists are accepted: add <code>127.0.0.1</code> to it to keep opening <code>http://127.0.0.1:4321</code> on the host. <code>--read-only</code>, <code>--tmpfs /tmp</code>, <code>--cap-drop ALL</code> and <code>no-new-privileges</code> are the hardening the compose file applies.
+      </p>
+      <h2 id="docker-mongodb">Reaching MongoDB from the container</h2>
+      <p>
+        Inside a container, <code>localhost</code> is the container itself, so <code>mongodb://localhost:27017</code> fails with <code>ECONNREFUSED</code> even when MongoDB runs on the same machine.
+      </p>
+      <ul>
+        <li><strong>MongoDB in another container:</strong> put both on one Docker network (<code>docker network create mm</code>, then <code>docker network connect mm mongo-manager</code> and <code>docker network connect mm my-mongodb</code>, or <code>--network mm</code> when you start them) and connect to <code>mongodb://my-mongodb:27017</code>.</li>
+        <li><strong>MongoDB on the host, Docker Desktop (Windows, macOS):</strong> <code>mongodb://host.docker.internal:27017</code>.</li>
+        <li><strong>MongoDB on the host, Linux:</strong> run Mongo Manager with <code>--network host</code> (then <code>localhost</code> is the host; keep it private with <code>-e MM_HOST=127.0.0.1</code>, behind the proxy, trusted as <code>127.0.0.1</code>), or add <code>--add-host=host.docker.internal:host-gateway</code>. The latter reaches only a MongoDB that listens on the bridge's gateway address: not one bound to the host's <code>127.0.0.1</code>, nor a container published only there (<code>-p 127.0.0.1:27018:27017</code>); use a shared network or the host network for those.</li>
+        <li>A replica set whose members are named <code>localhost:27017</code> sends the driver back to <code>localhost</code>: add <code>?directConnection=true</code>.</li>
+      </ul>
+      <h2 id="updating">Updating</h2>
+      <p>
+        An administrator sees the installed version on the About Mongo Manager page, in the account menu. <strong>Check now</strong> asks GitHub for the latest published release; <strong>Check for updates automatically</strong> does it once a day. The daily check is off until an administrator turns it on, and nothing about you, your server or your data goes with it: only the latest version number comes back. Drafts and pre-releases are never offered.
+      </p>
+      <p>
+        A release is offered only when its <code>SHA256SUMS</code> carries Mongo Manager's signature (Ed25519) and its <code>release.json</code> is listed there. <strong>Update</strong> downloads the release into <code>app/</code> in the data directory, checks every byte against the signed checksums, copies the database, then restarts. At every start each file of the version that runs is checked again. A version found changed is not run: it is downloaded again (unless updates are off), or the version it was installed from runs, and the About Mongo Manager page says so. Nothing else is downloaded at start. A new version that does not start within a minute is rolled back: the database copy is put back, the previous version runs again, and the About Mongo Manager page says so.
+      </p>
+      <ul>
+        <li><strong>npm package, standalone binary, system service:</strong> the installed program stays as it is and starts the newest verified version kept in <code>app/</code>. A service installed by an earlier release is installed again once (<code>mongo-manager service install</code>): its unit then starts with <code>--isolate-account</code>, so that the service account's other processes are ended before an updated version is checked and starts. On Linux and macOS that happens only for the account <code>service install</code> makes, never as root; on Windows, where LocalService is shared with other services, only this install's programs and the previous program's own processes are ended.</li>
+        <li><strong>Docker:</strong> the new version is kept in the <code>/data</code> volume and runs in the image you have. Before it is checked and starts, the container's other processes of its user are ended (never when the container runs as root or shares the host's processes). A release needs a newer image only when the app cannot run on the one you have (a newer Node.js); the About Mongo Manager page then says how to get it instead of offering Update. A newer image that only brings system security fixes never stops Update: the page advises it beside Update. With Docker Compose: <code>docker compose pull &amp;&amp; docker compose up -d</code>. With docker run: <code>docker pull ghcr.io/mongo-manager/mongo-manager:&lt;version&gt;</code>, then remove the container and start it again from the new image with the same options and the same <code>/data</code> volume (the data stays in the volume). An image over 90 days old is pointed out too: pull a newer one for Node.js and system security fixes.</li>
+        <li><strong>From source:</strong> update with git.</li>
+        <li>The first version that updates itself is installed by hand.</li>
+      </ul>
+      <ul>
+        <li><code>MM_UPDATES</code>: <code>off</code> (or <code>0</code>, <code>false</code>) turns updates off entirely: no check, setting, button or request, and the About Mongo Manager page says so. Default: on, with the daily check off until an administrator turns it on.</li>
+        <li><code>MM_UPDATE_PROXY</code>: an HTTP(S) proxy GitHub is reached through, as <code>MM_BACKUP_PROXY</code>. Default: none.</li>
+      </ul>
+      <h2 id="behind-a-reverse-proxy">Behind a reverse proxy</h2>
+      <ul>
+        <li>
+          Trust only the proxy: <code>--trusted-proxies 127.0.0.1</code>. Without it the server cannot tell a
+          request came over HTTPS, so session cookies are not marked Secure; a team-mode start says so, and
+          says when sign-ins would cross the network over plain HTTP.
+        </li>
+        <li>Name the public host: <code>--allowed-hosts mm.example.com</code>.</li>
+        <li>Serve under a sub-path with <code>--base-path /mm/</code>.</li>
+        <li>
+          Each client address may make 600 API requests a minute; raise it with
+          <code>MM_API_RATE_LIMIT</code> (60–100000) when many people share one address.
+        </li>
+        <li>
+          At most 1000 connections are open at once (<code>MM_MAX_CONNECTIONS</code>, 16–100000), and at most
+          256 from one address (<code>MM_MAX_CONNECTIONS_PER_IP</code>, 2–100000); a connection past that is
+          closed, and the log says so once a minute per address. A browser keeps about six connections open,
+          so where many people reach Mongo Manager from one address — behind NAT, a VPN or Docker Desktop —
+          raise <code>MM_MAX_CONNECTIONS_PER_IP</code>. Behind trusted proxies only the total applies: every
+          connection comes from the proxy, which should limit its own clients.
+        </li>
+        <li>
+          Imported and exported files live under <code>&lt;data directory&gt;/transfer</code>:
+          <code>MM_TRANSFER_MAX_UPLOAD</code> is the largest upload in MiB (default 1024, 1–65536),
+          <code>MM_TRANSFER_QUOTA</code> the storage each user may hold in MiB (default 5120, 16–1048576),
+          <code>MM_TRANSFER_TOTAL_QUOTA</code> what all users together may hold in MiB (default 51200, or
+          <code>MM_TRANSFER_QUOTA</code> when that is larger; 16–16777216),
+          <code>MM_TRANSFER_TTL_HOURS</code> how long a file is kept (default 24, 1–720), and
+          <code>MM_TRANSFER_MAX_JOB_HOURS</code> how long one import or export may run (default 6, 1–72). Give
+          that disk room for the total, or the quota times the number of people who transfer files if that is
+          less.
+        </li>
+      </ul>
+      <h2 id="settings">Settings and environment variables</h2>
+      <p>
+        Each server setting can be given as a command-line option, as an environment variable or in a JSON
+        config file named with <code>--config</code> or <code>MM_CONFIG</code>. The command line wins over the
+        environment, and the environment over the file. A switch takes <code>1</code>/<code>0</code>,
+        <code>true</code>/<code>false</code>, <code>yes</code>/<code>no</code> or
+        <code>on</code>/<code>off</code>. The settings of each feature are in its own section below.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Variable</th>
+              <th>Option</th>
+              <th>What it does</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>MM_WEB_PORT</code></td>
+              <td><code>-p</code>, <code>--web-port</code></td>
+              <td>Port of the web interface (default 4321).</td>
+            </tr>
+            <tr>
+              <td><code>MM_HOST</code></td>
+              <td><code>--host</code></td>
+              <td>
+                Address to listen on (default <code>127.0.0.1</code>). A network address needs team mode, or
+                <code>MM_UNSAFE_NO_AUTH</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_AUTH</code></td>
+              <td><code>--auth</code></td>
+              <td>Team mode: users, roles and sign-in (default off).</td>
+            </tr>
+            <tr>
+              <td><code>MM_DATA_DIR</code></td>
+              <td><code>--data-dir</code></td>
+              <td>The data directory (default <code>~/.mongo-manager</code>).</td>
+            </tr>
+            <tr>
+              <td><code>MM_CONFIG</code></td>
+              <td><code>--config</code></td>
+              <td>
+                A JSON config file. On Linux and macOS, one that holds a secret must not be readable by other
+                users, or the server refuses it.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_SECRET_KEY</code></td>
+              <td></td>
+              <td>The encryption key, instead of the data directory's <code>secret.key</code>.</td>
+            </tr>
+            <tr>
+              <td><code>MM_OPEN</code></td>
+              <td><code>--open</code></td>
+              <td>
+                Opens the browser on start (default on): in local mode, on a loopback address, when started from
+                a terminal.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_URI</code></td>
+              <td><code>--uri</code></td>
+              <td>
+                A connection created on the very first start only. Use the variable for a connection string with
+                a password: other users can see command lines.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_READ_ONLY</code></td>
+              <td><code>--read-only</code></td>
+              <td>No connection can change data, whatever its own setting.</td>
+            </tr>
+            <tr>
+              <td><code>MM_TRUSTED_PROXIES</code></td>
+              <td><code>--trusted-proxies</code></td>
+              <td>Proxy addresses or CIDR ranges whose <code>X-Forwarded-*</code> headers are believed.</td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOWED_HOSTS</code></td>
+              <td><code>--allowed-hosts</code></td>
+              <td>
+                The only host names the server answers to. Unset, it answers to the loopback names when it
+                listens on loopback, and otherwise to the loopback names and IP addresses only, never another
+                name (a defence against DNS rebinding; the start says so). Name every host name people open it
+                by here.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_BASE_PATH</code></td>
+              <td><code>--base-path</code></td>
+              <td>Serves the app under a sub-path, such as <code>/mm/</code>.</td>
+            </tr>
+            <tr>
+              <td><code>MM_UNSAFE_NO_AUTH</code></td>
+              <td><code>--unsafe-no-auth</code></td>
+              <td>Allows a network address without team mode. Anyone who reaches it has full access.</td>
+            </tr>
+            <tr>
+              <td><code>MM_LOG_LEVEL</code></td>
+              <td><code>--log-level</code></td>
+              <td>
+                <code>fatal</code>, <code>error</code>, <code>warn</code>, <code>info</code> (default),
+                <code>debug</code>, <code>trace</code> or <code>silent</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_LOG_FILE</code></td>
+              <td><code>--log-file</code></td>
+              <td>
+                Appends the JSON log to this file instead of standard output. The file is made private (mode
+                0600; on Windows, access for all users is taken away: this account, SYSTEM and Administrators
+                keep it) and rotated at 10 MiB, the previous part kept as <code>&lt;file&gt;.1</code>. A path
+                that is a link, a file with other names (hard links) or not a regular file is refused, and the
+                start fails saying so: remove or rename it, or name another log file. A line that cannot be
+                written (a full disk) is dropped and said once on standard error. Requests are logged by their
+                path, with every query value and a GridFS file's id written as <code>***</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_REQUIRE_ADMIN_2FA</code></td>
+              <td></td>
+              <td>
+                Every administrator must set up two-factor sign-in before anything else; it cannot then be
+                turned off in the app. Without it, an administrator can require the same in the app.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_REQUIRE_2FA</code></td>
+              <td></td>
+              <td>
+                Every user, whatever their role, must set up two-factor sign-in before anything else; it cannot
+                then be turned off in the app. Without it, an administrator can require the same in the app.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_METRICS_TOKEN</code></td>
+              <td></td>
+              <td>
+                Turns on Prometheus metrics at <code>&lt;base path&gt;metrics</code>, read with this token as a
+                bearer token (at least 32 characters). The numbers name no user, connection, database or
+                collection.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_GRIDFS_MAX_MB</code></td>
+              <td></td>
+              <td>The largest file uploaded to GridFS, in MB (default 512, 1–10240).</td>
+            </tr>
+            <tr>
+              <td><code>MM_MODEL_MAX_DOCS</code></td>
+              <td></td>
+              <td>
+                The documents one data model (a database's Model section) may sample in all (default 20000,
+                100–1000000): with many collections each one's sample is made smaller, and the section says so.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOW_KERBEROS</code></td>
+              <td></td>
+              <td>
+                Team mode: allows Kerberos (GSSAPI) connections (default off). They sign in with the Kerberos
+                ticket of the account the server runs as — every user of such a connection signs in as that
+                account. See <a href="security.html#server-identity">Security</a>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOW_WORKLOAD_IDENTITY</code></td>
+              <td></td>
+              <td>
+                Team mode: allows OIDC connections to use the machine's workload identity (Azure, GCP,
+                Kubernetes) when chosen on the connection (default off).
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_OIDC_DEVICE_FLOW</code></td>
+              <td></td>
+              <td>
+                OIDC sign-in with a code (the device flow), for identity providers that cannot send the browser
+                back to this server. Whoever approves the code signs in, so it is off in team mode unless turned
+                on here; on in local mode.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_OIDC_PRIVATE_NETWORKS</code></td>
+              <td></td>
+              <td>
+                Private networks (comma-separated CIDRs) OIDC identity providers may be on; plain http is
+                allowed there only. Without it they must be public https addresses.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_CRYPT_SHARED_LIB_PATH</code></td>
+              <td></td>
+              <td>
+                The absolute path of the crypt_shared library (mongo_crypt_v1) for client-side encryption. In
+                team mode it is the only one loaded.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_KMS_PRIVATE_NETWORKS</code></td>
+              <td></td>
+              <td>
+                Private networks (comma-separated CIDRs) key management services (a KMIP server on premises) may
+                be on. Without it they must be public addresses.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_KMS_ALLOWED_HOSTS</code></td>
+              <td></td>
+              <td>
+                Key management service hosts (comma-separated, <code>host</code> or <code>host:port</code>, port
+                443 by default) a connection may reach besides the providers' own (AWS KMS, Azure Key Vault and
+                Managed HSM with Microsoft's sign-in, Google Cloud KMS) and the endpoints its settings name: a
+                VPC endpoint, a KMIP server. Any other host, or another port, is refused — a data key's master
+                key cannot send the KMS token elsewhere.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h2 id="optional-packages">Kerberos and client-side encryption (npm package)</h2>
+      <p>
+        Kerberos (GSSAPI) and client-side field level / Queryable Encryption need native packages, which Mongo
+        Manager does not install by itself: installing it runs no package's install script. To use them,
+        install the packages next to the npm package, then restart:
+      </p>
+      <pre><code>npm i -g @mongo-manager/app kerberos mongodb-client-encryption</code></pre>
+      <p>
+        Mongo Manager loads them only from the global <code>node_modules</code> folder that holds
+        <code>mongo-manager</code> itself (checked by its real path, never a folder above it), and only when a
+        connection first needs one; the connection form says which one is missing and how to install it. The
+        standalone binaries, the Docker image (which sets <code>MM_DISTRIBUTION=docker</code>) and the copy a
+        Windows service runs from keep no native module: there these two features say they are not available
+        in this package — use the npm package, run in the foreground, instead. Queryable Encryption's
+        automatic encryption also needs the crypt_shared library (<code>MM_CRYPT_SHARED_LIB_PATH</code>) or
+        mongocryptd, and MongoDB Enterprise or Atlas; MongoDB Community decrypts only. MONGODB-OIDC needs no
+        package: the identity provider must have this server's
+        <code>&lt;address&gt;&lt;base path&gt;oidc/callback</code> as a redirect address (or another one the
+        connection names), and people can sign in with a code where it cannot.
+      </p>
+      <h2 id="install-as-an-app">Install as an app</h2>
+      <p>
+        In Chrome or Edge, choose <em>Install Mongo Manager</em> in the address bar to open it in its own
+        window from your desktop or start menu.
+      </p>
+      <h2 id="backup-destinations">Backup destinations</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_FOLDER_ROOTS</code>: the folders server-folder destinations may use, as absolute
+          paths separated by the system's path separator (<code>:</code> on Linux and macOS, <code>;</code> on
+          Windows), at most 16. Default: none, so no folder destination can be made. A relative path stops the
+          server at start. Give the service account write access to each root, and keep the roots outside the
+          data directory: a folder destination inside it is refused. Each start logs a root the server cannot
+          write into. For the Linux service:
+          <ul>
+            <li>
+              Its sandbox lets it write only into its data directory and the roots its config and env file
+              name when it is installed: after changing them, run
+              <code>sudo mongo-manager service install</code> again (it keeps the data, config and key), and
+              restart the service after creating a root that was missing. Roots set anywhere else, such as an
+              <code>Environment=</code> in a drop-in, install does not see: their folders stay read-only to
+              the service.
+            </li>
+            <li>
+              Install leaves out a root under <code>/home</code>, <code>/root</code>, <code>/run/user</code>,
+              <code>/tmp</code>, <code>/var/tmp</code> or <code>/dev</code>, which the service cannot reach,
+              and one that would undo the sandbox: one that holds a system directory (<code>/</code>,
+              <code>/var</code>, <code>/var/lib</code> and the like) or is inside <code>/etc</code>,
+              <code>/usr</code>, <code>/run</code> or another system directory (under <code>/var</code> only
+              folders inside <code>/var/backups</code> are open). A folder inside <code>/srv</code>,
+              <code>/opt</code> or a mount under <code>/mnt</code> or <code>/media</code> suits, not those
+              folders themselves; on a removable or network file system, whoever controls the disk or share
+              controls the folders on it, so make the mount point itself the root (a user's FUSE mount says
+              what it likes of its owners and links). A root inside another root is in the sandbox by that
+              one. Where <code>/srv</code>, <code>/opt</code> or <code>/mnt</code> is itself a link into
+              <code>/var</code>, as on ostree systems (Fedora Silverblue, CoreOS), install says where a root
+              leads, and it is refused there: choose a folder inside <code>/var/backups</code>.
+            </li>
+            <li>
+              A link is judged by where it leads, and the unit names that place; a link that leads nowhere is
+              left out: for one to a folder not made yet, make that folder, then run service install again;
+              for one round in a loop or through a file, choose another folder or remove the link. Keep each
+              folder above a root, and the folders the links on its way are in (a link in a link's target
+              included), owned by root and closed to its group and others, so that no one can put a link in a
+              folder's place there; in a folder others may write into, sticky or not, have root own the folder
+              in it, and make the root inside that one.
+            </li>
+            <li>
+              A root below a folder the service's user could change, anywhere up to <code>/</code> and along
+              the links on its path, is left out: one that user owns, or may write into through one of its
+              groups, an ACL or as anyone may, where a process running as that user could put a link to
+              <code>/etc</code> in a folder's place. That includes a link in another root, which the service
+              writes into. Install, and doctor run with <code>sudo</code>, also ask the system: with
+              <code>setpriv</code> they run <code>test -w</code> as that user, so the kernel applies its
+              groups (those the unit gives the service with <code>Group=</code> or
+              <code>SupplementaryGroups=</code>, a drop-in's included) and ACLs. Without <code>setpriv</code>,
+              or without root, only the folders' modes and the user's groups are read, and both say so. What
+              the modes allow counts even where an ACL takes it away, so such a folder leaves its roots out
+              too.
+            </li>
+            <li>
+              Install asks systemd who runs the service, with every drop-in read. A drop-in that runs it as a
+              user other than <code>--user</code> (or as root), with <code>DynamicUser=yes</code> and no
+              account of that name, with a <code>Group=</code> other than the user's own, or with a group the
+              system does not know (with which systemd refuses to start it) stops the install before the data
+              directory and config change; it says why and leaves the service stopped and disabled. A group
+              whose lookup fails, or a systemd that cannot be asked, leaves every root out.
+            </li>
+            <li>
+              <code>sudo mongo-manager doctor --config /etc/mongo-manager/config.json</code> checks the
+              installed service (plain <code>mongo-manager doctor</code> checks your own data directory, and
+              says the service is not what it checked). It checks each root: that it exists, is a directory
+              the server can write into, is inside the sandbox, and is not inside the data directory; it also
+              names a folder the sandbox lets the service write into that no root names any more, or that
+              leads to a root or the data directory through a link someone other than root may change, and
+              warns of a service that runs as root, a group no one has or whose lookup fails, and of
+              <code>DynamicUser=yes</code> with no account of its name. It checks the roots the service's
+              config and env file name, which is why it needs <code>sudo</code>: only root may read the env
+              file, which is also where the service's secret key is. It checks write access as the user it
+              runs as; run as root, it reads the root's owner and mode for the user who owns the data
+              directory instead, and takes the system's word where that user may write into it. The folders
+              above the roots it judges for the user the unit runs the service as (its <code>User=</code>).
+            </li>
+          </ul>
+        </li>
+        <li>
+          <code>MM_BACKUP_PRIVATE_NETWORKS</code>: private ranges destinations may reach, as a comma-separated
+          list of at most 64 CIDRs (for example <code>10.0.5.0/24</code>); plain HTTP is allowed inside them.
+          Default: none. Loopback, 10/8, 172.16/12, 192.168/16, CGNAT (100.64.0.0/10) and unique-local
+          (fc00::/7) ranges are accepted. A public range stops the server at start, and so does a range inside
+          a link-local or cloud metadata range (169.254.0.0/16, fe80::/10, 169.254.169.254, fd00:ec2::254,
+          100.100.100.200), in any form, IPv4-mapped and NAT64 included; the message names the range. Those
+          addresses can never be reached, even inside a listed range.
+        </li>
+        <li>
+          <code>MM_BACKUP_PROXY</code>: an HTTP(S) proxy destinations are reached through, such as
+          <code>http://proxy.corp:3128</code> or <code>https://user:password@proxy.corp</code>; no path or
+          query. Default: none (no environment proxy variable is ever read). Mongo Manager still resolves and
+          checks each destination's address itself and asks the proxy to connect to that address, so the
+          address rules above hold through the proxy; TLS runs end to end to the destination, whose
+          certificate is checked as without a proxy. Destinations inside
+          <code>MM_BACKUP_PRIVATE_NETWORKS</code>
+          are reached directly. A proxy at a link-local or metadata address stops the server at start. Keep
+          the proxy's password out of shared shell histories: it is part of the address. Only backup
+          destinations use it: alert channels (email and webhooks), AI providers and plugins never go through
+          it. Things to know before choosing a proxy: an <code>http://</code> proxy receives its user name and
+          password in clear (Basic), so prefer <code>https://</code> or a proxy inside a trusted network; a
+          proxy that only allows CONNECT to listed host names refuses these connections, since it is asked for
+          an IP address; an <code>https://</code> proxy's certificate must be signed by an authority Node.js
+          trusts (its built-in list, or one added with <code>NODE_EXTRA_CA_CERTS</code>): no CA of its own can
+          be given.
+        </li>
+        <li><code>MM_BACKUP_DEST_PART_MB</code>: the upload part size, 16 to 512 MiB (default 64).</li>
+        <li>
+          <code>MM_BACKUP_DRILL_MAX_MB</code>: the most a restore drill writes, in MiB. Default: none — a
+          drill stays under half the free disk space MongoDB reports (the fullest shard's, through a mongos).
+          Where MongoDB does not report it (Atlas shared tiers), drills run only with this set.
+        </li>
+        <li>
+          <code>MM_BACKUP_DEST_TRANSFERS</code>: sends and downloads running at once on each destination, 1 to
+          8 (default 2). Further ones wait, shown as "Waiting for" that destination in the jobs list.
+        </li>
+      </ul>
+      <h2 id="scheduled-backups">Scheduled backups</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_SCHEDULES</code>: the scheduler, on by default. <code>0</code> turns it off:
+          schedules keep their settings, nothing runs, and the Scheduled backups tab says scheduling is off.
+          Runs a stopped server left unfinished are closed at start.
+        </li>
+        <li>
+          <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code>: scheduled runs working at once, 1 to 8 (default 2).
+          Further due runs wait up to six hours.
+        </li>
+      </ul>
+      <h2 id="watch">Watching changes</h2>
+      <ul>
+        <li>
+          <code>MM_WATCH</code>: change-stream feeds, on by default. <code>0</code> turns them off: the Watch
+          sections say watching is off, and nothing is opened on MongoDB.
+        </li>
+        <li>
+          <code>MM_WATCH_MAX_FEEDS</code>: live feeds on this server at once, 1 to 500 (default 50). Each user
+          may have 5 and each browser window 3. Every feed holds one change stream cursor on MongoDB.
+        </li>
+        <li>
+          Watching needs a replica set, a sharded cluster or a load-balanced deployment, and the connection's
+          database user needs <code>changeStream</code> and <code>find</code> on what is watched. See
+          <a href="watch.html">Watching changes</a>.
+        </li>
+      </ul>
+      <h2 id="live-sync">Live sync</h2>
+      <ul>
+        <li>
+          <code>MM_LIVE_SYNC</code>: live syncs between connections, on by default. <code>0</code> turns them
+          off: running syncs wait with the reason and nothing is read or written; new ones are refused. Turned
+          on again, they carry on from where they were.
+        </li>
+        <li>
+          <code>MM_LIVE_SYNC_MAX</code>: live syncs that have not ended on this server, 1 to 100 (default 10).
+          Each user may have 3. Each running sync holds one change stream on its source and keeps both
+          connections open.
+        </li>
+        <li>
+          The source must be a replica set, a sharded cluster or a load-balanced deployment (MongoDB 6.0 or
+          later); a copy that may outlast the source's oplog asks for a confirmation. See
+          <a href="sync.html">Live sync</a>.
+        </li>
+      </ul>
+      <h2 id="alerts">Alerts</h2>
+      <ul>
+        <li>
+          <code>MM_ALERTS</code> (config file: <code>alerts.enabled</code>): alerts, on by default.
+          <code>0</code> turns them off: nothing is evaluated or sent, and the Alerts page says alerts are
+          off.
+        </li>
+        <li>
+          <code>MM_ALERTS_PRIVATE_NETWORKS</code> (config file: <code>alerts.privateNetworks</code>, a list):
+          networks the alerts' mail servers and webhooks may reach besides public addresses, as a
+          comma-separated list of at most 64 CIDRs (for example <code>10.0.5.0/24</code>). Default: none.
+          Plain http to a webhook is allowed only inside them. The same ranges are accepted and refused as for
+          <code>MM_BACKUP_PRIVATE_NETWORKS</code>: link-local and cloud metadata addresses can never be
+          reached.
+        </li>
+        <li>
+          In a config file:
+          <code>"alerts": { "enabled": true, "privateNetworks": ["10.0.5.0/24"] }</code>. See
+          <a href="server-admin.html#alerts">Server administration</a>.
+        </li>
+      </ul>
+      <h2 id="the-advanced-shell">The advanced shell</h2>
+      <ul>
+        <li>Disable it entirely with <code>--no-shell</code> (or <code>MM_SHELL_ENABLED=0</code>).</li>
+        <li>
+          Limits: <code>MM_SHELL_MAX_PER_USER</code>, <code>MM_SHELL_MAX_TOTAL</code>,
+          <code>MM_SHELL_COMMAND_TIMEOUT_MS</code>, <code>MM_SHELL_IDLE_MS</code>,
+          <code>MM_SHELL_LIFETIME_MS</code>. A shell its page holds stays open however long it is not used, as
+          in Compass; one no page holds closes two minutes after its page goes. The idle limit is off (0)
+          unless you set it (10000 to 86400000 ms); a shell lives at most 12 hours unless you set another
+          lifetime (60000 to 86400000 ms, or 0 for none). Shells held open count toward
+          <code>MM_SHELL_MAX_TOTAL</code> until their pages close; on a server many people share, set
+          <code>MM_SHELL_IDLE_MS</code> so shells left open and unused are freed. With sign-in on, a shell
+          also ends when its user's sign-in session ends, and when the user's role changes or the account is
+          disabled.
+        </li>
+        <li>
+          <code>MM_SHELL_RSS_MB</code>: the memory a shell's process may hold, 128 to 16384 MB (default 384).
+          The server measures it itself from the operating system (on Windows with <code>tasklist</code>, on
+          macOS with <code>ps</code>) and restarts a shell past it; the shell's variables are lost. A shell
+          that stops answering for 15 seconds while no command runs is restarted too.
+          <code>MM_SHELL_OUTPUT_MB</code>: the output of one command, 1 to 64 MB (default 5); the rest is cut.
+          <code>MM_SHELL_COMMANDS_PER_SECOND</code>: commands per shell a second, 1 to 1000 (default 20).
+        </li>
+        <li>
+          On a root POSIX server the shell worker drops to <code>MM_SHELL_UID</code>/<code>MM_SHELL_GID</code>
+          (default 65534); do not run the service as root.
+        </li>
+      </ul>
+      <h2 id="ai">AI assistant</h2>
+      <ul>
+        <li>
+          <code>MM_AI</code>: the AI assistant, on by default; it shows only once an administrator adds a
+          provider (Settings → AI assistant). <code>0</code> hides it everywhere and refuses requests.
+        </li>
+        <li>
+          <code>MM_AI_PRIVATE_NETWORKS</code>: networks (CIDR, comma-separated) a provider may be on besides
+          public addresses, for example an Ollama at <code>10.0.0.5</code>; plain http only there. Cloud
+          metadata and link-local addresses are never reachable. In local mode this machine is always allowed.
+        </li>
+        <li>
+          <code>MM_AI_PER_MINUTE</code> (default 10, 1–120) and <code>MM_AI_PER_DAY</code> (default 200,
+          1–10,000): requests per person. <code>MM_AI_MAX_CONCURRENT</code> (default 8, 1–64): requests at
+          once on the server; each person may have 2. <code>MM_AI_AGENT_PER_MINUTE</code> (default 30, 1–120):
+          an agent's further requests to the provider within one message, per person a minute (they count for
+          the day too).
+        </li>
+        <li>
+          <code>MM_AI_CHAT_DAYS</code> (default 30, 0–365): how long a chat is kept after its last message.
+          <code>0</code> keeps chats in memory only (12 hours) and removes chats stored under an earlier
+          setting when the server starts.
+        </li>
+      </ul>
+      <h2 id="plugins">Plugins</h2>
+      <ul>
+        <li>
+          <code>MM_PLUGINS</code>: plugins, on by default. Each one still needs an administrator's approval,
+          after its security scan. <code>0</code> finds, installs and runs none (see
+          <a href="plugins.html">Plugins</a>).
+        </li>
+        <li>
+          <code>MM_PLUGINS_GITHUB</code>: installing a plugin from a public GitHub repository's release, off
+          by default (plugins are installed by upload or from a folder); <code>1</code> allows it. The server
+          then reaches <code>api.github.com</code>, <code>github.com</code> and GitHub's release-asset hosts,
+          over https, sending nothing of its own. Left off, a server never reaches GitHub. The server connects
+          to GitHub directly: HTTP proxy settings are not used, so a server that can reach out only through a
+          proxy installs plugins by upload. A system service reads it from its <code>config.json</code> as
+          <code>"pluginsGithub": true</code> (Linux <code>/etc/mongo-manager/config.json</code>, Windows
+          <code>%ProgramData%\Mongo Manager\config.json</code>, macOS
+          <code>/Library/Application Support/Mongo Manager/config.json</code>); restart the service after.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">On this page</p>
+      <ol>
+        <li><a href="#as-a-system-service">As a system service</a></li>
+        <li><a href="#docker">Docker</a></li>
+        <li><a href="#docker-mongodb">Reaching MongoDB from the container</a></li>
+        <li><a href="#updating">Updating</a></li>
+        <li><a href="#behind-a-reverse-proxy">Behind a reverse proxy</a></li>
+        <li><a href="#settings">Settings and environment variables</a></li>
+        <li><a href="#optional-packages">Kerberos and client-side encryption (npm package)</a></li>
+        <li><a href="#install-as-an-app">Install as an app</a></li>
+        <li><a href="#backup-destinations">Backup destinations</a></li>
+        <li><a href="#scheduled-backups">Scheduled backups</a></li>
+        <li><a href="#watch">Watching changes</a></li>
+        <li><a href="#live-sync">Live sync</a></li>
+        <li><a href="#alerts">Alerts</a></li>
+        <li><a href="#the-advanced-shell">The advanced shell</a></li>
+        <li><a href="#ai">AI assistant</a></li>
+        <li><a href="#plugins">Plugins</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>

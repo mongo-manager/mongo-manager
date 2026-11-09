@@ -1,0 +1,222 @@
+{
+  "id": "geojson-map",
+  "name": {
+    "en": "Map",
+    "tr": "Harita",
+    "zh": "地图",
+    "ja": "マップ",
+    "es": "Mapa",
+    "pt": "Mapa",
+    "ko": "지도",
+    "de": "Karte",
+    "fr": "Carte",
+    "ru": "Карта"
+  },
+  "version": "1.4.1",
+  "description": {
+    "en": "Draws the GeoJSON fields and [lng, lat] pairs of a collection's documents on a map, and filters them by an area drawn on it.",
+    "tr": "Bir koleksiyonun belgelerindeki GeoJSON alanlarını ve [boylam, enlem] çiftlerini haritada çizer, onları haritada çizilen bir alana göre filtreler.",
+    "zh": "在地图上绘制集合中文档的 GeoJSON 字段和 [lng, lat] 坐标对，并可按在地图上绘制的区域筛选。",
+    "ja": "コレクションのドキュメントの GeoJSON フィールドと [lng, lat] のペアをマップに描画し、マップ上で描いた領域でフィルターします。",
+    "es": "Dibuja en un mapa los campos GeoJSON y los pares [lng, lat] de los documentos de una colección, y los filtra por un área dibujada en él.",
+    "pt": "Desenha em um mapa os campos GeoJSON e os pares [lng, lat] dos documentos de uma coleção e os filtra por uma área desenhada nele.",
+    "ko": "컬렉션 도큐먼트의 GeoJSON 필드와 [lng, lat] 쌍을 지도에 그리고, 지도에 그린 영역으로 필터링합니다.",
+    "de": "Zeichnet die GeoJSON-Felder und [lng, lat]-Paare der Dokumente einer Collection auf einer Karte und filtert sie nach einem darauf gezeichneten Bereich.",
+    "fr": "Dessine sur une carte les champs GeoJSON et les paires [lng, lat] des documents d’une collection, et les filtre selon une zone dessinée dessus.",
+    "ru": "Рисует на карте поля GeoJSON и пары [lng, lat] из документов коллекции и фильтрует их по области, нарисованной на карте."
+  },
+  "entry": "index.html",
+  "permissions": ["documents:read"],
+  "contributes": {
+    "collectionTabs": [
+      {
+        "id": "map",
+        "title": {
+          "en": "Map",
+          "tr": "Harita",
+          "zh": "地图",
+          "ja": "マップ",
+          "es": "Mapa",
+          "pt": "Mapa",
+          "ko": "지도",
+          "de": "Karte",
+          "fr": "Carte",
+          "ru": "Карта"
+        },
+        "icon": "map"
+      }
+    ],
+    "documentActions": [
+      {
+        "id": "show",
+        "title": {
+          "en": "Show on map",
+          "tr": "Haritada göster",
+          "zh": "在地图上显示",
+          "ja": "マップに表示",
+          "es": "Mostrar en el mapa",
+          "pt": "Mostrar no mapa",
+          "ko": "지도에 표시",
+          "de": "Auf der Karte anzeigen",
+          "fr": "Afficher sur la carte",
+          "ru": "Показать на карте"
+        }
+      }
+    ],
+    "cellRenderers": [
+      {
+        "id": "point",
+        "match": "geojson"
+      }
+    ]
+  },
+  "settings": {
+    "tileUrl": {
+      "type": "url",
+      "title": {
+        "en": "Tile server",
+        "tr": "Harita döşemeleri",
+        "zh": "瓦片服务器",
+        "ja": "タイルサーバー",
+        "es": "Servidor de teselas",
+        "pt": "Servidor de blocos",
+        "ko": "타일 서버",
+        "de": "Kachelserver",
+        "fr": "Serveur de tuiles",
+        "ru": "Сервер тайлов"
+      }
+    },
+    "tileAttribution": {
+      "type": "text",
+      "title": {
+        "en": "Tile credits",
+        "tr": "Döşeme kaynağı",
+        "zh": "瓦片署名",
+        "ja": "タイルのクレジット",
+        "es": "Créditos de las teselas",
+        "pt": "Créditos dos blocos",
+        "ko": "타일 크레딧",
+        "de": "Kachel-Quellenangabe",
+        "fr": "Crédits des tuiles",
+        "ru": "Авторство тайлов"
+      }
+    }
+  },
+  "author": { "name": "Gokhan OZGEZER" },
+  "license": "AGPL-3.0-only",
+  "publishedAt": "2026-11-07",
+  "changelog": [
+    {
+      "version": "1.4.1",
+      "date": "2026-11-07",
+      "notes": {
+        "en": "Reads a collection of large documents, such as API logs, in fewer reads: each page takes as many documents as one answer to the page can hold, and the next page goes on after the last one received. Before, a page too large was refused and asked again at half the size, each refusal one of the minute's reads spent for nothing.",
+        "tr": "API günlükleri gibi büyük belgeli bir koleksiyonu daha az okumayla okur: her sayfa, sayfaya giden tek bir cevaba sığacak kadar belge alır ve sonraki sayfa alınan son belgeden sonra devam eder. Önceden fazla büyük bir sayfa reddediliyor ve yarı boyutta yeniden isteniyordu; her ret dakikadaki okumalardan birini boşa harcıyordu.",
+        "zh": "读取由大文档组成的集合（例如 API 日志）时所需的读取次数更少：每页只取页面一次应答能容纳的文档数量，下一页从收到的最后一个文档之后继续。以前过大的页面会被拒绝，再以一半的大小重新请求，每次拒绝都白白占用每分钟读取次数中的一次。",
+        "ja": "API ログのような大きなドキュメントのコレクションを、より少ない読み取りで読み込みます。各ページはページへの 1 回の応答に収まる数だけドキュメントを取り、次のページは最後に受け取ったドキュメントの次から続けます。以前は大きすぎるページが拒否されて半分のサイズで再要求され、拒否のたびに 1 分あたりの読み取り回数を無駄にしていました。",
+        "es": "Lee una colección de documentos grandes, como registros de API, con menos lecturas: cada página toma tantos documentos como caben en una respuesta a la página, y la siguiente sigue después del último recibido. Antes, una página demasiado grande se rechazaba y se pedía de nuevo a la mitad de tamaño, y cada rechazo gastaba en balde una de las lecturas del minuto.",
+        "pt": "Lê uma coleção de documentos grandes, como logs de API, com menos leituras: cada página pega tantos documentos quanto cabem em uma resposta à página, e a próxima continua depois do último recebido. Antes, uma página grande demais era recusada e pedida de novo com metade do tamanho, e cada recusa gastava à toa uma das leituras do minuto.",
+        "ko": "API 로그처럼 큰 도큐먼트로 된 컬렉션을 더 적은 읽기로 읽습니다. 각 페이지는 페이지로 가는 한 번의 응답에 담길 만큼만 도큐먼트를 가져오고, 다음 페이지는 마지막으로 받은 도큐먼트 다음부터 이어집니다. 이전에는 너무 큰 페이지가 거부된 뒤 절반 크기로 다시 요청되었고, 거부될 때마다 1분당 읽기 횟수 하나를 헛되이 썼습니다.",
+        "de": "Liest eine Collection großer Dokumente, etwa API-Logs, mit weniger Lesevorgängen: Jede Seite nimmt so viele Dokumente, wie eine Antwort an die Seite fassen kann, und die nächste Seite macht nach dem zuletzt erhaltenen weiter. Vorher wurde eine zu große Seite abgelehnt und mit halber Größe erneut angefragt, und jede Ablehnung verbrauchte einen der Lesevorgänge der Minute umsonst.",
+        "fr": "Lit une collection de documents volumineux, comme des journaux d’API, en moins de lectures : chaque page prend autant de documents qu’une réponse à la page peut en contenir, et la suivante reprend après le dernier reçu. Auparavant, une page trop volumineuse était refusée puis redemandée à moitié taille, et chaque refus consommait pour rien l’une des lectures de la minute.",
+        "ru": "Читает коллекцию больших документов, например журналов API, за меньшее число чтений: каждая страница берет столько документов, сколько помещается в один ответ странице, а следующая продолжается после последнего полученного. Раньше слишком большая страница отклонялась и запрашивалась снова вдвое меньшего размера, и каждый отказ впустую тратил одно из чтений минуты."
+      }
+    },
+    {
+      "version": "1.4.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Korean, German, French and Russian too, as the app is. Counts now read right in every language (one shape, one place), and some Spanish and Portuguese wording is clearer.",
+        "tr": "Artık uygulama gibi Korece, Almanca, Fransızca ve Rusçayla da. Sayılar her dilde doğru okunuyor (tek şekil, tek konum gibi); İspanyolca ve Portekizce bazı ifadeler daha açık.",
+        "zh": "现已支持韩语、德语、法语和俄语，与应用保持一致。各语言中的数量表述现在都正确（如单个形状、单个位置），部分西班牙语和葡萄牙语措辞也更清晰。",
+        "ja": "アプリと同じく、韓国語、ドイツ語、フランス語、ロシア語にも対応しました。件数の表記がどの言語でも正しくなり（形状 1 個、場所 1 か所など）、スペイン語とポルトガル語の一部の表現もわかりやすくなりました。",
+        "es": "Ahora también en coreano, alemán, francés y ruso, como la aplicación. Los recuentos se leen bien en todos los idiomas (una forma, un lugar) y algunas frases en español y portugués son más claras.",
+        "pt": "Agora também em coreano, alemão, francês e russo, como o aplicativo. As contagens agora aparecem corretas em todos os idiomas (uma forma, um lugar) e algumas frases em espanhol e português ficaram mais claras.",
+        "ko": "앱과 같이 한국어, 독일어, 프랑스어, 러시아어도 지원합니다. 개수 표기가 모든 언어에서 올바르게 나오고(도형 1개, 장소 1곳 등), 스페인어와 포르투갈어 일부 표현도 더 명확해졌습니다.",
+        "de": "Jetzt auch auf Koreanisch, Deutsch, Französisch und Russisch, wie die App. Anzahlen lesen sich jetzt in jeder Sprache richtig (eine Form, ein Ort), und einige spanische und portugiesische Formulierungen sind klarer.",
+        "fr": "Désormais aussi en coréen, allemand, français et russe, comme l’application. Les nombres se lisent maintenant correctement dans chaque langue (une forme, un lieu) et certaines formulations en espagnol et en portugais sont plus claires.",
+        "ru": "Теперь также на корейском, немецком, французском и русском, как и приложение. Количества теперь правильно читаются на каждом языке (одна фигура, одно место), а некоторые формулировки на испанском и португальском стали яснее."
+      }
+    },
+    {
+      "version": "1.3.0",
+      "date": "2026-10-29",
+      "notes": {
+        "en": "Now in Chinese, Japanese, Spanish and Brazilian Portuguese, as the app is. Nothing else changes.",
+        "tr": "Artık uygulama gibi Çince, Japonca, İspanyolca ve Brezilya Portekizcesiyle de. Başka bir şey değişmez.",
+        "zh": "现已支持中文、日语、西班牙语和巴西葡萄牙语，与应用保持一致。其他内容不变。",
+        "ja": "アプリと同じく、中国語、日本語、スペイン語、ブラジルポルトガル語に対応しました。ほかに変更はありません。",
+        "es": "Ahora también en chino, japonés, español y portugués de Brasil, como la aplicación. Nada más cambia.",
+        "pt": "Agora também em chinês, japonês, espanhol e português do Brasil, como o aplicativo. Nada mais muda.",
+        "ko": "앱과 같이 중국어, 일본어, 스페인어, 브라질 포르투갈어도 지원합니다. 그 밖의 변경 사항은 없습니다.",
+        "de": "Jetzt auch auf Chinesisch, Japanisch, Spanisch und brasilianischem Portugiesisch, wie die App. Sonst ändert sich nichts.",
+        "fr": "Désormais aussi en chinois, japonais, espagnol et portugais du Brésil, comme l’application. Rien d’autre ne change.",
+        "ru": "Теперь также на китайском, японском, испанском и бразильском португальском, как и приложение. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-10-28",
+      "notes": {
+        "en": "Filter by an area: draw a polygon (corner by corner) or a circle (its centre, then its edge) on the map, by mouse or keyboard, or take the area in view, and the documents with a shape in it are put in Documents with $geoWithin — beside the filter in use, its edges as drawn on the map, across the antimeridian too, on GeoJSON (Features and FeatureCollections included) and on [lng, lat] pairs alike.",
+        "tr": "Bir bölgeye göre filtrele: haritada fareyle ya da klavyeyle bir çokgen (köşe köşe) veya bir daire (önce merkezi, sonra kenarı) çizin ya da görünen bölgeyi alın; içinde bir şekli olan belgeler $geoWithin ile Belgeler'e konur — kullanılan filtrenin yanına, kenarları haritada çizildiği gibi, 180. meridyenin ötesinde de, GeoJSON'da (Feature ve FeatureCollection'lar dahil) da [boylam, enlem] çiftlerinde de.",
+        "zh": "按区域筛选：用鼠标或键盘在地图上绘制多边形（逐个角点）或圆（先圆心，再边缘），或直接取当前视图区域，区域内含有形状的文档会通过 $geoWithin 放入“文档”——保留正在使用的筛选条件，边缘与地图上绘制的一致，也可跨越 180 度经线，对 GeoJSON（包括 Feature 和 FeatureCollection）和 [lng, lat] 坐标对同样适用。",
+        "ja": "領域でフィルター：マウスまたはキーボードでマップ上に多角形（頂点ごと）や円（中心、次に端）を描くか、表示中の領域を使うと、その中にシェイプがあるドキュメントが $geoWithin でドキュメント画面に入ります。使用中のフィルターはそのまま残り、辺はマップ上の描画どおりで、180 度経線をまたぐ領域にも対応し、GeoJSON（Feature と FeatureCollection を含む）にも [lng, lat] のペアにも使えます。",
+        "es": "Filtra por un área: dibuja en el mapa un polígono (esquina a esquina) o un círculo (su centro y luego su borde), con el ratón o el teclado, o toma el área visible, y los documentos con una forma dentro se ponen en Documentos con $geoWithin: junto al filtro en uso, con sus bordes tal como se dibujan en el mapa, también a través del antimeridiano, sobre GeoJSON (incluidos Feature y FeatureCollection) y sobre pares [lng, lat] por igual.",
+        "pt": "Filtre por uma área: desenhe no mapa um polígono (vértice a vértice) ou um círculo (o centro e depois a borda), com o mouse ou o teclado, ou use a área visível, e os documentos com uma forma dentro dela são colocados em Documentos com $geoWithin: junto ao filtro em uso, com as bordas como desenhadas no mapa, inclusive através do antimeridiano, sobre GeoJSON (incluindo Feature e FeatureCollection) e sobre pares [lng, lat] igualmente.",
+        "ko": "영역으로 필터링: 지도에서 마우스나 키보드로 다각형(꼭짓점 하나씩) 또는 원(중심, 그다음 가장자리)을 그리거나 현재 보이는 영역을 선택하면, 그 안에 도형이 있는 도큐먼트가 $geoWithin으로 도큐먼트 탭에 적용됩니다. 사용 중인 필터는 그대로 유지되고, 영역의 변은 지도에 그린 그대로이며, 날짜 변경선을 넘는 영역도 지원하고, GeoJSON(Feature와 FeatureCollection 포함)과 [lng, lat] 쌍 모두에 적용됩니다.",
+        "de": "Nach einem Bereich filtern: Zeichnen Sie auf der Karte per Maus oder Tastatur ein Polygon (Eckpunkt für Eckpunkt) oder einen Kreis (erst den Mittelpunkt, dann den Rand) oder übernehmen Sie den sichtbaren Bereich – die Dokumente mit einer Form darin werden per $geoWithin in Dokumente eingetragen: neben dem verwendeten Filter, mit den Kanten wie auf der Karte gezeichnet, auch über den Antimeridian hinweg, für GeoJSON (einschließlich Feature und FeatureCollection) und [lng, lat]-Paare gleichermaßen.",
+        "fr": "Filtrer par zone : dessinez sur la carte un polygone (sommet par sommet) ou un cercle (son centre, puis son bord), à la souris ou au clavier, ou prenez la zone visible, et les documents ayant une forme à l’intérieur sont placés dans Documents avec $geoWithin : à côté du filtre en cours, avec des côtés tels que dessinés sur la carte, y compris à travers l’antiméridien, pour le GeoJSON (Feature et FeatureCollection inclus) comme pour les paires [lng, lat].",
+        "ru": "Фильтр по области: нарисуйте на карте мышью или с клавиатуры многоугольник (угол за углом) или круг (сначала центр, затем край) либо возьмите видимую область, и документы с фигурой внутри попадут в «Документы» через $geoWithin — рядом с действующим фильтром, со сторонами, как они нарисованы на карте, в том числе через антимеридиан, для GeoJSON (включая Feature и FeatureCollection) и пар [lng, lat] одинаково."
+      }
+    },
+    {
+      "version": "1.1.1",
+      "date": "2026-10-16",
+      "notes": {
+        "en": "Security update of the shared kit: an address that hides a script behind a tab or a line break is refused like any other script address. Nothing else changes.",
+        "tr": "Ortak kitin güvenlik güncellemesi: bir betiği sekme ya da satır sonu arkasına gizleyen adres, diğer betik adresleri gibi reddedilir. Başka bir şey değişmez.",
+        "zh": "共享套件的安全更新：将脚本隐藏在制表符或换行符之后的地址，会像其他脚本地址一样被拒绝。其他内容不变。",
+        "ja": "共有キットのセキュリティ更新：タブや改行の後ろにスクリプトを隠したアドレスも、他のスクリプトアドレスと同様に拒否されます。ほかに変更はありません。",
+        "es": "Actualización de seguridad del kit compartido: una dirección que oculta un script tras una tabulación o un salto de línea se rechaza como cualquier otra dirección de script. Nada más cambia.",
+        "pt": "Atualização de segurança do kit compartilhado: um endereço que esconde um script atrás de uma tabulação ou quebra de linha é recusado como qualquer outro endereço de script. Nada mais muda.",
+        "ko": "공유 키트 보안 업데이트: 탭이나 줄 바꿈 뒤에 스크립트를 숨긴 주소도 다른 스크립트 주소와 똑같이 거부됩니다. 그 밖의 변경 사항은 없습니다.",
+        "de": "Sicherheitsupdate des gemeinsamen Kits: Eine Adresse, die ein Skript hinter einem Tabulator oder Zeilenumbruch versteckt, wird wie jede andere Skriptadresse abgelehnt. Sonst ändert sich nichts.",
+        "fr": "Mise à jour de sécurité du kit partagé : une adresse qui cache un script derrière une tabulation ou un saut de ligne est refusée comme toute autre adresse de script. Rien d’autre ne change.",
+        "ru": "Обновление безопасности общего набора: адрес, скрывающий скрипт за табуляцией или переводом строки, отклоняется, как и любой другой адрес скрипта. Больше ничего не меняется."
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-10",
+      "notes": {
+        "en": "Redesigned in the app's look, on a small map engine of its own instead of Leaflet: clustered points with counts, a card per point, Fit to the shapes, and a Shapes list usable from the keyboard. Fixed shapes across the antimeridian, zoom bounds and precision at street level. A shape with very many points is drawn thinned, at most 10,000 vertices, instead of freezing the page.",
+        "tr": "Uygulamanın görünümüyle, Leaflet yerine kendi küçük harita motoruyla yeniden tasarlandı: sayılarıyla kümelenen noktalar, her nokta için bir kart, “Şekillere sığdır” ve klavyeyle kullanılabilen bir Şekiller listesi. 180. meridyeni aşan şekiller, yakınlaştırma sınırları ve sokak düzeyindeki hassasiyet düzeltildi. Çok sayıda noktası olan bir şekil sayfayı dondurmak yerine seyreltilerek, en fazla 10.000 köşeyle çizilir.",
+        "zh": "按应用的外观重新设计，使用自有的小型地图引擎取代 Leaflet：带计数的点聚合、每个点一张卡片、“适应形状”，以及可用键盘操作的“形状”列表。修复了跨越 180 度经线的形状、缩放范围和街道级精度问题。点数极多的形状会被抽稀绘制（最多 10,000 个顶点），不再导致页面卡死。",
+        "ja": "アプリの外観に合わせて再設計し、Leaflet の代わりに独自の小さなマップエンジンを採用しました。件数付きのクラスター表示、ポイントごとのカード、「シェイプに合わせる」、キーボードで使えるシェイプ一覧を備えています。180 度経線をまたぐシェイプ、ズーム範囲、街路レベルの精度を修正しました。点が非常に多いシェイプは、ページが固まらないよう間引いて（最大 10,000 頂点）描画されます。",
+        "es": "Rediseñado con el aspecto de la aplicación y con un pequeño motor de mapas propio en lugar de Leaflet: puntos agrupados con su recuento, una tarjeta por punto, Ajustar a las formas y una lista de formas utilizable con el teclado. Se corrigieron las formas que cruzan el antimeridiano, los límites del zoom y la precisión a nivel de calle. Una forma con muchísimos puntos se dibuja aligerada, con 10.000 vértices como máximo, en lugar de bloquear la página.",
+        "pt": "Redesenhado com a aparência do aplicativo e com um pequeno motor de mapas próprio no lugar do Leaflet: pontos agrupados com contagem, um cartão por ponto, Ajustar às formas e uma lista de formas utilizável pelo teclado. Corrigidas as formas que cruzam o antimeridiano, os limites do zoom e a precisão no nível da rua. Uma forma com pontos demais é desenhada simplificada, com no máximo 10.000 vértices, em vez de travar a página.",
+        "ko": "앱의 디자인에 맞춰 Leaflet 대신 자체 소형 지도 엔진으로 새로 설계했습니다. 개수가 표시되는 포인트 클러스터, 포인트별 카드, “도형에 맞추기”, 키보드로 쓸 수 있는 도형 목록을 제공합니다. 날짜 변경선을 넘는 도형, 확대/축소 범위, 거리 단위 수준의 정밀도를 고쳤습니다. 점이 매우 많은 도형은 페이지가 멈추지 않도록 솎아 내어(최대 10,000개 꼭짓점) 그립니다.",
+        "de": "Im Look der App neu gestaltet, mit einer eigenen kleinen Karten-Engine statt Leaflet: gruppierte Punkte mit Anzahl, eine Detailkarte pro Punkt, „An Formen anpassen“ und eine per Tastatur bedienbare Formenliste. Behoben: Formen über den Antimeridian, Zoomgrenzen und Genauigkeit auf Straßenebene. Eine Form mit sehr vielen Punkten wird ausgedünnt gezeichnet, mit höchstens 10.000 Eckpunkten, statt die Seite einzufrieren.",
+        "fr": "Repensé dans le style de l’application, avec un petit moteur de cartes maison à la place de Leaflet : points regroupés avec leur nombre, une fiche par point, « Ajuster aux formes » et une liste de formes utilisable au clavier. Correction des formes à cheval sur l’antiméridien, des limites du zoom et de la précision au niveau de la rue. Une forme comptant énormément de points est dessinée allégée, avec 10 000 sommets au plus, au lieu de figer la page.",
+        "ru": "Переработано в стиле приложения, на собственном небольшом картографическом движке вместо Leaflet: кластеры точек со счетчиком, карточка для каждой точки, «Показать все фигуры» и список фигур, доступный с клавиатуры. Исправлены фигуры через антимеридиан, границы масштабирования и точность на уровне улиц. Фигура с очень большим числом точек рисуется упрощенной, не более 10 000 вершин, вместо того чтобы подвешивать страницу."
+      }
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-09",
+      "notes": {
+        "en": "First release. A Map tab draws the GeoJSON shapes and [lng, lat] pairs of the first 1,000 documents of the current query; “Show on map” in a document's menu draws one document, and a GeoJSON point shows as “lat, lng” beside its cell. Pairs are read only from fields named for a place. No map tiles are loaded until an administrator sets a tile server; a grid of meridians and parallels is drawn instead.",
+        "tr": "İlk sürüm. Harita sekmesi geçerli sorgunun ilk 1.000 belgesindeki GeoJSON şekillerini ve [boylam, enlem] çiftlerini çizer; bir belgenin menüsündeki “Haritada göster” tek bir belgeyi çizer ve bir GeoJSON noktası hücresinin yanında “enlem, boylam” olarak görünür. Çiftler yalnız bir yeri adlandıran alanlardan okunur. Bir yönetici döşeme sunucusu ayarlayana dek harita döşemesi yüklenmez; onun yerine meridyen ve paralellerden bir ızgara çizilir.",
+        "zh": "首个版本。“地图”标签页会绘制当前查询前 1,000 个文档中的 GeoJSON 形状和 [lng, lat] 坐标对；文档菜单中的“在地图上显示”可绘制单个文档，GeoJSON 点会在其单元格旁显示为“lat, lng”。坐标对只会从以地点命名的字段中读取。在管理员设置瓦片服务器之前不会加载任何地图瓦片，而是绘制经纬网格。",
+        "ja": "最初のリリースです。「マップ」タブは現在のクエリの最初の 1,000 件のドキュメントにある GeoJSON シェイプと [lng, lat] のペアを描画します。ドキュメントのメニューの「マップに表示」は 1 件のドキュメントを描画し、GeoJSON のポイントはセルの横に「lat, lng」と表示されます。ペアは場所を表す名前のフィールドからのみ読み取られます。管理者がタイルサーバーを設定するまでマップタイルは読み込まれず、代わりに経線と緯線のグリッドが描画されます。",
+        "es": "Primera versión. Una pestaña Mapa dibuja las formas GeoJSON y los pares [lng, lat] de los primeros 1.000 documentos de la consulta actual; «Mostrar en el mapa», en el menú de un documento, dibuja un solo documento, y un punto GeoJSON aparece como «lat, lng» junto a su celda. Los pares solo se leen de campos con nombre de lugar. No se carga ninguna tesela de mapa hasta que un administrador configure un servidor de teselas; en su lugar se dibuja una cuadrícula de meridianos y paralelos.",
+        "pt": "Primeira versão. Uma aba Mapa desenha as formas GeoJSON e os pares [lng, lat] dos primeiros 1.000 documentos da consulta atual; «Mostrar no mapa», no menu de um documento, desenha um único documento, e um ponto GeoJSON aparece como «lat, lng» ao lado de sua célula. Os pares só são lidos de campos com nome de lugar. Nenhum bloco de mapa é carregado até que um administrador configure um servidor de blocos; no lugar, é desenhada uma grade de meridianos e paralelos.",
+        "ko": "첫 릴리스입니다. 지도 탭은 현재 쿼리의 처음 1,000개 도큐먼트에 있는 GeoJSON 도형과 [lng, lat] 쌍을 그립니다. 도큐먼트 메뉴의 “지도에 표시”는 도큐먼트 하나를 그리고, GeoJSON 포인트는 셀 옆에 “lat, lng”로 표시됩니다. 쌍은 장소를 뜻하는 이름의 필드에서만 읽습니다. 관리자가 타일 서버를 설정하기 전에는 지도 타일을 불러오지 않으며, 대신 경선과 위선 격자를 그립니다.",
+        "de": "Erstveröffentlichung. Ein Tab Karte zeichnet die GeoJSON-Formen und [lng, lat]-Paare der ersten 1.000 Dokumente der aktuellen Abfrage; „Auf der Karte anzeigen“ im Menü eines Dokuments zeichnet ein einzelnes Dokument, und ein GeoJSON-Punkt erscheint als „lat, lng“ neben seiner Zelle. Paare werden nur aus Feldern gelesen, die nach einem Ort benannt sind. Solange kein Administrator einen Kachelserver festlegt, werden keine Kartenkacheln geladen; stattdessen wird ein Gitter aus Längen- und Breitenkreisen gezeichnet.",
+        "fr": "Première version. Un onglet Carte dessine les formes GeoJSON et les paires [lng, lat] des 1 000 premiers documents de la requête en cours ; « Afficher sur la carte », dans le menu d’un document, dessine un seul document, et un point GeoJSON apparaît sous la forme « lat, lng » à côté de sa cellule. Les paires ne sont lues que dans des champs nommés d’après un lieu. Aucune tuile de carte n’est chargée tant qu’un administrateur n’a pas défini de serveur de tuiles ; une grille de méridiens et de parallèles est dessinée à la place.",
+        "ru": "Первый выпуск. Вкладка «Карта» рисует фигуры GeoJSON и пары [lng, lat] из первых 1000 документов текущего запроса; «Показать на карте» в меню документа рисует один документ, а точка GeoJSON показывается как «lat, lng» рядом со своей ячейкой. Пары читаются только из полей, названных по месту. Пока администратор не укажет сервер тайлов, тайлы карты не загружаются; вместо них рисуется сетка меридианов и параллелей."
+      }
+    }
+  ]
+}

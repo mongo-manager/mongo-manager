@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Kurulum ve dağıtım · Mongo Manager belgeleri</title>
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="index.html">Mongo Manager belgeleri</a>
+      <details class="lang-menu">
+        <summary>Türkçe</summary>
+        <span class="langs" role="group" aria-label="Dil">
+          <a lang="en" hreflang="en" href="../deployment.html">English</a>
+          <strong lang="tr">Türkçe</strong>
+          <a lang="zh-CN" hreflang="zh-CN" href="../zh/deployment.html">简体中文</a>
+          <a lang="ja" hreflang="ja" href="../ja/deployment.html">日本語</a>
+          <a lang="es" hreflang="es" href="../es/deployment.html">Español</a>
+          <a lang="pt-BR" hreflang="pt-BR" href="../pt/deployment.html">Português (Brasil)</a>
+          <a lang="ko" hreflang="ko" href="../ko/deployment.html">한국어</a>
+          <a lang="de" hreflang="de" href="../de/deployment.html">Deutsch</a>
+          <a lang="fr" hreflang="fr" href="../fr/deployment.html">Français</a>
+          <a lang="ru" hreflang="ru" href="../ru/deployment.html">Русский</a>
+        </span>
+      </details>
+    </header>
+    <nav>
+      <a href="index.html">Genel bakış</a>
+      <a href="getting-started.html">Başlarken</a>
+      <a href="security.html">Güvenlik</a>
+      <strong>Kurulum ve dağıtım</strong>
+      <a href="import-export.html">İçe ve dışa aktarma</a>
+      <a href="backup.html">Yedekleme ve geri yükleme</a>
+      <a href="watch.html">Değişiklikleri izleme</a>
+      <a href="sync.html">Canlı senkron</a>
+      <a href="server-admin.html">Sunucu yönetimi</a>
+      <a href="ai.html">AI asistanı</a>
+      <a href="plugins.html">Eklentiler</a>
+      <a href="shortcuts.html">Klavye kısayolları</a>
+    </nav>
+    <main>
+      <h1>Kurulum ve dağıtım</h1>
+      <h2 id="as-a-system-service">Sistem servisi olarak</h2>
+      <pre><code>sudo mongo-manager service install          # Linux, macOS
+mongo-manager service install               # Windows, yönetici komut istemi
+mongo-manager service status
+mongo-manager service logs
+sudo mongo-manager service open             # yerel mod: onu açan tek kullanımlık bir bağlantı
+sudo mongo-manager service uninstall        # veri, yapılandırma ve anahtar korunur</code></pre>
+      <p>
+        Servis kendi yetkisiz hesabıyla, yalnızca yöneticilerin değiştirebildiği bir program klasöründen, ekip
+        modunda <code>127.0.0.1:4321</code> üzerinde çalışır. İlk başlatma tek kullanımlık kurulum anahtarını
+        veri klasöründeki <code>setup-token</code> dosyasında tutar; bu dosyayı yalnızca servis hesabı ve
+        yöneticiler okuyabilir, nasıl okunacağını <code>service install</code> yazar. Anahtar günlüğe hiç
+        yazılmaz ve ilk yönetici oluşunca dosya silinir.
+      </p>
+      <p>
+        Yerel modda kurulan servis (<code>--no-auth</code>) yalnızca tek kullanımlık bir açılış bağlantısından
+        açılır: <code>service install</code> bir tane yazdırır, <code>service open</code> da gerektiğinde
+        yenisini yazdırır (yönetici olarak: veri klasöründeki <code>launch.key</code> dosyasından üretilir).
+        Bağlantıyı yükseltilmiş bir tarayıcıda değil kendi tarayıcınızda açın; o tarayıcı ardından bu siteye
+        ait verileri tuttuğu sürece, en çok altı ay içeride kalır.
+      </p>
+      <h2 id="docker">Docker</h2>
+      <p>
+        İmaj, salt okunur bir kök dosya sisteminde yetkisiz bir kullanıcıyla ve ekip modunda çalışır. Veriler
+        <code>/data</code> biriminde durur. Çevrimdışı makineler bir imaj arşivini
+        <code>docker load -i</code> ile yükleyebilir. İlk başlatmanın kurulum anahtarı:
+        <code>docker exec &lt;konteyner&gt; cat /data/setup-token</code>. Compose dosyası bağlantı noktasını
+        yalnızca ana makinenin geri döngü adresinde yayımlar (<code>127.0.0.1:4321</code>); başka makinelere
+        sunmak için şifresiz HTTP yayımlamak yerine önüne bir HTTPS ters vekil sunucu koyun. Ana makinedeki
+        bir vekil konteynere compose ağının ağ geçidinden ulaşır: <code>127.0.0.1</code>'e değil,
+        <code>MM_TRUSTED_PROXIES=172.31.240.1</code> adresine güvenin.
+      </p>
+      <p>
+        Konteynerin içinde sunucu her adresi dinler; bu yüzden <code>MM_ALLOWED_HOSTS</code> olmadan yalnızca
+        IP adreslerine ve <code>localhost</code>'a yanıt verir (her başlatma bunu söyler). Ona bir adla ulaşan
+        her şey — genel adı ileten bir vekil, hizmet adıyla başka bir konteyner (<code
+          >mongo-manager:4321</code
+        >
+        adresinden veri toplayan bir Prometheus), bir Kubernetes hizmeti — o ad listelenene kadar 403 alır:
+        <code>MM_ALLOWED_HOSTS=mongo-manager,mm.example.com</code>.
+      </p>
+      <p>
+        Yerel modda (<code>MM_AUTH=0</code>) konteynerin günlüğü bir bağlantı değil, bağlantıyı yazdıran
+        komutu söyler:
+        <code>docker exec &lt;konteyner&gt; node /app/dist/cli.cjs open --no-open</code> çalıştırın. Bağlantı,
+        sunucunun konteyner içinde dinlediği portu taşır: ana makinede başka bir portta yayımlandıysa (<code
+          >-p 127.0.0.1:8080:4321</code
+        >), açmadan önce bağlantıdaki portu ana makinenin portuyla değiştirin.
+      </p>
+      <p>
+        Bir sunucuda, önüne onu <code>mongo.example.com</code> olarak sunan bir HTTPS ters vekil sunucu koyun ve şöyle başlatın; son satır kurulum anahtarını okur. Kurulumu hemen tamamlayın: ilk yönetici oluşana kadar anahtara sahip olan herkes yönetici olabilir.
+      </p>
+      <pre><code>docker run -d --name mongo-manager --restart unless-stopped \
+  -p 127.0.0.1:4321:4321 \
+  -e MM_ALLOWED_HOSTS=mongo.example.com \
+  -e MM_TRUSTED_PROXIES=172.17.0.1 \
+  -v mm-data:/data \
+  --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true \
+  ghcr.io/mongo-manager/mongo-manager:&lt;version&gt;
+docker exec mongo-manager cat /data/setup-token</code></pre>
+      <p>
+        <code>MM_TRUSTED_PROXIES</code>, ana makinedeki bir vekilin konteynere ulaştığı adrestir: Docker ağının ağ geçidi, varsayılan bridge ağında genellikle <code>172.17.0.1</code> (<code>docker network inspect bridge -f '{{(index .IPAM.Config 0).Gateway}}'</code> gösterir). Bu ayar olmadan her istek ağ geçidinden geliyor görünür; denetim kaydı ve oturum açma yasakları kullanıcıları birbirinden ayıramaz. <code>MM_ALLOWED_HOSTS</code> ayarlandığında yalnızca listedeki adlar kabul edilir: ana makinede <code>http://127.0.0.1:4321</code> adresini açmaya devam etmek için listeye <code>127.0.0.1</code> ekleyin. <code>--read-only</code>, <code>--tmpfs /tmp</code>, <code>--cap-drop ALL</code> ve <code>no-new-privileges</code>, compose dosyasının uyguladığı sıkılaştırmadır.
+      </p>
+      <h2 id="docker-mongodb">Konteynerden MongoDB'ye ulaşmak</h2>
+      <p>
+        Bir konteynerin içinde <code>localhost</code> konteynerin kendisidir; bu yüzden MongoDB aynı makinede çalışsa bile <code>mongodb://localhost:27017</code> bağlantısı <code>ECONNREFUSED</code> ile başarısız olur.
+      </p>
+      <ul>
+        <li><strong>Başka bir konteynerdeki MongoDB:</strong> ikisini aynı Docker ağına koyun (<code>docker network create mm</code>, ardından <code>docker network connect mm mongo-manager</code> ve <code>docker network connect mm my-mongodb</code>; ya da başlatırken <code>--network mm</code>) ve <code>mongodb://my-mongodb:27017</code> adresine bağlanın.</li>
+        <li><strong>Ana makinedeki MongoDB, Docker Desktop (Windows, macOS):</strong> <code>mongodb://host.docker.internal:27017</code>.</li>
+        <li><strong>Ana makinedeki MongoDB, Linux:</strong> Mongo Manager'ı <code>--network host</code> ile çalıştırın (o zaman <code>localhost</code> ana makinedir; <code>-e MM_HOST=127.0.0.1</code> ile dışarıya kapalı tutun, önüne vekili koyun ve ona <code>127.0.0.1</code> olarak güvenin) ya da <code>--add-host=host.docker.internal:host-gateway</code> ekleyin. İkincisi yalnızca bridge ağ geçidinin adresini dinleyen bir MongoDB'ye ulaşır: ana makinenin <code>127.0.0.1</code> adresine bağlı bir MongoDB'ye de, yalnızca orada yayımlanan bir konteynere de (<code>-p 127.0.0.1:27018:27017</code>) ulaşamaz; bunlar için ortak bir ağ ya da ana makinenin ağını kullanın.</li>
+        <li>Üyeleri <code>localhost:27017</code> olarak adlandırılmış bir replica set, sürücüyü yeniden <code>localhost</code>'a yönlendirir: <code>?directConnection=true</code> ekleyin.</li>
+      </ul>
+      <h2 id="updating">Güncelleme</h2>
+      <p>
+        Bir yönetici kurulu sürümü hesap menüsündeki Mongo Manager hakkında sayfasında görür. <strong>Şimdi denetle</strong>, GitHub'a yayımlanmış en son sürümü sorar; <strong>Güncellemeleri otomatik denetle</strong> bunu günde bir kez yapar. Günlük denetim, bir yönetici açana kadar kapalıdır ve onunla birlikte sizinle, sunucunuzla ya da verilerinizle ilgili hiçbir şey gönderilmez: yalnızca en son sürüm numarası geri gelir. Taslaklar ve ön sürümler hiçbir zaman sunulmaz.
+      </p>
+      <p>
+        Bir sürüm yalnızca <code>SHA256SUMS</code> dosyası Mongo Manager'ın imzasını (Ed25519) taşıyorsa ve <code>release.json</code> orada listeleniyorsa sunulur. <strong>Güncelle</strong>, sürümü veri klasöründeki <code>app/</code> içine indirir, her baytı imzalı sağlama toplamlarıyla karşılaştırır, veritabanını kopyalar ve ardından yeniden başlar. Her açılışta çalışan sürümün her dosyası yeniden denetlenir. Değişmiş bulunan bir sürüm çalıştırılmaz: yeniden indirilir (güncellemeler kapalı değilse) ya da kurulduğu sürüm çalışır ve Mongo Manager hakkında sayfası bunu söyler. Açılışta başka hiçbir şey indirilmez. Bir dakika içinde açılmayan yeni sürüm geri alınır: veritabanı kopyası geri konur, önceki sürüm yeniden çalışır ve Mongo Manager hakkında sayfası bunu söyler.
+      </p>
+      <ul>
+        <li><strong>npm paketi, tek dosyalık program, sistem servisi:</strong> kurulu program olduğu gibi kalır ve <code>app/</code> içinde tutulan en yeni doğrulanmış sürümü başlatır. Daha önceki bir sürümle kurulmuş bir servis bir kez yeniden kurulur (<code>mongo-manager service install</code>): birimi bundan sonra <code>--isolate-account</code> ile başlar; böylece güncellenmiş bir sürüm denetlenip başlamadan önce servis hesabının diğer süreçleri kapatılır. Linux ve macOS'ta bu yalnızca <code>service install</code> komutunun açtığı hesap için yapılır, asla root olarak yapılmaz; LocalService'in başka servislerle paylaşıldığı Windows'ta yalnızca bu kurulumun programları ve önceki programın kendi süreçleri kapatılır.</li>
+        <li><strong>Docker:</strong> yeni sürüm <code>/data</code> biriminde tutulur ve elinizdeki imajda çalışır. Denetlenip başlamadan önce kapsayıcıdaki kullanıcısının diğer süreçleri kapatılır (kapsayıcı root olarak çalışıyorsa ya da ana makinenin süreçlerini paylaşıyorsa asla). Bir sürüm daha yeni bir imajı yalnızca uygulama elinizdekinde çalışamadığında (daha yeni bir Node.js) gerektirir; Mongo Manager hakkında sayfası o zaman Güncelle yerine imajı nasıl alacağınızı söyler. Yalnızca sistem güvenlik düzeltmeleri getiren daha yeni bir imaj Güncelle’yi asla durdurmaz: sayfa onu Güncelle’nin yanında önerir. Docker Compose ile: <code>docker compose pull &amp;&amp; docker compose up -d</code>. docker run ile: <code>docker pull ghcr.io/mongo-manager/mongo-manager:&lt;version&gt;</code>, sonra kapsayıcıyı kaldırıp aynı seçenekler ve aynı <code>/data</code> volume ile yeni imajdan yeniden başlatın (veriler volume içinde kalır). 90 günden eski bir imaj da belirtilir: Node.js ve sistem güvenlik düzeltmeleri için daha yenisini çekin.</li>
+        <li><strong>Kaynak koddan:</strong> git ile güncelleyin.</li>
+        <li>Kendini güncelleyen ilk sürüm elle kurulur.</li>
+      </ul>
+      <ul>
+        <li><code>MM_UPDATES</code>: <code>off</code> (ya da <code>0</code>, <code>false</code>) güncellemeleri tamamen kapatır: denetim, ayar, düğme ya da istek olmaz ve Mongo Manager hakkında sayfası bunu söyler. Varsayılan: açık; günlük denetim bir yönetici açana kadar kapalıdır.</li>
+        <li><code>MM_UPDATE_PROXY</code>: GitHub'a üzerinden ulaşılan HTTP(S) vekil sunucu, <code>MM_BACKUP_PROXY</code> gibi. Varsayılan: yok.</li>
+      </ul>
+      <h2 id="behind-a-reverse-proxy">Ters vekil sunucunun arkasında</h2>
+      <ul>
+        <li>
+          Yalnızca vekile güvenin: <code>--trusted-proxies 127.0.0.1</code>. Bu olmadan sunucu bir isteğin
+          HTTPS ile geldiğini anlayamaz, bu yüzden oturum çerezleri Secure olarak işaretlenmez; ekip modunda
+          başlatma bunu ve girişlerin ağı şifresiz HTTP ile geçeceği durumu söyler.
+        </li>
+        <li>Genel adı belirtin: <code>--allowed-hosts mm.example.com</code>.</li>
+        <li>Bir alt yol altında sunmak için: <code>--base-path /mm/</code>.</li>
+        <li>
+          Her istemci adresi dakikada 600 API isteği yapabilir; birçok kişi aynı adresi paylaşıyorsa
+          <code>MM_API_RATE_LIMIT</code> (60–100000) ile artırın.
+        </li>
+        <li>
+          Aynı anda en fazla 1000 bağlantı açık olabilir (<code>MM_MAX_CONNECTIONS</code>, 16–100000), tek bir
+          adresten ise en fazla 256 (<code>MM_MAX_CONNECTIONS_PER_IP</code>, 2–100000); fazlası kapatılır ve
+          günlük bunu adres başına dakikada bir kez yazar. Bir tarayıcı yaklaşık altı bağlantı açık tutar; bu
+          yüzden birçok kişi Mongo Manager'a tek bir adresten ulaşıyorsa — NAT, VPN ya da Docker Desktop
+          arkasında — <code>MM_MAX_CONNECTIONS_PER_IP</code> değerini artırın. Güvenilen proxy'lerin arkasında
+          yalnızca toplam sınır geçerlidir: her bağlantı proxy'den gelir, kendi istemcilerini proxy
+          sınırlamalıdır.
+        </li>
+        <li>
+          İçe ve dışa aktarılan dosyalar <code>&lt;veri klasörü&gt;/transfer</code> altında durur:
+          <code>MM_TRANSFER_MAX_UPLOAD</code> en büyük yüklemedir, MiB olarak (varsayılan 1024, 1–65536);
+          <code>MM_TRANSFER_QUOTA</code> her kullanıcının tutabileceği alandır, MiB olarak (varsayılan 5120,
+          16–1048576); <code>MM_TRANSFER_TOTAL_QUOTA</code> tüm kullanıcıların birlikte tutabileceği alandır,
+          MiB olarak (varsayılan 51200, ya da daha büyükse <code>MM_TRANSFER_QUOTA</code>; 16–16777216);
+          <code>MM_TRANSFER_TTL_HOURS</code> bir dosyanın ne kadar tutulacağıdır (varsayılan 24, 1–720);
+          <code>MM_TRANSFER_MAX_JOB_HOURS</code> bir içe ya da dışa aktarmanın en uzun süresidir (varsayılan
+          6, 1–72). O diske toplam kadar, ya da daha azsa kota çarpı dosya aktaran kişi sayısı kadar yer
+          ayırın.
+        </li>
+      </ul>
+      <h2 id="settings">Ayarlar ve ortam değişkenleri</h2>
+      <p>
+        Sunucunun her ayarı bir komut satırı seçeneğiyle, bir ortam değişkeniyle ya da
+        <code>--config</code> veya <code>MM_CONFIG</code> ile verilen bir JSON ayar dosyasıyla verilebilir.
+        Komut satırı ortamın, ortam da dosyanın önüne geçer. Açma/kapama ayarları
+        <code>1</code>/<code>0</code>, <code>true</code>/<code>false</code>, <code>yes</code>/<code>no</code>
+        veya <code>on</code>/<code>off</code> alır. Her özelliğin ayarları aşağıda kendi bölümündedir.
+      </p>
+      <div class="table">
+        <table class="ref">
+          <thead>
+            <tr>
+              <th>Değişken</th>
+              <th>Seçenek</th>
+              <th>Ne yapar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>MM_WEB_PORT</code></td>
+              <td><code>-p</code>, <code>--web-port</code></td>
+              <td>Web arayüzünün portu (varsayılan 4321).</td>
+            </tr>
+            <tr>
+              <td><code>MM_HOST</code></td>
+              <td><code>--host</code></td>
+              <td>
+                Dinlenecek adres (varsayılan <code>127.0.0.1</code>). Bir ağ adresi için ekip modu ya da
+                <code>MM_UNSAFE_NO_AUTH</code> gerekir.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_AUTH</code></td>
+              <td><code>--auth</code></td>
+              <td>Ekip modu: kullanıcılar, roller ve oturum açma (varsayılan kapalı).</td>
+            </tr>
+            <tr>
+              <td><code>MM_DATA_DIR</code></td>
+              <td><code>--data-dir</code></td>
+              <td>Veri dizini (varsayılan <code>~/.mongo-manager</code>).</td>
+            </tr>
+            <tr>
+              <td><code>MM_CONFIG</code></td>
+              <td><code>--config</code></td>
+              <td>
+                JSON ayar dosyası. Linux ve macOS'ta sır içeren bir dosyayı başka kullanıcılar okuyabiliyorsa
+                sunucu onu reddeder.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_SECRET_KEY</code></td>
+              <td></td>
+              <td>Veri dizinindeki <code>secret.key</code> yerine kullanılacak şifreleme anahtarı.</td>
+            </tr>
+            <tr>
+              <td><code>MM_OPEN</code></td>
+              <td><code>--open</code></td>
+              <td>
+                Başlarken tarayıcıyı açar (varsayılan açık): yerel modda, geri döngü adresinde ve bir
+                terminalden başlatıldığında.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_URI</code></td>
+              <td><code>--uri</code></td>
+              <td>
+                Yalnızca ilk başlatmada oluşturulan bir bağlantı. Parola içeren bağlantı dizesi için değişkeni
+                kullanın: komut satırlarını başka kullanıcılar görebilir.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_READ_ONLY</code></td>
+              <td><code>--read-only</code></td>
+              <td>Bağlantının kendi ayarı ne olursa olsun hiçbir bağlantı veriyi değiştiremez.</td>
+            </tr>
+            <tr>
+              <td><code>MM_TRUSTED_PROXIES</code></td>
+              <td><code>--trusted-proxies</code></td>
+              <td><code>X-Forwarded-*</code> başlıklarına güvenilen vekil adresleri veya CIDR aralıkları.</td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOWED_HOSTS</code></td>
+              <td><code>--allowed-hosts</code></td>
+              <td>
+                Sunucunun cevap verdiği tek host adları. Verilmezse loopback'te dinlerken loopback adlarına,
+                aksi hâlde yalnızca loopback adlarına ve IP adreslerine cevap verir, başka bir ada asla (DNS
+                rebinding'e karşı; başlatma bunu söyler). İnsanların açtığı her host adını burada verin.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_BASE_PATH</code></td>
+              <td><code>--base-path</code></td>
+              <td>Uygulamayı <code>/mm/</code> gibi bir alt yolda sunar.</td>
+            </tr>
+            <tr>
+              <td><code>MM_UNSAFE_NO_AUTH</code></td>
+              <td><code>--unsafe-no-auth</code></td>
+              <td>Ekip modu olmadan bir ağ adresine izin verir. Ona ulaşan herkes tam erişime sahip olur.</td>
+            </tr>
+            <tr>
+              <td><code>MM_LOG_LEVEL</code></td>
+              <td><code>--log-level</code></td>
+              <td>
+                <code>fatal</code>, <code>error</code>, <code>warn</code>, <code>info</code> (varsayılan),
+                <code>debug</code>, <code>trace</code> veya <code>silent</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_LOG_FILE</code></td>
+              <td><code>--log-file</code></td>
+              <td>
+                JSON günlüğünü standart çıktı yerine bu dosyaya ekler. Dosya gizli yapılır (izin 0600;
+                Windows'ta tüm kullanıcıların erişimi kaldırılır: bu hesap, SYSTEM ve Administrators erişimini
+                korur) ve 10 MiB'ta döndürülür, önceki parça <code>&lt;dosya&gt;.1</code> olarak saklanır.
+                Bağlantı olan, başka adları (sabit bağlantıları) olan ya da düzenli dosya olmayan bir yol
+                reddedilir ve başlatma bunu söyleyerek durur: onu kaldırın ya da yeniden adlandırın veya başka
+                bir günlük dosyası verin. Yazılamayan bir satır (disk dolu) atlanır ve standart hataya bir kez
+                yazılır. İstekler yollarıyla günlüğe yazılır; sorgudaki her değer ve bir GridFS dosyasının
+                kimliği <code>***</code> olarak yazılır.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_REQUIRE_ADMIN_2FA</code></td>
+              <td></td>
+              <td>
+                Her yönetici başka bir şey yapmadan önce iki adımlı girişi kurmalıdır; bu durumda uygulamadan
+                kapatılamaz. Değişken yoksa bir yönetici aynı kuralı uygulamadan koyabilir.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_REQUIRE_2FA</code></td>
+              <td></td>
+              <td>
+                Rolü ne olursa olsun her kullanıcı başka bir şey yapmadan önce iki adımlı girişi kurmalıdır; bu
+                durumda uygulamadan kapatılamaz. Değişken yoksa bir yönetici aynı kuralı uygulamadan koyabilir.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_METRICS_TOKEN</code></td>
+              <td></td>
+              <td>
+                <code>&lt;base path&gt;metrics</code> adresinde Prometheus ölçümlerini açar; bu jeton bearer
+                token olarak gönderilerek okunur (en az 32 karakter). Ölçümlerde hiçbir kullanıcı, bağlantı,
+                veritabanı veya koleksiyon adı geçmez.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_GRIDFS_MAX_MB</code></td>
+              <td></td>
+              <td>GridFS'e yüklenebilecek en büyük dosya, MB cinsinden (varsayılan 512, 1–10240).</td>
+            </tr>
+            <tr>
+              <td><code>MM_MODEL_MAX_DOCS</code></td>
+              <td></td>
+              <td>
+                Bir veri modelinin (bir veritabanının Model bölümü) toplamda örnekleyebileceği belge sayısı
+                (varsayılan 20000, 100–1000000): koleksiyon çoksa her birinin örneği küçültülür ve bölüm bunu
+                söyler.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOW_KERBEROS</code></td>
+              <td></td>
+              <td>
+                Ekip modu: Kerberos (GSSAPI) bağlantılarına izin verir (varsayılan kapalı). Bu bağlantılar
+                sunucunun çalıştığı hesabın Kerberos biletiyle oturum açar — böyle bir bağlantının her
+                kullanıcısı o hesap olarak oturum açar. Bkz.
+                <a href="security.html#server-identity">Güvenlik</a>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_ALLOW_WORKLOAD_IDENTITY</code></td>
+              <td></td>
+              <td>
+                Ekip modu: bağlantıda seçildiğinde OIDC bağlantılarının makinenin iş yükü kimliğini (Azure, GCP,
+                Kubernetes) kullanmasına izin verir (varsayılan kapalı).
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_OIDC_DEVICE_FLOW</code></td>
+              <td></td>
+              <td>
+                Tarayıcıyı bu sunucuya geri gönderemeyen kimlik sağlayıcılar için kodla OIDC oturumu açma (cihaz
+                akışı). Kodu kim onaylarsa o oturum açar; bu yüzden burada açılmadıkça ekip modunda kapalıdır,
+                yerel modda açıktır.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_OIDC_PRIVATE_NETWORKS</code></td>
+              <td></td>
+              <td>
+                OIDC kimlik sağlayıcılarının bulunabileceği özel ağlar (virgülle ayrılmış CIDR'ler); düz http
+                yalnızca orada kullanılabilir. Verilmezse genel https adresleri olmalıdır.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_CRYPT_SHARED_LIB_PATH</code></td>
+              <td></td>
+              <td>
+                İstemci tarafı şifreleme için crypt_shared kitaplığının (mongo_crypt_v1) tam yolu. Ekip modunda
+                yüklenen tek kitaplık budur.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_KMS_PRIVATE_NETWORKS</code></td>
+              <td></td>
+              <td>
+                Anahtar yönetim hizmetlerinin (kurum içindeki bir KMIP sunucusu) bulunabileceği özel ağlar
+                (virgülle ayrılmış CIDR'ler). Verilmezse genel adresler olmalıdır.
+              </td>
+            </tr>
+            <tr>
+              <td><code>MM_KMS_ALLOWED_HOSTS</code></td>
+              <td></td>
+              <td>
+                Bir bağlantının, sağlayıcıların kendi adresleri (AWS KMS, Microsoft oturum açma hizmetiyle Azure
+                Key Vault ve Managed HSM, Google Cloud KMS) ve ayarlarında yazan uç noktalar dışında
+                ulaşabileceği anahtar yönetim hizmeti adresleri (virgülle ayrılmış, <code>host</code> ya da
+                <code>host:port</code>; varsayılan port 443): bir VPC uç noktası, bir KMIP sunucusu. Başka bir
+                adres ya da başka bir port reddedilir; böylece bir veri anahtarının ana anahtarı KMS belirtecini
+                başka yere gönderemez.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h2 id="optional-packages">Kerberos ve istemci tarafı şifreleme (npm paketi)</h2>
+      <p>
+        Kerberos (GSSAPI) ile istemci tarafı alan şifrelemesi ve Queryable Encryption yerel (native) paketler
+        gerektirir; Mongo Manager bunları kendiliğinden kurmaz: kurulumu hiçbir paketin kurulum betiğini
+        çalıştırmaz. Kullanmak için paketleri npm paketinin yanına kurun ve yeniden başlatın:
+      </p>
+      <pre><code>npm i -g @mongo-manager/app kerberos mongodb-client-encryption</code></pre>
+      <p>
+        Mongo Manager onları yalnızca <code>mongo-manager</code>'ın kendisini barındıran genel
+        <code>node_modules</code> klasöründen (gerçek yoluyla denetlenir, üstündeki bir klasörden asla) ve
+        yalnızca bir bağlantı ilk kez ihtiyaç duyduğunda yükler; bağlantı formu hangisinin eksik olduğunu ve
+        nasıl kurulacağını söyler. Tek dosyalık sürümler, Docker imajı (<code>MM_DISTRIBUTION=docker</code>
+        ayarlar) ve bir Windows hizmetinin çalıştığı kopya hiçbir yerel modül içermez: orada bu iki özellik bu
+        pakette olmadıklarını söyler — bunun yerine npm paketini ön planda çalıştırın. Queryable Encryption'ın
+        otomatik şifrelemesi ayrıca crypt_shared kitaplığını (<code>MM_CRYPT_SHARED_LIB_PATH</code>) ya da
+        mongocryptd'yi ve MongoDB Enterprise ya da Atlas'ı gerektirir; MongoDB Community yalnızca şifre çözer.
+        MONGODB-OIDC paket gerektirmez: kimlik sağlayıcıda bu sunucunun
+        <code>&lt;adres&gt;&lt;base path&gt;oidc/callback</code> adresi (ya da bağlantının adlandırdığı başka
+        bir adres) yönlendirme adresi olarak kayıtlı olmalıdır; bunun mümkün olmadığı yerde kişiler bir kodla
+        oturum açabilir.
+      </p>
+      <h2 id="install-as-an-app">Uygulama olarak yükleme</h2>
+      <p>
+        Chrome veya Edge'de adres çubuğundan <em>Mongo Manager'ı yükle</em>'yi seçerek masaüstünüzden veya
+        başlat menüsünden kendi penceresinde açabilirsiniz.
+      </p>
+      <h2 id="backup-destinations">Yedek hedefleri</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_FOLDER_ROOTS</code>: sunucu klasörü hedeflerinin kullanabileceği klasörler; sistemin
+          yol ayırıcısıyla ayrılmış (Linux ve macOS'ta <code>:</code>, Windows'ta <code>;</code>) en çok 16
+          mutlak yol. Varsayılan: yok; bu durumda klasör hedefi oluşturulamaz. Göreli bir yol sunucuyu
+          başlangıçta durdurur. Servis hesabına her köke yazma izni verin ve kökleri veri klasörünün dışında
+          tutun: veri klasörünün içindeki bir klasör hedefi reddedilir. Her başlangıç, sunucunun yazamadığı
+          bir kökü günlüğe yazar. Linux servisi için:
+          <ul>
+            <li>
+              Korumalı alanı (sandbox) yalnızca veri klasörüne ve kurulduğunda yapılandırma ve ortam (env)
+              dosyalarında adı geçen köklere yazmasına izin verir: bunları değiştirdikten sonra
+              <code>sudo mongo-manager service install</code> komutunu yeniden çalıştırın (veriyi,
+              yapılandırmayı ve anahtarı korur); eksik olan bir kökü oluşturduktan sonra da servisi yeniden
+              başlatın. Başka bir yerde, örneğin bir ek yapılandırma dosyasındaki
+              <code>Environment=</code> ile verilen kökleri kurulum görmez: bunların klasörleri servis için
+              salt okunur kalır.
+            </li>
+            <li>
+              Kurulum, servisin erişemediği <code>/home</code>, <code>/root</code>, <code>/run/user</code>,
+              <code>/tmp</code>, <code>/var/tmp</code> ya da <code>/dev</code> altındaki bir kökü ve korumalı
+              alanı boşa çıkaracak bir kökü dışarıda bırakır: bir sistem klasörünü (<code>/</code>,
+              <code>/var</code>, <code>/var/lib</code> ve benzerleri) içeren ya da <code>/etc</code>,
+              <code>/usr</code>, <code>/run</code> veya başka bir sistem klasörünün içinde olan bir kökü
+              (<code>/var</code> altında yalnızca <code>/var/backups</code> içindeki klasörler açıktır).
+              <code>/srv</code> ya da <code>/opt</code> içindeki bir klasör veya <code>/mnt</code> ya da
+              <code>/media</code> altındaki bir bağlama noktası uygundur; bu klasörlerin kendileri değil.
+              Çıkarılabilir bir diskte ya da ağ dosya sisteminde, diski veya paylaşımı kim denetliyorsa
+              üzerindeki klasörleri de o denetler: bağlama noktasının kendisini kök yapın (bir kullanıcının
+              FUSE bağlaması sahipleri ve bağlantıları hakkında istediğini söyleyebilir). Başka bir kökün
+              içindeki kök ise korumalı alana o kök sayesinde girer. ostree sistemlerinde (Fedora Silverblue,
+              CoreOS) olduğu gibi <code>/srv</code>, <code>/opt</code> ya da <code>/mnt</code> kendisi
+              <code>/var</code> içine giden bir bağlantıysa kurulum kökün nereye vardığını söyler ve kök orada
+              reddedilir: <code>/var/backups</code> içinde bir klasör seçin.
+            </li>
+            <li>
+              Bir bağlantı gösterdiği yere göre değerlendirilir ve birim dosyası o yeri yazar; hiçbir yere
+              varmayan bir bağlantı dışarıda bırakılır: henüz oluşturulmamış bir klasöre gidiyorsa o klasörü
+              oluşturup service install komutunu yeniden çalıştırın; döngüye giriyor ya da bir dosyadan
+              geçiyorsa başka bir klasör seçin ya da bağlantıyı kaldırın. Kimse oradaki bir klasörün yerine
+              bağlantı koyamasın diye bir kökün üstündeki her klasörü ve yolundaki bağlantıların (bir
+              bağlantının hedefindeki bağlantılar dahil) bulunduğu klasörleri root'a ait, grubuna ve
+              başkalarına kapalı tutun; başkalarının yazabildiği bir klasörde, yapışkan (sticky) olsun
+              olmasın, içindeki klasör root'un olsun ve kökü onun içinde oluşturun.
+            </li>
+            <li>
+              Kök dizine (<code>/</code>) kadar ve yolundaki bağlantılar boyunca herhangi bir yerde servisin
+              kullanıcısının değiştirebileceği bir klasörün altındaki kök dışarıda bırakılır: o kullanıcıya
+              ait olan ya da gruplarından biri, bir ACL veya herkese açık olması sayesinde yazabildiği bir
+              klasör; orada o kullanıcı olarak çalışan bir süreç bir klasörün yerine <code>/etc</code>'ye
+              giden bir bağlantı koyabilir. Servisin yazdığı başka bir kökün içindeki bir bağlantı da buna
+              girer. Kurulum ve <code>sudo</code> ile çalıştırılan doctor bunu sisteme de sorar:
+              <code>setpriv</code> ile <code>test -w</code> komutunu o kullanıcı olarak çalıştırır, böylece
+              çekirdek kullanıcının gruplarını ve ACL'leri uygular; birimin ya da ek yapılandırma dosyalarının
+              (drop-in) <code>Group=</code> veya <code>SupplementaryGroups=</code> ile servise verdiği gruplar
+              da buna dahildir. <code>setpriv</code> yoksa ya da root olarak çalışılmıyorsa yalnızca
+              klasörlerin izin kipine (mode) ve kullanıcının gruplarına bakılır ve ikisi de bunu söyler. İzin
+              kipinin verdiği yetki, bir ACL onu geri alsa bile sayılır; böyle bir klasörün altındaki kökler
+              de dışarıda bırakılır.
+            </li>
+            <li>
+              Kurulum, servisi kimin çalıştırdığını bütün ek yapılandırma dosyalarını okuyan systemd'ye sorar.
+              Servisi <code>--user</code> dışında bir kullanıcıyla (ya da root olarak), o adda bir hesap
+              yokken <code>DynamicUser=yes</code> ile, kullanıcının kendi grubu dışında bir
+              <code>Group=</code> ile ya da sistemin tanımadığı bir grupla (systemd bu durumda servisi
+              başlatmaz) çalıştıran bir ek dosya, kurulumu veri klasörü ve yapılandırma değişmeden durdurur;
+              kurulum da nedenini söyler ve servisi durdurulmuş ve devre dışı bırakılmış hâlde bırakır.
+              Sorgulanamayan bir grup ya da sorulamayan bir systemd, bütün kökleri dışarıda bırakır.
+            </li>
+            <li>
+              Kurulu servisi
+              <code>sudo mongo-manager doctor --config /etc/mongo-manager/config.json</code> denetler (yalın
+              <code>mongo-manager doctor</code> sizin veri klasörünüzü denetler ve servisi denetlemediğini
+              söyler). Her kökü denetler: var mı, sunucunun yazabildiği bir klasör mü, korumalı alanın içinde
+              mi, veri klasörünün içinde mi; korumalı alanın servise yazma izni verdiği, artık hiçbir kökün
+              adlandırmadığı ya da bir köke veya veri klasörüne root dışında birinin değiştirebileceği bir
+              bağlantı üzerinden giden bir klasörü de bildirir ve root olarak çalışan bir servisi, sistemin
+              tanımadığı ya da sorgulanamayan bir grubu ve o adda hesap yokken
+              <code>DynamicUser=yes</code> ayarını bildirir. Servisin yapılandırma ve ortam (env) dosyasının
+              adlandırdığı kökleri denetler; ortam dosyasını yalnızca root okuyabildiğinden
+              <code>sudo</code> gerekir; servisin gizli anahtarı da oradadır. Yazma iznini çalıştığı kullanıcı
+              olarak denetler; root olarak çalıştırıldığında ise kökün sahibine ve izin kipine veri klasörünün
+              sahibi olan kullanıcı için bakar ve o kullanıcının oraya yazabildiğini sistem söylüyorsa buna
+              güvenir. Köklerin üstündeki klasörleri birimin servisi çalıştırdığı kullanıcı
+              (<code>User=</code>) için değerlendirir.
+            </li>
+          </ul>
+        </li>
+        <li>
+          <code>MM_BACKUP_PRIVATE_NETWORKS</code>: hedeflerin erişebileceği özel aralıklar, virgülle ayrılmış
+          en çok 64 CIDR olarak (örneğin <code>10.0.5.0/24</code>); bunların içinde düz HTTP'ye izin verilir.
+          Varsayılan: yok. Loopback, 10/8, 172.16/12, 192.168/16, CGNAT (100.64.0.0/10) ve unique-local
+          (fc00::/7) aralıkları kabul edilir. Genel (public) bir aralık sunucuyu başlangıçta durdurur;
+          bağlantı-yerel (link-local) ya da bulut meta veri aralıklarının (169.254.0.0/16, fe80::/10,
+          169.254.169.254, fd00:ec2::254, 100.100.100.200) içinde kalan bir aralık da, IPv4 eşlemeli ve NAT64
+          dahil hangi biçimde yazılırsa yazılsın, öyle; ileti aralığın adını verir. Bu adreslere, listelenen
+          bir aralığın içinde olsalar bile, asla erişilemez.
+        </li>
+        <li>
+          <code>MM_BACKUP_PROXY</code>: hedeflere üzerinden erişilen HTTP(S) vekil sunucu; örneğin
+          <code>http://proxy.corp:3128</code> ya da <code>https://kullanici:parola@proxy.corp</code>; yol ya
+          da sorgu olmadan. Varsayılan: yok (ortamdaki vekil sunucu değişkenleri asla okunmaz). Mongo Manager
+          her hedefin adresini yine kendisi çözer ve denetler, vekil sunucudan o adrese bağlanmasını ister;
+          böylece yukarıdaki adres kuralları vekil üzerinden de geçerlidir. TLS uçtan uca hedefe kadar sürer
+          ve hedefin sertifikası vekil yokmuş gibi denetlenir.
+          <code>MM_BACKUP_PRIVATE_NETWORKS</code> içindeki hedeflere doğrudan erişilir. Bağlantı-yerel ya da
+          meta veri adresindeki bir vekil sunucu, sunucuyu başlangıçta durdurur. Vekilin parolası adresin bir
+          parçasıdır: paylaşılan kabuk geçmişlerine girmemesine dikkat edin. Yalnızca yedekleme hedefleri
+          kullanır: uyarı kanalları (e-posta ve webhook'lar), yapay zekâ sağlayıcıları ve eklentiler asla bu
+          vekilden geçmez. Vekil seçmeden önce bilinmesi gerekenler: <code>http://</code> bir vekile kullanıcı
+          adı ve parola açık metin (Basic) olarak gider; bu yüzden <code>https://</code> ya da güvenilen bir
+          ağ içindeki bir vekil tercih edin. Yalnızca listelenmiş ana makine adlarına CONNECT izni veren bir
+          vekil bu bağlantıları reddeder, çünkü ondan bir IP adresine bağlanması istenir.
+          <code>https://</code> bir vekilin sertifikası, Node.js'in güvendiği bir sertifika yetkilisince
+          imzalanmış olmalıdır (yerleşik liste ya da <code>NODE_EXTRA_CA_CERTS</code> ile eklenen): vekile
+          ayrıca bir CA verilemez.
+        </li>
+        <li><code>MM_BACKUP_DEST_PART_MB</code>: yükleme parçası boyutu, 16–512 MiB (varsayılan 64).</li>
+        <li>
+          <code>MM_BACKUP_DRILL_MAX_MB</code>: bir geri yükleme tatbikatının en çok yazacağı miktar, MiB.
+          Varsayılan: yok — tatbikat, MongoDB'nin bildirdiği boş disk alanının yarısının altında kalır (mongos
+          üzerinden en dolu parçanınkinin). MongoDB bunu bildirmiyorsa (Atlas paylaşımlı katmanları)
+          tatbikatlar yalnızca bu ayarla çalışır.
+        </li>
+        <li>
+          <code>MM_BACKUP_DEST_TRANSFERS</code>: her hedefte aynı anda çalışan gönderim ve indirmeler, 1–8
+          (varsayılan 2). Fazlası bekler; iş listesinde o hedef için "bekleniyor" olarak görünür.
+        </li>
+      </ul>
+      <h2 id="scheduled-backups">Zamanlanmış yedekler</h2>
+      <ul>
+        <li>
+          <code>MM_BACKUP_SCHEDULES</code>: zamanlayıcı, varsayılan olarak açık. <code>0</code> onu kapatır:
+          zamanlamalar ayarlarını korur, hiçbir şey çalışmaz ve Zamanlanmış yedekler sekmesi zamanlamanın
+          kapalı olduğunu söyler. Durdurulan bir sunucunun yarım bıraktığı çalışmalar açılışta kapatılır.
+        </li>
+        <li>
+          <code>MM_BACKUP_SCHEDULE_CONCURRENCY</code>: aynı anda yürüyen zamanlanmış çalışmalar, 1–8
+          (varsayılan 2). Zamanı gelen diğerleri en çok altı saat bekler.
+        </li>
+      </ul>
+      <h2 id="watch">Değişiklikleri izleme</h2>
+      <ul>
+        <li>
+          <code>MM_WATCH</code>: change stream akışları, varsayılan olarak açık. <code>0</code> kapatır: İzle
+          bölümleri izlemenin kapalı olduğunu söyler ve MongoDB'de hiçbir şey açılmaz.
+        </li>
+        <li>
+          <code>MM_WATCH_MAX_FEEDS</code>: bu sunucuda aynı anda açık canlı akış sayısı, 1–500 (varsayılan
+          50). Her kullanıcının 5, her tarayıcı penceresinin 3 akışı olabilir. Her akış MongoDB'de bir change
+          stream imleci tutar.
+        </li>
+        <li>
+          İzleme bir replica set, sharded cluster ya da load-balanced kurulum ister; bağlantının veritabanı
+          kullanıcısının izlenen yerde <code>changeStream</code> ve <code>find</code> yetkileri olmalıdır.
+          Bkz. <a href="watch.html">Değişiklikleri izleme</a>.
+        </li>
+      </ul>
+      <h2 id="live-sync">Canlı senkron</h2>
+      <ul>
+        <li>
+          <code>MM_LIVE_SYNC</code>: bağlantılar arası canlı senkron, varsayılan olarak açık. <code>0</code>
+          kapatır: çalışan senkronlar nedeniyle bekler ve hiçbir şey okunmaz ya da yazılmaz; yenileri
+          reddedilir. Yeniden açılınca kaldıkları yerden devam ederler.
+        </li>
+        <li>
+          <code>MM_LIVE_SYNC_MAX</code>: bu sunucuda sona ermemiş canlı senkron sayısı, 1 ile 100 arası
+          (varsayılan 10). Her kullanıcının en çok 3 senkronu olabilir. Çalışan her senkron kaynağında bir
+          değişiklik akışı tutar ve iki bağlantıyı da açık tutar.
+        </li>
+        <li>
+          Kaynak bir replica set, sharded cluster veya load-balanced kurulum olmalıdır (MongoDB 6.0 veya
+          üstü); kaynağın oplog'undan uzun sürebilecek bir kopya onay ister. Bkz.
+          <a href="sync.html">Canlı senkron</a>.
+        </li>
+      </ul>
+      <h2 id="alerts">Uyarılar</h2>
+      <ul>
+        <li>
+          <code>MM_ALERTS</code> (ayar dosyasında <code>alerts.enabled</code>): uyarılar, varsayılan olarak
+          açık. <code>0</code> kapatır: hiçbir şey değerlendirilmez ya da gönderilmez ve Uyarılar sayfası
+          uyarıların kapalı olduğunu söyler.
+        </li>
+        <li>
+          <code>MM_ALERTS_PRIVATE_NETWORKS</code> (ayar dosyasında <code>alerts.privateNetworks</code>, bir
+          liste): uyarıların posta sunucularının ve webhook'larının genel adresler dışında ulaşabileceği
+          ağlar, virgülle ayrılmış en çok 64 CIDR olarak (örneğin <code>10.0.5.0/24</code>). Varsayılan: yok.
+          Bir webhook'a düz http yalnızca bunların içinde izinlidir.
+          <code>MM_BACKUP_PRIVATE_NETWORKS</code> ile aynı aralıklar kabul ve reddedilir: bağlantı-yerel
+          (link-local) ve bulut meta veri adreslerine asla ulaşılmaz.
+        </li>
+        <li>
+          Ayar dosyasında:
+          <code>"alerts": { "enabled": true, "privateNetworks": ["10.0.5.0/24"] }</code>. Bkz.
+          <a href="server-admin.html#alerts">Sunucu yönetimi</a>.
+        </li>
+      </ul>
+      <h2 id="the-advanced-shell">Gelişmiş shell</h2>
+      <ul>
+        <li>
+          Tümüyle kapatmak için <code>--no-shell</code> (ya da <code>MM_SHELL_ENABLED=0</code>) kullanın.
+        </li>
+        <li>
+          Sınırlar: <code>MM_SHELL_MAX_PER_USER</code>, <code>MM_SHELL_MAX_TOTAL</code>,
+          <code>MM_SHELL_COMMAND_TIMEOUT_MS</code>, <code>MM_SHELL_IDLE_MS</code>,
+          <code>MM_SHELL_LIFETIME_MS</code>. Bir sayfanın tuttuğu shell, ne kadar kullanılmazsa kullanılmasın
+          açık kalır (Compass'taki gibi); hiçbir sayfanın tutmadığı shell, sayfası gittikten iki dakika sonra
+          kapanır. Boşta kalma sınırı siz ayarlamadıkça kapalıdır (0) (10000–86400000 ms); bir shell, başka
+          bir ömür ayarlamadıkça en çok 12 saat açık kalır (60000–86400000 ms, sınırsız için 0). Açık tutulan
+          shell'ler, sayfaları kapanana dek <code>MM_SHELL_MAX_TOTAL</code> sınırına sayılır; birçok kişinin
+          paylaştığı bir sunucuda, açık bırakılıp kullanılmayan shell'lerin kapanması için
+          <code>MM_SHELL_IDLE_MS</code> ayarlayın. Oturum açma etkinse shell, kullanıcısının oturumu sona
+          erdiğinde, rolü değiştiğinde ya da hesabı devre dışı bırakıldığında da kapanır.
+        </li>
+        <li>
+          <code>MM_SHELL_RSS_MB</code>: bir shell sürecinin tutabileceği bellek, 128–16384 MB (varsayılan
+          384). Sunucu bunu işletim sisteminden kendisi ölçer (Windows'ta <code>tasklist</code>, macOS'ta
+          <code>ps</code> ile) ve sınırı aşan shell'i yeniden başlatır; shell'in değişkenleri kaybolur. Hiçbir
+          komut çalışmıyorken 15 saniye yanıt vermeyen shell de yeniden başlatılır.
+          <code>MM_SHELL_OUTPUT_MB</code>: bir komutun çıktısı, 1–64 MB (varsayılan 5); fazlası kesilir.
+          <code>MM_SHELL_COMMANDS_PER_SECOND</code>: shell başına saniyede komut sayısı, 1–1000 (varsayılan
+          20).
+        </li>
+        <li>
+          Root olarak çalışan bir POSIX sunucuda shell işçisi <code>MM_SHELL_UID</code>/<code
+            >MM_SHELL_GID</code
+          >
+          kullanıcısına iner (varsayılan 65534); servisi root olarak çalıştırmayın.
+        </li>
+      </ul>
+      <h2 id="ai">AI asistanı</h2>
+      <ul>
+        <li>
+          <code>MM_AI</code>: AI asistanı, varsayılan olarak açık; bir yönetici bir sağlayıcı ekleyince
+          görünür (Ayarlar → AI asistanı). <code>0</code> onu her yerde gizler ve istekleri reddeder.
+        </li>
+        <li>
+          <code>MM_AI_PRIVATE_NETWORKS</code>: bir sağlayıcının genel adresler dışında bulunabileceği ağlar
+          (CIDR, virgülle ayrılmış), örneğin <code>10.0.0.5</code>'teki bir Ollama; düz http yalnızca orada.
+          Bulut metadata ve link-local adreslere asla ulaşılmaz. Yerel modda bu makineye her zaman izin
+          verilir.
+        </li>
+        <li>
+          <code>MM_AI_PER_MINUTE</code> (varsayılan 10, 1–120) ve <code>MM_AI_PER_DAY</code> (varsayılan 200,
+          1–10.000): kişi başına istek. <code>MM_AI_MAX_CONCURRENT</code> (varsayılan 8, 1–64): sunucuda aynı
+          anda istek; her kişi 2 tane yapabilir. <code>MM_AI_AGENT_PER_MINUTE</code> (varsayılan 30, 1–120):
+          bir ajanın tek bir mesaj içinde sağlayıcıya yaptığı sonraki istekler, kişi başına dakikada (güne de
+          sayılır).
+        </li>
+        <li>
+          <code>MM_AI_CHAT_DAYS</code> (varsayılan 30, 0–365): bir sohbetin son mesajından sonra ne kadar
+          tutulacağı. <code>0</code> sohbetleri yalnızca bellekte (12 saat) tutar ve daha önceki bir ayarla
+          saklanmış sohbetleri sunucu başlarken siler.
+        </li>
+      </ul>
+      <h2 id="plugins">Eklentiler</h2>
+      <ul>
+        <li>
+          <code>MM_PLUGINS</code>: eklentiler, varsayılan olarak açık. Her biri yine de güvenlik taramasından
+          sonra bir yöneticinin onayını bekler. <code>0</code> hiçbirini bulmaz, kurmaz ve çalıştırmaz (bkz.
+          <a href="plugins.html">Eklentiler</a>).
+        </li>
+        <li>
+          <code>MM_PLUGINS_GITHUB</code>: herkese açık bir GitHub deposunun sürümünden eklenti kurmak,
+          varsayılan olarak kapalı (eklentiler yüklenerek ya da bir klasörden kurulur); <code>1</code> açar.
+          Açıkken sunucu https üzerinden <code>api.github.com</code>, <code>github.com</code> ve GitHub'ın
+          sürüm dosyası sunucularına ulaşır; kendine ait hiçbir şey göndermez. Kapalıyken sunucu GitHub'a hiç
+          ulaşmaz. Sunucu GitHub'a doğrudan bağlanır: HTTP vekil sunucu (proxy) ayarları kullanılmaz, bu
+          yüzden dışarıya yalnızca bir vekil sunucu üzerinden çıkabilen bir sunucu eklentileri yükleyerek
+          kurar. Sistem hizmeti bu ayarı <code>config.json</code> dosyasından
+          <code>"pluginsGithub": true</code> olarak okur (Linux'ta
+          <code>/etc/mongo-manager/config.json</code>, Windows'ta
+          <code>%ProgramData%\Mongo Manager\config.json</code>, macOS'te
+          <code>/Library/Application Support/Mongo Manager/config.json</code>); ardından hizmeti yeniden
+          başlatın.
+        </li>
+      </ul>
+    </main>
+    <aside class="toc" aria-labelledby="toc-title">
+      <p id="toc-title">Bu sayfada</p>
+      <ol>
+        <li><a href="#as-a-system-service">Sistem servisi olarak</a></li>
+        <li><a href="#docker">Docker</a></li>
+        <li><a href="#docker-mongodb">Konteynerden MongoDB'ye ulaşmak</a></li>
+        <li><a href="#updating">Güncelleme</a></li>
+        <li><a href="#behind-a-reverse-proxy">Ters vekil sunucunun arkasında</a></li>
+        <li><a href="#settings">Ayarlar ve ortam değişkenleri</a></li>
+        <li><a href="#optional-packages">Kerberos ve istemci tarafı şifreleme (npm paketi)</a></li>
+        <li><a href="#install-as-an-app">Uygulama olarak yükleme</a></li>
+        <li><a href="#backup-destinations">Yedek hedefleri</a></li>
+        <li><a href="#scheduled-backups">Zamanlanmış yedekler</a></li>
+        <li><a href="#watch">Değişiklikleri izleme</a></li>
+        <li><a href="#live-sync">Canlı senkron</a></li>
+        <li><a href="#alerts">Uyarılar</a></li>
+        <li><a href="#the-advanced-shell">Gelişmiş shell</a></li>
+        <li><a href="#ai">AI asistanı</a></li>
+        <li><a href="#plugins">Eklentiler</a></li>
+      </ol>
+    </aside>
+  </body>
+</html>
